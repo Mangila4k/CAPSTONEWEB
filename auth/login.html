@@ -42,7 +42,7 @@
                         </div>
                     </div>
 
-                    <div class="input-group" style="margin-bottom: 8px;">
+                    <div class="input-group">
                         <label for="password">Password <span>*</span></label>
                         <div class="input-wrapper">
                             <input type="password" id="password" name="password" placeholder="Enter password (e.g. Last Name for students)" required>
@@ -52,24 +52,25 @@
                         </div>
                     </div>
 
-                    <div style="font-size: 11.5px; color: #64748b; margin-bottom: 12px; display: flex; align-items: center; gap: 5px; line-height: 1.3;">
-                        <i class="fas fa-info-circle" style="color: #0b2b4a; font-size: 12px;"></i>
+                    <div class="student-hint">
+                        <i class="fas fa-info-circle"></i>
                         <span>Students: Log in with your registered <strong>Gmail</strong> and <strong>Last Name</strong> as password.</span>
                     </div>
 
-                    <div class="forgot-password">
-                        <a href="forgot_password.html">
-                            <i class="fas fa-key"></i> Forgot Password?
-                        </a>
-                    </div>
-
-                    <div class="remember-me">
-                        <input type="checkbox" id="remember" name="remember">
-                        <label for="remember">Remember me</label>
+                    <div class="form-row-actions">
+                        <div class="remember-me">
+                            <input type="checkbox" id="remember" name="remember">
+                            <label for="remember">Remember me</label>
+                        </div>
+                        <div class="forgot-password">
+                            <a href="forgot_password.html">
+                                <i class="fas fa-key"></i> Forgot Password?
+                            </a>
+                        </div>
                     </div>
 
                     <button type="submit" class="btn-login" id="loginBtn">
-                        <i class="fas fa-sign-in-alt" style="margin-right: 8px;"></i> LOGIN
+                        <i class="fas fa-sign-in-alt"></i> LOGIN
                     </button>
                 </form>
 
@@ -86,26 +87,59 @@
 
             <!-- Right Panel - Information -->
             <div class="info-panel">
-                <div class="motto">
-                    <h3>VIRTUS<br><span>EXCELLENTIA</span><br>SERVITIUM</h3>
-                </div>
+                <div class="info-panel-content">
+                    <div class="motto">
+                        <div class="motto-badge">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <div class="motto-words">
+                            <span class="motto-word">VIRTUS</span>
+                            <span class="motto-word motto-highlight">EXCELLENTIA</span>
+                            <span class="motto-word">SERVITIUM</span>
+                        </div>
+                    </div>
 
-                <div class="school-level">
-                    <h4>SENIOR HIGH SCHOOL</h4>
-                    <p>Grades 11-12 · Academic & Technical-Vocational Tracks</p>
-                </div>
+                    <div class="school-level">
+                        <div class="school-level-badge">SENIOR HIGH SCHOOL</div>
+                        <p>Grades 11–12 · Academic & Technical-Vocational Tracks</p>
+                    </div>
 
-                <ul class="programs-list">
-                    <li><strong>STEM</strong> - Science, Technology, Engineering, and Mathematics</li>
-                    <li><strong>HUMSS</strong> - Humanities and Social Sciences</li>
-                    <li><strong>GAS</strong> - General Academic Strand</li>
-                    <li><strong>TVL</strong> - Technical Vocational Livelihood (Cookery & ICT)</li>
-                </ul>
+                    <div class="programs-container">
+                        <h5 class="programs-title"><i class="fas fa-book-open"></i> Senior High Strands</h5>
+                        <ul class="programs-list">
+                            <li>
+                                <span class="strand-badge">STEM</span>
+                                <span class="strand-text">Science, Technology, Engineering, & Mathematics</span>
+                            </li>
+                            <li>
+                                <span class="strand-badge">HUMSS</span>
+                                <span class="strand-text">Humanities and Social Sciences</span>
+                            </li>
+                            <li>
+                                <span class="strand-badge">GAS</span>
+                                <span class="strand-text">General Academic Strand</span>
+                            </li>
+                            <li>
+                                <span class="strand-badge">TVL</span>
+                                <span class="strand-text">Technical Vocational Livelihood (Cookery & ICT)</span>
+                            </li>
+                        </ul>
+                    </div>
 
-                <div class="address">
-                    <i class="fas fa-map-marker-alt"></i> Langtad, City of Naga, Cebu<br>
-                    <i class="fas fa-phone"></i> (032) 123-4567<br>
-                    <i class="fas fa-envelope"></i> info@HES.edu.ph
+                    <div class="address">
+                        <div class="address-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Langtad, City of Naga, Cebu</span>
+                        </div>
+                        <div class="address-item">
+                            <i class="fas fa-phone-alt"></i>
+                            <span>(032) 123-4567</span>
+                        </div>
+                        <div class="address-item">
+                            <i class="fas fa-envelope"></i>
+                            <span>info@HES.edu.ph</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

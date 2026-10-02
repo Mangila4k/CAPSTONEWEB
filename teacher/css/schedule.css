@@ -311,19 +311,6 @@ body {
     overflow: hidden;
 }
 
-.stat-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: #1B2A4A;
-}
-
-.stat-card.sections::before { background: #3b82f6; }
-.stat-card.subjects::before { background: #10b981; }
-.stat-card.hours::before { background: #8b5cf6; }
 
 .stat-header {
     display: flex;

@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports & Analytics - HES, Hiraya Enrollment System</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/reports.css">
+    <link rel="stylesheet" href="../css/chatbot.css">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <div class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
+                    </div>
+                    <div class="logo-text">H.<span>E.S</span></div>
+                </div>
+                <div class="school-badge">Hiraya Enrollment System</div>
+            </div>
+
+            <div class="admin-profile">
+                <div class="admin-avatar">
+                    <div class="avatar-initial" id="adminAvatar">A</div>
+                    <div class="online-dot"></div>
+                </div>
+                <div class="admin-name" id="adminName">Admin</div>
+                <div class="admin-role"><i class="fas fa-shield-alt"></i> Administrator</div>
+            </div>
+
+            <div class="nav-menu">
+                <div class="nav-section">
+                    <div class="nav-section-title">MAIN MENU</div>
+                    <ul class="nav-items">
+                        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                        <li><a href="student.html"><i class="fas fa-user-graduate"></i> Students</a></li>
+                        <li><a href="teachers.html"><i class="fas fa-chalkboard-user"></i> Teachers</a></li>
+                        <li><a href="sections.html"><i class="fas fa-layer-group"></i> Sections</a></li>
+                        <li><a href="subjects.html"><i class="fas fa-book"></i> Subjects</a></li>
+                        <li><a href="enrollments.html"><i class="fas fa-file-signature"></i> Enrollments</a></li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">COMMUNICATION & MANAGEMENT</div>
+                    <ul class="nav-items">
+                        <li><a href="announcements.html"><i class="fas fa-bullhorn"></i> Announcements</a></li>
+                        <li><a href="manage_accounts.html"><i class="fas fa-users-cog"></i> Accounts</a></li>
+                        <li><a href="attendance.html"><i class="fas fa-calendar-check"></i> Attendance</a></li>
+                        <li><a href="register_face.html"><i class="fas fa-camera"></i> Face Registration</a></li>
+                        <li><a href="activities.html"><i class="fas fa-history"></i> Activities</a></li>
+                        <li><a href="reports.html" class="active"><i class="fas fa-chart-bar"></i> Reports</a></li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">ACCOUNT</div>
+                    <ul class="nav-items">
+                        <li><a href="profile.html"><i class="fas fa-user"></i> Profile</a></li>
+                        <li><a href="../auth/logout.html"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="header-left">
+                    <h1><i class="fas fa-chart-pie"></i> Reports & Analytics</h1>
+                    <p>Generate, visualize, filter, export, and print comprehensive institutional reports</p>
+                </div>
+                <div class="header-actions">
+                    <div class="date-badge" id="dateBadge">
+                        <i class="fas fa-calendar-alt"></i> Loading date...
+                    </div>
+                    <button type="button" class="btn-action-secondary" id="exportExcelBtn" title="Export as Excel CSV">
+                        <i class="fas fa-file-excel" style="color: #10b981;"></i> Export CSV
+                    </button>
+                    <button type="button" class="btn-action-primary" id="printReportBtn" title="Print Official Report">
+                        <i class="fas fa-print"></i> Print Report
+                    </button>
+                </div>
+            </div>
+
+            <!-- Alert Container -->
+            <div id="alertContainer"></div>
+
+            <!-- KPI Statistics Cards -->
+            <div class="stats-grid">
+                <div class="stat-card students">
+                    <div class="stat-header">
+                        <h3>Total Students</h3>
+                        <div class="stat-icon"><i class="fas fa-user-graduate"></i></div>
+                    </div>
+                    <div class="stat-number" id="statTotalStudents">0</div>
+                    <div class="stat-label"><i class="fas fa-check-circle" style="color: var(--success);"></i> Active in system</div>
+                </div>
+
+                <div class="stat-card teachers">
+                    <div class="stat-header">
+                        <h3>Faculty & Teachers</h3>
+                        <div class="stat-icon"><i class="fas fa-chalkboard-user"></i></div>
+                    </div>
+                    <div class="stat-number" id="statTotalTeachers">0</div>
+                    <div class="stat-label"><i class="fas fa-id-badge"></i> Assigned staff</div>
+                </div>
+
+                <div class="stat-card enrollments">
+                    <div class="stat-header">
+                        <h3>Total Enrollments</h3>
+                        <div class="stat-icon"><i class="fas fa-file-signature"></i></div>
+                    </div>
+                    <div class="stat-number" id="statTotalEnrollments">0</div>
+                    <div class="stat-label" id="statEnrollmentSub"><i class="fas fa-hourglass-half"></i> 0 Pending</div>
+                </div>
+
+                <div class="stat-card attendance">
+                    <div class="stat-header">
+                        <h3>Today's Attendance</h3>
+                        <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
+                    </div>
+                    <div class="stat-number" id="statAttendanceRate">0%</div>
+                    <div class="stat-label" id="statAttendanceSub"><i class="fas fa-user-check"></i> Student present rate</div>
+                </div>
+
+                <div class="stat-card sections">
+                    <div class="stat-header">
+                        <h3>Total Sections</h3>
+                        <div class="stat-icon"><i class="fas fa-layer-group"></i></div>
+                    </div>
+                    <div class="stat-number" id="statTotalSections">0</div>
+                    <div class="stat-label"><i class="fas fa-door-open"></i> Active classrooms</div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="charts-grid" id="chartsSection">
+                <div class="chart-card">
+                    <div class="chart-card-header">
+                        <h3><i class="fas fa-chart-bar"></i> Students & Enrollment by Grade Level</h3>
+                        <span class="chart-badge">Whole School Distribution</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="gradeDistributionChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-card-header">
+                        <h3><i class="fas fa-chart-pie"></i> Distribution Breakdown</h3>
+                        <span class="chart-badge" id="chartBreakdownBadge">Status Overview</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="statusDistributionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Report Controls Card -->
+            <div class="report-controls-card">
+                <div class="controls-header">
+                    <h3><i class="fas fa-sliders-h"></i> Report Generator Controls</h3>
+                    <div class="preset-chips">
+                        <span class="preset-chip active" data-range="all">All Time</span>
+                        <span class="preset-chip" data-range="today">Today</span>
+                        <span class="preset-chip" data-range="week">Last 7 Days</span>
+                        <span class="preset-chip" data-range="month">This Month</span>
+                        <span class="preset-chip" data-range="year">This School Year</span>
+                    </div>
+                </div>
+
+                <form id="reportFilterForm" class="controls-form">
+                    <div class="control-group" style="grid-column: span 2;">
+                        <label for="reportTypeSelect"><i class="fas fa-file-alt"></i> Report Category & Type</label>
+                        <select id="reportTypeSelect" name="report_type">
+                            <option value="enrollments_summary">📑 Enrollments Summary & Applications</option>
+                            <option value="student_masterlist">🎓 Student Official Masterlist (LRN & Sections)</option>
+                            <option value="student_attendance">📅 Student Attendance Logs & Records</option>
+                            <option value="teacher_attendance">👨‍🏫 Faculty Attendance Records</option>
+                            <option value="teacher_directory">👥 Faculty & Teacher Directory (Load & Sections)</option>
+                            <option value="sections_capacity">🏫 Sections Masterlist & Room Capacity</option>
+                            <option value="subjects_curriculum">📚 Subjects & Curriculum Masterlist</option>
+                            <option value="user_accounts">🔐 User Accounts & Role Distribution</option>
+                            <option value="system_activities">📜 System Activity & Audit Logs</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <label for="dateFrom"><i class="fas fa-calendar-day"></i> Date From</label>
+                        <input type="date" id="dateFrom" name="date_from">
+                    </div>
+
+                    <div class="control-group">
+                        <label for="dateTo"><i class="fas fa-calendar-day"></i> Date To</label>
+                        <input type="date" id="dateTo" name="date_to">
+                    </div>
+
+                    <div class="control-group">
+                        <label for="gradeFilter"><i class="fas fa-graduation-cap"></i> Grade Level</label>
+                        <select id="gradeFilter" name="grade_level">
+                            <option value="">All Grade Levels</option>
+                            <option value="Grade 7">Grade 7</option>
+                            <option value="Grade 8">Grade 8</option>
+                            <option value="Grade 9">Grade 9</option>
+                            <option value="Grade 10">Grade 10</option>
+                            <option value="Grade 11">Grade 11</option>
+                            <option value="Grade 12">Grade 12</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <label for="strandFilter"><i class="fas fa-shapes"></i> Senior High Strand</label>
+                        <select id="strandFilter" name="strand">
+                            <option value="">All Strands / JHS</option>
+                            <option value="STEM">STEM (Science, Tech, Eng, Math)</option>
+                            <option value="ABM">ABM (Accountancy & Business)</option>
+                            <option value="HUMSS">HUMSS (Humanities & Social Sci)</option>
+                            <option value="GAS">GAS (General Academic Strand)</option>
+                            <option value="TVL-ICT">TVL - ICT</option>
+                            <option value="TVL-HE">TVL - Home Economics</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <label for="sectionFilter"><i class="fas fa-layer-group"></i> Section</label>
+                        <select id="sectionFilter" name="section">
+                            <option value="">All Sections</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <label for="statusFilter"><i class="fas fa-toggle-on"></i> Status</label>
+                        <select id="statusFilter" name="status">
+                            <option value="">All Statuses</option>
+                            <option value="Active">Active</option>
+                            <option value="Enrolled">Enrolled / Approved</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Rejected">Rejected</option>
+                            <option value="Present">Present (Attendance)</option>
+                            <option value="Late">Late (Attendance)</option>
+                            <option value="Absent">Absent (Attendance)</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group controls-actions">
+                        <button type="submit" class="btn-generate" id="generateReportBtn">
+                            <i class="fas fa-sync-alt"></i> Generate Report
+                        </button>
+                        <button type="button" class="btn-reset" id="resetFiltersBtn" title="Reset Filters">
+                            <i class="fas fa-undo"></i> Reset
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Report Display Card -->
+            <div class="report-display-card" id="reportDisplayCard">
+                <!-- Header Banner -->
+                <div class="report-header-banner">
+                    <div class="report-brand">
+                        <div class="report-brand-logo">
+                            <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
+                        </div>
+                        <div class="report-brand-text">
+                            <h2 id="displayReportTitle">Enrollments Summary Report</h2>
+                            <p id="displayReportSubtitle">Hiraya Enrollment System • Official Institutional Report</p>
+                        </div>
+                    </div>
+                    <div class="report-meta-tags">
+                        <span class="meta-badge" id="displayReportPeriod">
+                            <i class="fas fa-calendar-alt"></i> Period: All Time
+                        </span>
+                        <span class="meta-badge" id="displayGeneratedBy">
+                            <i class="fas fa-user-shield"></i> Generated by: Administrator
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Report Toolbar -->
+                <div class="report-toolbar">
+                    <div class="search-wrap">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="tableSearchInput" placeholder="Quick search within report records...">
+                    </div>
+                    <div class="report-summary-counts">
+                        <div class="summary-pill">
+                            Total Records: <span id="totalRecordsCount">0</span>
+                        </div>
+                        <div class="summary-pill">
+                            Showing: <span id="visibleRecordsCount">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Table -->
+                <div class="table-responsive">
+                    <table class="report-table" id="reportTable">
+                        <thead id="reportHead">
+                            <tr>
+                                <th>Loading columns...</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportBody">
+                            <tr>
+                                <td>
+                                    <div class="state-container">
+                                        <i class="fas fa-spinner fa-spin"></i>
+                                        <h4>Loading Report Data...</h4>
+                                        <p>Connecting to database and compiling statistics.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tfoot id="reportFoot"></tfoot>
+                    </table>
+                </div>
+
+                <!-- Printable Signatories Block -->
+                <div class="signatories-block">
+                    <div class="signatories-grid">
+                        <div class="signatory-box">
+                            <div class="sign-line"></div>
+                            <div class="sign-name" id="signAdminName">ADMINISTRATOR</div>
+                            <div class="sign-title">Prepared by (System Admin)</div>
+                        </div>
+                        <div class="signatory-box">
+                            <div class="sign-line"></div>
+                            <div class="sign-name">OFFICE OF THE REGISTRAR</div>
+                            <div class="sign-title">Verified by (School Registrar)</div>
+                        </div>
+                        <div class="signatory-box">
+                            <div class="sign-line"></div>
+                            <div class="sign-name">SCHOOL PRINCIPAL</div>
+                            <div class="sign-title">Approved by (Head of School)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- JavaScript Files -->
+    <script src="js/admin_avatar_sync.js"></script>
+    <script type="module" src="js/reports.js"></script>
+    <script src="../js/chatbot.js"></script>
+</body>
+</html>

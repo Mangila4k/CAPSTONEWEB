@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Announcements & Meetings - Teacher Portal | HES</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/announcements.css">
+    <link rel="stylesheet" href="../css/chatbot.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- ===== SIDEBAR ===== -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
+                    </div>
+                    <div class="logo-text">H.<span>E.S</span></div>
+                </div>
+                <div class="school-badge">Hiraya Enrollment System</div>
+            </div>
+
+            <div class="teacher-profile">
+                <div class="teacher-avatar">
+                    <div class="avatar-initial" id="teacherInitial">T</div>
+                    <div class="online-dot"></div>
+                </div>
+                <div class="teacher-name" id="teacherName">Teacher</div>
+                <div class="teacher-role"><i class="fas fa-chalkboard-user"></i> Teacher</div>
+            </div>
+
+            <nav class="nav-menu">
+                <div class="nav-section">
+                    <div class="nav-section-title">MAIN MENU</div>
+                    <ul class="nav-items">
+                        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+                        <li><a href="announcements.html" class="active"><i class="fas fa-bullhorn"></i> <span>Announcements</span></a></li>
+                        <li><a href="attendance-face.html"><i class="fas fa-camera"></i> <span>Face Attendance</span></a></li>
+                        <li><a href="student-attendance.html"><i class="fas fa-user-check"></i> <span>Student Attendance</span></a></li>
+                        <li><a href="classes.html"><i class="fas fa-users"></i> <span>My Classes</span></a></li>
+                        <li><a href="schedule.html"><i class="fas fa-clock"></i> <span>Schedule</span></a></li>
+                        <li><a href="grades.html"><i class="fas fa-star"></i> <span>Grades</span></a></li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">ACCOUNT</div>
+                    <ul class="nav-items">
+                        <li><a href="profile.html"><i class="fas fa-user"></i> <span>Profile</span></a></li>
+                        <li><a href="../auth/login.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+                    </ul>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- ===== MAIN CONTENT ===== -->
+        <main class="main-content">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="header-left">
+                    <h1><i class="fas fa-bullhorn" style="color: var(--accent);"></i> Announcements & Meetings</h1>
+                    <p>Filter announcements, faculty meetings, and parent-teacher conferences</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn-post-announcement" id="openPostModalBtn">
+                        <i class="fas fa-plus-circle"></i> Post Advisory Notice
+                    </button>
+                    <div class="date-badge" id="currentDateBadge">
+                        <i class="fas fa-calendar-alt"></i> Loading...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Overview -->
+            <div class="anc-stats-grid">
+                <div class="anc-stat-card">
+                    <div class="stat-icon-wrapper bg-blue">
+                        <i class="fas fa-newspaper"></i>
+                    </div>
+                    <div class="stat-meta">
+                        <span class="stat-count" id="statTotalNotices">0</span>
+                        <span class="stat-title">Total Active Notices</span>
+                    </div>
+                </div>
+
+                <div class="anc-stat-card" id="cardTeacherMeetingsFilter" style="cursor: pointer;" title="Click to view Teacher Meetings">
+                    <div class="stat-icon-wrapper bg-purple">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                    </div>
+                    <div class="stat-meta">
+                        <span class="stat-count" id="statFacultyMeetings">0</span>
+                        <span class="stat-title">Faculty Meetings</span>
+                    </div>
+                </div>
+
+                <div class="anc-stat-card" id="cardPtaMeetingsFilter" style="cursor: pointer;" title="Click to view Parent-Teacher Meetings">
+                    <div class="stat-icon-wrapper bg-emerald">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-meta">
+                        <span class="stat-count" id="statPtaMeetings">0</span>
+                        <span class="stat-title">Parent-Teacher (PTA)</span>
+                    </div>
+                </div>
+
+                <div class="anc-stat-card">
+                    <div class="stat-icon-wrapper bg-amber">
+                        <i class="fas fa-check-double"></i>
+                    </div>
+                    <div class="stat-meta">
+                        <span class="stat-count" id="statPendingRsvps">0</span>
+                        <span class="stat-title">Pending RSVPs</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter & Selection Toolbar -->
+            <div class="filter-toolbar">
+                <div class="category-tabs" id="categoryTabs">
+                    <button class="tab-btn active" data-filter="all">
+                        <i class="fas fa-border-all"></i> All Notices
+                    </button>
+                    <button class="tab-btn" data-filter="teacher_meetings">
+                        <i class="fas fa-chalkboard-teacher"></i> Teacher / Faculty Meetings
+                    </button>
+                    <button class="tab-btn" data-filter="parent_meetings">
+                        <i class="fas fa-people-arrows"></i> Parent-Teacher (PTA)
+                    </button>
+                    <button class="tab-btn" data-filter="general">
+                        <i class="fas fa-info-circle"></i> General Updates
+                    </button>
+                    <button class="tab-btn" data-filter="urgent">
+                        <i class="fas fa-exclamation-triangle"></i> Urgent
+                    </button>
+                </div>
+
+                <div class="filter-controls">
+                    <div class="search-input-wrap">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="announcementSearch" placeholder="Search meetings, agenda, venue...">
+                    </div>
+                    
+                    <select id="meetingTypeFilter" class="custom-select" title="Choose meeting type">
+                        <option value="all">All Meeting Types</option>
+                        <option value="faculty_meeting">Faculty & Staff Meeting</option>
+                        <option value="pta_assembly">PTA General Assembly</option>
+                        <option value="homeroom_meeting">Homeroom Parent-Teacher</option>
+                        <option value="general_meeting">General Meeting</option>
+                    </select>
+
+                    <select id="rsvpStatusFilter" class="custom-select" title="Filter by your RSVP">
+                        <option value="all">All RSVP Statuses</option>
+                        <option value="attending">I'm Attending</option>
+                        <option value="declined">Cannot Attend</option>
+                        <option value="pending">Pending Response</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Alert Box Container -->
+            <div id="alertContainer"></div>
+
+            <!-- Announcements & Meetings Feed -->
+            <div class="announcements-feed" id="announcementsFeed">
+                <!-- Dynamic cards populated via JavaScript -->
+                <div class="loading-state">
+                    <i class="fas fa-circle-notch fa-spin"></i>
+                    <p>Loading announcements and scheduled meetings...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Post Announcement Modal -->
+    <div class="modal-overlay" id="postModal" style="display: none;">
+        <div class="modal-container">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-bullhorn text-accent"></i>
+                    <h3>Post Advisory Announcement / Meeting Notice</h3>
+                </div>
+                <button class="modal-close" id="closePostModalBtn">&times;</button>
+            </div>
+            <form id="postAnnouncementForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="postTitle">Announcement / Meeting Title <span class="req">*</span></label>
+                        <input type="text" id="postTitle" class="form-input" placeholder="e.g. Homeroom Parent-Teacher Consultation (Grade 7 - Diamond)" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="postTargetAudience">Target Audience <span class="req">*</span></label>
+                            <select id="postTargetAudience" class="form-input" required>
+                                <option value="parents">Class Parents / Guardians</option>
+                                <option value="parent_teacher_meeting">Parent-Teacher Meeting (Joint)</option>
+                                <option value="teachers">Fellow Faculty / Department</option>
+                                <option value="all">Entire School</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="postMeetingType">Meeting Type</label>
+                            <select id="postMeetingType" class="form-input">
+                                <option value="none">General Notice (No Meeting)</option>
+                                <option value="homeroom_meeting" selected>Homeroom Parent-Teacher Conference</option>
+                                <option value="faculty_meeting">Faculty / Departmental Meeting</option>
+                                <option value="pta_assembly">PTA General Assembly</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row meeting-fields" id="meetingFieldsContainer">
+                        <div class="form-group">
+                            <label for="postMeetingDate"><i class="fas fa-calendar-alt"></i> Meeting Date</label>
+                            <input type="date" id="postMeetingDate" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label for="postMeetingTime"><i class="fas fa-clock"></i> Meeting Time</label>
+                            <input type="text" id="postMeetingTime" class="form-input" placeholder="e.g. 01:00 PM - 03:00 PM">
+                        </div>
+                    </div>
+
+                    <div class="form-row meeting-fields">
+                        <div class="form-group">
+                            <label for="postVenue"><i class="fas fa-map-marker-alt"></i> Venue / Room</label>
+                            <input type="text" id="postVenue" class="form-input" placeholder="e.g. Room 204 / Campus Auditorium">
+                        </div>
+                        <div class="form-group">
+                            <label for="postMeetingLink"><i class="fas fa-video"></i> Google Meet / Online Link (Optional)</label>
+                            <input type="url" id="postMeetingLink" class="form-input" placeholder="https://meet.google.com/xxx-xxxx-xxx">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="postContent">Description / Details <span class="req">*</span></label>
+                        <textarea id="postContent" class="form-input" rows="4" placeholder="Enter detailed agenda points, reminders, and preparation requirements..." required></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="postPriority">Priority Level</label>
+                            <select id="postPriority" class="form-input">
+                                <option value="normal">Normal</option>
+                                <option value="important" selected>Important</option>
+                                <option value="urgent">Urgent / Action Required</option>
+                            </select>
+                        </div>
+                        <div class="form-group checkbox-group">
+                            <label class="custom-checkbox-label">
+                                <input type="checkbox" id="postRequiresRsvp" checked>
+                                <span>Require RSVP / Attendance Confirmation</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" id="cancelPostBtn">Cancel</button>
+                    <button type="submit" class="btn-primary"><i class="fas fa-paper-plane"></i> Publish Notice</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/teacher_avatar_sync.js"></script>
+    <script type="module" src="js/announcements.js"></script>
+    <script src="../js/chatbot.js"></script>
+</body>
+
+</html>

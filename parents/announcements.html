@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Announcements & Meetings - Parent Portal | HES</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/announcements.css">
+    <link rel="stylesheet" href="../css/chatbot.css">
+</head>
+
+<body>
+    <!-- Mobile Menu Toggle -->
+    <div class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo"
+                            onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
+                    </div>
+                    <div class="logo-text">H.<span>E.S</span></div>
+                </div>
+                <div class="school-badge">Hiraya Enrollment System</div>
+            </div>
+
+            <div class="parent-profile">
+                <div class="parent-avatar">
+                    <div class="avatar-initial" id="parentInitial">P</div>
+                    <div class="online-dot"></div>
+                </div>
+                <div class="parent-name" id="sidebarParentName">Parent</div>
+                <div class="parent-role"><i class="fas fa-user-friends"></i> Parent</div>
+                <div class="parent-child-badge" id="sidebarChildBadge" title="Linked Child">
+                    <i class="fas fa-child"></i> Student: <span id="sidebarChildName">Student</span>
+                </div>
+            </div>
+
+            <nav class="nav-menu">
+                <div class="nav-section">
+                    <div class="nav-section-title">MAIN MENU</div>
+                    <ul class="nav-items">
+                        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                        <li><a href="announcements.html" class="active"><i class="fas fa-bullhorn"></i> Announcements</a></li>
+                        <li><a href="grades.html"><i class="fas fa-star"></i> Grades</a></li>
+                        <li><a href="attendance.html"><i class="fas fa-calendar-check"></i> Attendance</a></li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">ACCOUNT</div>
+                    <ul class="nav-items">
+                        <li><a href="profile.html"><i class="fas fa-user"></i> Profile</a></li>
+                        <li><a href="../auth/logout.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                    </ul>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <div class="page-header">
+                <div class="header-left">
+                    <h1><i class="fas fa-bullhorn" style="color: var(--accent);"></i> Announcements & Meetings</h1>
+                    <p>Stay informed with school notices, PTA general assemblies, and homeroom conferences</p>
+                    <div class="parent-linked-child-pill" id="linkedChildNotice">
+                        <i class="fas fa-user-graduate"></i> Monitoring: <strong id="parentStudentName">Student</strong>
+                    </div>
+                </div>
+                <div class="date-badge" id="currentDateDisplay">
+                    <i class="fas fa-calendar-alt"></i> Loading date...
+                </div>
+            </div>
+
+            <!-- Stats KPI Cards -->
+            <div class="anc-stats-grid">
+                <div class="anc-stat-card">
+                    <div class="stat-icon-wrapper bg-blue">
+                        <i class="fas fa-envelope-open-text"></i>
+                    </div>
+                    <div class="stat-meta">
+                        <span class="stat-count" id="statParentTotal">0</span>
+                        <span class="stat-title">Active Notices</span>
+                    </div>
+                </div>
+
+                <div class="anc-stat-card" id="cardParentMeetings" style="cursor: pointer;" title="Click to view Parent-Teacher Meetings">
+                    <div class="stat-icon-wrapper bg-purple">
+                        <i class="fas fa-handshake"></i>
+                    </div>
+                    <div class="stat-meta">
+                        <span class="stat-count" id="statParentMeetingsCount">0</span>
+                        <span class="stat-title">Parent-Teacher (PTA)</span>
+                    </div>
+                </div>
+
+                <div class="anc-stat-card">
+                    <div class="stat-icon-wrapper bg-emerald">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                    <div class="stat-meta">
+                        <span class="stat-count" id="statParentAttendingCount">0</span>
+                        <span class="stat-title">Confirmed Attendance</span>
+                    </div>
+                </div>
+
+                <div class="anc-stat-card">
+                    <div class="stat-icon-wrapper bg-amber">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <div class="stat-meta">
+                        <span class="stat-count" id="statParentPendingRsvps">0</span>
+                        <span class="stat-title">RSVPs Requiring Action</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter & Selection Toolbar -->
+            <div class="filter-toolbar">
+                <div class="category-tabs" id="parentCategoryTabs">
+                    <button class="tab-btn active" data-filter="all">
+                        <i class="fas fa-border-all"></i> All Notices
+                    </button>
+                    <button class="tab-btn" data-filter="parent_meetings">
+                        <i class="fas fa-handshake"></i> Parent-Teacher (PTA & Consultations)
+                    </button>
+                    <button class="tab-btn" data-filter="general">
+                        <i class="fas fa-newspaper"></i> Academic & School News
+                    </button>
+                    <button class="tab-btn" data-filter="urgent">
+                        <i class="fas fa-exclamation-circle"></i> Urgent Alerts
+                    </button>
+                </div>
+
+                <div class="filter-controls">
+                    <div class="search-input-wrap">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="parentAnnouncementSearch" placeholder="Search notices, venue, agenda...">
+                    </div>
+
+                    <select id="parentMeetingTypeFilter" class="custom-select" title="Filter by meeting type">
+                        <option value="all">All Meeting Types</option>
+                        <option value="pta_assembly">PTA General Assembly</option>
+                        <option value="homeroom_meeting">Homeroom Parent-Teacher Consultation</option>
+                    </select>
+
+                    <select id="parentRsvpFilter" class="custom-select" title="Filter by your RSVP">
+                        <option value="all">All RSVP Responses</option>
+                        <option value="attending">I'm Attending</option>
+                        <option value="declined">Cannot Attend</option>
+                        <option value="pending">Needs Response</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Alert Container -->
+            <div id="alertContainer"></div>
+
+            <!-- Announcements Feed -->
+            <div class="announcements-feed" id="parentAnnouncementsFeed">
+                <div class="loading-state">
+                    <i class="fas fa-circle-notch fa-spin"></i>
+                    <p>Loading announcements and parent meeting schedules...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/parent_avatar_sync.js"></script>
+    <script type="module" src="js/announcements.js"></script>
+    <script src="../js/chatbot.js"></script>
+</body>
+
+</html>

@@ -64,27 +64,6 @@
     overflow: hidden;
 }
 
-.stat-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: #1B2A4A;
-}
-
-.stat-card.registered::before {
-    background: #22c55e;
-}
-
-.stat-card.pending::before {
-    background: #f59e0b;
-}
-
-.stat-card.rate::before {
-    background: #6366f1;
-}
 
 .stat-header {
     display: flex;

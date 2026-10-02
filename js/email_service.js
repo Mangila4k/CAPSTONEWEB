@@ -278,20 +278,155 @@ Dumanjug, Cebu, Philippines
     },
 
     /**
-     * Opens Gmail Web Compose in a new tab with pre-filled To, Subject, and Body
+     * Constructs official Meeting Notice Email explaining what the meeting is for,
+     * its urgency/necessity, agenda topics, schedule, and RSVP instructions.
+     */
+    buildMeetingAnnouncementEmail({
+        title,
+        content,
+        category,
+        target_audience,
+        meeting_type,
+        priority = 'normal',
+        meeting_date,
+        meeting_time,
+        venue,
+        meeting_link,
+        agenda = [],
+        author_name,
+        requires_rsvp,
+        toEmail = '',
+        bccEmails = []
+    }) {
+        const isUrgent = priority === 'urgent';
+        const priorityTag = isUrgent ? '🚨 [URGENT & ESSENTIAL]' : '📢 [OFFICIAL MEETING NOTICE]';
+        const cleanTitle = title || 'Official School Meeting Notice';
+        const subject = `${priorityTag} H.E.S Meeting Notice: ${cleanTitle}`;
+        const loginUrl = getPortalLoginUrl();
+
+        // Target audience label
+        let audienceLabel = 'Parents, Guardians, and Faculty Members';
+        if (target_audience === 'parents') audienceLabel = 'Parents and Guardians (PTA)';
+        else if (target_audience === 'teachers') audienceLabel = 'Faculty and Teaching Staff';
+        else if (target_audience === 'parent_teacher_meeting') audienceLabel = 'Parents, Guardians, and Advisory Teachers';
+        else if (target_audience === 'students') audienceLabel = 'Students and Guardians';
+
+        // Meeting type label
+        let typeLabel = 'Official School Meeting';
+        if (meeting_type === 'pta_assembly') typeLabel = 'General Parent-Teacher Association (PTA) Assembly';
+        else if (meeting_type === 'faculty_meeting') typeLabel = 'Faculty & Staff Departmental Meeting';
+        else if (meeting_type === 'homeroom_meeting') typeLabel = 'Homeroom Parent-Teacher Consultation';
+        else if (meeting_type === 'department_meeting') typeLabel = 'Departmental Academic Planning Session';
+        else if (meeting_type === 'emergency_meeting') typeLabel = 'Emergency Institutional Council Meeting';
+
+        // Format Date
+        let dateDisplay = meeting_date || 'To be announced in portal';
+        try {
+            if (meeting_date && meeting_date.includes('-')) {
+                const d = new Date(meeting_date);
+                dateDisplay = d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            }
+        } catch(e) {}
+
+        // Agenda formatting
+        let agendaBlock = '   • As detailed in the meeting description below';
+        if (Array.isArray(agenda) && agenda.length > 0) {
+            agendaBlock = agenda.map((item, idx) => `   ${idx + 1}. ${item}`).join('\n');
+        }
+
+        // Virtual link block
+        let onlineLinkBlock = '';
+        if (meeting_link) {
+            onlineLinkBlock = `
+🌐 Google Meet / Video Link:
+   ${meeting_link}
+`;
+        }
+
+        // RSVP Block
+        let rsvpBlock = '';
+        if (requires_rsvp) {
+            rsvpBlock = `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📌 ATTENDANCE CONFIRMATION (RSVP REQUIRED):
+Your attendance confirmation is requested for seating and roll-call preparation.
+Please log in to your portal to confirm your attendance:
+👉 Portal Login: ${loginUrl}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`;
+        }
+
+        const body = `Dear ${audienceLabel},
+
+This is an official notification from Hiraya Enrollment System (H.E.S) regarding an upcoming ${typeLabel}.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📋 WHAT THIS MEETING IS FOR (PURPOSE & OBJECTIVES):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Meeting Title: ${cleanTitle}
+Meeting Classification: ${typeLabel}
+Priority Level: ${priority.toUpperCase()} ${isUrgent ? '(Mandatory Attendance Requested)' : '(Important)'}
+Convened By: ${author_name || 'School Administration'}
+
+📌 MEETING PURPOSE & DETAILS:
+${content || 'Please refer to the agenda below for the full discussion items.'}
+
+📋 KEY AGENDA TOPICS TO BE DISCUSSED:
+${agendaBlock}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📅 SCHEDULE & VENUE DETAILS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+• Date: ${dateDisplay}
+• Time: ${meeting_time || 'Refer to portal schedule'}
+• Venue / Room: ${venue || 'School Campus (Assigned Room)'}
+${onlineLinkBlock}
+${rsvpBlock}
+HOW TO ACCESS YOUR DASHBOARD:
+1. Open the H.E.S Portal: ${loginUrl}
+2. Log in with your registered account credentials.
+3. Access the "Announcements" section to view live notices, meeting notes, and confirm your attendance (RSVP).
+
+If you have any questions or require special accommodation, please contact the School Administration or reply directly to this email.
+
+Sincerely,
+${author_name || 'Office of the School Administration'}
+Hiraya Enrollment System (H.E.S)
+Langtad, City of Naga, Cebu, Philippines
+`;
+
+        const bccList = Array.isArray(bccEmails) ? bccEmails.filter(Boolean) : (typeof bccEmails === 'string' && bccEmails ? [bccEmails] : []);
+
+        return {
+            subject,
+            body,
+            to: toEmail || (bccList.length === 1 ? bccList[0] : ''),
+            bcc: bccList.length > 1 ? bccList.join(',') : '',
+            loginUrl
+        };
+    },
+
+    /**
+     * Opens Gmail Web Compose in a new tab with pre-filled To, BCC, Subject, and Body
      */
     sendViaGmailWeb(emailData) {
-        if (!emailData || !emailData.to) {
-            console.error('❌ Missing recipient email for Gmail dispatch');
+        if (!emailData) {
+            console.error('❌ Missing email data for Gmail dispatch');
             return false;
         }
 
-        const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(emailData.to)}&su=${encodeURIComponent(emailData.subject)}&body=${encodeURIComponent(emailData.body)}`;
+        const toParam = emailData.to ? `&to=${encodeURIComponent(emailData.to)}` : '';
+        const bccParam = emailData.bcc ? `&bcc=${encodeURIComponent(emailData.bcc)}` : '';
+        const suParam = `&su=${encodeURIComponent(emailData.subject || '')}`;
+        const bodyParam = `&body=${encodeURIComponent(emailData.body || '')}`;
+
+        const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1${toParam}${bccParam}${suParam}${bodyParam}`;
 
         const win = window.open(gmailUrl, '_blank', 'noopener,noreferrer');
         if (!win) {
             // Fallback to mailto
-            window.location.href = `mailto:${encodeURIComponent(emailData.to)}?subject=${encodeURIComponent(emailData.subject)}&body=${encodeURIComponent(emailData.body)}`;
+            const mailtoUrl = `mailto:${encodeURIComponent(emailData.to || '')}?${emailData.bcc ? 'bcc=' + encodeURIComponent(emailData.bcc) + '&' : ''}subject=${encodeURIComponent(emailData.subject || '')}&body=${encodeURIComponent(emailData.body || '')}`;
+            window.location.href = mailtoUrl;
         }
         return true;
     },

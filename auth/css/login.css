@@ -1,10 +1,10 @@
-/* ===== LOGIN PAGE - Minimal Blue Design ===== */
+/* ===== HES LOGIN PAGE - SIGNATURE NAVY DESIGN (CENTERED HEADER) ===== */
 
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Inter', 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
+    font-family: 'Inter', 'Segoe UI', Roboto, -apple-system, sans-serif;
 }
 
 body {
@@ -13,110 +13,165 @@ body {
     align-items: center;
     justify-content: center;
     background: linear-gradient(135deg, #0b2b4a, #1a3d5f);
-    padding: 2rem;
+    padding: 2rem 1.5rem;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Subtle background glowing ambient orbs */
+body::before,
+body::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+}
+
+body::before {
+    width: 450px;
+    height: 450px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.08), transparent 70%);
+    top: -80px;
+    left: -80px;
+}
+
+body::after {
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(245, 158, 11, 0.12), transparent 70%);
+    bottom: -100px;
+    right: -100px;
 }
 
 /* ===== LOGIN WRAPPER ===== */
 .login-wrapper {
-    max-width: 1100px;
+    max-width: 1060px;
     width: 100%;
     margin: 0 auto;
+    position: relative;
+    z-index: 1;
 }
 
-/* ===== CONTAINER ===== */
+/* ===== CONTAINER CARD ===== */
 .login-container {
     background: #ffffff;
     border-radius: 24px;
     overflow: hidden;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1);
     display: flex;
-    animation: fadeInUp 0.6s ease;
+    animation: fadeInUp 0.5s ease-out forwards;
 }
 
 @keyframes fadeInUp {
     from {
         opacity: 0;
-        transform: translateY(30px);
+        transform: translateY(20px) scale(0.99);
     }
     to {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateY(0) scale(1);
     }
 }
 
-/* ===== LEFT PANEL - LOGIN FORM ===== */
+/* ================================================= */
+/* ===== LEFT PANEL - LOGIN FORM (CENTERED HEADER) = */
+/* ================================================= */
+
 .login-panel {
-    flex: 1;
-    padding: 50px 40px;
-    background: white;
+    flex: 1.1;
+    padding: 44px 40px;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
-/* ===== LOGO SECTION ===== */
+/* Logo & School Header - Centered */
 .logo-section {
-    text-align: center;
-    margin-bottom: 30px;
-}
-
-.school-logo {
-    width: 100px;
-    height: 100px;
-    margin: 0 auto 15px;
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 14px;
+    margin-bottom: 16px;
+    text-align: left;
+}
+
+.school-logo {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(11, 43, 74, 0.08);
 }
 
 .school-logo img {
     width: 100%;
     height: 100%;
-    object-fit: contain;
-    border-radius: 50%;
+    object-fit: cover;
 }
 
 .school-name h1 {
-    font-size: 20px;
+    font-size: 1.35rem;
+    font-weight: 800;
     color: #0b2b4a;
-    margin-bottom: 5px;
+    line-height: 1.15;
+    letter-spacing: -0.5px;
 }
 
 .school-name p {
-    font-size: 12px;
-    color: #666;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #f59e0b;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-top: 2px;
 }
 
+/* Headings - Centered */
 h2 {
-    font-size: 28px;
-    color: #333;
-    margin-bottom: 10px;
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.5px;
+    margin-bottom: 4px;
     text-align: center;
 }
 
 .highlight {
     color: #0b2b4a;
+    position: relative;
 }
 
 .subtitle {
-    color: #666;
-    margin-bottom: 30px;
+    color: #64748b;
+    font-size: 0.92rem;
+    margin-bottom: 22px;
     text-align: center;
-    font-size: 14px;
 }
 
-/* ===== ALERT MESSAGES ===== */
+/* Alert Messages */
 .alert {
-    padding: 15px 20px;
+    padding: 12px 16px;
     border-radius: 10px;
-    margin-bottom: 20px;
+    margin-bottom: 18px;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
+    font-size: 0.9rem;
     animation: slideIn 0.3s ease;
 }
 
 @keyframes slideIn {
     from {
         opacity: 0;
-        transform: translateY(-10px);
+        transform: translateY(-8px);
     }
     to {
         opacity: 1;
@@ -125,92 +180,107 @@ h2 {
 }
 
 .alert-error {
-    background: #fee2e2;
+    background: #fef2f2;
     color: #dc2626;
+    border: 1px solid #fecaca;
     border-left: 4px solid #dc2626;
 }
 
 .alert-success {
-    background: #d4edda;
-    color: #155724;
-    border-left: 4px solid #10b981;
+    background: #f0fdf4;
+    color: #16a34a;
+    border: 1px solid #bbf7d0;
+    border-left: 4px solid #16a34a;
 }
 
 .alert i {
-    font-size: 18px;
+    font-size: 1.1rem;
+    flex-shrink: 0;
 }
 
 .alert a {
-    color: #0b2b4a;
+    color: inherit;
+    font-weight: 600;
     text-decoration: underline;
 }
 
-/* ===== FORM ===== */
+/* Form Groups */
 .input-group {
-    margin-bottom: 25px;
+    margin-bottom: 16px;
 }
 
 .input-group label {
     display: block;
-    margin-bottom: 8px;
-    color: #555;
+    margin-bottom: 7px;
+    color: #334155;
     font-weight: 600;
-    font-size: 14px;
+    font-size: 0.88rem;
+    letter-spacing: 0.2px;
 }
 
 .input-group label span {
-    color: #dc3545;
+    color: #ef4444;
 }
 
 .input-wrapper {
     position: relative;
+    display: flex;
+    align-items: center;
 }
 
 .input-wrapper input {
     width: 100%;
-    padding: 14px 50px 14px 16px;
-    border: 2px solid #e0e0e0;
+    padding: 13px 44px 13px 15px;
+    border: 1.5px solid #e2e8f0;
     border-radius: 10px;
-    font-size: 15px;
-    transition: all 0.3s;
-    background: #f8f9fa;
-    font-family: 'Inter', sans-serif;
+    font-size: 0.93rem;
+    color: #0f172a;
+    background: #f8fafc;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.input-wrapper input::placeholder {
+    color: #94a3b8;
+    font-size: 0.88rem;
 }
 
 .input-wrapper input:focus {
     border-color: #0b2b4a;
+    background: #ffffff;
     outline: none;
-    background: white;
-    box-shadow: 0 0 0 3px rgba(11, 43, 74, 0.1);
+    box-shadow: 0 0 0 3.5px rgba(11, 43, 74, 0.12);
 }
 
 .input-icon {
     position: absolute;
     right: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #999;
+    color: #94a3b8;
+    font-size: 0.95rem;
     pointer-events: none;
+    transition: color 0.2s ease;
 }
 
-/* ===== PASSWORD TOGGLE BUTTON ===== */
+.input-wrapper input:focus + .input-icon {
+    color: #0b2b4a;
+}
+
+/* Password Toggle Button */
 .toggle-password {
     position: absolute;
-    right: 12px;
-    top: 50%;
-    transform: translateY(-50%);
+    right: 8px;
     background: transparent;
     border: none;
     cursor: pointer;
-    color: #999;
+    color: #94a3b8;
     padding: 8px;
-    z-index: 10;
+    z-index: 5;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
     transition: all 0.2s ease;
 }
 
@@ -220,237 +290,379 @@ h2 {
 }
 
 .toggle-password:active {
-    transform: translateY(-50%) scale(0.92);
+    transform: scale(0.92);
 }
 
 .toggle-password i {
+    font-size: 0.95rem;
     pointer-events: none;
-    font-size: 16px;
 }
 
-/* ===== FORGOT PASSWORD ===== */
-.forgot-password {
-    text-align: right;
-    margin: -15px 0 20px;
+/* Student Hint */
+.student-hint {
+    background: #f1f5f9;
+    border-left: 3px solid #0b2b4a;
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-size: 0.8rem;
+    color: #475569;
+    margin-top: -4px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    line-height: 1.4;
 }
 
-.forgot-password a {
-    color: #666;
-    text-decoration: none;
-    font-size: 13px;
-    transition: color 0.3s;
-}
-
-.forgot-password a:hover {
+.student-hint i {
     color: #0b2b4a;
-    text-decoration: underline;
+    font-size: 0.95rem;
+    margin-top: 1px;
+    flex-shrink: 0;
 }
 
-/* ===== REMEMBER ME ===== */
+/* Form Row Actions: Remember Me & Forgot Password */
+.form-row-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 22px;
+    gap: 10px;
+}
+
 .remember-me {
     display: flex;
     align-items: center;
-    gap: 10px;
-    margin: 20px 0;
+    gap: 8px;
+    cursor: pointer;
 }
 
 .remember-me input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
+    width: 17px;
+    height: 17px;
     accent-color: #0b2b4a;
+    border-radius: 4px;
     cursor: pointer;
 }
 
 .remember-me label {
-    color: #555;
-    font-size: 14px;
+    color: #475569;
+    font-size: 0.88rem;
+    font-weight: 500;
     cursor: pointer;
+    user-select: none;
 }
 
-/* ===== BUTTON ===== */
+.forgot-password a {
+    color: #0b2b4a;
+    text-decoration: none;
+    font-size: 0.88rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: color 0.2s ease;
+}
+
+.forgot-password a:hover {
+    color: #1e40af;
+    text-decoration: underline;
+}
+
+/* Submit Login Button */
 .btn-login {
     width: 100%;
-    background: linear-gradient(135deg, #0b2b4a, #1a3d5f);
-    color: white;
-    padding: 14px;
+    background: linear-gradient(135deg, #0b2b4a 0%, #153e6b 100%);
+    color: #ffffff;
+    padding: 13px 20px;
     border: none;
     border-radius: 10px;
-    font-size: 16px;
-    font-weight: 600;
+    font-size: 0.96rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
     cursor: pointer;
-    transition: all 0.3s;
-    margin: 20px 0 15px;
+    transition: all 0.25s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 14px rgba(11, 43, 74, 0.25);
 }
 
 .btn-login:hover:not(:disabled) {
+    background: linear-gradient(135deg, #08213a 0%, #0e2f54 100%);
     transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(11, 43, 74, 0.3);
+    box-shadow: 0 8px 20px rgba(11, 43, 74, 0.35);
+}
+
+.btn-login:active:not(:disabled) {
+    transform: translateY(0);
 }
 
 .btn-login:disabled {
-    opacity: 0.6;
+    opacity: 0.65;
     cursor: not-allowed;
     transform: none;
 }
 
-/* ===== FOOTER ===== */
+/* Signup Link */
 .signup-link {
     text-align: center;
-    margin: 20px 0;
-    color: #666;
-    font-size: 14px;
+    margin-top: 20px;
+    color: #64748b;
+    font-size: 0.9rem;
 }
 
 .signup-link a {
     color: #0b2b4a;
     text-decoration: none;
-    font-weight: 600;
+    font-weight: 700;
+    transition: color 0.2s ease;
 }
 
 .signup-link a:hover {
+    color: #f59e0b;
     text-decoration: underline;
+}
+
+/* Form Footer / Back to Home */
+.form-footer {
+    text-align: center;
+    margin-top: 14px;
 }
 
 .back-home {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    color: #666;
+    gap: 6px;
+    color: #64748b;
     text-decoration: none;
-    font-size: 14px;
-    transition: color 0.3s;
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
 }
 
 .back-home:hover {
     color: #0b2b4a;
+    background: #f1f5f9;
 }
 
-.form-footer {
-    text-align: center;
-    margin-top: 15px;
-}
+/* ================================================= */
+/* ===== RIGHT PANEL - INFORMATION & STRANDS ===== */
+/* ================================================= */
 
-/* ===== RIGHT PANEL - INFO ===== */
 .info-panel {
     flex: 1;
-    background: linear-gradient(135deg, #0b2b4a, #1a3d5f);
-    padding: 50px 40px;
-    color: white;
+    background: linear-gradient(135deg, #0b2b4a 0%, #1a3d5f 100%);
+    padding: 44px 36px;
+    color: #ffffff;
     position: relative;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .info-panel::before {
     content: '';
     position: absolute;
-    top: -50%;
-    right: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 70%);
-    transform: rotate(45deg);
+    top: -30%;
+    right: -30%;
+    width: 160%;
+    height: 160%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, transparent 60%);
+    pointer-events: none;
 }
 
+.info-panel-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+/* Motto */
 .motto {
     text-align: center;
-    margin-bottom: 40px;
-    position: relative;
-    z-index: 1;
 }
 
-.motto h3 {
-    font-size: 28px;
-    font-weight: 300;
-    letter-spacing: 4px;
+.motto-badge {
+    width: 42px;
+    height: 42px;
+    margin: 0 auto 10px;
+    border-radius: 50%;
+    background: rgba(245, 158, 11, 0.15);
+    border: 1px solid rgba(245, 158, 11, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #f59e0b;
+    font-size: 1.1rem;
+}
+
+.motto-words {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.motto-word {
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: 3.5px;
+    color: rgba(255, 255, 255, 0.9);
     text-transform: uppercase;
-    line-height: 1.4;
 }
 
-.motto h3 span {
-    display: block;
-    font-size: 22px;
-    letter-spacing: 2px;
-    color: #FFD700;
+.motto-word.motto-highlight {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #f59e0b;
+    letter-spacing: 4.5px;
 }
 
+/* School Level Card */
 .school-level {
     text-align: center;
-    margin: 30px 0 20px;
-    padding: 20px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    position: relative;
-    z-index: 1;
+    padding: 14px 18px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
-.school-level h4 {
-    font-size: 20px;
-    margin-bottom: 5px;
-    color: #FFD700;
+.school-level-badge {
+    font-size: 0.95rem;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    color: #f59e0b;
+    margin-bottom: 3px;
+    text-transform: uppercase;
 }
 
 .school-level p {
-    font-size: 13px;
-    opacity: 0.9;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 400;
+}
+
+/* Programs / Strands */
+.programs-container {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 14px;
+    padding: 16px 18px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.programs-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.programs-title i {
+    color: #f59e0b;
 }
 
 .programs-list {
     list-style: none;
-    margin: 25px 0;
-    position: relative;
-    z-index: 1;
-}
-
-.programs-list li {
-    padding: 10px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    font-size: 13px;
     display: flex;
-    align-items: center;
+    flex-direction: column;
     gap: 10px;
 }
 
-.programs-list li::before {
-    content: "✓";
-    font-size: 14px;
-    opacity: 0.8;
-    color: #FFD700;
+.programs-list li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    transition: transform 0.2s ease;
 }
 
-.address {
-    margin-top: 30px;
+.programs-list li:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.programs-list li:hover {
+    transform: translateX(4px);
+}
+
+.strand-badge {
+    background: rgba(245, 158, 11, 0.18);
+    color: #fbbf24;
+    border: 1px solid rgba(245, 158, 11, 0.35);
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    min-width: 52px;
     text-align: center;
-    font-size: 12px;
-    opacity: 0.8;
-    line-height: 1.6;
-    padding-top: 20px;
-    border-top: 1px solid rgba(255, 255, 255, 0.2);
-    position: relative;
-    z-index: 1;
-    font-style: italic;
+    flex-shrink: 0;
 }
 
-.address i {
-    margin-right: 5px;
+.strand-text {
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.35;
 }
 
-/* ===== TOAST ===== */
+/* Contact Footer in Right Panel */
+.address {
+    padding-top: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.address-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.address-item i {
+    color: #f59e0b;
+    font-size: 0.82rem;
+    width: 14px;
+    text-align: center;
+}
+
+/* ================================================= */
+/* ===== TOAST NOTIFICATION ===== */
+/* ================================================= */
+
 .toast {
     position: fixed;
-    bottom: 30px;
-    right: 30px;
+    bottom: 28px;
+    right: 28px;
     background: #0b2b4a;
-    color: white;
-    padding: 14px 28px;
-    border-radius: 14px;
+    color: #ffffff;
+    padding: 12px 22px;
+    border-radius: 12px;
     font-weight: 500;
-    font-size: 0.95rem;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+    font-size: 0.92rem;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35);
     z-index: 9999;
-    animation: slideInToast 0.4s ease;
-    max-width: 400px;
-    border: 1px solid rgba(255, 215, 0, 0.15);
+    animation: slideInToast 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    max-width: 380px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
     display: none;
     align-items: center;
     gap: 10px;
@@ -463,30 +675,34 @@ h2 {
 .toast.success {
     border-color: #10b981;
 }
+
 .toast.error {
     border-color: #ef4444;
 }
+
 .toast.warning {
     border-color: #f59e0b;
 }
 
 .toast i {
-    font-size: 1.2rem;
+    font-size: 1.15rem;
 }
 
 .toast.success i {
     color: #10b981;
 }
+
 .toast.error i {
     color: #ef4444;
 }
+
 .toast.warning i {
     color: #f59e0b;
 }
 
 @keyframes slideInToast {
     from {
-        transform: translateX(60px);
+        transform: translateX(40px);
         opacity: 0;
     }
     to {
@@ -495,56 +711,72 @@ h2 {
     }
 }
 
-/* ===== RESPONSIVE ===== */
-@media (max-width: 768px) {
+/* ================================================= */
+/* ===== RESPONSIVE BREAKPOINTS ===== */
+/* ================================================= */
+
+@media (max-width: 868px) {
     .login-container {
         flex-direction: column;
+        border-radius: 20px;
     }
 
-    .login-panel,
+    .login-panel {
+        padding: 36px 28px;
+    }
+
     .info-panel {
-        padding: 30px 20px;
+        padding: 32px 28px;
     }
 
-    h2 {
-        font-size: 24px;
+    .motto-words {
+        flex-direction: row;
+        justify-content: center;
+        gap: 8px;
     }
 
-    .motto h3 {
-        font-size: 24px;
+    .motto-word {
+        font-size: 1rem;
+        letter-spacing: 2px;
     }
 
-    .school-logo {
-        width: 80px;
-        height: 80px;
-    }
-
-    .toast {
-        bottom: 15px;
-        right: 15px;
-        left: 15px;
-        max-width: none;
-        padding: 12px 20px;
-        font-size: 0.85rem;
+    .motto-word.motto-highlight {
+        font-size: 1.05rem;
+        letter-spacing: 2px;
     }
 }
 
 @media (max-width: 480px) {
+    body {
+        padding: 1rem;
+    }
+
     .login-panel {
-        padding: 20px 15px;
+        padding: 28px 18px;
     }
 
     .info-panel {
-        padding: 20px 15px;
+        padding: 24px 18px;
     }
 
-    .input-wrapper input {
-        padding: 12px 45px 12px 14px;
-        font-size: 14px;
+    h2 {
+        font-size: 1.45rem;
     }
 
-    .btn-login {
-        padding: 12px;
-        font-size: 14px;
+    .school-name h1 {
+        font-size: 1.15rem;
+    }
+
+    .form-row-actions {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .toast {
+        bottom: 16px;
+        right: 16px;
+        left: 16px;
+        max-width: none;
     }
 }
