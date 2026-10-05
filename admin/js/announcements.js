@@ -2,7 +2,7 @@
  * Admin Announcements & Meetings Management Module
  * Allows administrators to create, edit, delete, broadcast, and track school announcements,
  * faculty meetings, parent-teacher assemblies (PTA), attendee confirmations (RSVPs),
- * and dispatch essential Gmail meeting notices explaining what the meeting is for.
+ * and notify the targeted users (from the `users` table) via in-app notifications and Gmail.
  */
 
 import { AnnouncementsService } from '../../js/announcements_service.js';
@@ -11,6 +11,27 @@ import { supabase } from '../../supabase/config.js';
 
 (function () {
     'use strict';
+
+    // ===== Audience -> user roles (users.role) =====
+    const AUDIENCE_ROLE_MAP = {
+        parents: ['parent'],
+        teachers: ['teacher'],
+        students: ['student'],
+        parent_teacher_meeting: ['parent', 'teacher'],
+        both: ['parent', 'teacher'],
+        all: ['parent', 'teacher', 'student']
+    };
+
+    const AUDIENCE_LABELS = {
+        parents: 'Parents',
+        teachers: 'Teachers',
+        students: 'Students',
+        parent_teacher_meeting: 'Parents & Teachers',
+        both: 'Parents & Teachers',
+        all: 'Entire School'
+    };
+
+    const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     // State
     let currentAdmin = null;
@@ -128,6 +149,14 @@ import { supabase } from '../../supabase/config.js';
         }
     }
 
+    function getAdminDisplayName() {
+        if (!currentAdmin) return 'Administrator';
+        if (currentAdmin.displayName) return currentAdmin.displayName;
+        const full = [currentAdmin.first_name || currentAdmin.firstName, currentAdmin.last_name || currentAdmin.lastName]
+            .filter(Boolean).join(' ').trim();
+        return full || 'Administrator';
+    }
+
     function initDateDisplay() {
         if (currentDateBadge) {
             const now = new Date();
@@ -177,7 +206,7 @@ import { supabase } from '../../supabase/config.js';
             });
         }
 
-        // Search input with debounce
+        // Search input
         if (searchInput) {
             searchInput.addEventListener('input', (e) => {
                 currentSearchTerm = e.target.value.trim().toLowerCase();
@@ -233,7 +262,7 @@ import { supabase } from '../../supabase/config.js';
             });
         }
 
-        // Toggle Meeting fields on category/type change
+        // Toggle Meeting fields on type change
         if (createMeetingType) {
             createMeetingType.addEventListener('change', (e) => {
                 const isNone = e.target.value === 'none';
@@ -453,10 +482,10 @@ import { supabase } from '../../supabase/config.js';
 
     function updateStats() {
         const total = allAnnouncements.length;
-        const ptaCount = allAnnouncements.filter(a => 
+        const ptaCount = allAnnouncements.filter(a =>
             a.meeting_type === 'pta_assembly' || a.meeting_type === 'homeroom_meeting' || a.target_audience === 'parents' || a.target_audience === 'parent_teacher_meeting'
         ).length;
-        const facultyCount = allAnnouncements.filter(a => 
+        const facultyCount = allAnnouncements.filter(a =>
             a.meeting_type === 'faculty_meeting' || a.meeting_type === 'department_meeting' || a.target_audience === 'teachers'
         ).length;
 
@@ -479,16 +508,16 @@ import { supabase } from '../../supabase/config.js';
 
         // 1. Tab Filter
         if (currentTabFilter === 'parent_meetings') {
-            filtered = filtered.filter(a => 
-                a.meeting_type === 'pta_assembly' || 
-                a.meeting_type === 'homeroom_meeting' || 
+            filtered = filtered.filter(a =>
+                a.meeting_type === 'pta_assembly' ||
+                a.meeting_type === 'homeroom_meeting' ||
                 a.target_audience === 'parent_teacher_meeting' ||
                 a.target_audience === 'parents'
             );
         } else if (currentTabFilter === 'teacher_meetings') {
-            filtered = filtered.filter(a => 
-                a.meeting_type === 'faculty_meeting' || 
-                a.meeting_type === 'department_meeting' || 
+            filtered = filtered.filter(a =>
+                a.meeting_type === 'faculty_meeting' ||
+                a.meeting_type === 'department_meeting' ||
                 a.target_audience === 'teachers'
             );
         } else if (currentTabFilter === 'general') {
@@ -514,12 +543,12 @@ import { supabase } from '../../supabase/config.js';
 
         // 5. Search Filter
         if (currentSearchTerm) {
-            filtered = filtered.filter(a => 
+            filtered = filtered.filter(a =>
                 (a.title || '').toLowerCase().includes(currentSearchTerm) ||
                 (a.content || '').toLowerCase().includes(currentSearchTerm) ||
                 (a.venue || '').toLowerCase().includes(currentSearchTerm) ||
                 (a.author_name || '').toLowerCase().includes(currentSearchTerm) ||
-                (Array.isArray(a.agenda) && a.agenda.some(item => item.toLowerCase().includes(currentSearchTerm)))
+                (Array.isArray(a.agenda) && a.agenda.some(item => String(item).toLowerCase().includes(currentSearchTerm)))
             );
         }
 
@@ -545,29 +574,25 @@ import { supabase } from '../../supabase/config.js';
         // Attach action listeners
         feedContainer.querySelectorAll('.btn-edit-action').forEach(btn => {
             btn.addEventListener('click', () => {
-                const id = btn.getAttribute('data-id');
-                openEditModal(id);
+                openEditModal(btn.getAttribute('data-id'));
             });
         });
 
         feedContainer.querySelectorAll('.btn-delete-action').forEach(btn => {
             btn.addEventListener('click', () => {
-                const id = btn.getAttribute('data-id');
-                handleDeleteAnnouncement(id);
+                handleDeleteAnnouncement(btn.getAttribute('data-id'));
             });
         });
 
         feedContainer.querySelectorAll('.btn-view-roster').forEach(btn => {
             btn.addEventListener('click', () => {
-                const id = btn.getAttribute('data-id');
-                openRosterModal(id);
+                openRosterModal(btn.getAttribute('data-id'));
             });
         });
 
         feedContainer.querySelectorAll('.btn-gmail-action').forEach(btn => {
             btn.addEventListener('click', () => {
-                const id = btn.getAttribute('data-id');
-                openGmailBroadcastModal(id);
+                openGmailBroadcastModal(btn.getAttribute('data-id'));
             });
         });
     }
@@ -620,7 +645,7 @@ import { supabase } from '../../supabase/config.js';
             try {
                 const d = new Date(item.date_created);
                 dateFormatted = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-            } catch (e) {}
+            } catch (e) { }
         }
 
         // Meeting schedule box HTML
@@ -632,7 +657,9 @@ import { supabase } from '../../supabase/config.js';
                     const md = new Date(item.meeting_date);
                     meetingDateStr = md.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
                 }
-            } catch(e) {}
+            } catch (e) { }
+
+            const safeLink = /^https?:\/\//i.test(item.meeting_link || '') ? item.meeting_link : '';
 
             meetingBoxHtml = `
                 <div class="meeting-schedule-card">
@@ -641,28 +668,28 @@ import { supabase } from '../../supabase/config.js';
                             <i class="fas fa-calendar-day text-accent"></i>
                             <div>
                                 <small>Date</small>
-                                <strong>${meetingDateStr}</strong>
+                                <strong>${escapeHtml(meetingDateStr)}</strong>
                             </div>
                         </div>
                         <div class="detail-item">
                             <i class="fas fa-clock text-accent"></i>
                             <div>
                                 <small>Time</small>
-                                <strong>${item.meeting_time || 'Check Details'}</strong>
+                                <strong>${escapeHtml(item.meeting_time || 'Check Details')}</strong>
                             </div>
                         </div>
                         <div class="detail-item">
                             <i class="fas fa-map-marker-alt text-danger"></i>
                             <div>
                                 <small>Venue / Classroom</small>
-                                <strong>${item.venue || 'Campus Assigned Room'}</strong>
+                                <strong>${escapeHtml(item.venue || 'Campus Assigned Room')}</strong>
                             </div>
                         </div>
                     </div>
-                    ${item.meeting_link ? `
+                    ${safeLink ? `
                         <div class="meeting-link-box">
                             <span style="font-size: 13px; color: var(--text-secondary);"><i class="fas fa-video text-accent"></i> Online Meeting URL:</span>
-                            <a href="${item.meeting_link}" target="_blank" rel="noopener noreferrer" class="btn-join-meet">
+                            <a href="${escapeHtml(safeLink)}" target="_blank" rel="noopener noreferrer" class="btn-join-meet">
                                 <i class="fas fa-external-link-alt"></i> Open Google Meet / Video Link
                             </a>
                         </div>
@@ -678,7 +705,7 @@ import { supabase } from '../../supabase/config.js';
                 <div class="agenda-section">
                     <h4><i class="fas fa-list-check"></i> Meeting Agenda:</h4>
                     <ul class="agenda-list">
-                        ${item.agenda.map(point => `<li><i class="fas fa-check-circle"></i> <span>${point}</span></li>`).join('')}
+                        ${item.agenda.map(point => `<li><i class="fas fa-check-circle"></i> <span>${escapeHtml(point)}</span></li>`).join('')}
                     </ul>
                 </div>
             `;
@@ -694,7 +721,7 @@ import { supabase } from '../../supabase/config.js';
                         <span class="rsvp-pill declined"><i class="fas fa-user-times"></i> <strong>${rsvpCounts.declined}</strong> Declined</span>
                         <span class="rsvp-pill total"><i class="fas fa-users"></i> <strong>${rsvpCounts.total}</strong> Total Responses</span>
                     </div>
-                    <button type="button" class="btn-view-roster" data-id="${item.id}">
+                    <button type="button" class="btn-view-roster" data-id="${escapeHtml(item.id)}">
                         <i class="fas fa-clipboard-list"></i> View Attendees Roster
                     </button>
                 </div>
@@ -702,7 +729,7 @@ import { supabase } from '../../supabase/config.js';
         }
 
         return `
-            <div class="announcement-card ${item.priority === 'urgent' ? 'card-urgent' : (item.target_audience === 'parents' ? 'card-pta' : (isMeeting ? 'meeting-card' : ''))}" id="anc-card-${item.id}">
+            <div class="announcement-card ${item.priority === 'urgent' ? 'card-urgent' : (item.target_audience === 'parents' ? 'card-pta' : (isMeeting ? 'meeting-card' : ''))}" id="anc-card-${escapeHtml(item.id)}">
                 <div class="card-top-bar">
                     <div class="badge-group">
                         ${meetingBadge}
@@ -718,20 +745,20 @@ import { supabase } from '../../supabase/config.js';
                     <div class="card-header-row">
                         <h3 class="card-title">${escapeHtml(item.title)}</h3>
                         <div class="card-actions-dropdown">
-                            <button type="button" class="btn-card-action btn-gmail-action" data-id="${item.id}" title="Notify Attendees via Gmail (For Necessary Meetings)" style="background: #fef2f2; color: #991b1b; border: 1px solid #fecaca;">
+                            <button type="button" class="btn-card-action btn-gmail-action" data-id="${escapeHtml(item.id)}" title="Notify Attendees via Gmail (For Necessary Meetings)" style="background: #fef2f2; color: #991b1b; border: 1px solid #fecaca;">
                                 <i class="fab fa-google" style="color: #EA4335;"></i> Notify via Gmail
                             </button>
-                            <button type="button" class="btn-card-action btn-edit-action" data-id="${item.id}" title="Edit Announcement">
+                            <button type="button" class="btn-card-action btn-edit-action" data-id="${escapeHtml(item.id)}" title="Edit Announcement">
                                 <i class="fas fa-edit"></i> Edit
                             </button>
-                            <button type="button" class="btn-card-action btn-delete-action" data-id="${item.id}" title="Delete Announcement">
+                            <button type="button" class="btn-card-action btn-delete-action" data-id="${escapeHtml(item.id)}" title="Delete Announcement">
                                 <i class="fas fa-trash-alt"></i> Delete
                             </button>
                         </div>
                     </div>
 
                     <div class="card-author">
-                        <i class="fas fa-user-shield"></i> Posted by: <strong>${escapeHtml(item.author_name || 'Administration')}</strong> (${item.author_role || 'Admin'})
+                        <i class="fas fa-user-shield"></i> Posted by: <strong>${escapeHtml(item.author_name || 'Administration')}</strong> (${escapeHtml(item.author_role || 'Admin')})
                     </div>
 
                     <p class="card-body-text">${escapeHtml(item.content)}</p>
@@ -744,52 +771,78 @@ import { supabase } from '../../supabase/config.js';
         `;
     }
 
-    // Helper: Query emails for target audience
-    async function getAudienceEmails(audienceType = 'parents') {
-        let parentEmails = [];
-        let teacherEmails = [];
+    // =====================================================================
+    // AUDIENCE RESOLUTION (users table)
+    // =====================================================================
 
+    /**
+     * Returns the users from the `users` table whose role matches the Target Audience.
+     * NOTE: the password column is intentionally never selected.
+     */
+    async function getAudienceUsers(audienceType = 'parents') {
+        const roles = AUDIENCE_ROLE_MAP[audienceType] || AUDIENCE_ROLE_MAP.parents;
         try {
-            const { data: students, error: studErr } = await supabase
-                .from('students')
-                .select('email, parent_name, parent_contact');
-            if (!studErr && students) {
-                students.forEach(s => {
-                    if (s.email && s.email.includes('@')) parentEmails.push(s.email.trim());
-                });
-            }
-        } catch(e) {}
-
-        try {
-            const { data: teachers, error: tErr } = await supabase
+            const { data, error } = await supabase
                 .from('users')
-                .select('email, role')
-                .eq('role', 'teacher');
-            if (!tErr && teachers) {
-                teachers.forEach(t => {
-                    if (t.email && t.email.includes('@')) teacherEmails.push(t.email.trim());
-                });
-            }
-        } catch(e) {}
+                .select('id, email, first_name, last_name, role')
+                .in('role', roles);
 
-        // Fallbacks
-        if (parentEmails.length === 0) {
-            parentEmails = ['parent.ptaboard@hes.edu.ph', 'guardians.assembly@hes.edu.ph'];
+            if (error) throw error;
+            return data || [];
+        } catch (e) {
+            console.error('Failed to load audience users from users table:', e);
+            return [];
         }
-        if (teacherEmails.length === 0) {
-            teacherEmails = ['faculty.advisory@hes.edu.ph', 'teachers.dept@hes.edu.ph'];
-        }
-
-        parentEmails = [...new Set(parentEmails)];
-        teacherEmails = [...new Set(teacherEmails)];
-
-        if (audienceType === 'parents') return parentEmails;
-        if (audienceType === 'teachers') return teacherEmails;
-        if (audienceType === 'both' || audienceType === 'all' || audienceType === 'parent_teacher_meeting') {
-            return [...new Set([...parentEmails, ...teacherEmails])];
-        }
-        return parentEmails;
     }
+
+    /** Valid, de-duplicated Gmail recipients for the Target Audience. */
+    async function getAudienceEmails(audienceType = 'parents') {
+        const users = await getAudienceUsers(audienceType);
+        const emails = users
+            .map(u => (u.email || '').trim())
+            .filter(e => EMAIL_RE.test(e));
+        return [...new Set(emails)];
+    }
+
+    /**
+     * Creates one in-app notification row per targeted user.
+     * Returns the number of users notified.
+     */
+    async function notifyTargetUsers(announcement) {
+        const users = await getAudienceUsers(announcement.target_audience);
+        if (users.length === 0) return 0;
+
+        const isMeeting = announcement.meeting_type && announcement.meeting_type !== 'none';
+        let message = announcement.content || '';
+        if (isMeeting) {
+            const schedule = [announcement.meeting_date, announcement.meeting_time, announcement.venue]
+                .filter(Boolean).join(' • ');
+            if (schedule) message = `${schedule}\n${message}`;
+        }
+
+        const rows = users.map(u => ({
+            user_id: u.id,
+            role: u.role,
+            announcement_id: String(announcement.id),
+            type: isMeeting ? 'meeting' : 'announcement',
+            title: announcement.title,
+            message: message.slice(0, 500),
+            priority: announcement.priority || 'normal',
+            read: false,
+            is_read: false
+        }));
+
+        // Insert in chunks to stay within request limits
+        for (let i = 0; i < rows.length; i += 500) {
+            const { error } = await supabase.from('notifications').insert(rows.slice(i, i + 500));
+            if (error) throw error;
+        }
+        return rows.length;
+    }
+
+    // =====================================================================
+    // CREATE
+    // =====================================================================
 
     async function handleCreateAnnouncement() {
         const title = document.getElementById('createTitle').value.trim();
@@ -832,16 +885,31 @@ import { supabase } from '../../supabase/config.js';
             priority,
             requires_rsvp,
             agenda,
-            author_name: currentAdmin ? currentAdmin.displayName : 'Administrator',
+            author_name: getAdminDisplayName(),
             author_role: 'admin',
             author_id: currentAdmin ? currentAdmin.id : null
         };
 
         try {
             const created = await AnnouncementsService.createAnnouncement(payload);
-            showAlert(`Successfully published announcement: "${created.title}"`, 'success');
 
-            // If Gmail notification requested for necessary meeting
+            // 1) In-app notifications to every user matching the Target Audience
+            let notifiedCount = 0;
+            let notifyFailed = false;
+            try {
+                notifiedCount = await notifyTargetUsers(created);
+            } catch (notifyErr) {
+                notifyFailed = true;
+                console.error('Notification dispatch failed:', notifyErr);
+            }
+
+            if (notifyFailed) {
+                showAlert(`Published "${created.title}", but the in-app notifications could not be sent. Check the notifications table.`, 'error');
+            } else {
+                showAlert(`Published "${created.title}" and notified ${notifiedCount} user(s) (${AUDIENCE_LABELS[target_audience] || target_audience}).`, 'success');
+            }
+
+            // 2) Optional Gmail notice for necessary meetings
             if (sendGmail) {
                 const audienceSetting = createGmailAudience ? createGmailAudience.value : 'auto';
                 let targetEmailsGroup = target_audience;
@@ -878,6 +946,9 @@ import { supabase } from '../../supabase/config.js';
             }
 
             if (createAnnouncementForm) createAnnouncementForm.reset();
+            if (createGmailOptions) createGmailOptions.style.display = 'none';
+            if (createGmailCustomInput) createGmailCustomInput.style.display = 'none';
+            if (createMeetingFields) createMeetingFields.style.display = 'block';
             if (createModal) createModal.style.display = 'none';
             await loadAnnouncements();
         } catch (e) {
@@ -885,6 +956,10 @@ import { supabase } from '../../supabase/config.js';
             showAlert('Failed to publish announcement. Please try again.', 'error');
         }
     }
+
+    // =====================================================================
+    // EDIT
+    // =====================================================================
 
     function openEditModal(id) {
         const item = allAnnouncements.find(a => String(a.id) === String(id));
@@ -905,7 +980,7 @@ import { supabase } from '../../supabase/config.js';
 
         // Show/hide meeting fields
         if (editMeetingFields) {
-            editMeetingFields.style.display = item.meeting_type === 'none' ? 'none' : 'block';
+            editMeetingFields.style.display = (item.meeting_type || 'none') === 'none' ? 'none' : 'block';
         }
 
         // Populate agenda points
@@ -965,6 +1040,28 @@ import { supabase } from '../../supabase/config.js';
 
         try {
             await AnnouncementsService.updateAnnouncement(id, payload);
+
+            // Keep existing notifications in sync with the edited title/message
+            try {
+                const isMeeting = meeting_type && meeting_type !== 'none';
+                let message = content;
+                if (isMeeting) {
+                    const schedule = [meeting_date, meeting_time, venue].filter(Boolean).join(' • ');
+                    if (schedule) message = `${schedule}\n${content}`;
+                }
+                await supabase
+                    .from('notifications')
+                    .update({
+                        title,
+                        message: message.slice(0, 500),
+                        priority,
+                        type: isMeeting ? 'meeting' : 'announcement'
+                    })
+                    .eq('announcement_id', String(id));
+            } catch (syncErr) {
+                console.warn('Notification sync skipped:', syncErr);
+            }
+
             showAlert('Announcement updated successfully.', 'success');
             if (editModal) editModal.style.display = 'none';
             await loadAnnouncements();
@@ -974,16 +1071,28 @@ import { supabase } from '../../supabase/config.js';
         }
     }
 
+    // =====================================================================
+    // DELETE
+    // =====================================================================
+
     async function handleDeleteAnnouncement(id) {
         const item = allAnnouncements.find(a => String(a.id) === String(id));
         const itemTitle = item ? item.title : 'this announcement';
 
-        if (!confirm(`Are you sure you want to delete "${itemTitle}"? This will permanently remove the notice and all RSVP logs.`)) {
+        if (!confirm(`Are you sure you want to delete "${itemTitle}"? This will permanently remove the notice, its user notifications, and all RSVP logs.`)) {
             return;
         }
 
         try {
             await AnnouncementsService.deleteAnnouncement(id);
+
+            // Remove the matching in-app notifications
+            try {
+                await supabase.from('notifications').delete().eq('announcement_id', String(id));
+            } catch (cleanupErr) {
+                console.warn('Notification cleanup skipped:', cleanupErr);
+            }
+
             showAlert('Announcement removed successfully.', 'success');
             await loadAnnouncements();
         } catch (e) {
@@ -991,6 +1100,10 @@ import { supabase } from '../../supabase/config.js';
             showAlert('Failed to delete announcement.', 'error');
         }
     }
+
+    // =====================================================================
+    // ROSTER
+    // =====================================================================
 
     async function openRosterModal(id) {
         const item = allAnnouncements.find(a => String(a.id) === String(id));
@@ -1027,7 +1140,7 @@ import { supabase } from '../../supabase/config.js';
         }
 
         if (q) {
-            list = list.filter(r => 
+            list = list.filter(r =>
                 (r.userName || '').toLowerCase().includes(q) ||
                 (r.email || '').toLowerCase().includes(q) ||
                 (r.userRole || '').toLowerCase().includes(q)
@@ -1057,14 +1170,14 @@ import { supabase } from '../../supabase/config.js';
                 try {
                     const d = new Date(r.timestamp);
                     dateFormatted = d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-                } catch(e) {}
+                } catch (e) { }
             }
 
             return `
                 <tr>
                     <td>${idx + 1}</td>
                     <td><strong>${escapeHtml(r.userName)}</strong></td>
-                    <td><span class="badge badge-all">${escapeHtml(r.userRole.toUpperCase())}</span></td>
+                    <td><span class="badge badge-all">${escapeHtml((r.userRole || '').toUpperCase())}</span></td>
                     <td>${escapeHtml(r.email || '—')}</td>
                     <td>${statusBadge}</td>
                     <td><small style="color: var(--text-muted);">${dateFormatted}</small></td>
@@ -1099,7 +1212,10 @@ import { supabase } from '../../supabase/config.js';
         document.body.removeChild(link);
     }
 
-    // Gmail Broadcast Modal Logic
+    // =====================================================================
+    // GMAIL BROADCAST MODAL
+    // =====================================================================
+
     async function openGmailBroadcastModal(id) {
         const item = allAnnouncements.find(a => String(a.id) === String(id));
         if (!item) return;
@@ -1110,15 +1226,16 @@ import { supabase } from '../../supabase/config.js';
             gmailModalSubtitle.textContent = `Meeting: "${item.title}" | Target: ${(item.target_audience || 'All').toUpperCase()}`;
         }
 
-        // Default audience selector
+        // Default the recipient group from the announcement's Target Audience
         if (gmailBroadcastAudience) {
-            if (item.target_audience === 'teachers') {
-                gmailBroadcastAudience.value = 'teachers';
-            } else if (item.target_audience === 'parents') {
-                gmailBroadcastAudience.value = 'parents';
-            } else {
-                gmailBroadcastAudience.value = 'both';
-            }
+            const aud = item.target_audience;
+            let preset = 'both';
+            if (aud === 'parent_teacher_meeting') preset = 'both';
+            else if (['parents', 'teachers', 'students', 'all'].includes(aud)) preset = aud;
+
+            // Only set the value if the option exists in the dropdown
+            const hasOption = Array.from(gmailBroadcastAudience.options).some(o => o.value === preset);
+            gmailBroadcastAudience.value = hasOption ? preset : 'both';
         }
 
         await updateGmailModalPreview();
@@ -1148,7 +1265,7 @@ import { supabase } from '../../supabase/config.js';
             if (gmailRecipientCountText) gmailRecipientCountText.textContent = 'Fetching recipient emails...';
             bccEmails = await getAudienceEmails(audienceChoice);
             if (gmailRecipientCountText) {
-                gmailRecipientCountText.textContent = `${bccEmails.length} Email Recipients (${audienceChoice === 'parents' ? 'Parents' : (audienceChoice === 'teachers' ? 'Teachers' : 'Parents & Teachers')})`;
+                gmailRecipientCountText.textContent = `${bccEmails.length} Email Recipients (${AUDIENCE_LABELS[audienceChoice] || audienceChoice})`;
             }
         }
 
@@ -1171,10 +1288,16 @@ import { supabase } from '../../supabase/config.js';
         });
 
         if (gmailPreviewBox) {
-            let bccDisplay = activeGmailEmailData.bcc ? `\nBCC: ${activeGmailEmailData.bcc.substring(0, 80)}${activeGmailEmailData.bcc.length > 80 ? '...' : ''}` : '';
+            const bccDisplay = activeGmailEmailData.bcc
+                ? `\nBCC: ${activeGmailEmailData.bcc.substring(0, 80)}${activeGmailEmailData.bcc.length > 80 ? '...' : ''}`
+                : '';
             gmailPreviewBox.textContent = `TO: ${activeGmailEmailData.to || '[Recipients via BCC]'}${bccDisplay}\nSUBJECT: ${activeGmailEmailData.subject}\n\n${activeGmailEmailData.body}`;
         }
     }
+
+    // =====================================================================
+    // HELPERS
+    // =====================================================================
 
     function showAlert(message, type = 'info') {
         if (!alertContainer) return;
@@ -1194,16 +1317,16 @@ import { supabase } from '../../supabase/config.js';
             ${type === 'info' ? 'background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe;' : ''}
         `;
         const icon = type === 'success' ? 'fa-check-circle' : (type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle');
-        div.innerHTML = `<i class="fas ${icon}"></i> <span>${message}</span>`;
+        div.innerHTML = `<i class="fas ${icon}"></i> <span>${escapeHtml(message)}</span>`;
         alertContainer.innerHTML = '';
         alertContainer.appendChild(div);
         setTimeout(() => {
             if (div.parentNode) div.remove();
-        }, 4500);
+        }, 6000);
     }
 
     function escapeHtml(str) {
-        if (!str) return '';
+        if (str === null || str === undefined || str === '') return '';
         return String(str)
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
