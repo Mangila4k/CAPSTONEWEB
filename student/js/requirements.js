@@ -49,6 +49,13 @@ import { supabase } from '../../supabase/config.js';
 
     const requirementDefs = [
         {
+            key: 'two_by_two_picture',
+            title: '2x2 ID Picture (White Background)',
+            description: 'Recent 2x2 colored ID picture taken in formal attire with plain white background.',
+            required: true,
+            dbField: 'two_by_two_picture_url'
+        },
+        {
             key: 'psa_birth',
             title: 'PSA Official Birth Certificate',
             description: 'Original or clear photocopy of Philippine Statistics Authority (PSA) Birth Certificate.',
@@ -56,9 +63,9 @@ import { supabase } from '../../supabase/config.js';
             dbField: 'psa_birth_url'
         },
         {
-            key: 'form_138',
-            title: 'Form 138 / Report Card',
-            description: 'Original Form 138 (Report Card) from previous grade level signed by the Principal.',
+            key: 'report_card',
+            title: 'Report Card',
+            description: 'Original Report Card from previous grade level signed by the Principal.',
             required: true,
             dbField: 'form_138_url'
         },
@@ -225,21 +232,56 @@ import { supabase } from '../../supabase/config.js';
                 approvedBadge.style.display = isEnrolled ? 'inline-flex' : 'none';
             }
 
+            const isTransfereeStudent = String(enrollment?.student_type || studentRow?.student_type || '').toLowerCase().includes('transfer') || String(enrollment?.student_type || studentRow?.student_type || '').toLowerCase().includes('different');
+
+            // Check local uploaded documents
+            let localDocs = [];
+            try {
+                const s = localStorage.getItem('hes_student_documents');
+                if (s) {
+                    const parsed = JSON.parse(s);
+                    if (Array.isArray(parsed)) localDocs = parsed;
+                }
+            } catch(e) {}
+
             // 4. Assemble requirements status
             requirementsData = requirementDefs.map(def => {
+                let currentTitle = def.title;
+                let currentDesc = def.description;
+
+                if (def.key === 'form_138' && isTransfereeStudent) {
+                    currentTitle = 'Report Card';
+                    currentDesc = 'Original Report Card from previous school showing passing quarterly grades.';
+                }
+
                 let fileUrl = studentRow ? studentRow[def.dbField] : null;
                 let isSubmitted = !!fileUrl;
                 let status = isSubmitted ? 'Verified' : 'Missing';
 
-                const docMatch = uploadedDocs.find(d => d.document_type === def.title || d.document_type === def.key);
+                const isRcKey = def.key === 'report_card' || def.key === 'form_138';
+                const docMatch = uploadedDocs.find(d => 
+                    d.document_type === currentTitle || 
+                    d.document_type === def.title || 
+                    d.document_type === def.key ||
+                    (isRcKey && (d.document_type === 'Report Card' || d.document_type === 'report_card' || d.document_type === 'form_138' || (d.title && d.title.toLowerCase().includes('report card'))))
+                ) || localDocs.find(d => 
+                    d.type === currentTitle || 
+                    d.type === def.title || 
+                    d.title === currentTitle ||
+                    (isRcKey && (d.type === 'Report Card' || d.type === 'Form 138 / Report Card' || (d.title && d.title.toLowerCase().includes('report card')))) ||
+                    (def.key === 'two_by_two_picture' && (d.type === '2x2 ID Picture' || (d.title && d.title.includes('2x2'))))
+                );
+
                 if (docMatch) {
-                    fileUrl = docMatch.file_url || fileUrl;
+                    fileUrl = docMatch.file_url || docMatch.dataUrl || fileUrl;
                     isSubmitted = true;
-                    status = docMatch.verified ? 'Verified' : 'Under Review';
+                    status = docMatch.verified ? 'Verified' : (docMatch.status || 'Under Review');
                 }
 
                 return {
                     ...def,
+                    title: currentTitle,
+                    description: currentDesc,
                     fileUrl: fileUrl,
                     isSubmitted: isSubmitted,
                     status: status

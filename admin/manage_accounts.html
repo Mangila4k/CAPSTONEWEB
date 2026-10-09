@@ -27,9 +27,9 @@
                     <div class="logo-icon">
                         <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
                     </div>
-                    <div class="logo-text">H.<span>E.S</span></div>
+                    <div class="logo-text">PLS<span>NSH</span></div>
                 </div>
-                <div class="school-badge">Hiraya Enrollment System</div>
+                <div class="school-badge">Placido L. Señor National High School</div>
             </div>
 
             <div class="admin-profile">
@@ -82,6 +82,11 @@
                 <div>
                     <h1>Account Management</h1>
                     <p class="subtitle">Manage user accounts, approvals, and roles in the system</p>
+                </div>
+                <div class="header-actions">
+                    <a href="add_account.html" class="btn-add" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; padding: 10px 20px; border-radius: 8px; background: #0B4F2E; color: #fff; font-weight: 600; font-size: 14px; box-shadow: 0 2px 6px rgba(11,79,46,0.25);">
+                        <i class="fas fa-plus-circle"></i> Add New Account
+                    </a>
                 </div>
             </div>
 
@@ -167,7 +172,10 @@
                         <option value="Admin">Admin</option>
                         <option value="Registrar">Registrar</option>
                         <option value="Teacher">Teacher</option>
+                        <option value="Guidance">Guidance Counselor</option>
                         <option value="Student">Student</option>
+                        <option value="Parent">Parent / Guardian</option>
+                        <option value="Principal">School Principal</option>
                     </select>
 
                     <select name="status" id="statusFilter" class="filter-select">

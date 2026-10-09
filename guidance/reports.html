@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discipline & Guidance Reports - HES Guidance</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/reports.css">
+    <link rel="stylesheet" href="../css/chatbot.css">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <div class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
+                    </div>
+                    <div class="logo-text">PLS<span>NSH</span></div>
+                </div>
+                <div class="school-badge">Guidance & Counseling Services</div>
+            </div>
+
+            <div class="counselor-profile">
+                <div class="counselor-avatar">
+                    <div class="avatar-initial" id="counselorAvatar">G</div>
+                    <div class="online-dot"></div>
+                </div>
+                <div class="counselor-name" id="counselorName">Guidance Counselor</div>
+                <div class="counselor-role"><i class="fas fa-heart-pulse"></i> Guidance Office</div>
+            </div>
+
+            <nav class="nav-menu">
+                <div class="nav-section">
+                    <div class="nav-section-title">MAIN MENU</div>
+                    <ul class="nav-items">
+                        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                        <li><a href="violations.html"><i class="fas fa-clipboard-list"></i> Guidance Records</a></li>
+                        <li><a href="add_violation.html"><i class="fas fa-file-circle-plus"></i> Log Guidance Case</a></li>
+                        <li><a href="counseling.html"><i class="fas fa-user-doctor"></i> Counseling Sessions</a></li>
+                        <li><a href="students.html"><i class="fas fa-user-graduate"></i> Student Directory</a></li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">RECORDS & REPORTS</div>
+                    <ul class="nav-items">
+                        <li><a href="reports.html" class="active"><i class="fas fa-chart-pie"></i> Discipline Reports</a></li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">ACCOUNT</div>
+                    <ul class="nav-items">
+                        <li><a href="profile.html"><i class="fas fa-user-gear"></i> Counselor Profile</a></li>
+                        <li><a href="../auth/logout.html"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                    </ul>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-header">
+                <div>
+                    <h1>Discipline & Guidance Reports</h1>
+                    <p class="subtitle">Statistical breakdown of student violations, restorative interventions, and behavioral trends.</p>
+                </div>
+                <div class="header-actions">
+                    <button type="button" class="btn-primary" id="btnHeaderPrintByStudent" style="background: linear-gradient(135deg, #1B2A4A, #1D4ED8); border: none; font-weight: 700; box-shadow: 0 4px 12px rgba(29, 78, 216, 0.25);">
+                        <i class="fas fa-user-graduate"></i> Print by Student
+                    </button>
+                    <button class="btn-secondary btn-print" id="btnPrintReport">
+                        <i class="fas fa-print"></i> Print Whole-School Matrix
+                    </button>
+                    <button class="btn-secondary" id="btnExportCSV">
+                        <i class="fas fa-file-csv"></i> Export CSV
+                    </button>
+                </div>
+            </div>
+
+            <!-- Report Mode Navigation Tabs -->
+            <div class="report-nav-tabs">
+                <button type="button" class="tab-btn active" id="tabBtnWholeSchool">
+                    <i class="fas fa-chart-pie"></i> Whole-School Discipline Matrix
+                </button>
+                <button type="button" class="tab-btn" id="tabBtnStudentReport">
+                    <i class="fas fa-user-graduate"></i> Student Individual Guidance Report (By Student)
+                </button>
+            </div>
+
+            <!-- VIEW 1: WHOLE-SCHOOL DISCIPLINE MATRIX & ANALYTICS -->
+            <div id="viewWholeSchool">
+                <!-- Summary KPI Strip -->
+                <div class="summary-stats-box">
+                    <div class="summary-stats-flex">
+                        <div class="summary-stat-item">
+                            <h4 id="reportTotalIncidents">0</h4>
+                            <p>Total Recorded Incidents</p>
+                        </div>
+                        <div class="summary-stat-item">
+                            <h4 id="reportMinorCount" style="color: var(--warning);">0</h4>
+                            <p>Minor Infractions</p>
+                        </div>
+                        <div class="summary-stat-item">
+                            <h4 id="reportMajorCount" style="color: var(--danger);">0</h4>
+                            <p>Major Cases</p>
+                        </div>
+                        <div class="summary-stat-item">
+                            <h4 id="reportResolvedRate" style="color: var(--success);">0%</h4>
+                            <p>Resolution Rate</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Visual Analytics Grid -->
+                <div class="analytics-grid">
+                    <!-- Severity Distribution Chart -->
+                    <div class="chart-card">
+                        <div class="card-header-flex">
+                            <h3><i class="fas fa-chart-pie"></i> Violation Severity Breakdown</h3>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="severityChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Violations by Offense Level -->
+                    <div class="chart-card">
+                        <div class="card-header-flex">
+                            <h3><i class="fas fa-chart-bar"></i> Infractions by Offense Level</h3>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="offenseLevelChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Full Breakdown Incident Table -->
+                <div class="content-card">
+                    <div class="card-header-flex">
+                        <div>
+                            <h3><i class="fas fa-table-list"></i> Academic Year Discipline Case Matrix</h3>
+                            <p style="font-size: 12.5px; color: var(--text-muted); margin: 3px 0 0 0;">All reported incidents recorded for the current school year.</p>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button type="button" class="btn-primary btn-print" id="btnPrintSchoolBondPaper">
+                                <i class="fas fa-print"></i> Print on Bond Paper
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="hes-table">
+                            <thead>
+                                <tr>
+                                    <th>Incident Date</th>
+                                    <th>Student Name</th>
+                                    <th>LRN</th>
+                                    <th>Grade & Strand</th>
+                                    <th>Violation Category</th>
+                                    <th>Offense Title</th>
+                                    <th>Action / Sanction</th>
+                                    <th>Status</th>
+                                    <th style="text-align: right;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reportTableBody">
+                                <tr>
+                                    <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                                        Loading report matrix...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- PRINTABLE WHOLE-SCHOOL BOND PAPER SHEET (Rendered during Print) -->
+                <div id="wholeSchoolBondPaper" class="bond-paper-sheet paper-letter" style="display: none;">
+                    <!-- DepEd School Header -->
+                    <div class="dossier-header">
+                        <div class="deped-seal-box">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="deped-seal-svg" width="70" height="70">
+                                <circle cx="50" cy="50" r="48" fill="#ffffff" stroke="#1B2A4A" stroke-width="2.5" />
+                                <circle cx="50" cy="50" r="45" fill="none" stroke="#FACC15" stroke-width="1.5" />
+                                <circle cx="50" cy="50" r="39" fill="#1B2A4A" />
+                                <path d="M 32 30 L 68 30 C 68 48 50 64 50 64 C 50 64 32 48 32 30 Z" fill="#ffffff" stroke="#FACC15" stroke-width="1.2" />
+                                <path d="M 32 30 L 50 30 L 50 64 C 50 64 32 48 32 30 Z" fill="#0038A8" />
+                                <path d="M 50 30 L 68 30 C 68 48 50 64 50 64 L 50 30 Z" fill="#CE1126" />
+                                <path d="M 48 36 L 52 36 L 51 52 L 49 52 Z" fill="#FACC15" />
+                                <path d="M 47 34 Q 50 28 53 34 Q 50 37 47 34 Z" fill="#F97316" />
+                                <path d="M 48 33 Q 50 29 52 33 Z" fill="#FEF08A" />
+                                <path d="M 42 50 Q 50 48 50 53 Q 50 48 58 50 L 57 54 Q 50 52 50 55 Q 50 52 43 54 Z" fill="#ffffff" stroke="#1B2A4A" stroke-width="0.6" />
+                                <circle cx="50" cy="22" r="3.5" fill="#FACC15" />
+                                <polygon points="50,14 51.5,17 54.5,17 52,19 53,22 50,20 47,22 48,19 45.5,17 48.5,17" fill="#FACC15" transform="scale(0.35) translate(88, 12)" />
+                                <polygon points="50,14 51.5,17 54.5,17 52,19 53,22 50,20 47,22 48,19 45.5,17 48.5,17" fill="#FACC15" transform="scale(0.35) translate(48, 55)" />
+                                <polygon points="50,14 51.5,17 54.5,17 52,19 53,22 50,20 47,22 48,19 45.5,17 48.5,17" fill="#FACC15" transform="scale(0.35) translate(128, 55)" />
+                                <path id="depedTextPathSchool" d="M 17,50 A 33,33 0 1,1 83,50" fill="none" />
+                                <text font-size="5.2" font-family="Arial, sans-serif" font-weight="bold" fill="#FACC15" letter-spacing="1.2">
+                                    <textPath href="#depedTextPathSchool" startOffset="50%" text-anchor="middle">
+                                        DEPARTMENT OF EDUCATION
+                                    </textPath>
+                                </text>
+                                <path id="depedTextBottomSchool" d="M 82,52 A 33,33 0 0,1 18,52" fill="none" />
+                                <text font-size="5" font-family="Arial, sans-serif" font-weight="bold" fill="#ffffff" letter-spacing="1">
+                                    <textPath href="#depedTextBottomSchool" startOffset="50%" text-anchor="middle">
+                                        REPUBLIC OF THE PHILIPPINES
+                                    </textPath>
+                                </text>
+                            </svg>
+                        </div>
+                        <div class="dossier-logo-text">
+                            <h3>Republic of the Philippines</h3>
+                            <h3>DEPARTMENT OF EDUCATION</h3>
+                            <p class="region-sub">Region VII, Central Visayas • Schools Division of Cebu Province</p>
+                            <p class="district-sub">District of San Fernando • School ID: 303038</p>
+                            <h2>PLACIDO L. SEÑOR NATIONAL HIGH SCHOOL</h2>
+                            <p class="office-sub">Office of the Guidance Counselor & Prefect of Discipline</p>
+                            <span class="dossier-tag">ANNUAL DISCIPLINARY & GUIDANCE SUMMARY REPORT</span>
+                        </div>
+                        <div class="school-seal-box">
+                            <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" class="school-logo-img" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
+                        </div>
+                    </div>
+                    <div class="deped-double-rule"></div>
+
+                    <!-- Report Sub-Metadata -->
+                    <div class="paper-meta-row">
+                        <div><strong>Academic Year:</strong> 2025–2026</div>
+                        <div><strong>Document Ref:</strong> <span id="wholeSchoolDocRef">PLSNSH-GCO-ANNUAL-2026</span></div>
+                        <div><strong>Date Generated:</strong> <span id="wholeSchoolPrintDate">—</span></div>
+                    </div>
+
+                    <!-- Executive Summary KPI Strip for Bond Paper -->
+                    <div class="paper-kpi-summary">
+                        <div class="paper-kpi-box">
+                            <span class="kpi-num" id="paperKpiTotal">0</span>
+                            <span class="kpi-lbl">Total Incidents</span>
+                        </div>
+                        <div class="paper-kpi-box">
+                            <span class="kpi-num" id="paperKpiMinor">0</span>
+                            <span class="kpi-lbl">Minor Infractions</span>
+                        </div>
+                        <div class="paper-kpi-box">
+                            <span class="kpi-num" id="paperKpiMajor">0</span>
+                            <span class="kpi-lbl">Major Violations</span>
+                        </div>
+                        <div class="paper-kpi-box">
+                            <span class="kpi-num" id="paperKpiRate">100%</span>
+                            <span class="kpi-lbl">Resolution Rate</span>
+                        </div>
+                    </div>
+
+                    <!-- Printable Incident Matrix Table -->
+                    <div class="dossier-section-title">
+                        <i class="fas fa-table-list"></i> Summary Log of Recorded Behavioral Infractions
+                    </div>
+                    <table class="dossier-table" id="wholeSchoolPrintTable">
+                        <thead>
+                            <tr>
+                                <th style="width: 12%;">Incident Date</th>
+                                <th style="width: 20%;">Learner Name</th>
+                                <th style="width: 13%;">LRN</th>
+                                <th style="width: 14%;">Grade & Strand</th>
+                                <th style="width: 10%;">Category</th>
+                                <th style="width: 16%;">Offense Type</th>
+                                <th style="width: 15%;">Action Taken</th>
+                            </tr>
+                        </thead>
+                        <tbody id="wholeSchoolPrintTableBody">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+
+                    <!-- Certification Clause -->
+                    <div class="deped-compliance-note">
+                        This official summary report is generated from the Guidance Information System of Placido L. Señor National High School in accordance with DepEd Order No. 40, s. 2012 (DepEd Child Protection Policy) and the Revised Manual of Regulations for Public Secondary Schools.
+                    </div>
+
+                    <!-- Tripartite Institutional Signatures with Integrated Official Seal -->
+                    <div class="dossier-signatures tripartite">
+                        <div class="sig-box">
+                            <div class="sig-line"></div>
+                            <div class="sig-name" id="sigSchoolCounselor">Sarah Jane M. Alcantara, RGC</div>
+                            <div class="sig-role">Registered Guidance Counselor</div>
+                        </div>
+                        <div class="sig-box">
+                            <div class="sig-line"></div>
+                            <div class="sig-name">Mr. Roberto D. Santos, LPT</div>
+                            <div class="sig-role">Prefect of Student Discipline</div>
+                        </div>
+                        <div class="sig-box">
+                            <div class="sig-line"></div>
+                            <div class="sig-name">Dr. Fernando G. Ramirez, CESO VI</div>
+                            <div class="sig-role">Secondary School Principal IV</div>
+                        </div>
+                        <div class="sig-seal-col">
+                            <div class="official-seal-stamp">
+                                <span>OFFICIAL SEAL</span>
+                                <small>PLSNSH GUIDANCE</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 2: STUDENT INDIVIDUAL GUIDANCE REPORT -->
+            <div id="viewStudentReport" style="display: none;">
+                <!-- Student Picker & Action Bar -->
+                <div class="student-selector-card">
+                    <div class="selector-flex">
+                        <div class="selector-input-wrap">
+                            <i class="fas fa-search" style="color: #64748b; font-size: 16px;"></i>
+                            <select id="studentSelectDropdown" class="selector-select">
+                                <option value="">-- Search & Choose Student to Generate Report --</option>
+                            </select>
+                        </div>
+                        <div class="paper-control-wrap" style="display: flex; align-items: center; gap: 8px;">
+                            <label for="paperSizeSelect" style="font-size: 13px; font-weight: 700; color: #475569; white-space: nowrap;"><i class="fas fa-scroll"></i> Paper:</label>
+                            <select id="paperSizeSelect" class="selector-select" style="min-width: 175px;">
+                                <option value="letter" selected>Short Bond (Letter 8.5"×11")</option>
+                                <option value="folio">Long Bond (Folio 8.5"×13")</option>
+                                <option value="a4">A4 Bond (8.27"×11.69")</option>
+                            </select>
+                        </div>
+                        <div class="selector-actions">
+                            <button type="button" class="btn-primary btn-print" id="btnPrintStudentReport" disabled>
+                                <i class="fas fa-print"></i> Print on Bond Paper
+                            </button>
+                            <button type="button" class="btn-secondary" id="btnExportStudentCSV" disabled>
+                                <i class="fas fa-file-csv"></i> Export Student CSV
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Empty State Prompt -->
+                <div id="studentReportEmptyState" style="text-align: center; padding: 60px 20px; background: #fff; border-radius: 16px; border: 1.5px dashed #cbd5e1;">
+                    <i class="fas fa-user-graduate" style="font-size: 48px; color: #94a3b8; margin-bottom: 14px; display: block;"></i>
+                    <h3 style="color: #1e293b; margin: 0 0 6px 0;">Select a Student to Generate Official Guidance Report</h3>
+                    <p style="color: #64748b; font-size: 13.5px; margin: 0; max-width: 500px; margin: 0 auto;">
+                        Choose any student from the dropdown above to view, analyze, and print their complete disciplinary history, counseling intervention logs, and conduct standing on standard bond paper.
+                    </p>
+                </div>
+
+                <!-- Student Official Guidance Dossier Card (Bond Paper Sheet) -->
+                <div id="studentDossierCard" class="student-dossier-card bond-paper-sheet paper-letter" style="display: none;">
+                    <!-- DepEd School Header -->
+                    <div class="dossier-header">
+                        <div class="deped-seal-box">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="deped-seal-svg" width="70" height="70">
+                                <circle cx="50" cy="50" r="48" fill="#ffffff" stroke="#1B2A4A" stroke-width="2.5" />
+                                <circle cx="50" cy="50" r="45" fill="none" stroke="#FACC15" stroke-width="1.5" />
+                                <circle cx="50" cy="50" r="39" fill="#1B2A4A" />
+                                <path d="M 32 30 L 68 30 C 68 48 50 64 50 64 C 50 64 32 48 32 30 Z" fill="#ffffff" stroke="#FACC15" stroke-width="1.2" />
+                                <path d="M 32 30 L 50 30 L 50 64 C 50 64 32 48 32 30 Z" fill="#0038A8" />
+                                <path d="M 50 30 L 68 30 C 68 48 50 64 50 64 L 50 30 Z" fill="#CE1126" />
+                                <path d="M 48 36 L 52 36 L 51 52 L 49 52 Z" fill="#FACC15" />
+                                <path d="M 47 34 Q 50 28 53 34 Q 50 37 47 34 Z" fill="#F97316" />
+                                <path d="M 48 33 Q 50 29 52 33 Z" fill="#FEF08A" />
+                                <path d="M 42 50 Q 50 48 50 53 Q 50 48 58 50 L 57 54 Q 50 52 50 55 Q 50 52 43 54 Z" fill="#ffffff" stroke="#1B2A4A" stroke-width="0.6" />
+                                <circle cx="50" cy="22" r="3.5" fill="#FACC15" />
+                                <polygon points="50,14 51.5,17 54.5,17 52,19 53,22 50,20 47,22 48,19 45.5,17 48.5,17" fill="#FACC15" transform="scale(0.35) translate(88, 12)" />
+                                <polygon points="50,14 51.5,17 54.5,17 52,19 53,22 50,20 47,22 48,19 45.5,17 48.5,17" fill="#FACC15" transform="scale(0.35) translate(48, 55)" />
+                                <polygon points="50,14 51.5,17 54.5,17 52,19 53,22 50,20 47,22 48,19 45.5,17 48.5,17" fill="#FACC15" transform="scale(0.35) translate(128, 55)" />
+                                <path id="depedTextPath" d="M 17,50 A 33,33 0 1,1 83,50" fill="none" />
+                                <text font-size="5.2" font-family="Arial, sans-serif" font-weight="bold" fill="#FACC15" letter-spacing="1.2">
+                                    <textPath href="#depedTextPath" startOffset="50%" text-anchor="middle">
+                                        DEPARTMENT OF EDUCATION
+                                    </textPath>
+                                </text>
+                                <path id="depedTextBottom" d="M 82,52 A 33,33 0 0,1 18,52" fill="none" />
+                                <text font-size="5" font-family="Arial, sans-serif" font-weight="bold" fill="#ffffff" letter-spacing="1">
+                                    <textPath href="#depedTextBottom" startOffset="50%" text-anchor="middle">
+                                        REPUBLIC OF THE PHILIPPINES
+                                    </textPath>
+                                </text>
+                            </svg>
+                        </div>
+                        <div class="dossier-logo-text">
+                            <h3>Republic of the Philippines</h3>
+                            <h3>DEPARTMENT OF EDUCATION</h3>
+                            <p class="region-sub">Region VII, Central Visayas • Schools Division of Cebu Province</p>
+                            <p class="district-sub">District of San Fernando • School ID: 303038</p>
+                            <h2>PLACIDO L. SEÑOR NATIONAL HIGH SCHOOL</h2>
+                            <p class="office-sub">Office of the Guidance Counselor & Student Discipline</p>
+                            <span class="dossier-tag">OFFICIAL INDIVIDUAL STUDENT GUIDANCE & CONDUCT REPORT (BY STUDENT)</span>
+                        </div>
+                        <div class="school-seal-box">
+                            <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" class="school-logo-img" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
+                        </div>
+                    </div>
+                    <div class="deped-double-rule"></div>
+
+                    <!-- Dossier Reference & Verification Metadata Bar -->
+                    <div class="paper-meta-row">
+                        <div><strong>Report Classification:</strong> <span style="background: #1B2A4A; color: #FACC15; padding: 2.5px 8px; border-radius: 4px; font-weight: 700; font-size: 11px; letter-spacing: 0.5px;">BY STUDENT (INDIVIDUAL LEARNER RECORD)</span></div>
+                        <div><strong>Document Reference:</strong> <span id="dossierDocRef">PLSNSH-GCO-SF2026-BYSTUDENT</span></div>
+                        <div><strong>Academic Year:</strong> 2025–2026</div>
+                        <div><strong>Date Issued:</strong> <span id="dossierReportDate">—</span></div>
+                    </div>
+
+                    <!-- Student Personal & Enrollment Metadata Form (2 Rows x 5 Cols) -->
+                    <div class="dossier-meta-grid">
+                        <div class="dossier-meta-item">
+                            <label>Learner Full Name</label>
+                            <span id="dossierStudentName">—</span>
+                        </div>
+                        <div class="dossier-meta-item">
+                            <label>Learner Reference No. (LRN)</label>
+                            <span id="dossierStudentLRN">—</span>
+                        </div>
+                        <div class="dossier-meta-item">
+                            <label>Institutional Role</label>
+                            <span id="dossierStudentRole" style="font-weight: 700; color: #1B2A4A;"><i class="fas fa-user-graduate"></i> Bona Fide Student</span>
+                        </div>
+                        <div class="dossier-meta-item">
+                            <label>Enrollment Status</label>
+                            <span id="dossierStudentEnrollStatus" style="font-weight: 700; color: #047857;"><i class="fas fa-check-circle"></i> Officially Enrolled</span>
+                        </div>
+                        <div class="dossier-meta-item">
+                            <label>Conduct Standing</label>
+                            <span id="dossierMetaStanding" style="color: #065f46; font-weight: 700;">Clean Standing</span>
+                        </div>
+                        <div class="dossier-meta-item">
+                            <label>Grade Level & Section</label>
+                            <span id="dossierStudentGradeSec">—</span>
+                        </div>
+                        <div class="dossier-meta-item">
+                            <label>Senior High Track / Strand</label>
+                            <span id="dossierStudentStrand">—</span>
+                        </div>
+                        <div class="dossier-meta-item">
+                            <label>Sex / Age</label>
+                            <span id="dossierStudentGenderAge">—</span>
+                        </div>
+                        <div class="dossier-meta-item">
+                            <label>Parent / Legal Guardian</label>
+                            <span id="dossierStudentParent">—</span>
+                        </div>
+                        <div class="dossier-meta-item">
+                            <label>Emergency Contact</label>
+                            <span id="dossierStudentContact">—</span>
+                        </div>
+                    </div>
+
+                    <!-- Overall Conduct Standing Banner -->
+                    <div id="dossierConductBanner" class="conduct-status-banner clean">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <i id="dossierConductIcon" class="fas fa-shield-check" style="font-size: 20px;"></i>
+                            <div>
+                                <strong id="dossierConductTitle" style="font-size: 12.5px; display: block;">Clean Disciplinary Record (Good Standing)</strong>
+                                <span id="dossierConductSub" style="font-size: 10.5px;">Student has no pending disciplinary sanctions on file.</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 12px; text-align: center;">
+                            <div>
+                                <span id="dossierTotalViolations" style="font-size: 15px; font-weight: 800; display: block;">0</span>
+                                <small style="font-size: 9px; text-transform: uppercase;">Incidents</small>
+                            </div>
+                            <div style="border-left: 1px solid currentColor; padding-left: 12px;">
+                                <span id="dossierTotalCounseling" style="font-size: 15px; font-weight: 800; display: block;">0</span>
+                                <small style="font-size: 9px; text-transform: uppercase;">Sessions</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECTION I: DISCIPLINARY INCIDENTS & VIOLATIONS -->
+                    <div class="dossier-section-title">
+                        <i class="fas fa-clipboard-check" style="color: #1D4ED8;"></i> Section I: Behavioral Offenses & Sanctions Registry (By Student)
+                    </div>
+                    <div id="dossierViolationsContainer">
+                        <!-- Loaded dynamically -->
+                    </div>
+
+                    <!-- SECTION II: COUNSELING & RESTORATIVE INTERVENTIONS -->
+                    <div class="dossier-section-title">
+                        <i class="fas fa-comments" style="color: #7c3aed;"></i> Section II: Counseling Interventions & Restorative Agreements (By Student)
+                    </div>
+                    <div id="dossierCounselingContainer">
+                        <!-- Loaded dynamically -->
+                    </div>
+
+                    <!-- SECTION III: OFFICIAL CERTIFICATION & SIGN-OFF -->
+                    <div class="dossier-section-title">
+                        <i class="fas fa-stamp" style="color: #1B2A4A;"></i> Section III: Institutional Verification & Signatures
+                    </div>
+                    <div class="deped-compliance-note">
+                        <strong>OFFICIAL CERTIFICATION (BY STUDENT):</strong> This official individual report certifies that the subject learner named above is an officially enrolled student of Placido L. Señor National High School for Academic Year 2025–2026. All incident logs and counseling intervention entries recorded herein are official school records certified in compliance with DepEd Child Protection Policy (DO 40, s. 2012), RA 10627 (Anti-Bullying Act), and standard learner guidance protocols.
+                    </div>
+
+                    <!-- Tripartite Signatures with Integrated Official Seal -->
+                    <div class="dossier-signatures tripartite">
+                        <div class="sig-box">
+                            <div class="sig-line"></div>
+                            <div class="sig-name" id="sigCounselorName">Sarah Jane M. Alcantara, RGC</div>
+                            <div class="sig-role">Registered Guidance Counselor / Guidance Designate</div>
+                        </div>
+                        <div class="sig-box">
+                            <div class="sig-line"></div>
+                            <div class="sig-name">Dr. Fernando G. Ramirez, CESO VI</div>
+                            <div class="sig-role">Secondary School Principal IV</div>
+                        </div>
+                        <div class="sig-box">
+                            <div class="sig-line"></div>
+                            <div class="sig-name" id="sigStudentNameLine">Student Signature over Printed Name</div>
+                            <div class="sig-role">Conforme / Acknowledged (Student & Parent/Guardian)</div>
+                            <div style="font-size: 9px; color: #64748b; margin-top: 2px;">Date: ________________________</div>
+                        </div>
+                        <div class="sig-seal-col">
+                            <div class="official-seal-stamp">
+                                <span>OFFICIAL SEAL</span>
+                                <small>PLSNSH GUIDANCE</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Dynamic Print Stylesheet for Bond Paper -->
+    <style id="dynamicPaperPrintStyle">
+        @page {
+            size: letter portrait;
+            margin: 6mm 10mm 6mm 10mm;
+        }
+    </style>
+
+    <!-- Scripts -->
+    <script type="module" src="js/reports.js"></script>
+</body>
+</html>

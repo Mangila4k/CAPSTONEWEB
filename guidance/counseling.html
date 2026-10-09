@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guidance Counseling Sessions - PLSNHS</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/counseling.css">
+    <link rel="stylesheet" href="../css/chatbot.css">
+</head>
+
+<body>
+    <!-- Mobile Menu Toggle -->
+    <div class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo"
+                            onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
+                    </div>
+                    <div class="logo-text">PLS<span>NSH</span></div>
+                </div>
+                <div class="school-badge">Guidance & Counseling Services</div>
+            </div>
+
+            <div class="counselor-profile">
+                <div class="counselor-avatar">
+                    <div class="avatar-initial" id="counselorAvatar">G</div>
+                    <div class="online-dot"></div>
+                </div>
+                <div class="counselor-name" id="counselorName">Guidance Counselor</div>
+                <div class="counselor-role"><i class="fas fa-heart-pulse"></i> Guidance Office</div>
+            </div>
+
+            <nav class="nav-menu">
+                <div class="nav-section">
+                    <div class="nav-section-title">MAIN MENU</div>
+                    <ul class="nav-items">
+                        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                        <li><a href="violations.html"><i class="fas fa-clipboard-list"></i> Guidance Records</a></li>
+                        <li><a href="add_violation.html"><i class="fas fa-file-circle-plus"></i> Log Guidance Case</a>
+                        </li>
+                        <li><a href="counseling.html" class="active"><i class="fas fa-user-doctor"></i> Counseling
+                                Sessions</a></li>
+                        <li><a href="students.html"><i class="fas fa-user-graduate"></i> Student Directory</a></li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">RECORDS & REPORTS</div>
+                    <ul class="nav-items">
+                        <li><a href="reports.html"><i class="fas fa-chart-pie"></i> Discipline Reports</a></li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">ACCOUNT</div>
+                    <ul class="nav-items">
+                        <li><a href="profile.html"><i class="fas fa-user-gear"></i> Counselor Profile</a></li>
+                        <li><a href="../auth/logout.html"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                    </ul>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-header">
+                <div>
+                    <h1>Guidance Counseling Sessions</h1>
+                    <p class="subtitle">Facilitate restorative dialogues, individual behavioral counseling, and
+                        parent-student case conferences.</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn-primary" id="openNewSessionBtn">
+                        <i class="fas fa-calendar-plus"></i> Schedule New Session
+                    </button>
+                </div>
+            </div>
+
+            <!-- Alert Container -->
+            <div id="alertContainer"></div>
+
+            <!-- Filters -->
+            <div class="content-card" style="padding: 16px 20px; margin-bottom: 24px;">
+                <div
+                    style="display: flex; gap: 14px; flex-wrap: wrap; align-items: center; justify-content: space-between;">
+                    <div style="flex: 1; min-width: 250px; position: relative;">
+                        <input type="text" id="sessionSearch" placeholder="Search by student name or purpose..."
+                            class="form-control">
+                    </div>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <select id="statusFilter" class="form-select" style="width: auto;">
+                            <option value="all">All Statuses</option>
+                            <option value="Scheduled">Scheduled</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Cancelled">Cancelled</option>
+                        </select>
+                        <select id="typeFilter" class="form-select" style="width: auto;">
+                            <option value="all">All Session Types</option>
+                            <option value="Individual Counseling">Individual Counseling</option>
+                            <option value="Parent-Student Conference">Parent-Student Conference</option>
+                            <option value="Behavioral Intervention">Behavioral Intervention</option>
+                            <option value="Peer Conflict Mediation">Peer Conflict Mediation</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Session Cards Grid -->
+            <div class="session-cards-grid" id="sessionCardsContainer">
+                <div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 40px;">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 24px; display: block; margin-bottom: 10px;"></i>
+                    Loading counseling sessions...
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Schedule New Session Modal -->
+    <div class="modal-overlay" id="newSessionModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3><i class="fas fa-calendar-plus"></i> Schedule Guidance Counseling Session</h3>
+                <button class="modal-close-btn" id="closeNewSessionModalBtn"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="newSessionForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="newSessionStudentSelect">Select Student <span class="req">*</span></label>
+                        <select id="newSessionStudentSelect" class="form-select" required>
+                            <option value="">-- Choose Student --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="newSessionDate">Session Date <span class="req">*</span></label>
+                            <input type="date" id="newSessionDate" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="newSessionTime">Time</label>
+                            <input type="time" id="newSessionTime" class="form-control" value="09:30" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="newSessionType">Session Type <span class="req">*</span></label>
+                        <select id="newSessionType" class="form-select" required>
+                            <option value="Individual Counseling">Individual Counseling</option>
+                            <option value="Parent-Student Conference">Parent-Student Conference</option>
+                            <option value="Behavioral Intervention">Behavioral Intervention</option>
+                            <option value="Peer Conflict Mediation">Peer Conflict Mediation</option>
+                            <option value="Routine Guidance Check-in">Routine Guidance Check-in</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="newSessionPurpose">Purpose / Focus Area <span class="req">*</span></label>
+                        <input type="text" id="newSessionPurpose" class="form-control"
+                            placeholder="e.g., Attendance coaching, anger management, restorative conversation"
+                            required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="newSessionNotes">Initial Background Notes</label>
+                        <textarea id="newSessionNotes" class="form-control" rows="2"
+                            placeholder="Relevant context from teacher referral or student violation history..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" id="cancelNewSessionBtn">Cancel</button>
+                    <button type="submit" class="btn-primary" id="saveNewSessionBtn"><i
+                            class="fas fa-calendar-check"></i> Book Session</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Conduct / Update Session Modal -->
+    <div class="modal-overlay" id="updateSessionModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="updateSessionTitle"><i class="fas fa-notes-medical"></i> Counseling Session Notes & Disposition
+                </h3>
+                <button class="modal-close-btn" id="closeUpdateSessionModalBtn"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" id="updateSessionBody">
+                <!-- Populated dynamically -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="cancelUpdateSessionBtn">Close</button>
+                <button class="btn-primary" id="saveSessionNotesBtn"><i class="fas fa-save"></i> Save Session
+                    Notes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="js/counseling.js"></script>
+</body>
+
+</html>

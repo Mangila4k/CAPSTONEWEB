@@ -138,30 +138,56 @@ document.addEventListener('DOMContentLoaded', async function() {
                 const { data: logData, error: logErr } = await supabase
                     .from('activity_logs')
                     .select('*')
-                    .order('created_at', { ascending: false })
+                    .order('timestamp', { ascending: false })
                     .limit(100);
 
                 if (!logErr && logData && logData.length > 0) {
                     logData.forEach(l => {
+                        const isTeacherAttendance = (l.role === 'teacher') || 
+                            (l.action && (l.action.toUpperCase().includes('TIME IN') || l.action.toUpperCase().includes('TIME OUT') || l.action.toLowerCase().includes('attendance')));
+
+                        let actType = l.type;
+                        if (!actType) {
+                            if (isTeacherAttendance) actType = 'attendance';
+                            else if (l.action?.toLowerCase().includes('enroll')) actType = 'enrollment';
+                            else if (l.action?.toLowerCase().includes('account') || l.action?.toLowerCase().includes('user')) actType = 'account';
+                            else if (l.action?.toLowerCase().includes('security') || l.action?.toLowerCase().includes('auth')) actType = 'security';
+                            else actType = 'admin_action';
+                        }
+
+                        let actorName = l.user_name || l.fullname || '';
+                        if (!actorName && l.details && l.details.includes(' validated ')) {
+                            actorName = l.details.split(' validated ')[0].trim();
+                        }
+                        if (!actorName) {
+                            actorName = (l.role === 'teacher' || isTeacherAttendance) ? 'Faculty Member' : 'Administrator';
+                        }
+
+                        const role = (isTeacherAttendance ? 'teacher' : (l.role || l.user_role || 'admin')).toLowerCase();
+
                         activities.push({
                             id: `log-${l.id}`,
-                            type: l.type || (l.action?.toLowerCase().includes('enroll') ? 'enrollment' : 'admin_action'),
-                            title: l.action || 'System Action Logged',
+                            type: actType,
+                            title: l.action || (isTeacherAttendance ? 'Teacher Attendance Activity' : 'System Action Logged'),
                             description: l.details || l.description || l.message || 'Administrative operation recorded in the system audit log.',
-                            actorName: l.user_name || l.fullname || 'Administrator',
-                            actorRole: (l.user_role || l.role || 'admin').toLowerCase(),
+                            actorName: actorName,
+                            actorRole: role,
                             actorEmail: l.user_email || l.email || '',
-                            date: l.created_at || l.timestamp || new Date().toISOString(),
+                            date: l.timestamp || l.created_at || new Date().toISOString(),
+                            actionLink: role === 'teacher' ? '../teacher/attendance-face.html' : null,
+                            actionText: role === 'teacher' ? 'Faculty Portal' : null,
                             metadata: {
-                                ip: l.ip_address || 'Internal System',
-                                module: l.module || 'Admin Core',
-                                targetId: l.target_id || '-'
+                                'Activity Type': isTeacherAttendance ? 'Faculty Attendance' : 'System Audit Log',
+                                'Action': l.action || 'N/A',
+                                'Actor Role': role.toUpperCase(),
+                                'Details': l.details || '-',
+                                'Timestamp': l.timestamp || 'N/A'
                             }
                         });
                     });
                 }
             } catch(e) {
-                console.warn('activity_logs table not accessible, synthesizing from entity records');
+                console.warn('activity_logs query note:', e);
             }
 
             // 2. Fetch Enrollments
@@ -274,12 +300,114 @@ document.addEventListener('DOMContentLoaded', async function() {
                     });
                 }
             } catch(e) {
-                console.warn('Attendance records skipped or not found');
+                console.warn('Student attendance query note:', e);
+            }
+
+            // 5. Fetch Teacher Attendance Records
+            try {
+                const { data: tAttData, error: tAttErr } = await supabase
+                    .from('teacher_attendance')
+                    .select(`
+                        id,
+                        date,
+                        time_in,
+                        time_out,
+                        status,
+                        created_at,
+                        teachers (
+                            id,
+                            employee_id,
+                            specialization,
+                            users (
+                                first_name,
+                                last_name,
+                                email
+                            )
+                        )
+                    `)
+                    .order('date', { ascending: false })
+                    .limit(60);
+
+                if (!tAttErr && tAttData && tAttData.length > 0) {
+                    tAttData.forEach(ta => {
+                        const tUser = ta.teachers?.users;
+                        const teacherName = tUser ? `${tUser.first_name || ''} ${tUser.last_name || ''}`.trim() : 'Faculty Member';
+                        const empId = ta.teachers?.employee_id || 'N/A';
+                        const spec = ta.teachers?.specialization || 'Academic Staff';
+                        const attStatus = (ta.status || 'Present').toUpperCase();
+
+                        if (ta.time_in) {
+                            activities.push({
+                                id: `t-att-in-${ta.id}`,
+                                type: 'attendance',
+                                title: `Teacher Time-In: ${teacherName}`,
+                                description: `Faculty member <strong>${teacherName}</strong> recorded <strong>Time-In</strong> at <strong>${ta.time_in}</strong> on <strong>${ta.date}</strong> (Status: <strong>${attStatus}</strong>).`,
+                                actorName: teacherName,
+                                actorRole: 'teacher',
+                                actorEmail: tUser?.email || '',
+                                date: ta.created_at || `${ta.date}T${ta.time_in.length === 5 ? ta.time_in + ':00' : ta.time_in}`,
+                                actionLink: '../teacher/attendance-face.html',
+                                actionText: 'Faculty Attendance',
+                                metadata: {
+                                    'Faculty Member': teacherName,
+                                    'Employee ID': empId,
+                                    'Department / Specialization': spec,
+                                    'Date': ta.date,
+                                    'Time-In': ta.time_in,
+                                    'Evaluation Status': attStatus
+                                }
+                            });
+                        }
+
+                        if (ta.time_out) {
+                            activities.push({
+                                id: `t-att-out-${ta.id}`,
+                                type: 'attendance',
+                                title: `Teacher Time-Out: ${teacherName}`,
+                                description: `Faculty member <strong>${teacherName}</strong> completed <strong>Time-Out</strong> validation at <strong>${ta.time_out}</strong> on <strong>${ta.date}</strong>.`,
+                                actorName: teacherName,
+                                actorRole: 'teacher',
+                                actorEmail: tUser?.email || '',
+                                date: `${ta.date}T${ta.time_out.length === 5 ? ta.time_out + ':00' : ta.time_out}`,
+                                actionLink: '../teacher/attendance-face.html',
+                                actionText: 'Faculty Attendance',
+                                metadata: {
+                                    'Faculty Member': teacherName,
+                                    'Employee ID': empId,
+                                    'Department / Specialization': spec,
+                                    'Date': ta.date,
+                                    'Time-Out': ta.time_out
+                                }
+                            });
+                        }
+                    });
+                }
+            } catch(tAttEx) {
+                console.warn('Teacher attendance query note:', tAttEx);
+            }
+
+            // Deduplicate attendance entries to avoid duplicate cards for the exact same event
+            const seenAttKeys = new Set();
+            const uniqueActivities = [];
+            for (const act of activities) {
+                if (act.type === 'attendance') {
+                    const normActor = (act.actorName || '').toLowerCase().trim();
+                    const isTimeIn = (act.title || '').toLowerCase().includes('in');
+                    const isTimeOut = (act.title || '').toLowerCase().includes('out');
+                    const actionTag = isTimeIn ? 'in' : (isTimeOut ? 'out' : 'att');
+                    const dateTag = (act.date || '').slice(0, 10);
+                    const key = `${normActor}_${actionTag}_${dateTag}`;
+                    if (seenAttKeys.has(key)) {
+                        continue;
+                    }
+                    seenAttKeys.add(key);
+                }
+                uniqueActivities.push(act);
             }
 
             // Sort all activities chronologically descending
-            activities.sort((a, b) => new Date(b.date) - new Date(a.date));
-            allActivities = activities;
+            uniqueActivities.sort((a, b) => new Date(b.date) - new Date(a.date));
+            allActivities = uniqueActivities;
 
             updateKpiStats();
             applyFilters();

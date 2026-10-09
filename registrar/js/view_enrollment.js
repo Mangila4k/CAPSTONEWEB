@@ -135,36 +135,42 @@ import { EmailNotificationService } from '../../js/email_service.js';
 
     const requirementsConfig = {
         'Grade 7': [
-            { key: 'form_138', name: 'Form 138 (Elementary Report Card)', required: true },
+            { key: 'two_by_two_picture', name: '2x2 ID Picture (White Background)', required: true },
+            { key: 'report_card', name: 'Report Card', required: true },
             { key: 'psa_birth_cert', name: 'PSA Birth Certificate', required: true },
             { key: 'good_moral', name: 'Good Moral Certificate', required: true },
             { key: 'completion_cert', name: 'Certificate of Completion (Elementary)', required: true },
             { key: 'form_137', name: 'Form 137 (Permanent Record)', required: false }
         ],
         'Grade 8': [
-            { key: 'form_138', name: 'Form 138 (Grade 7 Report Card)', required: true },
+            { key: 'two_by_two_picture', name: '2x2 ID Picture (White Background)', required: true },
+            { key: 'report_card', name: 'Report Card', required: true },
             { key: 'psa_birth_cert', name: 'PSA Birth Certificate', required: true },
             { key: 'good_moral', name: 'Good Moral Certificate', required: true }
         ],
         'Grade 9': [
-            { key: 'form_138', name: 'Form 138 (Grade 8 Report Card)', required: true },
+            { key: 'two_by_two_picture', name: '2x2 ID Picture (White Background)', required: true },
+            { key: 'report_card', name: 'Report Card', required: true },
             { key: 'psa_birth_cert', name: 'PSA Birth Certificate', required: true },
             { key: 'good_moral', name: 'Good Moral Certificate', required: true }
         ],
         'Grade 10': [
-            { key: 'form_138', name: 'Form 138 (Grade 9 Report Card)', required: true },
+            { key: 'two_by_two_picture', name: '2x2 ID Picture (White Background)', required: true },
+            { key: 'report_card', name: 'Report Card', required: true },
             { key: 'psa_birth_cert', name: 'PSA Birth Certificate', required: true },
             { key: 'good_moral', name: 'Good Moral Certificate', required: true }
         ],
         'Grade 11': [
-            { key: 'form_138', name: 'Form 138 (Grade 10 Report Card)', required: true },
+            { key: 'two_by_two_picture', name: '2x2 ID Picture (White Background)', required: true },
+            { key: 'report_card', name: 'Report Card', required: true },
             { key: 'psa_birth_cert', name: 'PSA Birth Certificate', required: true },
             { key: 'good_moral', name: 'Good Moral Certificate', required: true },
             { key: 'jhs_completion', name: 'JHS Certificate of Completion / Diploma', required: true },
             { key: 'ncae_result', name: 'NCAE / Career Assessment Result', required: false }
         ],
         'Grade 12': [
-            { key: 'form_138', name: 'Form 138 (Grade 11 Report Card)', required: true },
+            { key: 'two_by_two_picture', name: '2x2 ID Picture (White Background)', required: true },
+            { key: 'report_card', name: 'Report Card', required: true },
             { key: 'psa_birth_cert', name: 'PSA Birth Certificate', required: true },
             { key: 'good_moral', name: 'Good Moral Certificate', required: true }
         ]
@@ -400,7 +406,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
             'new': 'New Student (From Elementary)',
             'continuing': 'Continuing Student',
             'transferee': 'Transferee',
-            'same_school': 'From HES Junior High',
+            'same_school': 'From PLSNHS',
             'different_school': 'Transferee (From another school)'
         };
         const studentType = typeMap[rawStudentType] || rawStudentType;
@@ -412,7 +418,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
             if (rawStudentType === 'new' || gradeLevel === 'Grade 7') {
                 prevSchool = 'Elementary School';
             } else {
-                prevSchool = 'Hiraya Enrollment System';
+                prevSchool = 'Placido L. Señor National High School (PLSNHS)';
             }
         }
 
@@ -630,17 +636,42 @@ import { EmailNotificationService } from '../../js/email_service.js';
 
         const grade = currentEnrollment?.grade_level || currentStudent?.grade_level || 'Grade 7';
         const type = currentEnrollment?.student_type || 'New Student';
+        const isTransferee = String(type).toLowerCase().includes('transfer') || String(type).toLowerCase().includes('different');
 
         if (reqBadge) reqBadge.textContent = `${grade} &bull; ${type}`;
 
-        const reqs = requirementsConfig[grade] || requirementsConfig['Grade 7'];
+        let reqs = requirementsConfig[grade] || requirementsConfig['Grade 7'];
+        if (isTransferee) {
+            reqs = reqs.map(r => {
+                if (r.key === 'form_138') {
+                    return { key: 'report_card', name: 'Report Card', required: true };
+                }
+                return r;
+            });
+            const hasForm137 = reqs.some(r => r.key === 'form_137');
+            if (!hasForm137) {
+                reqs.push({ key: 'form_137', name: 'Form 137 (Permanent Record)', required: true });
+            } else {
+                reqs = reqs.map(r => r.key === 'form_137' ? { ...r, required: true } : r);
+            }
+        }
+
         let html = '';
 
         reqs.forEach(req => {
             const hasDoc = currentDocuments.some(d => 
-                (d.document_type && d.document_type.toLowerCase().includes(req.key.replace('_', ' '))) ||
-                (d.file_name && d.file_name.toLowerCase().includes(req.key.replace('_', ' '))) ||
-                d[req.key]
+                (d.document_type && (
+                    d.document_type.toLowerCase().includes(req.key.replace('_', ' ')) ||
+                    (req.key === 'report_card' && (d.document_type.toLowerCase().includes('report card') || d.document_type.toLowerCase().includes('form 138'))) ||
+                    (req.key === 'form_138' && (d.document_type.toLowerCase().includes('report card') || d.document_type.toLowerCase().includes('form 138')))
+                )) ||
+                (d.file_name && (
+                    d.file_name.toLowerCase().includes(req.key.replace('_', ' ')) ||
+                    (req.key === 'report_card' && d.file_name.toLowerCase().includes('report'))
+                )) ||
+                d[req.key] ||
+                (req.key === 'report_card' && (d.form_138 || currentStudent?.form_138_url)) ||
+                (req.key === 'form_138' && (d.report_card || currentStudent?.form_138_url))
             );
 
             html += `
@@ -673,7 +704,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
 
         // Check if student record has uploaded urls directly
         const std = currentStudent || {};
-        if (std.form_138_url) docs.push({ title: 'Form 138 / Report Card', url: std.form_138_url, type: 'pdf' });
+        if (std.form_138_url) docs.push({ title: 'Report Card', url: std.form_138_url, type: 'pdf' });
         if (std.psa_birth_url) docs.push({ title: 'PSA Birth Certificate', url: std.psa_birth_url, type: 'pdf' });
         if (std.good_moral_url) docs.push({ title: 'Good Moral Certificate', url: std.good_moral_url, type: 'img' });
 
@@ -925,6 +956,8 @@ import { EmailNotificationService } from '../../js/email_service.js';
             parent_contact: currentEnrollment.guardian_contact || currentStudent?.parent_contact || null,
             enrollment_id: currentEnrollment.id,
             documents_status: 'complete',
+            two_by_two_picture_url: currentEnrollment.two_by_two_picture_url || currentStudent?.two_by_two_picture_url || null,
+            avatar_url: currentEnrollment.two_by_two_picture_url || currentStudent?.avatar_url || null,
             updated_at: new Date().toISOString()
         };
 

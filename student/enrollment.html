@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enrollment - HES, Hiraya Enrollment System</title>
+    <title>Enrollment -PLSNHS</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/enrollment.css">
     <link rel="stylesheet" href="../css/chatbot.css">
 </head>
+
 <body>
     <div class="enrollment-wrapper">
         <div class="enrollment-container">
@@ -17,11 +19,12 @@
             <div class="enrollment-header">
                 <div class="logo-section">
                     <div class="school-logo">
-                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231a2a6c%22/%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E';">
+                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo"
+                            onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231a2a6c%22/%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E';">
                     </div>
                     <div class="school-name">
-                        <h1>Hiraya</h1>
-                        <p>Enrollment System</p>
+                        <h1>PLSNHS</h1>
+                        <p>Placido L. Señor National High School</p>
                     </div>
                 </div>
                 <h2><span class="highlight">Student</span> <span class="highlight2">Enrollment</span></h2>
@@ -49,7 +52,7 @@
                 <!-- ====== PERSONAL INFORMATION ====== -->
                 <div class="form-section">
                     <h3 class="section-title"><i class="fas fa-user"></i> Personal Information</h3>
-                    
+
                     <div class="form-group">
                         <label>Full Name <span>*</span></label>
                         <div class="form-row-3">
@@ -124,7 +127,8 @@
                     <div class="form-group">
                         <label>Home Address <span>*</span></label>
                         <div class="input-wrapper">
-                            <textarea id="address" rows="2" placeholder="Street, Barangay, City/Municipality, Province" required></textarea>
+                            <textarea id="address" rows="2" placeholder="Street, Barangay, City/Municipality, Province"
+                                required></textarea>
                         </div>
                     </div>
                 </div>
@@ -203,7 +207,8 @@
                     <div class="form-group">
                         <label>Guardian's Address <span>*</span></label>
                         <div class="input-wrapper">
-                            <textarea id="guardianAddress" rows="2" placeholder="Street, Barangay, City/Municipality, Province" required></textarea>
+                            <textarea id="guardianAddress" rows="2"
+                                placeholder="Street, Barangay, City/Municipality, Province" required></textarea>
                         </div>
                     </div>
                 </div>
@@ -244,7 +249,6 @@
                         </div>
                     </div>
 
-                    <!-- STUDENT TYPE -->
                     <div class="form-group" id="studentTypeGroup" style="display:none;">
                         <label>Student Type <span>*</span></label>
                         <div class="input-wrapper">
@@ -254,7 +258,6 @@
                         </div>
                     </div>
 
-                    <!-- STRAND (SHS only) -->
                     <div class="form-group" id="strandDiv" style="display:none;">
                         <label>Select Strand <span>*</span></label>
                         <div class="strand-options">
@@ -343,25 +346,35 @@
     </div>
 
     <!-- ===== ENROLLMENT CONFIRMATION & GMAIL DISPATCH MODAL ===== -->
-    <div id="enrollmentConfirmationModal" style="display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.65); backdrop-filter: blur(5px); z-index: 99999; align-items: center; justify-content: center; padding: 20px;">
-        <div style="background: #ffffff; width: 100%; max-width: 520px; border-radius: 16px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.35); animation: zoomIn 0.25s ease-out;">
-            <div style="background: linear-gradient(135deg, #0b2b4a, #1a3d5f); color: #fff; padding: 22px 24px; text-align: center; position: relative;">
-                <div style="width: 58px; height: 58px; border-radius: 50%; background: #10b981; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 12px; box-shadow: 0 4px 12px rgba(16,185,129,0.4);">
+    <div id="enrollmentConfirmationModal"
+        style="display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.65); backdrop-filter: blur(5px); z-index: 99999; align-items: center; justify-content: center; padding: 20px;">
+        <div
+            style="background: #ffffff; width: 100%; max-width: 520px; border-radius: 16px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.35); animation: zoomIn 0.25s ease-out;">
+            <div
+                style="background: linear-gradient(135deg, #0b2b4a, #1a3d5f); color: #fff; padding: 22px 24px; text-align: center; position: relative;">
+                <div
+                    style="width: 58px; height: 58px; border-radius: 50%; background: #10b981; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 12px; box-shadow: 0 4px 12px rgba(16,185,129,0.4);">
                     <i class="fas fa-check"></i>
                 </div>
                 <h3 style="margin: 0 0 6px; font-size: 20px; font-weight: 700;">Enrollment Submitted!</h3>
-                <p style="margin: 0; font-size: 13px; color: #cbd5e1;">Your application has been received and is pending Registrar verification.</p>
+                <p style="margin: 0; font-size: 13px; color: #cbd5e1;">Your application has been received and is pending Registrar verification. (Uploading your 2x2 picture does not immediately enroll you—the Registrar will review your documents and generate your official PLSNHS QR-enabled Student ID Card once approved.)<br>
+                    Registrar verification.</p>
             </div>
-            
+
             <div style="padding: 22px 24px;">
                 <!-- Reference Box -->
-                <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 10px; padding: 14px; text-align: center; margin-bottom: 16px;">
-                    <span style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px;">Tracking Reference Number</span>
-                    <span id="confirmTrackingId" style="font-family: monospace; font-size: 18px; font-weight: 800; color: #0b2b4a; letter-spacing: 1px;">HES-ENR-000000</span>
+                <div
+                    style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 10px; padding: 14px; text-align: center; margin-bottom: 16px;">
+                    <span
+                        style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px;">Tracking
+                        Reference Number</span>
+                    <span id="confirmTrackingId"
+                        style="font-family: monospace; font-size: 18px; font-weight: 800; color: #1a225a; letter-spacing: 1px;">HES-ENR-000000</span>
                 </div>
 
                 <!-- Application Summary -->
-                <div style="background: #f1f5f9; border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; font-size: 13px; color: #334155; line-height: 1.6;">
+                <div
+                    style="background: #f1f5f9; border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; font-size: 13px; color: #334155; line-height: 1.6;">
                     <div><strong>Student:</strong> <span id="confirmStudentName">—</span></div>
                     <div><strong>Email:</strong> <span id="confirmEmail">—</span></div>
                     <div><strong>Grade Level:</strong> <span id="confirmGradeStrand">—</span></div>
@@ -369,31 +382,40 @@
                 </div>
 
                 <!-- Gmail Action Card -->
-                <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.03);">
-                    <div style="font-size: 12px; font-weight: 700; color: #475569; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
-                        <i class="fas fa-envelope-open-text" style="color: #0b2b4a;"></i> Get Official Confirmation Receipt
+                <div
+                    style="background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.03);">
+                    <div
+                        style="font-size: 12px; font-weight: 700; color: #475569; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+                        <i class="fas fa-envelope-open-text" style="color: #1a225a;"></i> Get Official Confirmation
+                        Receipt
                     </div>
                     <div style="display: flex; flex-direction: column; gap: 8px;">
-                        <button type="button" id="sendEnrollmentGmailBtn" style="width: 100%; padding: 11px 16px; border-radius: 8px; background: #EA4335; color: #ffffff; border: none; cursor: pointer; font-weight: 700; font-size: 13.5px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 6px rgba(234,67,53,0.3); transition: all 0.2s;">
+                        <button type="button" id="sendEnrollmentGmailBtn"
+                            style="width: 100%; padding: 11px 16px; border-radius: 8px; background: #EA4335; color: #ffffff; border: none; cursor: pointer; font-weight: 700; font-size: 13.5px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 6px rgba(234,67,53,0.3); transition: all 0.2s;">
                             <i class="fab fa-google"></i> Send Confirmation to My Gmail
                         </button>
                         <div style="display: flex; gap: 8px;">
-                            <button type="button" id="copyEnrollmentReceiptBtn" style="flex: 1; padding: 8px 12px; border-radius: 8px; background: #f1f5f9; color: #1e293b; border: 1px solid #cbd5e1; cursor: pointer; font-weight: 600; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+                            <button type="button" id="copyEnrollmentReceiptBtn"
+                                style="flex: 1; padding: 8px 12px; border-radius: 8px; background: #f1f5f9; color: #1e293b; border: 1px solid #cbd5e1; cursor: pointer; font-weight: 600; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
                                 <i class="fas fa-copy"></i> Copy Receipt
                             </button>
-                            <button type="button" id="sendMailtoReceiptBtn" style="flex: 1; padding: 8px 12px; border-radius: 8px; background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; cursor: pointer; font-weight: 600; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+                            <button type="button" id="sendMailtoReceiptBtn"
+                                style="flex: 1; padding: 8px 12px; border-radius: 8px; background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; cursor: pointer; font-weight: 600; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
                                 <i class="fas fa-envelope"></i> Default Mail
                             </button>
                         </div>
                     </div>
                     <div style="font-size: 11px; color: #64748b; margin-top: 8px;">
-                        <i class="fas fa-info-circle"></i> Opens Gmail compose with your official enrollment tracking details pre-filled.
+                        <i class="fas fa-info-circle"></i> Opens Gmail compose with your official enrollment tracking
+                        details pre-filled.
                     </div>
                 </div>
             </div>
 
-            <div style="padding: 12px 24px 18px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end;">
-                <button type="button" id="doneEnrollmentBtn" style="padding: 10px 24px; border-radius: 8px; background: #0b2b4a; color: #fff; border: none; cursor: pointer; font-weight: 700; font-size: 13px;">
+            <div
+                style="padding: 12px 24px 18px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end;">
+                <button type="button" id="doneEnrollmentBtn"
+                    style="padding: 10px 24px; border-radius: 8px; background: #1a225a; color: #fff; border: none; cursor: pointer; font-weight: 700; font-size: 13px;">
                     Proceed to Dashboard <i class="fas fa-arrow-right" style="margin-left: 4px;"></i>
                 </button>
             </div>
@@ -403,4 +425,5 @@
     <script type="module" src="js/enrollment.js"></script>
     <script src="../js/chatbot.js"></script>
 </body>
+
 </html>

@@ -301,26 +301,94 @@ document.addEventListener('DOMContentLoaded', async function() {
     async function loadTeacherAttendanceRecords() {
         try {
             const date = teacherDateFilter ? teacherDateFilter.value : todayStr;
-            const isWk = isWeekend(date);
 
-            if (isWk) {
-                const d = new Date(date + 'T00:00:00');
-                const dayName = d.toLocaleDateString('en-US', { weekday: 'long' });
-                showAlert(`📅 Notice: Selected date (${dayName}) is a weekend. Faculty attendance is disabled on weekends.`, 'warning');
-            }
-
-            const { data, error } = await supabase
-                .from('attendance')
-                .select('*')
-                .eq('date', date)
-                .not('teacher_id', 'is', null);
-
-            if (error) throw error;
+            // Fetch from BOTH teacher_attendance and attendance tables
+            const [tAttRes, genAttRes] = await Promise.all([
+                supabase
+                    .from('teacher_attendance')
+                    .select('*')
+                    .eq('date', date),
+                supabase
+                    .from('attendance')
+                    .select('*')
+                    .eq('date', date)
+                    .not('teacher_id', 'is', null)
+            ]);
 
             teacherAttendanceMap = {};
-            (data || []).forEach(rec => {
+
+            // 1. Process general attendance table
+            (genAttRes.data || []).forEach(rec => {
                 if (rec.teacher_id) {
-                    teacherAttendanceMap[rec.teacher_id] = rec;
+                    teacherAttendanceMap[rec.teacher_id] = {
+                        ...rec,
+                        status: rec.status || 'Present',
+                        time_in: rec.time_in,
+                        time_out: rec.time_out,
+                        remarks: rec.remarks || ''
+                    };
+                }
+            });
+
+            // 2. Process primary teacher_attendance table (takes precedence for biometric/QR/direct validation!)
+            (tAttRes.data || []).forEach(rec => {
+                if (rec.teacher_id) {
+                    let formattedIn = null;
+                    if (rec.time_in) {
+                        try {
+                            const d = new Date(rec.time_in);
+                            if (!isNaN(d.getTime())) {
+                                formattedIn = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+                            } else {
+                                formattedIn = rec.time_in;
+                            }
+                        } catch {
+                            formattedIn = rec.time_in;
+                        }
+                    }
+
+                    let formattedOut = null;
+                    if (rec.time_out) {
+                        try {
+                            const d = new Date(rec.time_out);
+                            if (!isNaN(d.getTime())) {
+                                formattedOut = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+                            } else {
+                                formattedOut = rec.time_out;
+                            }
+                        } catch {
+                            formattedOut = rec.time_out;
+                        }
+                    }
+
+                    const inStatus = rec.in_status || rec.status || (rec.time_in ? 'Present' : 'Absent');
+                    const outStatus = rec.out_status || (rec.time_out ? 'Completed' : '');
+
+                    let remarks = teacherAttendanceMap[rec.teacher_id]?.remarks || '';
+                    if (!remarks) {
+                        if (inStatus === 'Late') {
+                            remarks = `Late Arrival (${formattedIn || 'Recorded'})`;
+                        } else if (inStatus === 'Present') {
+                            remarks = `On Time / Validated (${formattedIn || 'Recorded'})`;
+                        } else {
+                            remarks = 'No Record';
+                        }
+                        if (outStatus) {
+                            remarks += ` • ${outStatus}`;
+                        }
+                    }
+
+                    teacherAttendanceMap[rec.teacher_id] = {
+                        id: rec.id,
+                        teacher_id: rec.teacher_id,
+                        date: rec.date,
+                        time_in: formattedIn,
+                        time_out: formattedOut,
+                        status: inStatus,
+                        in_status: inStatus,
+                        out_status: outStatus,
+                        remarks: remarks
+                    };
                 }
             });
 
@@ -497,13 +565,17 @@ document.addEventListener('DOMContentLoaded', async function() {
             });
         }
 
+        // Accurately compute faculty statistics across all active teachers
         let presentCount = 0, lateCount = 0, absentCount = 0;
-        filtered.forEach(t => {
+        allTeachers.forEach(t => {
             const rec = teacherAttendanceMap[t.id];
-            const status = rec ? rec.status : 'Present';
-            if (status === 'Present') presentCount++;
-            else if (status === 'Late') lateCount++;
-            else if (status === 'Absent') absentCount++;
+            if (!rec || !rec.time_in) {
+                absentCount++;
+            } else if (rec.status === 'Late' || rec.in_status === 'Late') {
+                lateCount++;
+            } else {
+                presentCount++;
+            }
         });
 
         if (totalTeachersStat) totalTeachersStat.textContent = allTeachers.length;
@@ -512,7 +584,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         if (absentTeachersStat) absentTeachersStat.textContent = absentCount;
 
         if (teacherRecordBadge) {
-            teacherRecordBadge.textContent = `Showing ${filtered.length} records`;
+            teacherRecordBadge.textContent = `Showing ${filtered.length} of ${allTeachers.length} faculty`;
         }
 
         if (filtered.length === 0) {
@@ -531,22 +603,25 @@ document.addEventListener('DOMContentLoaded', async function() {
         let html = '';
         filtered.forEach(t => {
             const rec = teacherAttendanceMap[t.id];
-            const status = rec ? rec.status : 'Present';
-            const timeIn = rec?.time_in ? rec.time_in.substring(0, 5) : '07:45';
-            const timeOut = rec?.time_out ? rec.time_out.substring(0, 5) : '17:00';
-            const remarks = rec ? (rec.status === 'Present' ? 'On Duty' : rec.status) : 'On Duty';
+            const hasRecord = !!(rec && rec.time_in);
+            const status = hasRecord ? (rec.status || 'Present') : 'Absent';
+            const timeIn = rec?.time_in ? rec.time_in : '—';
+            const timeOut = rec?.time_out ? rec.time_out : '—';
+            const remarks = hasRecord ? (rec.remarks || (status === 'Late' ? 'Late Arrival' : 'On Duty')) : 'No time-in logged today';
+
+            const statusClass = status.toLowerCase() === 'late' ? 'late' : (hasRecord ? 'present' : 'absent');
 
             html += `
                 <tr>
                     <td><strong>${t.name}</strong></td>
                     <td><span class="id-badge">${t.employee_id}</span></td>
                     <td><i class="far fa-calendar"></i> ${date}</td>
-                    <td>${timeIn}</td>
-                    <td>${timeOut}</td>
+                    <td><strong style="color: ${status === 'Late' ? '#d97706' : '#0f172a'};">${timeIn}</strong></td>
+                    <td><strong>${timeOut}</strong></td>
                     <td>
-                        <span class="legend-pill ${status.toLowerCase()}">${status}</span>
+                        <span class="legend-pill ${statusClass}">${status}</span>
                     </td>
-                    <td>${remarks}</td>
+                    <td><span style="font-size: 12.5px; color: #475569;">${remarks}</span></td>
                     <td>
                         <button type="button" class="btn-edit-sm" onclick="window.openTeacherEditModal('${t.id}')" title="Edit Record" style="background:#e2e8f0; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">
                             <i class="fas fa-edit"></i>

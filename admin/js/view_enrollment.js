@@ -239,6 +239,10 @@ import { EmailNotificationService } from '../../js/email_service.js';
 
             // Render all UI components
             renderStudentInfo();
+        const adminGenBtn = document.getElementById('adminGenerateIdBtn');
+        if (adminGenBtn && currentEnrollment) {
+            adminGenBtn.href = 'generate_id.html?enrollment_id=' + (currentEnrollment.id || '') + (currentEnrollment.student_id ? '&id=' + currentEnrollment.student_id : '');
+        }
             renderEnrollmentInfo();
             renderRequirements();
             renderHistory();
@@ -257,22 +261,44 @@ import { EmailNotificationService } from '../../js/email_service.js';
         submittedRequirements = [];
         missingRequirements = [];
 
-        // Check Form 138
-        const form138Url = student?.form_138_url || doc?.report_card || sDocs.find(d => d.document_type === 'form_138' || d.document_type === 'report_card')?.file_url;
+        const reportCardLabel = 'Report Card';
+
+        // Check Form 138 / Report Card
+        const form138Url = student?.form_138_url || doc?.report_card || sDocs.find(d => d.document_type === 'form_138' || d.document_type === 'report_card' || (d.title && d.title.toLowerCase().includes('report card')))?.file_url;
         if (form138Url) {
             submittedRequirements.push({
-                name: 'Form 138 (Report Card)',
+                name: reportCardLabel,
                 is_required: true,
                 can_be_followed: false,
                 file_path: form138Url
             });
         } else {
             missingRequirements.push({
-                name: 'Form 138 (Report Card)',
+                name: reportCardLabel,
                 is_required: true,
                 can_be_followed: false,
                 file_path: null
             });
+        }
+
+        // Check Form 137 for transferees
+        if (isTransferee) {
+            const form137Url = student?.form_137_url || doc?.form_137 || sDocs.find(d => d.document_type === 'form_137' || (d.title && d.title.toLowerCase().includes('form 137')) || (d.title && d.title.toLowerCase().includes('permanent record')))?.file_url;
+            if (form137Url) {
+                submittedRequirements.push({
+                    name: 'Form 137 (Permanent Record)',
+                    is_required: true,
+                    can_be_followed: false,
+                    file_path: form137Url
+                });
+            } else {
+                missingRequirements.push({
+                    name: 'Form 137 (Permanent Record)',
+                    is_required: true,
+                    can_be_followed: false,
+                    file_path: null
+                });
+            }
         }
 
         // Check PSA Birth Certificate
@@ -305,6 +331,24 @@ import { EmailNotificationService } from '../../js/email_service.js';
         } else {
             missingRequirements.push({
                 name: 'Good Moral Certificate',
+                is_required: true,
+                can_be_followed: false,
+                file_path: null
+            });
+        }
+
+        // Check 2x2 ID Picture
+        const twoByTwoUrl = student?.two_by_two_picture_url || student?.avatar_url || doc?.two_by_two_picture || sDocs.find(d => d.document_type === 'two_by_two_picture' || (d.title && d.title.includes('2x2')))?.file_url;
+        if (twoByTwoUrl) {
+            submittedRequirements.push({
+                name: '2x2 ID Picture (White Background)',
+                is_required: true,
+                can_be_followed: false,
+                file_path: twoByTwoUrl
+            });
+        } else {
+            missingRequirements.push({
+                name: '2x2 ID Picture (White Background)',
                 is_required: true,
                 can_be_followed: false,
                 file_path: null

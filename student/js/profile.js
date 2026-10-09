@@ -309,7 +309,160 @@ import { supabase } from '../../supabase/config.js';
         if (viewStudentPhone) viewStudentPhone.textContent = studentData?.contact_number || userData?.phone || enrollmentData?.contact_number || 'Not provided';
         if (viewStudentParentName) viewStudentParentName.textContent = studentData?.parent_name || enrollmentData?.guardian_name || enrollmentData?.mother_name || enrollmentData?.father_name || 'Not provided';
         if (viewStudentParentPhone) viewStudentParentPhone.textContent = studentData?.parent_contact || enrollmentData?.guardian_contact || 'Not provided';
+        
+        const viewStudentParentFb = document.getElementById('viewStudentParentFb');
+        if (viewStudentParentFb) viewStudentParentFb.textContent = studentData?.parent_facebook || 'Not provided';
+        
+        const viewStudentParentEmail = document.getElementById('viewStudentParentEmail');
+        if (viewStudentParentEmail) viewStudentParentEmail.textContent = studentData?.parent_email || enrollmentData?.guardian_email || 'Not provided';
+
         if (viewStudentAddress) viewStudentAddress.textContent = studentData?.address || userData?.address || enrollmentData?.address || 'Not provided';
+
+        // Render Emergency ID & Parent Contact QR
+        renderStudentEmergencyQr();
+    }
+
+    // ============================================
+    // STUDENT EMERGENCY ID & PARENT CONTACT QR
+    // ============================================
+    function renderStudentEmergencyQr() {
+        const qrImg = document.getElementById('studentEmergencyQrImg');
+        const qrLoading = document.getElementById('qrLoadingText');
+        const qrParentName = document.getElementById('qrCardParentName');
+        const qrParentPhone = document.getElementById('qrCardParentPhone');
+        const qrParentFb = document.getElementById('qrCardParentFb');
+        const qrParentEmail = document.getElementById('qrCardParentEmail');
+        const btnCall = document.getElementById('btnCallParent');
+        const btnFb = document.getElementById('btnFbParent');
+        const btnEmail = document.getElementById('btnEmailParent');
+
+        const sName = studentData?.first_name ? `${studentData.first_name} ${studentData.last_name || ''}`.trim() : (sessionUser?.firstName ? `${sessionUser.firstName} ${sessionUser.lastName || ''}`.trim() : 'Student');
+        const lrn = studentData?.lrn || 'Pending LRN';
+        const grade = studentData?.grade_level || enrollmentData?.grade_level || 'HES Student';
+        const pName = studentData?.parent_name || enrollmentData?.guardian_name || 'Guardian Not Set';
+        const pPhone = studentData?.parent_contact || enrollmentData?.guardian_contact || '';
+        const pFb = studentData?.parent_facebook || '';
+        const pEmail = studentData?.parent_email || enrollmentData?.guardian_email || '';
+
+        if (qrParentName) qrParentName.textContent = `Parent: ${pName}`;
+        if (qrParentPhone) qrParentPhone.textContent = `Phone: ${pPhone || 'Not Set'}`;
+        if (qrParentFb) qrParentFb.textContent = `FB: ${pFb || 'Not Set'}`;
+        if (qrParentEmail) qrParentEmail.textContent = `Gmail: ${pEmail || 'Not Set'}`;
+
+        // 1-Click Action Links
+        if (btnCall) {
+            btnCall.href = pPhone ? `tel:${pPhone}` : '#';
+            btnCall.style.opacity = pPhone ? '1' : '0.5';
+            btnCall.title = pPhone ? `Call ${pPhone}` : 'No phone number provided';
+        }
+
+        if (btnFb) {
+            if (pFb) {
+                const fbUrl = pFb.startsWith('http') ? pFb : `https://facebook.com/${pFb.replace(/^@/, '')}`;
+                btnFb.href = fbUrl;
+                btnFb.style.opacity = '1';
+                btnFb.title = `Open ${pFb}`;
+            } else {
+                btnFb.href = '#';
+                btnFb.style.opacity = '0.5';
+                btnFb.title = 'No Facebook account provided';
+            }
+        }
+
+        if (btnEmail) {
+            if (pEmail) {
+                btnEmail.href = `mailto:${pEmail}?subject=Emergency%20Contact%20-%20Student%20${encodeURIComponent(sName)}`;
+                btnEmail.style.opacity = '1';
+                btnEmail.title = `Email ${pEmail}`;
+            } else {
+                btnEmail.href = '#';
+                btnEmail.style.opacity = '0.5';
+                btnEmail.title = 'No Gmail/email provided';
+            }
+        }
+
+        // Construct QR payload with contact details
+        const qrPayload = [
+            `HIRAYA ENROLLMENT SYSTEM (HES)`,
+            `STUDENT: ${sName}`,
+            `LRN: ${lrn}`,
+            `GRADE: ${grade}`,
+            `--- EMERGENCY PARENT CONTACT ---`,
+            `PARENT: ${pName}`,
+            `PHONE: ${pPhone || 'N/A'}`,
+            `FB: ${pFb || 'N/A'}`,
+            `GMAIL: ${pEmail || 'N/A'}`
+        ].join('\n');
+
+        if (qrImg) {
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&format=svg&data=${encodeURIComponent(qrPayload)}`;
+            qrImg.onload = function() {
+                if (qrLoading) qrLoading.style.display = 'none';
+            };
+            qrImg.onerror = function() {
+                if (qrLoading) qrLoading.innerHTML = '<span style="color:#ef4444;"><i class="fas fa-exclamation-circle"></i> Error generating QR</span>';
+            };
+            qrImg.src = qrUrl;
+        }
+
+        // Print Emergency ID Badge
+        window.printQrBadge = function() {
+            const printWin = window.open('', '_blank', 'width=600,height=700');
+            printWin.document.write(`
+                <html>
+                <head>
+                    <title>Student Emergency ID Badge - ${sName}</title>
+                    <style>
+                        body { font-family: 'Segoe UI', Arial, sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; background: #f1f5f9; }
+                        .id-card { width: 340px; background: #fff; border-radius: 16px; border: 2px solid #0b2b4a; box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden; }
+                        .id-header { background: #0b2b4a; color: #fff; padding: 16px; text-align: center; }
+                        .id-header h2 { margin: 0; font-size: 16px; letter-spacing: 1px; color: #ffd700; }
+                        .id-header p { margin: 2px 0 0; font-size: 11px; opacity: 0.85; }
+                        .id-body { padding: 18px; text-align: center; }
+                        .qr-box { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 10px; display: inline-block; margin-bottom: 14px; }
+                        .qr-box img { width: 180px; height: 180px; display: block; }
+                        .student-info h3 { margin: 0 0 4px; font-size: 17px; color: #0f172a; }
+                        .student-info p { margin: 2px 0; font-size: 12px; color: #64748b; font-weight: 500; }
+                        .contact-info { background: #f1f5f9; border-radius: 8px; padding: 10px; margin-top: 14px; text-align: left; font-size: 11px; color: #334155; line-height: 1.5; }
+                        .id-footer { background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 8px; text-align: center; font-size: 10px; color: #94a3b8; }
+                        @media print { body { background: none; } .id-card { box-shadow: none; } }
+                    </style>
+                </head>
+                <body>
+                    <div class="id-card">
+                        <div class="id-header">
+                            <h2>HIRAYA ENROLLMENT SYSTEM</h2>
+                            <p>Official Student Emergency Contact ID</p>
+                        </div>
+                        <div class="id-body">
+                            <div class="qr-box">
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrPayload)}" alt="QR Code">
+                            </div>
+                            <div class="student-info">
+                                <h3>${sName}</h3>
+                                <p><strong>LRN:</strong> ${lrn}</p>
+                                <p><strong>Level:</strong> ${grade}</p>
+                            </div>
+                            <div class="contact-info">
+                                <div><strong>Emergency Parent Contact:</strong></div>
+                                <div>Name: ${pName}</div>
+                                <div>Contact: ${pPhone || 'N/A'}</div>
+                                <div>Facebook: ${pFb || 'N/A'}</div>
+                                <div>Gmail: ${pEmail || 'N/A'}</div>
+                            </div>
+                        </div>
+                        <div class="id-footer">
+                            Scan QR Code for instant emergency guardian verification
+                        </div>
+                    </div>
+                    <script>
+                        window.onload = function() { window.print(); }
+                    </script>
+                </body>
+                </html>
+            `);
+            printWin.document.close();
+        };
     }
 
     function populateEditForm() {
@@ -321,6 +474,8 @@ import { supabase } from '../../supabase/config.js';
         const editStudentAddress = document.getElementById('editStudentAddress');
         const editParentName = document.getElementById('editParentName');
         const editParentPhone = document.getElementById('editParentPhone');
+        const editParentFb = document.getElementById('editParentFb');
+        const editParentEmail = document.getElementById('editParentEmail');
 
         const fNameVal = studentData?.first_name || userData?.first_name || sessionUser.firstName || '';
         const lNameVal = studentData?.last_name || userData?.last_name || sessionUser.lastName || '';
@@ -343,6 +498,8 @@ import { supabase } from '../../supabase/config.js';
         if (editStudentAddress) editStudentAddress.value = studentData?.address || userData?.address || enrollmentData?.address || '';
         if (editParentName) editParentName.value = studentData?.parent_name || enrollmentData?.guardian_name || enrollmentData?.mother_name || enrollmentData?.father_name || '';
         if (editParentPhone) editParentPhone.value = studentData?.parent_contact || enrollmentData?.guardian_contact || '';
+        if (editParentFb) editParentFb.value = studentData?.parent_facebook || '';
+        if (editParentEmail) editParentEmail.value = studentData?.parent_email || enrollmentData?.guardian_email || '';
     }
 
     // ============================================
@@ -400,6 +557,8 @@ import { supabase } from '../../supabase/config.js';
             const address = document.getElementById('editStudentAddress')?.value.trim() || '';
             const parentName = document.getElementById('editParentName')?.value.trim() || '';
             const parentPhone = document.getElementById('editParentPhone')?.value.trim() || '';
+            const parentFb = document.getElementById('editParentFb')?.value.trim() || '';
+            const parentEmail = document.getElementById('editParentEmail')?.value.trim() || '';
 
             if (!firstName || !lastName) {
                 showAlert('First name and last name are required.', 'error');
@@ -427,6 +586,8 @@ import { supabase } from '../../supabase/config.js';
                             address: address,
                             parent_name: parentName,
                             parent_contact: parentPhone,
+                            parent_facebook: parentFb,
+                            parent_email: parentEmail,
                             updated_at: new Date().toISOString()
                         });
                         if (studentData?.id) {
@@ -484,6 +645,8 @@ import { supabase } from '../../supabase/config.js';
                     studentData.address = address;
                     studentData.parent_name = parentName;
                     studentData.parent_contact = parentPhone;
+                    studentData.parent_facebook = parentFb;
+                    studentData.parent_email = parentEmail;
                 }
 
                 // 4. Update UI labels and View Mode
@@ -813,6 +976,17 @@ import { supabase } from '../../supabase/config.js';
             type: 'Good Moral Certificate',
             filename: 'Good_Moral_Certificate.jpg',
             size: '850 KB',
+            date: '2026-06-05',
+            format: 'img',
+            status: 'Verified',
+            dataUrl: null
+        },
+        {
+            id: 'sdoc_4',
+            title: '2x2 ID Picture (White Background)',
+            type: '2x2 ID Picture',
+            filename: '2x2_ID_Picture.jpg',
+            size: '420 KB',
             date: '2026-06-05',
             format: 'img',
             status: 'Verified',

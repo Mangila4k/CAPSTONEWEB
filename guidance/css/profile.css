@@ -1,0 +1,80 @@
+/* ===== GUIDANCE COUNSELOR PROFILE CSS ===== */
+
+.profile-layout {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 24px;
+}
+
+@media (max-width: 992px) {
+    .profile-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+.profile-sidebar-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 28px 24px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    text-align: center;
+}
+
+.profile-avatar-large {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    background: #facc15;
+    color: #1B2A4A;
+    font-size: 38px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    box-shadow: 0 4px 12px rgba(250, 204, 21, 0.3);
+}
+
+.profile-sidebar-card h3 {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--primary);
+    margin-bottom: 4px;
+}
+
+.profile-sidebar-card .role-badge {
+    display: inline-block;
+    background: #fef3c7;
+    color: #b45309;
+    border: 1px solid #fde68a;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+.profile-meta-list {
+    text-align: left;
+    border-top: 1px solid var(--border-color);
+    padding-top: 18px;
+}
+
+.meta-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.meta-row i {
+    width: 18px;
+    color: var(--primary);
+}
+
+.meta-row strong {
+    color: var(--text-main);
+}

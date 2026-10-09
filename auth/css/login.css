@@ -12,7 +12,15 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #0b2b4a, #1a3d5f);
+    background-color: #1a225a;
+    background-image: 
+        radial-gradient(ellipse at 85% 15%, rgba(245, 158, 11, 0.16) 0%, transparent 45%),
+        linear-gradient(135deg, rgba(26, 34, 90, 0.65) 0%, rgba(13, 17, 50, 0.82) 100%),
+        url('../../pictures/deped_matatag_banner.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
     padding: 2rem 1.5rem;
     position: relative;
     overflow-x: hidden;
@@ -58,9 +66,10 @@ body::after {
     background: #ffffff;
     border-radius: 24px;
     overflow: hidden;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.2);
     display: flex;
     animation: fadeInUp 0.5s ease-out forwards;
+    position: relative;
 }
 
 @keyframes fadeInUp {
@@ -365,14 +374,14 @@ h2 {
 }
 
 .forgot-password a:hover {
-    color: #1e40af;
+    color: #1a225a;
     text-decoration: underline;
 }
 
 /* Submit Login Button */
 .btn-login {
     width: 100%;
-    background: linear-gradient(135deg, #0b2b4a 0%, #153e6b 100%);
+    background: linear-gradient(135deg, #1a225a 0%, #24307d 100%);
     color: #ffffff;
     padding: 13px 20px;
     border: none;
@@ -386,13 +395,14 @@ h2 {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    box-shadow: 0 4px 14px rgba(11, 43, 74, 0.25);
+    box-shadow: 0 4px 14px rgba(26, 34, 90, 0.35);
 }
 
 .btn-login:hover:not(:disabled) {
-    background: linear-gradient(135deg, #08213a 0%, #0e2f54 100%);
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: #070526;
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(11, 43, 74, 0.35);
+    box-shadow: 0 8px 20px rgba(245, 158, 11, 0.4);
 }
 
 .btn-login:active:not(:disabled) {
@@ -414,7 +424,7 @@ h2 {
 }
 
 .signup-link a {
-    color: #0b2b4a;
+    color: #1a225a;
     text-decoration: none;
     font-weight: 700;
     transition: color 0.2s ease;
@@ -445,8 +455,8 @@ h2 {
 }
 
 .back-home:hover {
-    color: #0b2b4a;
-    background: #f1f5f9;
+    color: #1a225a;
+    background: #eff6ff;
 }
 
 /* ================================================= */
@@ -455,7 +465,14 @@ h2 {
 
 .info-panel {
     flex: 1;
-    background: linear-gradient(135deg, #0b2b4a 0%, #1a3d5f 100%);
+    background-color: #1a225a;
+    background-image: 
+        radial-gradient(ellipse at 85% 15%, rgba(245, 158, 11, 0.18) 0%, transparent 50%),
+        linear-gradient(135deg, rgba(26, 34, 90, 0.88) 0%, rgba(13, 17, 50, 0.94) 100%),
+        url('../../pictures/deped_matatag_banner.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
     padding: 44px 36px;
     color: #ffffff;
     position: relative;

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Conduct Directory - HES Guidance</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/students.css">
+    <link rel="stylesheet" href="../css/chatbot.css">
+    <!-- QRCode JS Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+
+    <div class="app-container">
+        <!-- ===== SIDEBAR ===== -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
+                    </div>
+                    <div class="logo-text">PLS<span>NSH</span></div>
+                </div>
+                <div class="school-badge">Guidance & Counseling Services</div>
+            </div>
+
+            <div class="counselor-profile">
+                <div class="counselor-avatar">
+                    <div class="avatar-initial" id="counselorAvatar">G</div>
+                    <div class="online-dot"></div>
+                </div>
+                <div class="counselor-name" id="counselorName">Sarah (Counselor)</div>
+                <div class="counselor-role"><i class="fas fa-heart-pulse"></i> Guidance Office</div>
+            </div>
+
+            <nav class="nav-menu">
+                <div class="nav-section">
+                    <div class="nav-section-title">MAIN MENU</div>
+                    <ul class="nav-items">
+                        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                        <li><a href="violations.html"><i class="fas fa-clipboard-list"></i> Guidance Records</a></li>
+                        <li><a href="add_violation.html"><i class="fas fa-file-circle-plus"></i> Log Guidance Case</a></li>
+                        <li><a href="counseling.html"><i class="fas fa-user-doctor"></i> Counseling Sessions</a></li>
+                        <li><a href="students.html" class="active"><i class="fas fa-user-graduate"></i> Student Directory</a></li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">RECORDS & REPORTS</div>
+                    <ul class="nav-items">
+                        <li><a href="reports.html"><i class="fas fa-chart-pie"></i> Discipline Reports</a></li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">ACCOUNT</div>
+                    <ul class="nav-items">
+                        <li><a href="profile.html"><i class="fas fa-user-circle"></i> Counselor Profile</a></li>
+                        <li><a href="../auth/login.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                    </ul>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- ===== MAIN CONTENT ===== -->
+        <main class="main-content">
+            <div class="page-header">
+                <div>
+                    <h1>Student Conduct Directory</h1>
+                    <p class="subtitle">Comprehensive roster of students, conduct standing, emergency contacts, and parent QR profiles</p>
+                </div>
+                <div class="header-actions">
+                    <a href="violations.html" class="btn-primary">
+                        <i class="fas fa-triangle-exclamation"></i> Log Violation Incident
+                    </a>
+                </div>
+            </div>
+
+            <!-- Alert Container -->
+            <div id="alertContainer"></div>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <h3>Total Students</h3>
+                        <div class="stat-icon"><i class="fas fa-users"></i></div>
+                    </div>
+                    <div class="stat-number" id="statTotalStudents">0</div>
+                    <div class="stat-label">Total students enrolled</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <h3>Clean Conduct Record</h3>
+                        <div class="stat-icon success"><i class="fas fa-shield-check"></i></div>
+                    </div>
+                    <div class="stat-number" id="statGoodStanding">0</div>
+                    <div class="stat-label">Zero recorded offenses</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <h3>In Counseling Program</h3>
+                        <div class="stat-icon info"><i class="fas fa-user-clock"></i></div>
+                    </div>
+                    <div class="stat-number" id="statInCounseling">0</div>
+                    <div class="stat-label">Active guidance sessions</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <h3>Active Disciplinary Cases</h3>
+                        <div class="stat-icon danger"><i class="fas fa-triangle-exclamation"></i></div>
+                    </div>
+                    <div class="stat-number" id="statWithViolations">0</div>
+                    <div class="stat-label">Pending resolution</div>
+                </div>
+            </div>
+
+            <!-- Actions Bar with Search & Filters -->
+            <div class="actions-bar">
+                <div class="filter-group">
+                    <select class="filter-select" id="filterGrade">
+                        <option value="">All Grade Levels</option>
+                        <option value="Grade 11">Grade 11</option>
+                        <option value="Grade 12">Grade 12</option>
+                    </select>
+                    <select class="filter-select" id="filterStanding">
+                        <option value="">All Conduct Standings</option>
+                        <option value="Good Standing">Good Standing (Clean)</option>
+                        <option value="In Counseling">In Counseling</option>
+                        <option value="With Violations">With Violations</option>
+                    </select>
+                </div>
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Search by student name, LRN, strand, or parent name...">
+                </div>
+                <button class="btn-refresh" id="btnResetFilters" title="Reset Filters">
+                    <i class="fas fa-rotate-left"></i> Reset
+                </button>
+            </div>
+
+            <!-- Table Card -->
+            <div class="table-card">
+                <div class="table-header">
+                    <h3><i class="fas fa-address-book"></i> Student Roster & Parent Emergency Contacts</h3>
+                    <span class="badge-count" id="studentCountBadge">Showing 0 students</span>
+                </div>
+                <div class="table-container">
+                    <table class="students-table data-table" id="studentsTable">
+                        <thead>
+                            <tr>
+                                <th>Student Details</th>
+                                <th>Grade & Section</th>
+                                <th>Conduct Status</th>
+                                <th>Parent / Guardian</th>
+                                <th>Parent Contact (Phone / Gmail / FB)</th>
+                                <th style="text-align: right;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentsTableBody">
+                            <tr>
+                                <td colspan="6" class="loading-cell">
+                                    <i class="fas fa-spinner fa-spin"></i> Loading student conduct directory...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- MODAL: EMERGENCY ID & PARENT QR CARD         -->
+    <!-- ============================================ -->
+    <div class="modal-overlay" id="modalStudentQR">
+        <div class="modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-qrcode"></i> Student Emergency & Parent Contact QR Card</h3>
+                <button class="modal-close" onclick="closeQRModal()" aria-label="Close modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="qr-card-container">
+                    <div class="qr-canvas-box" id="qrCanvasContainer">
+                        <!-- QR Code Canvas Rendered Here -->
+                    </div>
+                    <div class="qr-info-box">
+                        <h3 id="qrModalStudentName" class="qr-student-name">Student Name</h3>
+                        <p id="qrModalMeta" class="qr-student-meta">LRN: 000000000000 • Grade 11</p>
+                        
+                        <div class="qr-contact-details">
+                            <div><strong>Parent/Guardian:</strong> <span id="qrModalParentName">—</span></div>
+                            <div><strong>Phone Contact:</strong> <span id="qrModalParentPhone">—</span></div>
+                            <div><strong>Parent Gmail:</strong> <span id="qrModalParentEmail">—</span></div>
+                            <div><strong>Facebook:</strong> <span id="qrModalParentFB">—</span></div>
+                        </div>
+
+                        <div class="qr-quick-actions">
+                            <a href="#" id="qrBtnCall" class="btn-quick-contact btn-quick-call">
+                                <i class="fas fa-phone-alt"></i> Call Parent
+                            </a>
+                            <a href="#" id="qrBtnEmail" class="btn-quick-contact btn-quick-email">
+                                <i class="fas fa-envelope"></i> Send Email
+                            </a>
+                            <a href="#" id="qrBtnFB" target="_blank" rel="noopener noreferrer" class="btn-quick-contact btn-quick-messenger">
+                                <i class="fab fa-facebook-messenger"></i> Messenger
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="qrStudentConductSummary" class="qr-conduct-summary">
+                    <!-- Conduct history loaded dynamically -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="window.print()">
+                    <i class="fas fa-print"></i> Print QR Card
+                </button>
+                <button type="button" class="btn-primary" onclick="closeQRModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="js/students.js"></script>
+    <script src="../js/chatbot.js"></script>
+</body>
+</html>

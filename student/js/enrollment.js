@@ -12,8 +12,17 @@ import { EmailNotificationService } from '../../js/email_service.js';
 const requirementsData = {
     'Grade 7': {
         'new': [
+            { name: '2x2 ID Picture for Official School ID (White Background)', required: true, can_follow: false, field: 'two_by_two_picture' },
             { name: 'Form 137 (Permanent Record)', required: true, can_follow: false, field: 'form_137' },
-            { name: 'Form 138 (Report Card)', required: true, can_follow: false, field: 'form_138' },
+            { name: 'Report Card', required: true, can_follow: false, field: 'report_card' },
+            { name: 'Certificate of Completion (Elementary)', required: true, can_follow: false, field: 'certificate_of_completion' },
+            { name: 'PSA Birth Certificate', required: true, can_follow: false, field: 'psa_birth_cert' },
+            { name: 'Good Moral Certificate', required: true, can_follow: false, field: 'good_moral_cert' }
+        ],
+        'transferee': [
+            { name: '2x2 ID Picture for Official School ID (White Background)', required: true, can_follow: false, field: 'two_by_two_picture' },
+            { name: 'Form 137 (Permanent Record)', required: true, can_follow: false, field: 'form_137' },
+            { name: 'Report Card', required: true, can_follow: false, field: 'report_card' },
             { name: 'Certificate of Completion (Elementary)', required: true, can_follow: false, field: 'certificate_of_completion' },
             { name: 'PSA Birth Certificate', required: true, can_follow: false, field: 'psa_birth_cert' },
             { name: 'Good Moral Certificate', required: true, can_follow: false, field: 'good_moral_cert' }
@@ -21,11 +30,13 @@ const requirementsData = {
     },
     'Grade 8': {
         'continuing': [
-            { name: 'Form 138 (Report Card)', required: true, can_follow: false, field: 'form_138' }
+            { name: '2x2 ID Picture for Official School ID (White Background)', required: true, can_follow: false, field: 'two_by_two_picture' },
+            { name: 'Report Card', required: true, can_follow: false, field: 'report_card' }
         ],
         'transferee': [
+            { name: '2x2 ID Picture for Official School ID (White Background)', required: true, can_follow: false, field: 'two_by_two_picture' },
             { name: 'Form 137 (Permanent Record)', required: true, can_follow: false, field: 'form_137' },
-            { name: 'Form 138 (Latest Report Card)', required: true, can_follow: false, field: 'form_138' },
+            { name: 'Report Card', required: true, can_follow: false, field: 'report_card' },
             { name: 'Certificate of Completion', required: true, can_follow: false, field: 'certificate_of_completion' },
             { name: 'PSA Birth Certificate', required: true, can_follow: false, field: 'psa_birth_cert' },
             { name: 'Good Moral Certificate', required: true, can_follow: false, field: 'good_moral_cert' }
@@ -33,11 +44,13 @@ const requirementsData = {
     },
     'Grade 9': {
         'continuing': [
-            { name: 'Form 138 (Report Card)', required: true, can_follow: false, field: 'form_138' }
+            { name: '2x2 ID Picture for Official School ID (White Background)', required: true, can_follow: false, field: 'two_by_two_picture' },
+            { name: 'Report Card', required: true, can_follow: false, field: 'report_card' }
         ],
         'transferee': [
+            { name: '2x2 ID Picture for Official School ID (White Background)', required: true, can_follow: false, field: 'two_by_two_picture' },
             { name: 'Form 137 (Permanent Record)', required: true, can_follow: false, field: 'form_137' },
-            { name: 'Form 138 (Latest Report Card)', required: true, can_follow: false, field: 'form_138' },
+            { name: 'Report Card', required: true, can_follow: false, field: 'report_card' },
             { name: 'Certificate of Completion', required: true, can_follow: false, field: 'certificate_of_completion' },
             { name: 'PSA Birth Certificate', required: true, can_follow: false, field: 'psa_birth_cert' },
             { name: 'Good Moral Certificate', required: true, can_follow: false, field: 'good_moral_cert' }
@@ -45,11 +58,13 @@ const requirementsData = {
     },
     'Grade 10': {
         'continuing': [
-            { name: 'Form 138 (Report Card)', required: true, can_follow: false, field: 'form_138' }
+            { name: '2x2 ID Picture for Official School ID (White Background)', required: true, can_follow: false, field: 'two_by_two_picture' },
+            { name: 'Report Card', required: true, can_follow: false, field: 'report_card' }
         ],
         'transferee': [
+            { name: '2x2 ID Picture for Official School ID (White Background)', required: true, can_follow: false, field: 'two_by_two_picture' },
             { name: 'Form 137 (Permanent Record)', required: true, can_follow: false, field: 'form_137' },
-            { name: 'Form 138 (Latest Report Card)', required: true, can_follow: false, field: 'form_138' },
+            { name: 'Report Card', required: true, can_follow: false, field: 'report_card' },
             { name: 'Certificate of Completion', required: true, can_follow: false, field: 'certificate_of_completion' },
             { name: 'PSA Birth Certificate', required: true, can_follow: false, field: 'psa_birth_cert' },
             { name: 'Good Moral Certificate', required: true, can_follow: false, field: 'good_moral_cert' }
@@ -57,11 +72,13 @@ const requirementsData = {
     },
     'Grade 11': {
         'same_school': [
-            { name: 'Form 138 (Grade 10 Report Card)', required: true, can_follow: false, field: 'form_138' }
+            { name: '2x2 ID Picture for Official School ID (White Background)', required: true, can_follow: false, field: 'two_by_two_picture' },
+            { name: 'Report Card', required: true, can_follow: false, field: 'report_card' }
         ],
         'different_school': [
+            { name: '2x2 ID Picture for Official School ID (White Background)', required: true, can_follow: false, field: 'two_by_two_picture' },
             { name: 'Form 137 (Permanent Record)', required: true, can_follow: false, field: 'form_137' },
-            { name: 'Form 138 (Grade 10 Report Card)', required: true, can_follow: false, field: 'form_138' },
+            { name: 'Report Card', required: true, can_follow: false, field: 'report_card' },
             { name: 'Certificate of Completion (Junior High)', required: true, can_follow: false, field: 'certificate_of_completion' },
             { name: 'PSA Birth Certificate', required: true, can_follow: false, field: 'psa_birth_cert' },
             { name: 'Good Moral Certificate', required: true, can_follow: false, field: 'good_moral_cert' }
@@ -69,11 +86,13 @@ const requirementsData = {
     },
     'Grade 12': {
         'continuing': [
-            { name: 'Form 138 (Grade 11 Report Card)', required: true, can_follow: false, field: 'form_138' }
+            { name: '2x2 ID Picture for Official School ID (White Background)', required: true, can_follow: false, field: 'two_by_two_picture' },
+            { name: 'Report Card', required: true, can_follow: false, field: 'report_card' }
         ],
         'transferee': [
+            { name: '2x2 ID Picture for Official School ID (White Background)', required: true, can_follow: false, field: 'two_by_two_picture' },
             { name: 'Form 137 (Permanent Record)', required: true, can_follow: false, field: 'form_137' },
-            { name: 'Form 138 (Grade 11 Report Card)', required: true, can_follow: false, field: 'form_138' },
+            { name: 'Report Card', required: true, can_follow: false, field: 'report_card' },
             { name: 'Certificate of Completion', required: true, can_follow: false, field: 'certificate_of_completion' },
             { name: 'PSA Birth Certificate', required: true, can_follow: false, field: 'psa_birth_cert' },
             { name: 'Good Moral Certificate', required: true, can_follow: false, field: 'good_moral_cert' }
@@ -126,12 +145,12 @@ if (schoolYearInput) {
 
 function getStudentTypeOptions(gradeName) {
     const map = {
-        'Grade 7': { 'new': 'New Student (From Elementary)' },
+        'Grade 7': { 'new': 'New Student (From Elementary)', 'transferee': 'Transferee (From another school)' },
         'Grade 8': { 'continuing': 'Continuing Student', 'transferee': 'Transferee (From another school)' },
         'Grade 9': { 'continuing': 'Continuing Student', 'transferee': 'Transferee (From another school)' },
         'Grade 10': { 'continuing': 'Continuing Student', 'transferee': 'Transferee (From another school)' },
         'Grade 11': {
-            'same_school': 'From HES Junior High',
+            'same_school': 'From PLSNHS',
             'different_school': 'From a different school (Transferee)'
         },
         'Grade 12': { 'continuing': 'Continuing Student (From Grade 11)', 'transferee': 'Transferee (From another school)' }
@@ -231,20 +250,25 @@ function updateRequirements() {
             const reqDiv = document.createElement('div');
             reqDiv.className = 'requirement-item';
 
+            const isPhoto = req.field === 'two_by_two_picture';
+            const iconClass = isPhoto ? 'fa-id-badge' : 'fa-file';
+            const acceptTypes = isPhoto ? '.jpg,.jpeg,.png' : '.pdf,.jpg,.jpeg,.png';
+            const formatHint = isPhoto ? 'JPG or PNG (Formal attire with plain white background). Uploaded photo is used by the Registrar to generate your official school ID card with QR code upon enrollment approval.' : 'PDF, JPG, JPEG, or PNG';
+
             let badgeHtml = req.required ? 
                 '<span class="req-badge badge-required">Required</span>' : 
                 '<span class="req-badge badge-optional">Optional</span>';
 
             reqDiv.innerHTML = `
                 <div class="requirement-name">
-                    <span><i class="fas fa-file"></i> ${req.name}</span>
+                    <span><i class="fas ${iconClass}"></i> ${req.name}</span>
                     <div>${badgeHtml}</div>
                 </div>
                 <div class="file-upload-area" onclick="document.getElementById('${req.field}').click()">
-                    <i class="fas fa-cloud-upload-alt"></i> Click to upload
-                    <p style="font-size: 11px; color: #666; margin-top: 5px;">PDF, JPG, JPEG, or PNG</p>
+                    <i class="fas ${isPhoto ? 'fa-camera' : 'fa-cloud-upload-alt'}"></i> Click to upload
+                    <p style="font-size: 11px; color: #666; margin-top: 5px;">${formatHint}</p>
                 </div>
-                <input type="file" name="${req.field}" id="${req.field}" accept=".pdf,.jpg,.jpeg,.png" style="display: none;" 
+                <input type="file" name="${req.field}" id="${req.field}" accept="${acceptTypes}" style="display: none;" 
                        ${req.required ? 'required' : ''}>
                 <div class="file-name" id="${req.field}_name"></div>
             `;
@@ -406,9 +430,25 @@ async function submitEnrollment(e) {
         const guardianAddress = document.getElementById('guardianAddress')?.value.trim() || '';
 
         const enrolledStudentType = document.getElementById('student_type')?.value || studentType || (gradeName.includes('7') ? 'New Student' : 'Continuing');
-        const previousSchool = document.getElementById('previousSchool')?.value.trim() || (enrolledStudentType === 'Transferee' ? 'Previous School' : 'Hiraya Enrollment System');
+        const previousSchool = document.getElementById('previousSchool')?.value.trim() || (enrolledStudentType === 'Transferee' ? 'Previous School' : 'Placido L. Señor National High School (PLSNHS)');
         const previousGrade = document.getElementById('previousGrade')?.value.trim() || 'N/A';
         const studentId = sessionUser?.id || sessionUser?.uid || null;
+
+        // 1a. Read 2x2 picture as Data URL for official ID generation
+        let twoByTwoDataUrl = null;
+        const picInputForDb = document.getElementById('two_by_two_picture');
+        if (picInputForDb && picInputForDb.files && picInputForDb.files[0]) {
+            try {
+                twoByTwoDataUrl = await new Promise((resolve) => {
+                    const r = new FileReader();
+                    r.onload = (e) => resolve(e.target.result);
+                    r.onerror = () => resolve(null);
+                    r.readAsDataURL(picInputForDb.files[0]);
+                });
+            } catch(e) {
+                console.warn('Could not encode 2x2 picture:', e);
+            }
+        }
 
         // 1. Insert enrollment in Supabase
         const { data: newEnr, error: enrError } = await supabase
@@ -444,6 +484,7 @@ async function submitEnrollment(e) {
                 previous_grade: previousGrade,
                 last_school_year: schoolYear,
                 status: 'pending',
+                two_by_two_picture_url: twoByTwoDataUrl,
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString()
             }])
@@ -455,6 +496,74 @@ async function submitEnrollment(e) {
         const studentFullName = `${firstName} ${lastName}`.trim() || 'Applicant';
         const notifTitle = '📋 New Enrollment Submission';
         const notifMessage = `New enrollment application from ${studentFullName} (${gradeName}${strand ? ' - ' + strand : ''}).`;
+
+        // 1b. Save uploaded 2x2 picture to avatar & documents storage
+        const twoByTwoInput = document.getElementById('two_by_two_picture');
+        if (twoByTwoInput && twoByTwoInput.files && twoByTwoInput.files[0]) {
+            try {
+                const picFile = twoByTwoInput.files[0];
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    const dataUrl = evt.target.result;
+                    if (dataUrl) {
+                        localStorage.setItem('hes_student_avatar', dataUrl);
+                        let curDocs = [];
+                        try {
+                            const saved = localStorage.getItem('hes_student_documents');
+                            if (saved) curDocs = JSON.parse(saved);
+                        } catch(e) {}
+                        curDocs = curDocs.filter(d => d.type !== '2x2 ID Picture');
+                        curDocs.unshift({
+                            id: 'sdoc_2x2_' + Date.now(),
+                            title: '2x2 ID Picture for Official School ID (White Background)',
+                            type: '2x2 ID Picture',
+                            filename: picFile.name,
+                            size: Math.round(picFile.size / 1024) + ' KB',
+                            date: new Date().toISOString().split('T')[0],
+                            format: 'img',
+                            status: 'Pending Verification',
+                            dataUrl: dataUrl
+                        });
+                        localStorage.setItem('hes_student_documents', JSON.stringify(curDocs));
+                    }
+                };
+                reader.readAsDataURL(picFile);
+            } catch(picErr) {
+                console.warn('2x2 picture save notice:', picErr);
+            }
+        }
+
+        // 1c. Save uploaded Report Card / Form 138 if provided
+        const rcInput = document.getElementById('report_card') || document.getElementById('form_138');
+        if (rcInput && rcInput.files && rcInput.files[0]) {
+            try {
+                const rcFile = rcInput.files[0];
+                const isTransDoc = rcInput.id === 'report_card';
+                const docType = isTransDoc ? 'Report Card' : 'Form 138 / Report Card';
+                const docTitle = isTransDoc ? 'Report Card' : 'Form 138 (Report Card)';
+                const isPdf = rcFile.name.toLowerCase().endsWith('.pdf');
+                let curDocs = [];
+                try {
+                    const saved = localStorage.getItem('hes_student_documents');
+                    if (saved) curDocs = JSON.parse(saved);
+                } catch(e) {}
+                curDocs = curDocs.filter(d => d.type !== 'Report Card' && d.type !== 'Form 138 / Report Card');
+                curDocs.unshift({
+                    id: 'sdoc_rc_' + Date.now(),
+                    title: docTitle,
+                    type: docType,
+                    filename: rcFile.name,
+                    size: Math.round(rcFile.size / 1024) + ' KB',
+                    date: new Date().toISOString().split('T')[0],
+                    format: isPdf ? 'pdf' : 'img',
+                    status: 'Pending Verification',
+                    dataUrl: null
+                });
+                localStorage.setItem('hes_student_documents', JSON.stringify(curDocs));
+            } catch(rcErr) {
+                console.warn('Report card save notice:', rcErr);
+            }
+        }
 
         // 2. Notify Registrar via notifications table in Supabase
         try {

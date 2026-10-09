@@ -363,7 +363,7 @@ import {
                         <div class="class-actions">
                             <a href="grades.html" class="class-action-btn btn-grades"><i class="fas fa-star"></i> Grades</a>
                             <a href="view-section.html?id=${section.id || ''}" class="class-action-btn btn-students"><i class="fas fa-clipboard-check"></i> Attendance & Section</a>
-                            <a href="schedule.html" class="class-action-btn btn-schedule"><i class="fas fa-clock"></i> Schedule</a>
+                            <a href="class-program.html" class="class-action-btn btn-schedule"><i class="fas fa-calendar-alt"></i> Class Program</a>
                         </div>
                     </div>
                 </div>

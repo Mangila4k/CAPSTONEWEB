@@ -1,0 +1,759 @@
+/* ===== GUIDANCE REPORTS & ANALYTICS CSS ===== */
+
+/* Report Nav Tabs */
+.report-nav-tabs {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 2px;
+}
+
+.report-nav-tabs .tab-btn {
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 700;
+    border: none;
+    background: transparent;
+    color: #64748b;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -4px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.report-nav-tabs .tab-btn:hover {
+    color: #1B2A4A;
+}
+
+.report-nav-tabs .tab-btn.active {
+    color: #1B2A4A;
+    border-bottom-color: #1B2A4A;
+    background: #f8fafc;
+    border-radius: 8px 8px 0 0;
+}
+
+/* Student Selector Card */
+.student-selector-card {
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.selector-flex {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.selector-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 300px;
+}
+
+.selector-select {
+    flex: 1;
+    padding: 11px 16px;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    background: #f8fafc;
+    color: #0f172a;
+    cursor: pointer;
+}
+
+.selector-select:focus {
+    outline: none;
+    border-color: #1B2A4A;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(27, 42, 74, 0.1);
+}
+
+.selector-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* ===== BOND PAPER SHEET LAYOUT & STYLES ===== */
+
+.paper-control-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.bond-paper-sheet {
+    background: #ffffff;
+    color: #0f172a;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    padding: 0.35in 0.45in;
+    margin: 0 auto 30px;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+    box-sizing: border-box;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    position: relative;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+/* Paper Sizes on Screen */
+.bond-paper-sheet.paper-letter {
+    width: 8.5in;
+    max-width: 100%;
+    min-height: 10.8in;
+    max-height: 11in;
+}
+
+.bond-paper-sheet.paper-folio {
+    width: 8.5in;
+    max-width: 100%;
+    min-height: 12.8in;
+    max-height: 13in;
+}
+
+.bond-paper-sheet.paper-a4 {
+    width: 8.27in;
+    max-width: 100%;
+    min-height: 11.5in;
+    max-height: 11.69in;
+}
+
+/* DepEd Dual-Emblem Header */
+.dossier-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: 4px;
+}
+
+.deped-seal-box,
+.school-seal-box {
+    width: 54px;
+    height: 54px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.school-logo-img {
+    width: 52px;
+    height: 52px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid #1B2A4A;
+}
+
+.deped-seal-svg {
+    width: 52px;
+    height: 52px;
+}
+
+.dossier-logo-text {
+    text-align: center;
+    flex: 1;
+}
+
+.dossier-logo-text h3 {
+    margin: 0;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #334155;
+    line-height: 1.25;
+}
+
+.dossier-logo-text .region-sub,
+.dossier-logo-text .district-sub {
+    margin: 0;
+    font-size: 8.5px;
+    color: #475569;
+    font-weight: 500;
+    line-height: 1.25;
+}
+
+.dossier-logo-text h2 {
+    margin: 2px 0 1px;
+    font-size: 14.5px;
+    color: #1B2A4A;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+    line-height: 1.2;
+}
+
+.dossier-logo-text .office-sub {
+    margin: 0;
+    font-size: 9.5px;
+    font-weight: 700;
+    color: #1D4ED8;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.dossier-logo-text .dossier-tag {
+    display: inline-block;
+    margin-top: 3px;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    background: #1B2A4A;
+    color: #facc15;
+    padding: 2px 10px;
+    border-radius: 3px;
+    text-transform: uppercase;
+}
+
+/* DepEd Official Double Rule Divider */
+.deped-double-rule {
+    border-top: 2px solid #1B2A4A;
+    border-bottom: 1px solid #1B2A4A;
+    height: 2px;
+    margin: 4px 0 7px;
+}
+
+/* Document Meta Row */
+.paper-meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 9.5px;
+    color: #334155;
+    margin-bottom: 7px;
+}
+
+.paper-meta-row strong {
+    color: #0f172a;
+}
+
+/* Whole-School Paper KPI Strip */
+.paper-kpi-summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.paper-kpi-box {
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    padding: 5px;
+    text-align: center;
+    background: #f8fafc;
+}
+
+.paper-kpi-box .kpi-num {
+    display: block;
+    font-size: 15px;
+    font-weight: 800;
+    color: #1B2A4A;
+    line-height: 1.2;
+}
+
+.paper-kpi-box .kpi-lbl {
+    font-size: 8px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #64748b;
+}
+
+/* Student Demographics Grid (2 Rows x 5 Columns) */
+.dossier-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px 8px;
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    padding: 6px 10px;
+    margin-bottom: 7px;
+}
+
+@media (max-width: 768px) {
+    .dossier-meta-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.dossier-meta-item label {
+    display: block;
+    font-size: 8px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #64748b;
+    margin-bottom: 1px;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dossier-meta-item span {
+    font-size: 10.5px;
+    font-weight: 600;
+    color: #0f172a;
+    line-height: 1.2;
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Conduct Standing Banner */
+.conduct-status-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 5px 12px;
+    border-radius: 4px;
+    margin-bottom: 7px;
+}
+
+.conduct-status-banner.clean {
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    color: #065f46;
+}
+
+.conduct-status-banner.monitoring {
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    color: #92400e;
+}
+
+.conduct-status-banner.violations {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+}
+
+/* Section Title */
+.dossier-section-title {
+    font-size: 10px;
+    font-weight: 800;
+    color: #1e293b;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    border-bottom: 1px solid #cbd5e1;
+    padding-bottom: 2px;
+    margin: 7px 0 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Dossier Table */
+.dossier-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9px;
+    margin-bottom: 7px;
+}
+
+.dossier-table th {
+    background: #f1f5f9;
+    color: #1e293b;
+    font-weight: 700;
+    padding: 3.5px 6px;
+    text-align: left;
+    border: 1px solid #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.2px;
+    font-size: 8.5px;
+}
+
+.dossier-table td {
+    padding: 3.5px 6px;
+    border: 1px solid #cbd5e1;
+    color: #1e293b;
+    vertical-align: top;
+    line-height: 1.25;
+}
+
+.dossier-table tbody tr:nth-child(even) {
+    background: #fafafa;
+}
+
+/* Compliance Statement */
+.deped-compliance-note {
+    font-size: 8.5px;
+    color: #475569;
+    line-height: 1.3;
+    font-style: italic;
+    background: #f8fafc;
+    border-left: 2.5px solid #1B2A4A;
+    padding: 4px 8px;
+    margin: 5px 0 7px;
+}
+
+/* Signatures Block with Integrated Seal Stamp Column */
+.dossier-signatures {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr) 72px;
+    align-items: flex-end;
+    gap: 10px;
+    margin-top: 8px;
+    padding-top: 0;
+    page-break-inside: avoid;
+    break-inside: avoid;
+}
+
+.dossier-signatures.tripartite {
+    grid-template-columns: repeat(3, 1fr) 72px;
+    gap: 10px;
+}
+
+.sig-box {
+    text-align: center;
+}
+
+.sig-line {
+    border-top: 1.2px solid #0f172a;
+    width: 88%;
+    margin: 18px auto 3px;
+}
+
+.sig-name {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.2;
+}
+
+.sig-role {
+    font-size: 8.5px;
+    color: #64748b;
+    line-height: 1.2;
+}
+
+.sig-seal-col {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.official-seal-stamp {
+    width: 64px;
+    height: 64px;
+    border: 1.5px dashed #94a3b8;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 3px;
+    color: #64748b;
+    font-weight: 800;
+    font-size: 6.5px;
+    line-height: 1.15;
+    background: rgba(248, 250, 252, 0.8);
+}
+
+.official-seal-stamp span {
+    font-size: 6.5px;
+    color: #1B2A4A;
+    letter-spacing: 0.3px;
+}
+
+.official-seal-stamp small {
+    font-size: 5.5px;
+    color: #64748b;
+    margin-top: 1px;
+}
+
+/* Screen Charts & Summary Boxes */
+.analytics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 28px;
+}
+
+@media (max-width: 900px) {
+    .analytics-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.chart-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 24px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+}
+
+.chart-container {
+    position: relative;
+    height: 280px;
+    width: 100%;
+}
+
+.summary-stats-box {
+    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+}
+
+.summary-stats-flex {
+    display: flex;
+    justify-content: space-around;
+    text-align: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.summary-stat-item h4 {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--primary);
+}
+
+.summary-stat-item p {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+}
+/* Print by Student Action Button in Table */
+.btn-print-row-student {
+    background: linear-gradient(135deg, #1B2A4A, #1D4ED8);
+    color: #ffffff;
+    border: none;
+    padding: 7px 13px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    box-shadow: 0 2px 6px rgba(27, 42, 74, 0.15);
+}
+
+.btn-print-row-student:hover {
+    background: linear-gradient(135deg, #111e38, #1e40af);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(27, 42, 74, 0.25);
+    color: #ffffff;
+}
+
+.btn-print-row-student i {
+    font-size: 11px;
+}
+
+/* ===== PRINT STYLES FOR BOND PAPER ===== */
+@media print {
+    @page {
+        size: letter portrait;
+        margin: 5mm 10mm 5mm 10mm;
+    }
+
+    *, *::before, *::after {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+        box-sizing: border-box !important;
+    }
+
+    html, body {
+        width: 100% !important;
+        height: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #ffffff !important;
+        color: #000000 !important;
+        overflow: hidden !important;
+    }
+
+    /* Hide Web Application Interface */
+    .sidebar,
+    .menu-toggle,
+    .page-header,
+    .header-actions,
+    .report-nav-tabs,
+    .student-selector-card,
+    #studentReportEmptyState,
+    .analytics-grid,
+    .summary-stats-box,
+    .content-card,
+    .chatbot-bubble,
+    .chatbot-window,
+    .btn-print,
+    .btn-secondary,
+    .non-printable {
+        display: none !important;
+    }
+
+    .app-container,
+    .main-content {
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        height: 100% !important;
+        max-height: 100% !important;
+        overflow: hidden !important;
+    }
+
+    /* Print Modes */
+    body.printing-school #viewStudentReport {
+        display: none !important;
+    }
+    body.printing-school #viewWholeSchool {
+        display: block !important;
+    }
+    body.printing-school #wholeSchoolBondPaper {
+        display: block !important;
+    }
+
+    body.printing-student #viewWholeSchool {
+        display: none !important;
+    }
+    body.printing-student #viewStudentReport {
+        display: block !important;
+    }
+    body.printing-student #studentDossierCard {
+        display: block !important;
+    }
+
+    /* Bond Paper Sheet Layout in Print - Strictly One Page */
+    .bond-paper-sheet {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 auto !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        height: 100% !important;
+        max-height: 100vh !important;
+        box-sizing: border-box !important;
+        page-break-after: avoid !important;
+        page-break-before: avoid !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        overflow: hidden !important;
+    }
+
+    .dossier-header {
+        border-bottom: none !important;
+        padding-bottom: 2px !important;
+    }
+
+    .deped-double-rule {
+        border-top: 2px solid #000000 !important;
+        border-bottom: 1px solid #000000 !important;
+        margin: 3px 0 5px !important;
+    }
+
+    .paper-meta-row {
+        border: 1px solid #333333 !important;
+        background: #fafafa !important;
+        padding: 3px 8px !important;
+        margin-bottom: 5px !important;
+    }
+
+    .paper-kpi-box {
+        border: 1px solid #333333 !important;
+        background: #fafafa !important;
+        padding: 4px !important;
+    }
+
+    .dossier-meta-grid {
+        border: 1px solid #333333 !important;
+        background: #fafafa !important;
+        padding: 5px 8px !important;
+        margin-bottom: 5px !important;
+        gap: 3px 6px !important;
+    }
+
+    .conduct-status-banner {
+        border: 1px solid #333333 !important;
+        padding: 4px 8px !important;
+        margin-bottom: 5px !important;
+    }
+
+    .dossier-section-title {
+        margin: 5px 0 3px !important;
+        padding-bottom: 2px !important;
+        border-bottom: 1px solid #333333 !important;
+    }
+
+    .dossier-table {
+        border-collapse: collapse !important;
+        width: 100% !important;
+        margin-bottom: 5px !important;
+    }
+
+    .dossier-table th {
+        background: #f1f5f9 !important;
+        border: 1px solid #333333 !important;
+        color: #000000 !important;
+        padding: 3px 5px !important;
+    }
+
+    .dossier-table td {
+        border: 1px solid #444444 !important;
+        color: #000000 !important;
+        padding: 3px 5px !important;
+    }
+
+    .deped-compliance-note {
+        border-left: 2.5px solid #000000 !important;
+        background: #fafafa !important;
+        padding: 3px 7px !important;
+        margin: 4px 0 5px !important;
+    }
+
+    .dossier-signatures {
+        margin-top: 6px !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+
+    .sig-line {
+        border-top: 1.2px solid #000000 !important;
+        margin: 14px auto 2px !important;
+    }
+
+    .official-seal-stamp {
+        border: 1.5px dashed #000000 !important;
+        color: #000000 !important;
+    }
+
+    /* Page Breaks - Prevent Multi-Page Spills */
+    tr, thead, tbody, .dossier-signatures, .sig-box, .sig-seal-col, .dossier-meta-grid, .conduct-status-banner {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+}

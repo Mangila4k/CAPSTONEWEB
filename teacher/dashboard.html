@@ -20,9 +20,9 @@
                     <div class="logo-icon">
                         <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
                     </div>
-                    <div class="logo-text">H.<span>E.S</span></div>
+                    <div class="logo-text">PLS<span>NSH</span></div>
                 </div>
-                <div class="school-badge">Hiraya Enrollment System</div>
+                <div class="school-badge">Placido L. Señor National High School</div>
             </div>
 
             <div class="teacher-profile">
@@ -42,7 +42,9 @@
                         <li><a href="attendance-face.html"><i class="fas fa-camera"></i> <span>Face Attendance</span></a></li>
                         <li><a href="student-attendance.html"><i class="fas fa-user-check"></i> <span>Student Attendance</span></a></li>
                         <li><a href="classes.html"><i class="fas fa-users"></i> <span>My Classes</span></a></li>
-                        <li><a href="schedule.html"><i class="fas fa-clock"></i> <span>Schedule</span></a></li>
+                        <li><a href="class-program.html"><i class="fas fa-calendar-alt"></i> <span>Class Program</span></a></li>
+                        <li><a href="teacher-load.html"><i class="fas fa-clock"></i> <span>Teacher Load</span></a></li>
+                        <li><a href="assessments.html"><i class="fas fa-clipboard-list"></i> <span>Assessments</span></a></li>
                         <li><a href="grades.html"><i class="fas fa-star"></i> <span>Grades</span></a></li>
                     </ul>
                 </div>
@@ -73,6 +75,91 @@
 
             <!-- Alert Container -->
             <div id="alertContainer"></div>
+
+            <!-- Faculty Attendance & Adjusted Schedule Card -->
+            <div class="faculty-attendance-widget" id="facultyAttendanceWidget">
+                <div class="faw-header">
+                    <div class="faw-title-group">
+                        <div class="faw-icon"><i class="fas fa-user-clock"></i></div>
+                        <div>
+                            <h3 class="faw-title">Faculty Attendance & Daily Time Record</h3>
+                            <p class="faw-subtitle" id="fawScheduleSubtitle">Daily Faculty Attendance Record</p>
+                        </div>
+                    </div>
+                    <div class="faw-badges" id="fawScheduleBadges">
+                        <span class="faw-pill-day" id="fawDayBadge"><i class="far fa-calendar-day"></i> Today</span>
+                    </div>
+                </div>
+
+                <div class="faw-body">
+                    <!-- Left: Status Display -->
+                    <div class="faw-status-grid">
+                        <div class="faw-status-item" id="fawTimeInBox">
+                            <div class="faw-status-label">
+                                <span><i class="fas fa-sign-in-alt" style="color: #10b981;"></i> Time-In Validation</span>
+                                <span class="faw-tag pending" id="fawTimeInStatusTag">PENDING</span>
+                            </div>
+                            <div class="faw-status-time" id="fawTimeInDisplay">--:-- --</div>
+                            <div class="faw-status-note" id="fawTimeInNote">Records your actual arrival time</div>
+                        </div>
+
+                        <div class="faw-status-item" id="fawTimeOutBox">
+                            <div class="faw-status-label">
+                                <span><i class="fas fa-sign-out-alt" style="color: #0b2b4a;"></i> Time-Out Validation</span>
+                                <span class="faw-tag pending" id="fawTimeOutStatusTag">PENDING</span>
+                            </div>
+                            <div class="faw-status-time" id="fawTimeOutDisplay">--:-- --</div>
+                            <div class="faw-status-note" id="fawTimeOutNote">Records your actual departure time</div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Quick Validation & Activities -->
+                    <div class="faw-actions-panel">
+                        <div class="faw-action-btns">
+                            <button type="button" class="btn-faw-validate in" id="fawQuickTimeInBtn">
+                                <i class="fas fa-check-circle"></i> Validate Time-In
+                            </button>
+                            <button type="button" class="btn-faw-validate out" id="fawQuickTimeOutBtn">
+                                <i class="fas fa-sign-out-alt"></i> Validate Time-Out
+                            </button>
+                            <a href="attendance-face.html" class="btn-faw-link" style="grid-column: span 2;">
+                                <i class="fas fa-camera"></i> Launch Face Attendance Scanner
+                            </a>
+                        </div>
+                        <div class="faw-recent-activity" id="fawRecentActivity">
+                            <i class="fas fa-info-circle text-primary"></i>
+                            <span id="fawActivityText">Today's activities will appear here upon validation</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Attendance History Section inside Widget -->
+                <div class="faw-history-section">
+                    <div class="faw-history-header">
+                        <h4><i class="fas fa-history"></i> Recent Attendance History</h4>
+                        <span class="faw-history-badge" id="fawHistoryCountBadge">Recent logs</span>
+                    </div>
+                    <div class="faw-history-table-wrap">
+                        <table class="faw-history-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Time In</th>
+                                    <th>Time Out</th>
+                                    <th>Method</th>
+                                </tr>
+                            </thead>
+                            <tbody id="fawHistoryTableBody">
+                                <tr>
+                                    <td colspan="4" style="text-align: center; color: #94a3b8; padding: 14px;">
+                                        <i class="fas fa-spinner fa-spin"></i> Loading attendance history...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
 
             <!-- Statistics Cards -->
             <div class="stats-grid">
@@ -135,11 +222,19 @@
                         </div>
                     </a>
 
-                    <a href="schedule.html" class="action-card">
-                        <div class="action-icon"><i class="fas fa-clock"></i></div>
+                    <a href="class-program.html" class="action-card">
+                        <div class="action-icon" style="background: #eff6ff; color: #2563eb;"><i class="fas fa-calendar-alt"></i></div>
                         <div class="action-info">
-                            <h4>Class Schedule</h4>
-                            <p>Check your teaching schedule</p>
+                            <h4>Class Program</h4>
+                            <p>Manage timetables & send student load</p>
+                        </div>
+                    </a>
+
+                    <a href="teacher-load.html" class="action-card">
+                        <div class="action-icon" style="background: #fef3c7; color: #d97706;"><i class="fas fa-clock"></i></div>
+                        <div class="action-info">
+                            <h4>Teacher Load</h4>
+                            <p>Check official load assigned by admin</p>
                         </div>
                     </a>
 
@@ -148,6 +243,14 @@
                         <div class="action-info">
                             <h4>Enter Grades</h4>
                             <p>Input student grades</p>
+                        </div>
+                    </a>
+
+                    <a href="assessments.html" class="action-card">
+                        <div class="action-icon" style="background: #e0f2fe; color: #0284c7;"><i class="fas fa-clipboard-check"></i></div>
+                        <div class="action-info">
+                            <h4>Class Assessments</h4>
+                            <p>Assign tasks & review student submissions</p>
                         </div>
                     </a>
                 </div>
@@ -182,6 +285,7 @@
 
     <!-- JavaScript -->
     <script src="js/teacher_avatar_sync.js"></script>
+    <script type="module" src="js/schedule-helper.js"></script>
     <script type="module" src="js/dashboard.js"></script>
     <script src="../js/chatbot.js"></script>
 </body>

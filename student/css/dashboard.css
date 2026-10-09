@@ -202,6 +202,11 @@ body {
     width: 20px;
     text-align: center;
     font-size: 1rem;
+    color: inherit;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
 }
 
 .nav-items a:hover {
@@ -209,8 +214,17 @@ body {
     color: white;
 }
 
+.nav-items a:hover i {
+    color: white;
+}
+
 .nav-items a.active {
     background: rgba(255, 215, 0, 0.12);
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.nav-items a.active i {
     color: var(--accent);
 }
 

@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="refresh" content="0; url=attendance-face.html">
-    <script>window.location.replace('attendance-face.html');</script>
-    <title>Face Attendance - Teacher Dashboard | HES</title>
+    <title>QR Attendance - Teacher Dashboard | HES</title>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Google Fonts -->
@@ -13,6 +11,7 @@
     <!-- Face Attendance CSS -->
     <link rel="stylesheet" href="css/attendance-face.css">
     <link rel="stylesheet" href="../css/chatbot.css">
+    <script>window.location.replace('attendance-face.html');</script>
 </head>
 <body>
     <div class="app-container">
@@ -23,9 +22,9 @@
                     <div class="logo-icon">
                         <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
                     </div>
-                    <div class="logo-text">H.<span>E.S</span></div>
+                    <div class="logo-text">PLS<span>NSH</span></div>
                 </div>
-                <div class="school-badge">Hiraya Enrollment System</div>
+                <div class="school-badge">Placido L. Señor National High School</div>
             </div>
 
             <div class="teacher-profile">
@@ -42,10 +41,13 @@
                     <div class="nav-section-title">MAIN MENU</div>
                     <ul class="nav-items">
                         <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+                        <li><a href="attendance-face.html"><i class="fas fa-camera"></i> <span>Face Attendance</span></a></li>
                         <li><a href="attendance-qr.html" class="active"><i class="fas fa-qrcode"></i> <span>QR Attendance</span></a></li>
                         <li><a href="student-attendance.html"><i class="fas fa-user-check"></i> <span>Student Attendance</span></a></li>
                         <li><a href="classes.html"><i class="fas fa-users"></i> <span>My Classes</span></a></li>
-                        <li><a href="schedule.html"><i class="fas fa-clock"></i> <span>Schedule</span></a></li>
+                        <li><a href="class-program.html"><i class="fas fa-calendar-alt"></i> <span>Class Program</span></a></li>
+                        <li><a href="teacher-load.html"><i class="fas fa-clock"></i> <span>Teacher Load</span></a></li>
+                        <li><a href="assessments.html"><i class="fas fa-clipboard-list"></i> <span>Assessments</span></a></li>
                         <li><a href="grades.html"><i class="fas fa-star"></i> <span>Grades</span></a></li>
                     </ul>
                 </div>
@@ -73,18 +75,25 @@
                 </div>
             </div>
 
-            <!-- Philippine Time Display -->
-            <div class="ph-time">
-                <i class="fas fa-clock"></i> Philippine Time: <span id="phTimeDisplay">Loading...</span>
-            </div>
-
-            <!-- Cutoff Time Info -->
-            <div class="cutoff-info">
-                <i class="fas fa-info-circle"></i> 
-                <strong>Time In Cutoff: 8:00 AM</strong> - Time in after 8:00 AM will be marked as "Late"
-                <span class="info-text-late" id="lateWarning">
-                    <i class="fas fa-exclamation-triangle"></i> Current time is past 8:00 AM, Time In will be marked as LATE
-                </span>
+            <!-- Philippine Time & Adjusted Schedule Banner -->
+            <div class="schedule-banner-card" id="scheduleBannerCard">
+                <div class="schedule-banner-header">
+                    <div class="schedule-banner-main">
+                        <div class="schedule-day-badge" id="scheduleDayBadge">
+                            <i class="fas fa-calendar-day"></i> <span id="currentDayText">Today</span>
+                        </div>
+                        <div class="schedule-title-wrap">
+                            <h3 id="scheduleTitleText"><i class="fas fa-clock"></i> Today's Adjusted Faculty Schedule</h3>
+                            <p id="scheduleSummaryText">Loading assigned teaching classes and shift hours...</p>
+                        </div>
+                    </div>
+                    <div class="schedule-cutoff-badge" id="scheduleCutoffBadge">
+                        <i class="fas fa-calendar-check"></i>
+                        <span>Faculty Attendance: <strong id="cutoffTimeDisplay">Active Duty</strong></span>
+                        <span id="scheduleStatusPill" class="schedule-pill on-time">Active Window</span>
+                    </div>
+                </div>
+                <div class="schedule-classes-chips" id="scheduleClassesChips" style="display:none;"></div>
             </div>
 
             <!-- Alert Container -->
@@ -187,7 +196,6 @@
                         </button>
                         <p class="info-text" style="margin-top: 15px;">
                             <i class="fas fa-info-circle"></i> Generate a QR code to record your Time In. This will expire in 30 minutes.
-                            <br><strong class="text-warning">⚠️ Note: Time In after 8:00 AM will be marked as LATE</strong>
                         </p>
                     </div>
                 </div>
@@ -201,6 +209,19 @@
                         <i class="fas fa-calendar-alt"></i>
                         <p>No attendance records found</p>
                         <p class="info-text">Generate a QR code to start recording your attendance</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Real-Time Activity Log Feed -->
+            <div class="activity-feed-card" id="activityFeedCard">
+                <div class="activity-feed-header">
+                    <h3><i class="fas fa-stream"></i> Today's Attendance Activities & Audit Trail</h3>
+                    <span style="font-size: 12.5px; color: #64748b;"><i class="fas fa-circle" style="color: #10b981; font-size: 8px;"></i> Live Recorded</span>
+                </div>
+                <div class="activity-timeline" id="activityTimelineList">
+                    <div style="text-align: center; padding: 20px; color: #94a3b8;">
+                        <i class="fas fa-circle-notch fa-spin"></i> Loading attendance activities...
                     </div>
                 </div>
             </div>

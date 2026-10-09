@@ -1,15 +1,15 @@
 /**
  * Faculty QR Attendance System
- * Exclusively handles Teacher Personal QR Attendance (Time In, Time Out, 8:00 AM Cutoff, Camera Scanner, Photo Upload)
- * Strict Weekend Restriction: Attendance is disabled on Saturday and Sunday.
+ * Handles Teacher Personal QR Attendance with Dynamic Adjusted Schedules, Camera Scanner, and Activity Logging
  */
 
 import { supabase } from '../../supabase/config.js';
+import { formatTime, formatDate, getTodayDateString, getLocalTimeString, getTeacherProfileAndSchedule, evaluateAttendanceStatus, recordTeacherAttendance } from './schedule-helper.js';
 
 (function() {
     'use strict';
 
-    console.log('🌟 Faculty QR Attendance System ready');
+    console.log('🌟 Faculty QR Attendance System ready with Dynamic Adjusted Schedules');
 
     // ============================================
     // DOM ELEMENTS - GENERAL & HEADER
@@ -19,8 +19,17 @@ import { supabase } from '../../supabase/config.js';
     const logoutBtn = document.getElementById('logoutBtn');
     const phTimeDisplay = document.getElementById('phTimeDisplay');
     const alertContainer = document.getElementById('alertContainer');
-    const lateWarning = document.getElementById('lateWarning');
     const dateBadge = document.querySelector('.date-badge');
+
+    // DOM Elements - Adjusted Schedule Banner
+    const scheduleBannerCard = document.getElementById('scheduleBannerCard');
+    const currentDayText = document.getElementById('currentDayText');
+    const scheduleTitleText = document.getElementById('scheduleTitleText');
+    const scheduleSummaryText = document.getElementById('scheduleSummaryText');
+    const cutoffTimeDisplay = document.getElementById('cutoffTimeDisplay');
+    const scheduleStatusPill = document.getElementById('scheduleStatusPill');
+    const scheduleClassesChips = document.getElementById('scheduleClassesChips');
+    const activityTimelineList = document.getElementById('activityTimelineList');
 
     // DOM Elements - Stats & Info
     const totalDays = document.getElementById('totalDays');
@@ -46,6 +55,8 @@ import { supabase } from '../../supabase/config.js';
     // STATE
     // ============================================
     let sessionUser = null;
+    let teacherRecord = null;
+    let todaySchedule = null;
     let teacherId = null;
     let displayName = 'Teacher';
     let facultyCurrentAttendance = null;
@@ -198,6 +209,42 @@ import { supabase } from '../../supabase/config.js';
         }, 5000);
     }
 
+    function renderAdjustedScheduleUI() {
+        if (!todaySchedule) return;
+        if (currentDayText) currentDayText.textContent = todaySchedule.dayName;
+        if (scheduleTitleText) {
+            scheduleTitleText.innerHTML = `<i class="fas fa-calendar-check"></i> ${todaySchedule.scheduleType}`;
+        }
+        if (scheduleSummaryText) {
+            scheduleSummaryText.innerHTML = `<strong>${todaySchedule.summary}</strong> • Official Adjusted Teaching Schedule`;
+        }
+        if (cutoffTimeDisplay) {
+            cutoffTimeDisplay.textContent = 'Active Duty';
+        }
+        if (scheduleClassesChips) {
+            if (todaySchedule.classes && todaySchedule.classes.length > 0) {
+                scheduleClassesChips.style.display = 'flex';
+                scheduleClassesChips.innerHTML = todaySchedule.classes.map(c => `
+                    <div class="class-chip-item">
+                        <i class="fas fa-book-open"></i>
+                        <strong>${formatTime(c.start_time)} - ${formatTime(c.end_time)}</strong>
+                        <span>${c.subjects?.name || 'Subject'} (${c.sections?.name || 'Section'})</span>
+                        <span style="opacity:0.8;">• ${c.room || 'Room'}</span>
+                    </div>
+                `).join('');
+            } else {
+                scheduleClassesChips.style.display = 'flex';
+                scheduleClassesChips.innerHTML = `
+                    <div class="class-chip-item">
+                        <i class="fas fa-briefcase"></i>
+                        <strong>${todaySchedule.summary}</strong>
+                        <span>Official Faculty Advisory / Department Planning Duty</span>
+                    </div>
+                `;
+            }
+        }
+    }
+
     function updateLiveClock() {
         const now = new Date();
         const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
@@ -210,14 +257,9 @@ import { supabase } from '../../supabase/config.js';
             phTimeDisplay.textContent = now.toLocaleDateString('en-US', dateOptions) + ' • ' + now.toLocaleTimeString('en-US', timeOptions);
         }
 
-        // Cutoff warning (only on weekdays)
-        if (lateWarning) {
-            if (isWeekendToday()) {
-                lateWarning.style.display = 'none';
-            } else {
-                const isLateTime = now.getHours() > 8 || (now.getHours() === 8 && (now.getMinutes() > 0 || now.getSeconds() > 0));
-                lateWarning.style.display = isLateTime ? 'inline-block' : 'none';
-            }
+        if (todaySchedule && scheduleStatusPill) {
+            scheduleStatusPill.className = 'schedule-pill on-time';
+            scheduleStatusPill.textContent = 'Active Window';
         }
     }
 
@@ -246,11 +288,11 @@ import { supabase } from '../../supabase/config.js';
         try {
             const stored = localStorage.getItem('hes_teacher_attendance');
             let records = stored ? JSON.parse(stored) : [];
-            const today = getLocalDateString();
+            const today = getTodayDateString();
             const timeInFmt = (record.time_in || record.timeIn) ? formatTime(record.time_in || record.timeIn) : '—';
             const timeOutFmt = (record.time_out || record.timeOut) ? formatTime(record.time_out || record.timeOut) : '—';
 
-            const existingIdx = records.findIndex(r => r.name === displayName && r.date === today);
+            const existingIdx = records.findIndex(r => (r.name === displayName || r.teacher_id === teacherId) && r.date === today);
             if (existingIdx >= 0) {
                 records[existingIdx].timeIn = timeInFmt;
                 if (record.time_out || record.timeOut) records[existingIdx].timeOut = timeOutFmt;
@@ -259,6 +301,7 @@ import { supabase } from '../../supabase/config.js';
                 records.unshift({
                     id: Date.now(),
                     name: displayName,
+                    teacher_id: teacherId,
                     id_number: sessionUser.employee_id || ('HES-TCH-' + (teacherId ? String(teacherId).substring(0, 6).toUpperCase() : '001')),
                     dept: sessionUser.department || sessionUser.specialization || 'Faculty',
                     date: today,
@@ -273,23 +316,58 @@ import { supabase } from '../../supabase/config.js';
     }
 
     async function loadFacultyAttendanceData() {
-        const today = getLocalDateString();
+        const today = getTodayDateString();
         let loadedRecords = [];
 
         try {
-            const { data, error } = await supabase
-                .from('attendance')
-                .select('*')
-                .eq('teacher_id', teacherId)
-                .order('date', { ascending: false });
+            // 1. Resolve teacher record and today's adjusted schedule
+            const profileAndSched = await getTeacherProfileAndSchedule(supabase, sessionUser);
+            teacherRecord = profileAndSched.teacherRecord;
+            todaySchedule = profileAndSched.todaySchedule;
+            teacherId = teacherRecord.id;
 
-            if (!error && data) {
-                loadedRecords = data;
-                saveLocalTeacherAttendanceCache(data);
-            } else {
-                loadedRecords = getLocalTeacherAttendanceCache();
-            }
+            renderAdjustedScheduleUI();
+
+            // 2. Fetch from both teacher_attendance and attendance tables
+            const [
+                { data: tAttData },
+                { data: genAttData }
+            ] = await Promise.all([
+                supabase.from('teacher_attendance').select('*').eq('teacher_id', teacherId).order('date', { ascending: false }),
+                supabase.from('attendance').select('*').eq('teacher_id', teacherId).order('date', { ascending: false })
+            ]);
+
+            const recordsMap = new Map();
+            (tAttData || []).forEach(r => {
+                recordsMap.set(r.date, {
+                    id: r.id,
+                    teacher_id: r.teacher_id,
+                    date: r.date,
+                    time_in: r.time_in ? new Date(r.time_in).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) : null,
+                    time_out: r.time_out ? new Date(r.time_out).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) : null,
+                    status: r.in_status || 'Present',
+                    raw: r
+                });
+            });
+
+            (genAttData || []).forEach(r => {
+                if (!recordsMap.has(r.date)) {
+                    recordsMap.set(r.date, {
+                        id: r.id,
+                        teacher_id: r.teacher_id,
+                        date: r.date,
+                        time_in: r.time_in,
+                        time_out: r.time_out,
+                        status: r.status || 'Present',
+                        raw: r
+                    });
+                }
+            });
+
+            loadedRecords = Array.from(recordsMap.values()).sort((a, b) => new Date(b.date) - new Date(a.date));
+            saveLocalTeacherAttendanceCache(loadedRecords);
         } catch(err) {
+            console.warn('Error loading attendance from DB, reading cache:', err);
             loadedRecords = getLocalTeacherAttendanceCache();
         }
 
@@ -299,43 +377,28 @@ import { supabase } from '../../supabase/config.js';
         updateFacultyAttendanceUI();
         renderFacultyHistory();
         updateFacultyStats();
+        await loadAttendanceActivities();
     }
 
     function updateFacultyAttendanceUI() {
         if (!qrContainer) return;
-
-        if (isWeekendToday()) {
-            if (attendanceInfo) attendanceInfo.style.display = 'none';
-            qrContainer.innerHTML = `
-                <div class="qr-container weekend-mode" style="border: 2px dashed #f59e0b; background: #fffbeb; padding: 32px 20px; border-radius: var(--radius); text-align: center;">
-                    <div style="font-size: 3.2rem; color: #d97706; margin-bottom: 12px;">
-                        <i class="fas fa-calendar-times"></i>
-                    </div>
-                    <h3 style="color: #92400e; font-size: 1.35rem; margin-bottom: 8px;">Weekend Notice (No Classes)</h3>
-                    <p style="color: #b45309; font-size: 0.95rem; max-width: 480px; margin: 0 auto 16px; line-height: 1.5;">
-                        Today is <strong>${new Date().toLocaleDateString('en-US', { weekday: 'long' })}</strong>. School attendance is strictly disabled on weekends. QR code generation and camera scanning are only active during official class days (Monday to Friday).
-                    </p>
-                    <div style="display: inline-flex; align-items: center; gap: 8px; background: #fef3c7; color: #92400e; font-weight: 600; padding: 8px 16px; border-radius: 24px; font-size: 0.88rem; border: 1px solid #fde68a;">
-                        <i class="fas fa-info-circle"></i> Attendance resumes on Monday at 7:00 AM
-                    </div>
-                </div>
-            `;
-            return;
-        }
 
         if (!facultyCurrentAttendance || (!facultyCurrentAttendance.time_in && !facultyCurrentAttendance.timeIn)) {
             if (attendanceInfo) attendanceInfo.style.display = 'none';
             qrContainer.innerHTML = `
                 <div class="qr-container">
                     <h3><i class="fas fa-qrcode"></i> Time In QR Code</h3>
-                    <p>Generate a QR code to record your Time In</p>
+                    <p>Generate a QR code or directly confirm your Time In</p>
                     <div class="qr-actions" style="text-align: center; padding: 25px 15px;">
                         <button onclick="window.generateQR('time_in')" class="btn-generate-timein">
                             <i class="fas fa-qrcode"></i> Generate Time In QR Code
                         </button>
+                        <button onclick="window.recordAttendance('time_in')" class="btn-scanner" style="margin-top: 12px; background: #10b981; font-size: 0.95rem; padding: 10px 20px; display: inline-flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-check-circle"></i> Quick Record Time In Now
+                        </button>
                         <p class="info-text" style="margin-top: 15px;">
-                            <i class="fas fa-info-circle"></i> Generate a QR code to record your Time In. This will expire in 30 minutes.
-                            <br><strong class="text-warning">⚠️ Note: Time In after 8:00 AM will be marked as LATE</strong>
+                            <i class="fas fa-info-circle"></i> Evaluated against today's adjusted schedule: <strong>${todaySchedule?.summary || 'Standard Shift'}</strong>.
+                            <br><span style="color: var(--primary);">Cutoff start: <strong>${formatTime(todaySchedule?.earliestStartTime || '08:00:00')}</strong> (+15m Grace)</span>
                         </p>
                     </div>
                 </div>
@@ -363,37 +426,44 @@ import { supabase } from '../../supabase/config.js';
                     <i class="fas fa-check-circle success-icon"></i>
                     <h3 style="color: var(--success); font-size: 1.4rem;">Attendance Completed for Today</h3>
                     <p style="margin: 8px 0;">You have successfully recorded both Time In and Time Out for today.</p>
-                    <div style="background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 15px; max-width: 320px; margin: 15px auto; text-align: left;">
+                    <div style="background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 15px; max-width: 340px; margin: 15px auto; text-align: left;">
                         <div style="display:flex; justify-content:space-between; margin-bottom: 6px;">
                             <strong>⏰ Time In:</strong> <span>${formatTime(timeIn)}</span>
                         </div>
                         <div style="display:flex; justify-content:space-between; margin-bottom: 6px;">
                             <strong>⏰ Time Out:</strong> <span>${formatTime(timeOut)}</span>
                         </div>
-                        <div style="display:flex; justify-content:space-between;">
+                        <div style="display:flex; justify-content:space-between; margin-bottom: 6px;">
                             <strong>📊 Status:</strong> <span class="status-badge status-${status}">${status}</span>
                         </div>
+                        <div style="display:flex; justify-content:space-between;">
+                            <strong>📅 Schedule:</strong> <span style="font-size: 12px; color: var(--gray-600);">${todaySchedule?.summary || 'Adjusted Shift'}</span>
+                        </div>
                     </div>
-                    <p class="info-text"><i class="fas fa-calendar-check"></i> You can generate a new QR code tomorrow for the next school day.</p>
+                    <p class="info-text"><i class="fas fa-calendar-check"></i> Attendance activity has been verified and logged in system audit records.</p>
                 </div>
             `;
         } else if (hasTimeInOnly) {
             qrContainer.innerHTML = `
                 <div class="qr-container">
                     <h3><i class="fas fa-qrcode"></i> Time Out QR Code</h3>
-                    <p>Your Time In was recorded at <strong>${formatTime(timeIn)}</strong>. Generate a QR code for Time Out when leaving.</p>
+                    <p>Your Time In was recorded at <strong>${formatTime(timeIn)}</strong>. Generate QR or confirm Time Out when leaving.</p>
                     <div class="qr-actions" style="text-align: center; padding: 25px 15px;">
                         <button onclick="window.generateQR('time_out')" class="btn-generate-timeout">
                             <i class="fas fa-qrcode"></i> Generate Time Out QR Code
                         </button>
+                        <button onclick="window.recordAttendance('time_out')" class="btn-scanner" style="margin-top: 12px; background: #0284c7; font-size: 0.95rem; padding: 10px 20px; display: inline-flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-sign-out-alt"></i> Quick Record Time Out Now
+                        </button>
                         <p class="info-text" style="margin-top: 15px;">
-                            <i class="fas fa-info-circle"></i> Generate a QR code to record your Time Out at the end of the day.
+                            <i class="fas fa-info-circle"></i> Generate QR code or click Quick Record to log your official Time Out.
                         </p>
                     </div>
                 </div>
             `;
         }
     }
+
 
     function renderFacultyHistory() {
         if (!historyList) return;
@@ -469,6 +539,99 @@ import { supabase } from '../../supabase/config.js';
     }
 
     // ============================================
+    // LOAD ATTENDANCE ACTIVITY LOGS
+    // ============================================
+    async function loadAttendanceActivities() {
+        if (!activityTimelineList) return;
+
+        try {
+            const { data: logs, error } = await supabase
+                .from('activity_logs')
+                .select('*')
+                .or(`user_id.eq.${teacherRecord.user_id},user_id.eq.${teacherRecord.id}`)
+                .order('timestamp', { ascending: false })
+                .limit(10);
+
+            let activities = logs || [];
+
+            if (activities.length === 0) {
+                try {
+                    const localLogs = localStorage.getItem('hes_teacher_attendance_' + teacherId);
+                    if (localLogs) {
+                        const parsed = JSON.parse(localLogs);
+                        parsed.slice(0, 5).forEach(p => {
+                            if (p.time_in) {
+                                activities.push({
+                                    id: 'local_' + p.date + '_in',
+                                    action: `Teacher Time-In (${p.status || 'Present'})`,
+                                    details: `Teacher ${displayName} recorded Time-In at ${formatTime(p.time_in)}. Adjusted Schedule: ${todaySchedule?.summary || 'Standard Shift'}. Status: ${p.status || 'Present'}.`,
+                                    timestamp: p.timestamp || (p.date + 'T08:00:00Z'),
+                                    role: 'teacher'
+                                });
+                            }
+                            if (p.time_out) {
+                                activities.push({
+                                    id: 'local_' + p.date + '_out',
+                                    action: 'Teacher Time-Out (Completed)',
+                                    details: `Teacher ${displayName} recorded Time-Out at ${formatTime(p.time_out)}. Official shift session completed.`,
+                                    timestamp: p.timestamp || (p.date + 'T17:00:00Z'),
+                                    role: 'teacher'
+                                });
+                            }
+                        });
+                    }
+                } catch(e) {}
+            }
+
+            if (activities.length === 0) {
+                activityTimelineList.innerHTML = `
+                    <div style="text-align: center; padding: 24px; color: #94a3b8;">
+                        <i class="fas fa-clipboard-list" style="font-size: 24px; margin-bottom: 6px;"></i>
+                        <p style="margin:0;">No attendance activities logged yet today. Validate your Time-In to start today's activity stream.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            activities.forEach(item => {
+                const isTimeIn = (item.action || '').toLowerCase().includes('time-in') || (item.action || '').toLowerCase().includes('time in');
+                const isLate = (item.action || '').toLowerCase().includes('late');
+                const dotClass = isLate ? 'warning' : 'success';
+                const iconClass = isTimeIn ? 'fa-sign-in-alt' : 'fa-sign-out-alt';
+                const itemDate = item.timestamp ? new Date(item.timestamp) : new Date();
+                const timeFmt = itemDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+                const dateFmt = formatDate(item.timestamp ? item.timestamp.split('T')[0] : getTodayDateString());
+
+                html += `
+                    <div class="timeline-entry">
+                        <div class="timeline-dot ${dotClass}">
+                            <i class="fas ${iconClass}"></i>
+                        </div>
+                        <div class="timeline-box">
+                            <div class="timeline-top">
+                                <span class="timeline-action-title">${item.action}</span>
+                                <span class="timeline-time-rel"><i class="far fa-clock"></i> ${dateFmt} • ${timeFmt}</span>
+                            </div>
+                            <div class="timeline-desc">${item.details}</div>
+                            <div class="timeline-meta-tags">
+                                <span class="timeline-tag ${isLate ? 'tag-warning' : 'tag-success'}">${isLate ? 'Late Arrival' : 'On Time / Verified'}</span>
+                                <span class="timeline-tag tag-info">Schedule: ${todaySchedule?.summary || 'Adjusted Shift'}</span>
+                                <span class="timeline-tag"><i class="fas fa-shield-alt"></i> Authenticated</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            activityTimelineList.innerHTML = html;
+
+        } catch (err) {
+            console.warn('Error loading attendance activities:', err);
+        }
+    }
+
+    // ============================================
     // GENERATE FACULTY QR CODE
     // ============================================
     window.generateQR = function(type) {
@@ -477,12 +640,7 @@ import { supabase } from '../../supabase/config.js';
             return;
         }
 
-        if (isWeekendToday()) {
-            showAlert('📅 School attendance is disabled on weekends (Saturday & Sunday).', 'warning');
-            return;
-        }
-
-        const today = getLocalDateString();
+        const today = getTodayDateString();
         const timeIn = facultyCurrentAttendance ? (facultyCurrentAttendance.time_in || facultyCurrentAttendance.timeIn) : null;
         const timeOut = facultyCurrentAttendance ? (facultyCurrentAttendance.time_out || facultyCurrentAttendance.timeOut) : null;
 
@@ -513,13 +671,12 @@ import { supabase } from '../../supabase/config.js';
         const qrDataString = JSON.stringify(payload);
         const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(qrDataString)}`;
         const actionTitle = type === 'time_in' ? 'Time In' : 'Time Out';
-        const now = new Date();
-        const isLateTime = now.getHours() > 8 || (now.getHours() === 8 && (now.getMinutes() > 0 || now.getSeconds() > 0));
+        const evalStatus = evaluateAttendanceStatus(getLocalTimeString(), todaySchedule);
 
         qrContainer.innerHTML = `
             <div class="qr-container" style="animation: fadeIn 0.4s ease;">
                 <h3><i class="fas fa-qrcode"></i> ${actionTitle} QR Code</h3>
-                <p>Scan this QR code using the camera scanner or click "Record ${actionTitle} Now"</p>
+                <p>Scan this QR code using the camera scanner or click "Confirm & Record ${actionTitle} Now"</p>
                 
                 <div class="qr-code">
                     <img src="${qrCodeUrl}" alt="${actionTitle} QR Code" style="width: 220px; height: 220px;">
@@ -528,12 +685,12 @@ import { supabase } from '../../supabase/config.js';
                 <div class="qr-info">
                     <h4>${displayName} — ${actionTitle}</h4>
                     <p>📱 Use the camera scanner above or another device to scan</p>
-                    ${type === 'time_in' && isLateTime ? '<p class="expiry-text" style="color:var(--danger)!important;"><i class="fas fa-exclamation-triangle"></i> Note: Current time is past 8:00 AM, will be marked as LATE</p>' : ''}
-                    <p class="expiry-text"><i class="fas fa-clock"></i> Valid for today (${formatDate(today)})</p>
+                    <p class="expiry-text" style="color:var(--success)!important;"><i class="fas fa-check-circle"></i> Validated for today's faculty attendance</p>
+                    <p class="expiry-text"><i class="fas fa-clock"></i> Valid for today (${formatDate(today)}) • Schedule: ${todaySchedule?.summary || 'Standard Shift'}</p>
                     
                     <div style="display:flex; justify-content:center; gap: 12px; margin-top: 15px; flex-wrap: wrap;">
                         <button onclick="window.recordAttendance('${type}')" class="btn-scanner" style="background: var(--success); font-size: 0.95rem; padding: 10px 20px;">
-                            <i class="fas fa-check-circle"></i> Confirm / Record ${actionTitle} Now
+                            <i class="fas fa-check-circle"></i> Confirm & Record ${actionTitle} Now
                         </button>
                         <button onclick="window.generateQR('${type}')" class="btn-scanner" style="background: var(--gray-700); font-size: 0.95rem; padding: 10px 18px;">
                             <i class="fas fa-sync-alt"></i> Refresh QR
@@ -547,87 +704,23 @@ import { supabase } from '../../supabase/config.js';
     };
 
     window.recordAttendance = async function(type) {
-        if (isWeekendToday()) {
-            showAlert('📅 Cannot record attendance on Saturday/Sunday. School is in weekend recess.', 'warning');
-            return;
-        }
-
-        const today = getLocalDateString();
-        const currentTime = getLocalTimeString();
-        const now = new Date();
-        const isLate = now.getHours() > 8 || (now.getHours() === 8 && (now.getMinutes() > 0 || now.getSeconds() > 0));
-        const status = (type === 'time_in') ? (isLate ? 'Late' : 'Present') : (facultyCurrentAttendance?.status || 'Present');
-
         try {
-            let updatedRecord = null;
+            const recordRes = await recordTeacherAttendance(supabase, {
+                teacherRecord,
+                displayName,
+                actionType: type,
+                validationMethod: 'Faculty QR Code',
+                adjustedSchedule: todaySchedule
+            });
 
-            if (facultyCurrentAttendance && facultyCurrentAttendance.id) {
-                const updates = {};
-                if (type === 'time_in') {
-                    updates.time_in = currentTime;
-                    updates.status = status;
-                } else {
-                    updates.time_out = currentTime;
-                }
-
-                const { data, error } = await supabase
-                    .from('attendance')
-                    .update(updates)
-                    .eq('id', facultyCurrentAttendance.id)
-                    .select();
-
-                if (!error && data && data.length > 0) {
-                    updatedRecord = data[0];
-                } else {
-                    updatedRecord = { ...facultyCurrentAttendance, ...updates };
-                }
-            } else {
-                const newRow = {
-                    teacher_id: teacherId,
-                    date: today,
-                    time_in: type === 'time_in' ? currentTime : null,
-                    time_out: type === 'time_out' ? currentTime : null,
-                    status: status,
-                    created_at: new Date().toISOString()
-                };
-
-                const { data, error } = await supabase
-                    .from('attendance')
-                    .insert([newRow])
-                    .select();
-
-                if (!error && data && data.length > 0) {
-                    updatedRecord = data[0];
-                } else {
-                    newRow.id = 'local_' + Date.now();
-                    updatedRecord = newRow;
-                }
-            }
-
-            const existingIdx = facultyAttendanceHistory.findIndex(r => r.date === today);
-            if (existingIdx >= 0) {
-                facultyAttendanceHistory[existingIdx] = updatedRecord;
-            } else {
-                facultyAttendanceHistory.unshift(updatedRecord);
-            }
-            saveLocalTeacherAttendanceCache(facultyAttendanceHistory);
-            syncToAdminAttendance(updatedRecord);
-
-            facultyCurrentAttendance = updatedRecord;
-
-            const timeFormatted = formatTime(currentTime);
-            const actionTitle = type === 'time_in' ? 'Time In' : 'Time Out';
-            showAlert(`🎉 ${actionTitle} recorded at ${timeFormatted} (${status})!`, 'success');
+            showAlert(`🎉 ${recordRes.actionLabel} recorded at ${recordRes.timeFormatted} (${recordRes.status})!`, 'success');
 
             if (scanResult) {
                 scanResult.className = 'scan-result success';
-                scanResult.innerHTML = `<strong><i class="fas fa-check-circle"></i> Success!</strong> ${actionTitle} recorded for ${displayName} at ${timeFormatted} (Status: ${status}).`;
+                scanResult.innerHTML = `<strong><i class="fas fa-check-circle"></i> Success!</strong> ${recordRes.actionLabel} recorded for ${displayName} at ${recordRes.timeFormatted} (Status: ${recordRes.status}).`;
             }
 
-            updateFacultyAttendanceUI();
-            renderFacultyHistory();
-            updateFacultyStats();
-
+            await loadFacultyAttendanceData();
         } catch (error) {
             console.error('Error recording faculty attendance:', error);
             showAlert('❌ Failed to record attendance: ' + error.message, 'error');

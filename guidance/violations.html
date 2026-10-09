@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guidance Records - HES Guidance</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/violations.css">
+    <link rel="stylesheet" href="../css/chatbot.css">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <div class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
+                    </div>
+                    <div class="logo-text">PLS<span>NSH</span></div>
+                </div>
+                <div class="school-badge">Guidance & Counseling Services</div>
+            </div>
+
+            <div class="counselor-profile">
+                <div class="counselor-avatar">
+                    <div class="avatar-initial" id="counselorAvatar">G</div>
+                    <div class="online-dot"></div>
+                </div>
+                <div class="counselor-name" id="counselorName">Guidance Counselor</div>
+                <div class="counselor-role"><i class="fas fa-heart-pulse"></i> Guidance Office</div>
+            </div>
+
+            <nav class="nav-menu">
+                <div class="nav-section">
+                    <div class="nav-section-title">MAIN MENU</div>
+                    <ul class="nav-items">
+                        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                        <li><a href="violations.html" class="active"><i class="fas fa-clipboard-list"></i> Guidance Records</a></li>
+                        <li><a href="add_violation.html"><i class="fas fa-file-circle-plus"></i> Log Guidance Case</a></li>
+                        <li><a href="counseling.html"><i class="fas fa-user-doctor"></i> Counseling Sessions</a></li>
+                        <li><a href="students.html"><i class="fas fa-user-graduate"></i> Student Directory</a></li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">RECORDS & REPORTS</div>
+                    <ul class="nav-items">
+                        <li><a href="reports.html"><i class="fas fa-chart-pie"></i> Discipline Reports</a></li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">ACCOUNT</div>
+                    <ul class="nav-items">
+                        <li><a href="profile.html"><i class="fas fa-user-gear"></i> Counselor Profile</a></li>
+                        <li><a href="../auth/logout.html"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                    </ul>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-header">
+                <div>
+                    <h1>Student Guidance Records</h1>
+                    <p class="subtitle">Review, investigate, and record restorative interventions for student guidance cases.</p>
+                </div>
+                <div class="header-actions">
+                    <a href="add_violation.html" class="btn-primary">
+                        <i class="fas fa-plus-circle"></i> Log New Guidance Case
+                    </a>
+                </div>
+            </div>
+
+            <!-- Alert Container -->
+            <div id="alertContainer"></div>
+
+            <!-- Filter Toolbar -->
+            <div class="filter-toolbar">
+                <div class="search-box-wrap">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Search by student name, LRN, or offense..." class="form-control">
+                </div>
+                <div class="filters-group">
+                    <select id="categoryFilter" class="filter-select">
+                        <option value="all">All Categories</option>
+                        <option value="minor">Minor Infractions</option>
+                        <option value="major">Major Violations</option>
+                    </select>
+
+                    <select id="statusFilter" class="filter-select">
+                        <option value="all">All Statuses</option>
+                        <option value="reported">Reported</option>
+                        <option value="under investigation">Under Investigation</option>
+                        <option value="counseling scheduled">Counseling Scheduled</option>
+                        <option value="in progress">In Progress</option>
+                        <option value="resolved">Resolved</option>
+                    </select>
+
+                    <select id="offenseFilter" class="filter-select">
+                        <option value="all">All Offense Levels</option>
+                        <option value="1st offense">1st Offense</option>
+                        <option value="2nd offense">2nd Offense</option>
+                        <option value="3rd offense">3rd Offense</option>
+                        <option value="4th+ offense">4th+ Offense</option>
+                    </select>
+
+                    <button id="resetFiltersBtn" class="btn-secondary">
+                        <i class="fas fa-rotate-left"></i> Reset
+                    </button>
+                </div>
+            </div>
+
+            <!-- Violations Table Card -->
+            <div class="content-card">
+                <div class="card-header-flex">
+                    <div class="card-title-group">
+                        <h3><i class="fas fa-shield-alt" style="color: #1D4ED8;"></i> Incident Case Logs</h3>
+                        <span class="count-pill" id="totalCasesCount">0</span>
+                    </div>
+                    <div style="font-size: 13px; color: var(--text-muted); font-weight: 500;" id="tableSummaryText">Showing all recorded cases</div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="hes-table">
+                        <thead>
+                            <tr>
+                                <th>Student Details</th>
+                                <th>Violation / Offense</th>
+                                <th>Severity</th>
+                                <th>Offense Level</th>
+                                <th>Incident Date</th>
+                                <th>Reported By</th>
+                                <th>Status</th>
+                                <th style="text-align: right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="violationsTableBody">
+                            <tr>
+                                <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 40px;">
+                                    <i class="fas fa-spinner fa-spin" style="font-size: 24px; display: block; margin-bottom: 10px;"></i>
+                                    Loading violation records...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Case Details & Counselor Action Modal -->
+    <div class="modal-overlay" id="caseModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="modalCaseTitle"><i class="fas fa-folder-open"></i> Case Incident Details</h3>
+                <button class="modal-close-btn" id="closeCaseModalBtn"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" id="modalCaseBody">
+                <!-- Dynamically rendered -->
+            </div>
+            <div class="modal-footer" id="modalCaseFooter">
+                <button class="btn-secondary" id="closeModalBottomBtn">Close</button>
+                <button class="btn-primary" id="saveCaseChangesBtn"><i class="fas fa-save"></i> Save Updates</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Parent Call Slip Modal -->
+    <div class="modal-overlay" id="callSlipModal">
+        <div class="modal-card" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-envelope-open-text" style="color: var(--warning);"></i> Parent Call Slip Notice</h3>
+                <button class="modal-close-btn" id="closeCallSlipModalBtn"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" id="callSlipModalBody">
+                <!-- Dynamically populated -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="closeCallSlipBottomBtn">Cancel</button>
+                <button class="btn-primary" id="sendCallSlipBtn" style="background: var(--warning); border-color: var(--warning); color: #000;">
+                    <i class="fas fa-paper-plane"></i> Send Notification Notice
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="js/violations.js"></script>
+</body>
+</html>

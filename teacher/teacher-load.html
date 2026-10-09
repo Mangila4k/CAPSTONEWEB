@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Load - Teacher Dashboard | HES</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/schedule.css">
+    <link rel="stylesheet" href="../css/chatbot.css">
+    <style>
+        /* Dedicated Teacher Load Styles */
+        .admin-verified-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #ecfdf5;
+            color: #047857;
+            border: 1px solid #a7f3d0;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.76rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .teacher-info-banner {
+            background: linear-gradient(135deg, #0b2b4a 0%, #1a3d5f 100%);
+            color: #fff;
+            border-radius: var(--radius);
+            padding: 24px 28px;
+            margin-bottom: 22px;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 18px;
+        }
+
+        .tib-profile {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .tib-avatar {
+            width: 68px;
+            height: 68px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #FFD700;
+        }
+
+        .tib-details h2 {
+            font-size: 1.35rem;
+            font-weight: 800;
+            margin: 0 0 4px 0;
+            letter-spacing: -0.3px;
+        }
+
+        .tib-details p {
+            margin: 0;
+            font-size: 0.88rem;
+            color: rgba(255, 255, 255, 0.85);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .tib-pill {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        /* Admin schedule document card */
+        .admin-doc-card {
+            background: #fff;
+            border-radius: var(--radius);
+            border: 1.5px solid #bfdbfe;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.06);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .admin-doc-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .admin-doc-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 12px;
+            background: #eff6ff;
+            color: #2563eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            flex-shrink: 0;
+        }
+
+        .load-table-card {
+            background: #fff;
+            border-radius: var(--radius);
+            border: 1px solid var(--gray-200);
+            box-shadow: var(--shadow-sm);
+            padding: 22px;
+            margin-bottom: 24px;
+        }
+
+        .load-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .load-table th {
+            background: #f8fafc;
+            color: var(--primary);
+            font-weight: 700;
+            padding: 12px 14px;
+            border-bottom: 2px solid var(--gray-200);
+            text-align: left;
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .load-table td {
+            padding: 14px;
+            border-bottom: 1px solid var(--gray-200);
+            color: var(--gray-700);
+            vertical-align: middle;
+        }
+
+        .load-table tr:hover {
+            background: #f8fafc;
+        }
+
+        .sig-block-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 24px;
+            margin-top: 28px;
+            padding-top: 20px;
+            border-top: 1px dashed var(--gray-300);
+        }
+
+        .sig-box {
+            text-align: center;
+        }
+
+        .sig-line {
+            width: 220px;
+            height: 1.5px;
+            background: #000;
+            margin: 40px auto 6px auto;
+        }
+
+        /* Print styles */
+        @media print {
+            body {
+                background: #fff !important;
+                color: #000 !important;
+                font-size: 8.5pt !important;
+            }
+            .sidebar, .page-header, .controls-card, .btn-header-action, #alertContainer, #chatbotContainer, button {
+                display: none !important;
+            }
+            .app-container, .main-content {
+                display: block !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            .print-official-header {
+                display: block !important;
+                margin-bottom: 12px;
+                text-align: center;
+                border-bottom: 2px solid #000;
+                padding-bottom: 8px;
+            }
+            .load-table th {
+                background: #0b2b4a !important;
+                color: #fff !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .teacher-info-banner {
+                background: none !important;
+                color: #000 !important;
+                border: 1px solid #000 !important;
+                padding: 10px !important;
+                margin-bottom: 12px !important;
+            }
+            .teacher-info-banner .tib-avatar {
+                display: none !important;
+            }
+            .teacher-info-banner h2, .teacher-info-banner p {
+                color: #000 !important;
+            }
+            .sig-block-grid {
+                display: flex !important;
+                justify-content: space-around !important;
+                margin-top: 30px !important;
+            }
+        }
+
+        .print-official-header {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- ===== SIDEBAR ===== -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
+                    </div>
+                    <div class="logo-text">PLS<span>NSH</span></div>
+                </div>
+                <div class="school-badge">Placido L. Señor National High School</div>
+            </div>
+
+            <div class="teacher-profile">
+                <div class="teacher-avatar">
+                    <div class="avatar-initial" id="teacherInitial">T</div>
+                    <div class="online-dot"></div>
+                </div>
+                <div class="teacher-name" id="teacherName">Teacher</div>
+                <div class="teacher-role"><i class="fas fa-chalkboard-user"></i> Teacher</div>
+            </div>
+
+            <nav class="nav-menu">
+                <div class="nav-section">
+                    <div class="nav-section-title">MAIN MENU</div>
+                    <ul class="nav-items">
+                        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+                        <li><a href="attendance-face.html"><i class="fas fa-camera"></i> <span>Face Attendance</span></a></li>
+                        <li><a href="student-attendance.html"><i class="fas fa-user-check"></i> <span>Student Attendance</span></a></li>
+                        <li><a href="classes.html"><i class="fas fa-users"></i> <span>My Classes</span></a></li>
+                        <li><a href="class-program.html"><i class="fas fa-calendar-alt"></i> <span>Class Program</span></a></li>
+                        <li><a href="teacher-load.html" class="active"><i class="fas fa-clock"></i> <span>Teacher Load</span></a></li>
+                        <li><a href="assessments.html"><i class="fas fa-clipboard-list"></i> <span>Assessments</span></a></li>
+                        <li><a href="grades.html"><i class="fas fa-star"></i> <span>Grades</span></a></li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">ACCOUNT</div>
+                    <ul class="nav-items">
+                        <li><a href="profile.html"><i class="fas fa-user"></i> <span>Profile</span></a></li>
+                        <li><a href="../auth/login.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+                    </ul>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- ===== MAIN CONTENT ===== -->
+        <main class="main-content">
+            <!-- Official School Print Letterhead (visible only when printing) -->
+            <div class="print-official-header" id="printOfficialHeader">
+                <div style="display: flex; align-items: center; justify-content: center; gap: 14px; margin-bottom: 6px;">
+                    <img src="../pictures/logo sa skwelahan.jpg" alt="Logo" style="width: 52px; height: 52px; object-fit: contain;">
+                    <div>
+                        <div style="font-size: 0.85rem; font-weight: 600;">Republic of the Philippines • Department of Education</div>
+                        <div style="font-size: 0.8rem; color: #444;">Region VII, Central Visayas • Division of Cebu Province</div>
+                        <div style="font-size: 1.05rem; font-weight: 800; color: #0b2b4a;">PLACIDO L. SEÑOR NATIONAL HIGH SCHOOL</div>
+                        <div style="font-size: 0.78rem; color: #555;">Langtad, City of Naga, Cebu</div>
+                    </div>
+                </div>
+                <div style="background: #0b2b4a; color: #fff; padding: 4px; font-weight: 700; font-size: 0.9rem; letter-spacing: 0.5px; margin-top: 4px;">
+                    OFFICIAL FACULTY TEACHING LOAD (TEACHER'S PROGRAM)
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; text-align: left; padding: 8px 0; font-size: 0.82rem; border-bottom: 1px solid #ccc;">
+                    <div><strong>Faculty:</strong> <span id="printFacultyName">Teacher</span></div>
+                    <div><strong>Employee ID:</strong> <span id="printEmployeeId">N/A</span></div>
+                    <div><strong>Specialization:</strong> <span id="printSpecialization">Faculty</span></div>
+                    <div><strong>School Year:</strong> 2025-2026</div>
+                    <div><strong>Semester:</strong> First Semester</div>
+                    <div><strong>Status:</strong> Assigned by Administration</div>
+                </div>
+            </div>
+
+            <!-- Page Header -->
+            <div class="page-header">
+                <div>
+                    <h1><i class="fas fa-clock" style="color: #f59e0b;"></i> Teacher Load</h1>
+                    <p>Official teaching load and schedule assigned by the school administration (Placido L. Señor National High School)</p>
+                </div>
+                <div class="header-actions" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                    <button type="button" class="btn-header-action" id="btnPrintTeacherLoad" style="background: var(--primary); color: #fff; border-color: var(--primary); display: inline-flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-print"></i> Print Official Teaching Load
+                    </button>
+                    <a href="class-program.html" class="btn-header-action" style="background: #fff; color: var(--primary); text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-calendar-alt"></i> Manage Class Program
+                    </a>
+                    <button type="button" class="btn-header-action" id="btnRefreshLoad" title="Reload teaching load from database">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                    <div class="date-badge" id="dateBadge">
+                        <i class="fas fa-calendar-alt"></i> Loading...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alert Container -->
+            <div id="alertContainer"></div>
+
+            <!-- Teacher Info Banner -->
+            <div class="teacher-info-banner">
+                <div class="tib-profile">
+                    <div class="tib-avatar" id="bannerAvatarInitial">T</div>
+                    <div class="tib-details">
+                        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                            <h2 id="bannerTeacherName">Loading Teacher Profile...</h2>
+                            <span class="admin-verified-badge"><i class="fas fa-shield-alt"></i> Admin Assigned</span>
+                        </div>
+                        <p>
+                            <span><i class="fas fa-id-card"></i> <strong id="bannerEmployeeId">EMP-000000</strong></span>
+                            <span><i class="fas fa-graduation-cap"></i> <strong id="bannerSpecialization">General Education</strong></span>
+                            <span><i class="fas fa-school"></i> Placido L. Señor National High School</span>
+                        </p>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <span class="tib-pill"><i class="fas fa-calendar"></i> SY 2025-2026</span>
+                    <span class="tib-pill"><i class="fas fa-clock"></i> 1st Semester</span>
+                </div>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <h3>Teaching Hours</h3>
+                        <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                    </div>
+                    <div class="stat-number" id="statTeachingHours">0 hrs</div>
+                    <div class="stat-label" id="statTeachingMinutes">0 minutes / week</div>
+                </div>
+
+                <div class="stat-card sections">
+                    <div class="stat-header">
+                        <h3>Classes Assigned</h3>
+                        <div class="stat-icon sections"><i class="fas fa-chalkboard-teacher"></i></div>
+                    </div>
+                    <div class="stat-number" id="statTotalClasses">0</div>
+                    <div class="stat-label">Assigned class periods</div>
+                </div>
+
+                <div class="stat-card subjects">
+                    <div class="stat-header">
+                        <h3>Sections Handled</h3>
+                        <div class="stat-icon subjects"><i class="fas fa-layer-group"></i></div>
+                    </div>
+                    <div class="stat-number" id="statTotalSections">0</div>
+                    <div class="stat-label">Different section groups</div>
+                </div>
+
+                <div class="stat-card hours">
+                    <div class="stat-header">
+                        <h3>Distinct Subjects</h3>
+                        <div class="stat-icon hours"><i class="fas fa-book-open"></i></div>
+                    </div>
+                    <div class="stat-number" id="statTotalSubjects">0</div>
+                    <div class="stat-label">Learning areas taught</div>
+                </div>
+            </div>
+
+            <!-- Admin Teacher Load Document / Schedule Image Banner (if available) -->
+            <div class="admin-doc-card" id="adminDocCard" style="display: none;">
+                <div class="admin-doc-left">
+                    <div class="admin-doc-icon" id="adminDocIcon">
+                        <i class="fas fa-file-image"></i>
+                    </div>
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                            <strong style="color: var(--primary); font-size: 1rem;" id="adminDocTitle">Official Teacher Load Document / Image</strong>
+                            <span class="admin-verified-badge"><i class="fas fa-check-circle"></i> Issued by Administration</span>
+                        </div>
+                        <p style="color: var(--gray-500); font-size: 0.82rem; margin: 3px 0 0 0;" id="adminDocMeta">
+                            Official schedule document issued by the school administration.
+                        </p>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <a href="#" target="_blank" class="btn btn-sm" id="btnAdminDocOpenGDocs" style="display: none; padding: 7px 14px; border-radius: 6px; font-weight: 600; background: #1a73e8; color: #fff; text-decoration: none; align-items: center; gap: 6px;">
+                        <i class="fab fa-google-drive"></i> Open Google Docs
+                    </a>
+                    <button type="button" class="btn btn-sm" id="btnAdminDocPreview" style="padding: 7px 14px; border-radius: 6px; font-weight: 600; background: var(--primary); color: #fff; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                        <i class="fas fa-eye"></i> View Full
+                    </button>
+                    <button type="button" class="btn btn-sm" id="btnAdminDocDownload" style="padding: 7px 14px; border-radius: 6px; font-weight: 600; background: #fff; color: var(--primary); border: 1px solid var(--gray-300); cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                        <i class="fas fa-download"></i> Download
+                    </button>
+                    <button type="button" class="btn btn-sm" id="btnAdminDocPrint" style="padding: 7px 14px; border-radius: 6px; font-weight: 600; background: #fff; color: var(--gray-700); border: 1px solid var(--gray-300); cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                        <i class="fas fa-print"></i> Print
+                    </button>
+                </div>
+            </div>
+
+            <!-- Official Teaching Load Matrix / Table -->
+            <div class="load-table-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--primary); margin: 0; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-list-alt text-primary"></i> Assigned Teaching Load Matrix
+                        </h3>
+                        <p style="font-size: 0.84rem; color: var(--gray-500); margin: 3px 0 0 0;">
+                            Official subject and section assignments configured by the school head / administration.
+                        </p>
+                    </div>
+                    <span class="badge" id="scheduleCountBadge" style="background: var(--gray-100); color: var(--primary); padding: 6px 12px; border-radius: 20px; font-weight: 600;">
+                        0 classes assigned
+                    </span>
+                </div>
+
+                <div style="overflow-x: auto;">
+                    <table class="load-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 40px;">#</th>
+                                <th>Learning Area / Subject</th>
+                                <th>Grade & Section</th>
+                                <th>Day</th>
+                                <th>Time Schedule</th>
+                                <th>Room</th>
+                                <th>Minutes / Wk</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="teachingLoadTableBody">
+                            <tr>
+                                <td colspan="8" style="text-align: center; padding: 32px; color: var(--gray-500);">
+                                    <i class="fas fa-spinner fa-spin"></i> Loading official teacher load...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Signatures Block for DepEd Form Submission -->
+                <div class="sig-block-grid">
+                    <div class="sig-box">
+                        <div class="sig-line"></div>
+                        <strong id="sigTeacherName" style="color: var(--primary); font-size: 0.95rem;">TEACHER NAME</strong>
+                        <div style="font-size: 0.8rem; color: var(--gray-500);">Faculty / Subject Teacher</div>
+                    </div>
+                    <div class="sig-box">
+                        <div class="sig-line"></div>
+                        <strong style="color: var(--primary); font-size: 0.95rem;">SCHOOL PRINCIPAL / HEAD</strong>
+                        <div style="font-size: 0.8rem; color: var(--gray-500);">Placido L. Señor National High School</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visual Weekly Timetable Grid -->
+            <div class="card" style="background: #fff; border-radius: var(--radius); padding: 22px; border: 1px solid var(--gray-200); box-shadow: var(--shadow-sm); margin-bottom: 24px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--primary); margin: 0; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-calendar-week text-primary"></i> Weekly Timetable Grid
+                        </h3>
+                        <p style="font-size: 0.84rem; color: var(--gray-500); margin: 3px 0 0 0;">
+                            Visual weekly distribution of your admin-assigned teaching load.
+                        </p>
+                    </div>
+                    <!-- Day Filter Chips -->
+                    <div class="day-filter-chips">
+                        <button type="button" class="day-chip active" data-day="all">All Days</button>
+                        <button type="button" class="day-chip" data-day="Monday">Mon</button>
+                        <button type="button" class="day-chip" data-day="Tuesday">Tue</button>
+                        <button type="button" class="day-chip" data-day="Wednesday">Wed</button>
+                        <button type="button" class="day-chip" data-day="Thursday">Thu</button>
+                        <button type="button" class="day-chip" data-day="Friday">Fri</button>
+                    </div>
+                </div>
+
+                <div id="visualTimetableContainer">
+                    <!-- Populated dynamically by teacher-load.js -->
+                </div>
+            </div>
+
+            <!-- Modal: Fullscreen Document Viewer for Admin Document -->
+            <div id="modalAdminDocViewer" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 1060; align-items: center; justify-content: center; padding: 20px;">
+                <div style="background: #fff; width: 100%; max-width: 900px; height: 85vh; border-radius: 14px; box-shadow: var(--shadow-lg); overflow: hidden; display: flex; flex-direction: column;">
+                    <div style="padding: 14px 20px; background: var(--primary); color: #fff; display: flex; justify-content: space-between; align-items: center;">
+                        <h4 id="adminDocViewerTitle" style="margin: 0; font-size: 1.05rem; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-file-alt"></i> Official Teacher Load Schedule
+                        </h4>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <a href="#" target="_blank" id="btnAdminDocViewerExternal" style="display: inline-flex; background: rgba(255,255,255,0.2); border: none; color: #fff; padding: 6px 12px; border-radius: 6px; font-weight: 600; cursor: pointer; text-decoration: none; font-size: 0.82rem; align-items: center; gap: 6px;">
+                                <i class="fas fa-external-link-alt"></i> Open in New Tab
+                            </a>
+                            <button type="button" id="btnCloseAdminDocViewer" style="background: transparent; border: none; color: #fff; font-size: 1.4rem; cursor: pointer; line-height: 1;">&times;</button>
+                        </div>
+                    </div>
+                    <div id="adminDocViewerContent" style="flex: 1; overflow: auto; background: var(--gray-100); display: flex; align-items: center; justify-content: center; padding: 12px;">
+                        <!-- Embed iframe or img -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/teacher_avatar_sync.js"></script>
+    <script type="module" src="js/teacher-load.js"></script>
+    <script src="../js/chatbot.js"></script>
+</body>
+</html>

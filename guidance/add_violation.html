@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log Student Violation - HES Guidance</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/violations.css">
+    <link rel="stylesheet" href="../css/chatbot.css">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <div class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
+                    </div>
+                    <div class="logo-text">PLS<span>NSH</span></div>
+                </div>
+                <div class="school-badge">Guidance & Counseling Services</div>
+            </div>
+
+            <div class="counselor-profile">
+                <div class="counselor-avatar">
+                    <div class="avatar-initial" id="counselorAvatar">G</div>
+                    <div class="online-dot"></div>
+                </div>
+                <div class="counselor-name" id="counselorName">Guidance Counselor</div>
+                <div class="counselor-role"><i class="fas fa-heart-pulse"></i> Guidance Office</div>
+            </div>
+
+            <nav class="nav-menu">
+                <div class="nav-section">
+                    <div class="nav-section-title">MAIN MENU</div>
+                    <ul class="nav-items">
+                        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                        <li><a href="violations.html"><i class="fas fa-clipboard-list"></i> Guidance Records</a></li>
+                        <li><a href="add_violation.html" class="active"><i class="fas fa-file-circle-plus"></i> Log Guidance Case</a></li>
+                        <li><a href="counseling.html"><i class="fas fa-user-doctor"></i> Counseling Sessions</a></li>
+                        <li><a href="students.html"><i class="fas fa-user-graduate"></i> Student Directory</a></li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">RECORDS & REPORTS</div>
+                    <ul class="nav-items">
+                        <li><a href="reports.html"><i class="fas fa-chart-pie"></i> Discipline Reports</a></li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">ACCOUNT</div>
+                    <ul class="nav-items">
+                        <li><a href="profile.html"><i class="fas fa-user-gear"></i> Counselor Profile</a></li>
+                        <li><a href="../auth/logout.html"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                    </ul>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-header">
+                <div>
+                    <h1>Log Student Violation / Incident</h1>
+                    <p class="subtitle">Record an official disciplinary offense or behavioral referral to the Guidance Office.</p>
+                </div>
+                <div class="header-actions">
+                    <a href="violations.html" class="btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Violations
+                    </a>
+                </div>
+            </div>
+
+            <!-- Alert Container -->
+            <div id="alertContainer"></div>
+
+            <!-- Form Card -->
+            <div class="content-card" style="max-width: 900px; margin: 0 auto 30px;">
+                <div class="card-header-flex">
+                    <h3><i class="fas fa-file-shield"></i> Official Incident Incident Report Form</h3>
+                    <span style="font-size: 12px; color: var(--text-muted);">DepEd / Student Handbook Compliant</span>
+                </div>
+
+                <form id="violationForm">
+                    <!-- 1. Student Selection -->
+                    <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+                        <h4 style="font-size: 15px; font-weight: 700; color: var(--primary); margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-user-graduate" style="color: var(--accent);"></i> Student Information
+                        </h4>
+
+                        <div class="form-row">
+                            <div class="form-group" style="grid-column: span 2;">
+                                <label for="studentSelect">Select Student <span class="req">*</span></label>
+                                <select id="studentSelect" class="form-select" required>
+                                    <option value="">-- Choose Student from Directory --</option>
+                                    <!-- Populated from students table -->
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="studentLRN">Learner Reference Number (LRN)</label>
+                                <input type="text" id="studentLRN" class="form-control" readonly placeholder="Auto-populated" style="background: #f1f5f9;">
+                            </div>
+                            <div class="form-group">
+                                <label for="studentGrade">Grade Level</label>
+                                <input type="text" id="studentGrade" class="form-control" readonly placeholder="Auto-populated" style="background: #f1f5f9;">
+                            </div>
+                            <div class="form-group">
+                                <label for="studentStrand">Strand / Track</label>
+                                <input type="text" id="studentStrand" class="form-control" readonly placeholder="Auto-populated" style="background: #f1f5f9;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Violation Details -->
+                    <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+                        <h4 style="font-size: 15px; font-weight: 700; color: var(--primary); margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-triangle-exclamation" style="color: var(--warning);"></i> Violation Classification & Incident Particulars
+                        </h4>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="violationCategory">Violation Severity Category <span class="req">*</span></label>
+                                <select id="violationCategory" class="form-select" required>
+                                    <option value="Minor">Minor Infraction</option>
+                                    <option value="Major">Major Violation (Disciplinary Case)</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="violationType">Specific Violation Type <span class="req">*</span></label>
+                                <select id="violationType" class="form-select" required>
+                                    <!-- Options updated dynamically based on Minor / Major -->
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="offenseLevel">Offense Count / Level <span class="req">*</span></label>
+                                <select id="offenseLevel" class="form-select" required>
+                                    <option value="1st Offense">1st Offense</option>
+                                    <option value="2nd Offense">2nd Offense</option>
+                                    <option value="3rd Offense">3rd Offense</option>
+                                    <option value="4th+ Offense">4th+ Offense (Escalated)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="violationTitle">Incident Summary Title <span class="req">*</span></label>
+                            <input type="text" id="violationTitle" class="form-control" placeholder="e.g., Unauthorized Cutting of Afternoon Classes in TVL Computer Lab" required>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="incidentDate">Date of Incident <span class="req">*</span></label>
+                                <input type="date" id="incidentDate" class="form-control" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="incidentTime">Time of Incident</label>
+                                <input type="time" id="incidentTime" class="form-control" value="10:00">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="incidentLocation">Location on Campus <span class="req">*</span></label>
+                                <select id="incidentLocation" class="form-select" required>
+                                    <option value="Classroom">Classroom</option>
+                                    <option value="Hallway / Corridor">Hallway / Corridor</option>
+                                    <option value="School Canteen">School Canteen</option>
+                                    <option value="Main Gate / Entrance">Main Gate / Entrance</option>
+                                    <option value="Gymnasium / Court">Gymnasium / Court</option>
+                                    <option value="Restroom / Washroom">Restroom / Washroom</option>
+                                    <option value="Computer / Science Lab">Computer / Science Lab</option>
+                                    <option value="School Grounds / Perimeter">School Grounds / Perimeter</option>
+                                    <option value="Online / Social Media">Online / Social Media</option>
+                                    <option value="Off-Campus School Event">Off-Campus School Event</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="incidentDescription">Detailed Narrative & Description of Incident <span class="req">*</span></label>
+                            <textarea id="incidentDescription" class="form-control" rows="4" placeholder="Provide a detailed, objective account of the incident: what transpired, behavior exhibited, and immediate reaction..." required></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="witnesses">Witnesses / Additional Information</label>
+                            <input type="text" id="witnesses" class="form-control" placeholder="e.g. Class Adviser Mr. Santos, Class President, Security Guard on duty">
+                        </div>
+                    </div>
+
+                    <!-- 3. Reporting Person & Initial Action -->
+                    <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+                        <h4 style="font-size: 15px; font-weight: 700; color: var(--primary); margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-hand-holding-heart" style="color: var(--accent);"></i> Reporting Officer & Prescribed Action
+                        </h4>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="reportedByName">Reported By (Full Name) <span class="req">*</span></label>
+                                <input type="text" id="reportedByName" class="form-control" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="reporterRole">Reporter Role</label>
+                                <select id="reporterRole" class="form-select">
+                                    <option value="Guidance Counselor">Guidance Counselor</option>
+                                    <option value="Teacher">Teacher / Subject Faculty</option>
+                                    <option value="Adviser">Class Adviser</option>
+                                    <option value="Administrator">Administrator / Principal</option>
+                                    <option value="Security Personnel">Security Personnel</option>
+                                    <option value="Staff">School Staff</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="actionTaken">Prescribed Action / Sanction</label>
+                                <select id="actionTaken" class="form-select">
+                                    <option value="Guidance Counseling">Guidance Counseling</option>
+                                    <option value="Verbal Warning">Verbal Warning</option>
+                                    <option value="Written Reprimand">Written Reprimand</option>
+                                    <option value="Parent-Teacher Conference">Parent-Teacher Conference</option>
+                                    <option value="Community Service">Community Service</option>
+                                    <option value="Behavioral Agreement">Behavioral Agreement / Contract</option>
+                                    <option value="Suspension">Suspension (Subject to Board Approval)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="sanctionDetails">Sanction / Guidance Plan Details</label>
+                            <input type="text" id="sanctionDetails" class="form-control" placeholder="e.g. Schedule for 1-on-1 counseling session and behavioral check-in">
+                        </div>
+
+                        <!-- Checkboxes for Notifications & Session -->
+                        <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px;">
+                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 13.5px; font-weight: 500;">
+                                <input type="checkbox" id="notifyParentCheck" checked style="width: 18px; height: 18px;">
+                                <span><i class="fas fa-bell" style="color: var(--accent);"></i> Send automatic notice to Parent / Guardian Portal</span>
+                            </label>
+
+                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 13.5px; font-weight: 500;">
+                                <input type="checkbox" id="autoScheduleCounseling" checked style="width: 18px; height: 18px;">
+                                <span><i class="fas fa-calendar-plus" style="color: var(--purple);"></i> Automatically schedule follow-up counseling session in Guidance Calendar</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Submit Actions -->
+                    <div style="display: flex; justify-content: flex-end; gap: 14px; align-items: center;">
+                        <a href="violations.html" class="btn-secondary">Cancel</a>
+                        <button type="submit" class="btn-primary" id="submitViolationBtn" style="padding: 12px 28px; font-size: 14px;">
+                            <i class="fas fa-check-circle"></i> Save & Submit Violation Report
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="js/add_violation.js"></script>
+</body>
+</html>

@@ -1,0 +1,404 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guidance & Violations Management - HES, Hiraya Enrollment System</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/guidance_violations.css">
+    <link rel="stylesheet" href="../css/chatbot.css">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <div class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
+                    </div>
+                    <div class="logo-text">PLS<span>NSH</span></div>
+                </div>
+                <div class="school-badge">Placido L. Señor National High School</div>
+            </div>
+
+            <div class="admin-profile">
+                <div class="admin-avatar">
+                    <div class="avatar-initial" id="adminAvatar">A</div>
+                    <div class="online-dot"></div>
+                </div>
+                <div class="admin-name" id="adminName">Admin</div>
+                <div class="admin-role"><i class="fas fa-shield-alt"></i> Administrator</div>
+            </div>
+
+            <div class="nav-menu">
+                <div class="nav-section">
+                    <div class="nav-section-title">MAIN MENU</div>
+                    <ul class="nav-items">
+                        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                        <li><a href="student.html"><i class="fas fa-user-graduate"></i> Students</a></li>
+                        <li><a href="teachers.html"><i class="fas fa-chalkboard-user"></i> Teachers</a></li>
+                        <li><a href="sections.html"><i class="fas fa-layer-group"></i> Sections</a></li>
+                        <li><a href="subjects.html"><i class="fas fa-book"></i> Subjects</a></li>
+                        <li><a href="enrollments.html"><i class="fas fa-file-signature"></i> Enrollments</a></li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">COMMUNICATION & MANAGEMENT</div>
+                    <ul class="nav-items">
+                        <li><a href="announcements.html"><i class="fas fa-bullhorn"></i> Announcements</a></li>
+                        <li><a href="guidance_violations.html" class="active"><i class="fas fa-scale-balanced"></i> Guidance & Violations</a></li>
+                        <li><a href="manage_accounts.html"><i class="fas fa-users-cog"></i> Accounts</a></li>
+                        <li><a href="attendance.html"><i class="fas fa-calendar-check"></i> Attendance</a></li>
+                        <li><a href="register_face.html"><i class="fas fa-camera"></i> Face Registration</a></li>
+                        <li><a href="activities.html"><i class="fas fa-history"></i> Activities</a></li>
+                        <li><a href="reports.html"><i class="fas fa-chart-bar"></i> Reports</a></li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">ACCOUNT</div>
+                    <ul class="nav-items">
+                        <li><a href="profile.html"><i class="fas fa-user"></i> Profile</a></li>
+                        <li><a href="../auth/logout.html"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-header">
+                <div>
+                    <h1>Guidance & Violations Management</h1>
+                    <p class="subtitle">Record incident reports, assign guidance actions/decisions, and track student discipline</p>
+                </div>
+                <div class="header-actions-group">
+                    <button type="button" class="btn-add-violation" id="btnOpenAddViolationModal">
+                        <i class="fas fa-plus-circle"></i> Log New Violation
+                    </button>
+                    <button type="button" class="btn-export-report" onclick="window.printViolationsReport()">
+                        <i class="fas fa-file-export"></i> Export Report
+                    </button>
+                </div>
+            </div>
+
+            <!-- Alert Container -->
+            <div id="alertContainer"></div>
+
+            <!-- KPI Stats Grid -->
+            <div class="gv-stats-grid">
+                <div class="gv-stat-card">
+                    <div class="gv-stat-icon total"><i class="fas fa-scale-balanced"></i></div>
+                    <div>
+                        <div class="gv-stat-number" id="kpiTotal">0</div>
+                        <div class="gv-stat-label">Total Logged Incidents</div>
+                    </div>
+                </div>
+
+                <div class="gv-stat-card">
+                    <div class="gv-stat-icon pending"><i class="fas fa-hourglass-half"></i></div>
+                    <div>
+                        <div class="gv-stat-number" id="kpiPending">0</div>
+                        <div class="gv-stat-label">Pending Action</div>
+                    </div>
+                </div>
+
+                <div class="gv-stat-card">
+                    <div class="gv-stat-icon counseling"><i class="fas fa-comments"></i></div>
+                    <div>
+                        <div class="gv-stat-number" id="kpiCounseling">0</div>
+                        <div class="gv-stat-label">Counseling Scheduled</div>
+                    </div>
+                </div>
+
+                <div class="gv-stat-card">
+                    <div class="gv-stat-icon resolved"><i class="fas fa-circle-check"></i></div>
+                    <div>
+                        <div class="gv-stat-number" id="kpiResolved">0</div>
+                        <div class="gv-stat-label">Resolved / Cleared</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters Card -->
+            <div class="gv-filter-card">
+                <div class="gv-filter-grid">
+                    <div class="search-input-wrap">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="gvSearchInput" placeholder="Search by student name, LRN, or violation title...">
+                    </div>
+
+                    <select id="gvFilterStatus" class="select-filter">
+                        <option value="">All Statuses</option>
+                        <option value="Pending">Pending Review</option>
+                        <option value="Counseling Scheduled">Counseling Scheduled</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Resolved">Resolved / Cleared</option>
+                    </select>
+
+                    <select id="gvFilterOffense" class="select-filter">
+                        <option value="">All Offense Levels</option>
+                        <option value="1st Offense">1st Offense</option>
+                        <option value="2nd Offense">2nd Offense</option>
+                        <option value="3rd Offense">3rd Offense</option>
+                    </select>
+
+                    <select id="gvFilterGrade" class="select-filter">
+                        <option value="">All Grade Levels</option>
+                        <option value="Grade 7">Grade 7</option>
+                        <option value="Grade 8">Grade 8</option>
+                        <option value="Grade 9">Grade 9</option>
+                        <option value="Grade 10">Grade 10</option>
+                        <option value="Grade 11">Grade 11</option>
+                        <option value="Grade 12">Grade 12</option>
+                    </select>
+
+                    <button type="button" class="btn-reset-filters" id="btnResetFilters">
+                        <i class="fas fa-undo"></i> Reset
+                    </button>
+                </div>
+            </div>
+
+            <!-- Violations Table Card -->
+            <div class="gv-table-card">
+                <div class="gv-table-header-bar">
+                    <div class="gv-table-title">
+                        <i class="fas fa-clipboard-list" style="color: #f59e0b;"></i> Disciplinary Incidents Roster
+                    </div>
+                    <span id="recordCountText" style="font-size: 12.5px; color: #64748b; font-weight: 600;">Showing 0 records</span>
+                </div>
+
+                <div style="overflow-x: auto;">
+                    <table class="gv-table">
+                        <thead>
+                            <tr>
+                                <th>Student Name & LRN</th>
+                                <th>Grade & Section</th>
+                                <th>Violation / Incident</th>
+                                <th>Offense Level</th>
+                                <th>Incident Date</th>
+                                <th>Guidance Action Taken</th>
+                                <th>Parent Notified</th>
+                                <th>Status</th>
+                                <th style="text-align: right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="violationsTableBody">
+                            <tr>
+                                <td colspan="9" style="text-align: center; padding: 40px; color: #64748b;">
+                                    <i class="fas fa-spinner fa-spin"></i> Loading violations database...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ========== MODAL 1: LOG NEW VIOLATION ========== -->
+    <div id="modalAddViolation" class="gv-modal-overlay" style="display: none;">
+        <div class="gv-modal-card">
+            <div class="gv-modal-header">
+                <div class="gv-modal-title">
+                    <i class="fas fa-file-circle-plus" style="color: #f59e0b;"></i> Log New Student Violation
+                </div>
+                <button type="button" class="hes-modal-close" onclick="closeAddModal()">&times;</button>
+            </div>
+            <form id="formAddViolation">
+                <div class="gv-modal-body">
+                    <!-- Select Student -->
+                    <div class="form-group-gv">
+                        <label>Select Student <span style="color: #ef4444;">*</span></label>
+                        <select id="addStudentSelect" class="form-control-gv" required>
+                            <option value="">-- Choose Student --</option>
+                        </select>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                        <div class="form-group-gv">
+                            <label>Violation Category <span style="color: #ef4444;">*</span></label>
+                            <select id="addCategory" class="form-control-gv" required>
+                                <option value="Uniform & Grooming">Uniform & Grooming</option>
+                                <option value="Attendance & Cutting Classes">Attendance & Cutting Classes</option>
+                                <option value="Conduct & Disrespect">Conduct & Disrespect</option>
+                                <option value="Academic Dishonesty">Academic Dishonesty / Cheating</option>
+                                <option value="Campus Property Damage">Campus Property Damage</option>
+                                <option value="Bullying / Harassment">Bullying / Harassment</option>
+                                <option value="Other Disciplinary">Other Disciplinary</option>
+                            </select>
+                        </div>
+                        <div class="form-group-gv">
+                            <label>Offense Level <span style="color: #ef4444;">*</span></label>
+                            <select id="addOffenseLevel" class="form-control-gv" required>
+                                <option value="1st Offense">1st Offense (Warning / Call-in)</option>
+                                <option value="2nd Offense">2nd Offense (Parent Conference)</option>
+                                <option value="3rd Offense">3rd Offense (Probation / Suspension)</option>
+                                <option value="Habitual Offense">Habitual Offense</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group-gv">
+                        <label>Violation Title / Specific Offense <span style="color: #ef4444;">*</span></label>
+                        <input type="text" id="addTitle" class="form-control-gv" placeholder="e.g. Cutting Classes during 3rd period" required>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                        <div class="form-group-gv">
+                            <label>Incident Date <span style="color: #ef4444;">*</span></label>
+                            <input type="date" id="addIncidentDate" class="form-control-gv" required>
+                        </div>
+                        <div class="form-group-gv">
+                            <label>Incident Location</label>
+                            <input type="text" id="addLocation" class="form-control-gv" placeholder="e.g. Science Lab 2 / Hallway">
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                        <div class="form-group-gv">
+                            <label>Reported By (Faculty/Staff) <span style="color: #ef4444;">*</span></label>
+                            <input type="text" id="addReportedBy" class="form-control-gv" placeholder="e.g. Mr. Santos" required>
+                        </div>
+                        <div class="form-group-gv">
+                            <label>Reporter Role</label>
+                            <select id="addReporterRole" class="form-control-gv">
+                                <option value="Subject Teacher">Subject Teacher</option>
+                                <option value="Class Adviser">Class Adviser</option>
+                                <option value="Discipline Officer">Discipline Officer</option>
+                                <option value="Guidance Counselor">Guidance Counselor</option>
+                                <option value="Administrator">Administrator</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group-gv">
+                        <label>Incident Description & Details <span style="color: #ef4444;">*</span></label>
+                        <textarea id="addDescription" class="form-control-gv" rows="3" placeholder="Provide factual details and circumstances of the incident..." required></textarea>
+                    </div>
+
+                    <!-- Initial Guidance Action (Optional) -->
+                    <div class="form-group-gv">
+                        <label>Initial Guidance Action Taken</label>
+                        <input type="text" id="addActionTaken" class="form-control-gv" placeholder="e.g. Verbal Warning / Scheduled for counseling">
+                    </div>
+                </div>
+                <div class="gv-modal-footer">
+                    <button type="button" class="btn-export-report" onclick="closeAddModal()">Cancel</button>
+                    <button type="submit" class="btn-add-violation" id="btnSubmitAddViolation">
+                        <i class="fas fa-save"></i> Save Violation Record
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ========== MODAL 2: ADD ACTION (GUIDANCE) / UPDATE DECISION ========== -->
+    <div id="modalAddAction" class="gv-modal-overlay" style="display: none;">
+        <div class="gv-modal-card">
+            <div class="gv-modal-header">
+                <div class="gv-modal-title">
+                    <i class="fas fa-gavel" style="color: #f59e0b;"></i> Add Action (Guidance) & Decision
+                </div>
+                <button type="button" class="hes-modal-close" onclick="closeActionModal()">&times;</button>
+            </div>
+            <form id="formAddAction">
+                <input type="hidden" id="actionViolationId">
+                <div class="gv-modal-body">
+                    <!-- Student Summary Card -->
+                    <div style="background: #f1f5f9; border-radius: 10px; padding: 14px 16px; margin-bottom: 18px; border: 1px solid #cbd5e1;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <strong style="font-size: 15px; color: #0f172a;" id="actionStudentName">Student Name</strong>
+                            <span class="badge-offense level-1" id="actionOffenseBadge">1st Offense</span>
+                        </div>
+                        <div style="font-size: 12.5px; color: #475569;" id="actionIncidentTitle">Violation: Cutting Classes</div>
+                        <div style="font-size: 12px; color: #64748b; margin-top: 4px;" id="actionParentEmergencyText">
+                            Parent Contact: 09123456789 • parent@gmail.com
+                        </div>
+                    </div>
+
+                    <!-- 1. Decision / Action Taken -->
+                    <div class="form-group-gv">
+                        <label>Decision / Action Taken <span style="color: #ef4444;">*</span></label>
+                        <select id="actionDecisionSelect" class="form-control-gv" required>
+                            <option value="Verbal Warning">Verbal Warning & Reprimand</option>
+                            <option value="Written Reprimand / Incident Form">Written Reprimand / Incident Form</option>
+                            <option value="Guidance Counseling Session">Guidance Counseling Session</option>
+                            <option value="Parent-Teacher Conference">Parent-Teacher / Guardian Conference</option>
+                            <option value="Community Service / Campus Service">Community Service / Campus Service</option>
+                            <option value="Behavioral Contract">Behavioral Contract Signed</option>
+                            <option value="Disciplinary Probation">Disciplinary Probation</option>
+                            <option value="Suspension (1-3 Days)">Suspension (1-3 Days)</option>
+                            <option value="Dismissed / No Action Warranted">Dismissed / No Action Warranted</option>
+                        </select>
+                    </div>
+
+                    <!-- 2. Sanction Details -->
+                    <div class="form-group-gv">
+                        <label>Sanction / Corrective Requirements</label>
+                        <input type="text" id="actionSanctions" class="form-control-gv" placeholder="e.g. 4 hours campus library service, return signed contract">
+                    </div>
+
+                    <!-- 3. Status -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                        <div class="form-group-gv">
+                            <label>Case Status <span style="color: #ef4444;">*</span></label>
+                            <select id="actionStatus" class="form-control-gv" required>
+                                <option value="Pending">Pending Review</option>
+                                <option value="Counseling Scheduled">Counseling Scheduled</option>
+                                <option value="In Progress">In Progress (Serving Sanction)</option>
+                                <option value="Resolved">Resolved / Cleared</option>
+                                <option value="Dismissed">Dismissed</option>
+                            </select>
+                        </div>
+                        <div class="form-group-gv">
+                            <label>Resolution Date</label>
+                            <input type="date" id="actionResolutionDate" class="form-control-gv">
+                        </div>
+                    </div>
+
+                    <!-- 4. Counselor Notes & Purpose -->
+                    <div class="form-group-gv">
+                        <label>Counselor Evaluation & Purpose / Action Plan</label>
+                        <textarea id="actionCounselorNotes" class="form-control-gv" rows="3" placeholder="Enter guidance evaluation, counseling session remarks, or behavioral agreement..."></textarea>
+                    </div>
+
+                    <!-- 5. Parent Notified Checkbox & Contact Button -->
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 16px; margin-top: 10px;">
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; margin: 0; text-transform: none; font-size: 13.5px; font-weight: 600; color: #1e293b;">
+                            <input type="checkbox" id="actionParentNotified" style="width: 17px; height: 17px;">
+                            <span>Parent / Guardian has been officially notified of this decision</span>
+                        </label>
+                        <div style="font-size: 11.5px; color: #64748b; margin-top: 4px; padding-left: 27px;">
+                            Checking this marks the student and parent portal with the official notice timestamp.
+                        </div>
+                    </div>
+                </div>
+                <div class="gv-modal-footer">
+                    <button type="button" class="btn-export-report" onclick="closeActionModal()">Cancel</button>
+                    <button type="submit" class="btn-add-violation" id="btnSubmitAddAction">
+                        <i class="fas fa-check-double"></i> Save Guidance Action
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/admin_avatar_sync.js"></script>
+    <script type="module" src="js/guidance_violations.js"></script>
+    <script src="../js/chatbot.js"></script>
+</body>
+</html>

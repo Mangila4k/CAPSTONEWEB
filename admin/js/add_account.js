@@ -2,6 +2,8 @@
 import { supabase } from '../../supabase/config.js';
 
 document.addEventListener('DOMContentLoaded', function() {
+    'use strict';
+
     // DOM Elements
     const fullnameInput = document.getElementById('fullname');
     const emailInput = document.getElementById('email');
@@ -36,8 +38,16 @@ document.addEventListener('DOMContentLoaded', function() {
             return 'HES-TCH-XXXXX';
         } else if (role === 'Registrar') {
             return 'HES-RGR-XXXXX';
+        } else if (role === 'Guidance') {
+            return 'HES-GDC-XXXXX';
         } else if (role === 'Admin') {
             return 'HES-ADM-XXXXX';
+        } else if (role === 'Student') {
+            return 'HES-STU-XXXXX';
+        } else if (role === 'Parent') {
+            return 'HES-PAR-XXXXX';
+        } else if (role === 'Principal') {
+            return 'HES-PRN-XXXXX';
         }
         return 'Will be auto-generated';
     }
@@ -48,8 +58,16 @@ document.addEventListener('DOMContentLoaded', function() {
             return `HES-TCH-${rand}`;
         } else if (role === 'Registrar') {
             return `HES-RGR-${rand}`;
+        } else if (role === 'Guidance') {
+            return `HES-GDC-${rand}`;
         } else if (role === 'Admin') {
             return `HES-ADM-${rand}`;
+        } else if (role === 'Student') {
+            return `HES-STU-${rand}`;
+        } else if (role === 'Parent') {
+            return `HES-PAR-${rand}`;
+        } else if (role === 'Principal') {
+            return `HES-PRN-${rand}`;
         }
         return `HES-ACC-${rand}`;
     }
@@ -78,6 +96,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (role === 'Admin') roleDisplay = 'Administrator';
                 else if (role === 'Teacher') roleDisplay = 'Teacher (Faculty)';
                 else if (role === 'Registrar') roleDisplay = 'Registrar';
+                else if (role === 'Guidance') roleDisplay = 'Guidance Counselor';
+                else if (role === 'Student') roleDisplay = 'Student';
+                else if (role === 'Parent') roleDisplay = 'Parent / Guardian';
+                else if (role === 'Principal') roleDisplay = 'School Principal';
 
                 previewRole.textContent = roleDisplay;
                 previewRole.className = 'preview-role-badge ' + role.toLowerCase();
@@ -97,6 +119,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let strengthLabel = '';
         let strengthColor = '';
 
+        if (password.length >= 6) strength += 1;
         if (password.length >= 8) strength += 1;
         if (password.match(/[a-z]+/)) strength += 1;
         if (password.match(/[A-Z]+/)) strength += 1;
@@ -105,7 +128,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (password.length === 0) {
             strengthBar.style.width = '0';
-            strengthText.innerHTML = '<i class="fas fa-info-circle"></i> <span>Minimum 8 characters with uppercase, lowercase, number & special character</span>';
+            strengthText.innerHTML = '<i class="fas fa-info-circle"></i> <span>Minimum 6 characters (recommended: 8+ with mixed case & numbers)</span>';
             return;
         }
 
@@ -171,7 +194,7 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(() => {
                 alertDiv.remove();
             }, 300);
-        }, 5000);
+        }, 6000);
     }
 
     // ===== EVENT LISTENERS =====
@@ -220,26 +243,37 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            // Split name into first and last name
-            const nameParts = fullname.split(' ');
+            // Split name into first and last name (Postgres last_name is NOT NULL)
+            const nameParts = fullname.split(/\s+/).filter(Boolean);
             const firstName = nameParts[0] || fullname;
-            const lastName = nameParts.slice(1).join(' ') || '';
+            const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : firstName;
             const generatedID = generateActualIDNumber(role);
 
             const submitBtn = accountForm.querySelector('button[type="submit"]');
+            const originalBtnHtml = submitBtn ? submitBtn.innerHTML : '<i class="fas fa-save"></i> Create Account';
+
             try {
-                if (submitBtn) submitBtn.disabled = true;
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Account...';
+                }
 
                 // 1. Check if email already exists
-                const { data: existingUser } = await supabase
+                const { data: existingUser, error: checkErr } = await supabase
                     .from('users')
-                    .select('id')
-                    .eq('email', email)
+                    .select('id, email')
+                    .ilike('email', email)
                     .maybeSingle();
 
-                if (existingUser) {
-                    throw new Error('An account with this email address already exists.');
+                if (checkErr) {
+                    console.warn('Check existing user warning:', checkErr);
                 }
+
+                if (existingUser) {
+                    throw new Error('An account with this email address already exists. Please use a different email.');
+                }
+
+                const roleLower = role.toLowerCase();
 
                 // 2. Insert into users table
                 const { data: newUser, error: userErr } = await supabase
@@ -249,22 +283,58 @@ document.addEventListener('DOMContentLoaded', function() {
                         last_name: lastName,
                         email: email,
                         password: password,
-                        role: role.toLowerCase()
+                        role: roleLower
                     }])
                     .select()
                     .single();
 
                 if (userErr) throw userErr;
 
-                // 3. If role is teacher, also create teacher record
-                if (role.toLowerCase() === 'teacher') {
-                    await supabase
+                // 3. Role-specific auxiliary records
+                if (roleLower === 'teacher') {
+                    const { error: teacherErr } = await supabase
                         .from('teachers')
                         .insert([{
                             user_id: newUser.id,
                             employee_id: generatedID,
                             specialization: 'General'
                         }]);
+                    if (teacherErr) console.warn('Teacher insert warning:', teacherErr);
+                } else if (roleLower === 'student') {
+                    const randomLrn = Math.floor(100000000000 + Math.random() * 900000000000).toString();
+                    const { data: stdData, error: sErr } = await supabase
+                        .from('students')
+                        .insert([{
+                            lrn: randomLrn,
+                            first_name: firstName,
+                            last_name: lastName,
+                            email: email,
+                            date_of_birth: '2008-01-01',
+                            contact_number: '09000000000',
+                            student_type: 'New Student'
+                        }])
+                        .select()
+                        .maybeSingle();
+
+                    if (!sErr && stdData && stdData.id) {
+                        await supabase
+                            .from('users')
+                            .update({ student_id: stdData.id })
+                            .eq('id', newUser.id);
+                    }
+                }
+
+                // 4. Log activity if activity_logs exists
+                try {
+                    await supabase
+                        .from('activity_logs')
+                        .insert([{
+                            action: `Created new ${role} account for ${fullname} (${email})`,
+                            role: 'admin',
+                            details: `Assigned ID: ${generatedID}`
+                        }]);
+                } catch (actErr) {
+                    console.warn('Activity log error:', actErr);
                 }
 
                 showAlert(`✅ Account created successfully!<br><strong>Assigned ID:</strong> ${generatedID}<br>Redirecting to Accounts list...`, 'success');
@@ -274,11 +344,26 @@ document.addEventListener('DOMContentLoaded', function() {
                 }, 1500);
             } catch (err) {
                 console.error('Error creating account:', err);
-                showAlert('Failed to create account: ' + err.message, 'error');
+                showAlert('Failed to create account: ' + (err.message || err), 'error');
             } finally {
-                if (submitBtn) submitBtn.disabled = false;
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnHtml;
+                }
             }
         });
+    }
+
+    // Pre-select role if provided in URL (e.g. ?role=guidance or ?role=registrar)
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialRole = urlParams.get('role');
+    if (initialRole && roleSelect) {
+        for (let opt of roleSelect.options) {
+            if (opt.value.toLowerCase() === initialRole.toLowerCase()) {
+                roleSelect.value = opt.value;
+                break;
+            }
+        }
     }
 
     updatePreview();

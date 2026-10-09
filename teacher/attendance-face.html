@@ -21,9 +21,9 @@
                     <div class="logo-icon">
                         <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
                     </div>
-                    <div class="logo-text">H.<span>E.S</span></div>
+                    <div class="logo-text">PLS<span>NSH</span></div>
                 </div>
-                <div class="school-badge">Hiraya Enrollment System</div>
+                <div class="school-badge">Placido L. Señor National High School</div>
             </div>
 
             <div class="teacher-profile">
@@ -43,7 +43,9 @@
                         <li><a href="attendance-face.html" class="active"><i class="fas fa-camera"></i> <span>Face Attendance</span></a></li>
                         <li><a href="student-attendance.html"><i class="fas fa-user-check"></i> <span>Student Attendance</span></a></li>
                         <li><a href="classes.html"><i class="fas fa-users"></i> <span>My Classes</span></a></li>
-                        <li><a href="schedule.html"><i class="fas fa-clock"></i> <span>Schedule</span></a></li>
+                        <li><a href="class-program.html"><i class="fas fa-calendar-alt"></i> <span>Class Program</span></a></li>
+                        <li><a href="teacher-load.html"><i class="fas fa-clock"></i> <span>Teacher Load</span></a></li>
+                        <li><a href="assessments.html"><i class="fas fa-clipboard-list"></i> <span>Assessments</span></a></li>
                         <li><a href="grades.html"><i class="fas fa-star"></i> <span>Grades</span></a></li>
                     </ul>
                 </div>
@@ -71,17 +73,25 @@
                 </div>
             </div>
 
-            <!-- Philippine Time Bar -->
-            <div class="ph-time-bar">
-                <div class="ph-time-info">
-                    <i class="fas fa-clock"></i>
-                    <span>Philippine Time: <strong id="phTimeDisplay">Loading...</strong></span>
+            <!-- Philippine Time & Adjusted Schedule Banner -->
+            <div class="schedule-banner-card" id="scheduleBannerCard">
+                <div class="schedule-banner-header">
+                    <div class="schedule-banner-main">
+                        <div class="schedule-day-badge" id="scheduleDayBadge">
+                            <i class="fas fa-calendar-day"></i> <span id="currentDayText">Today</span>
+                        </div>
+                        <div class="schedule-title-wrap">
+                            <h3 id="scheduleTitleText"><i class="fas fa-clock"></i> Today's Adjusted Faculty Schedule</h3>
+                            <p id="scheduleSummaryText">Loading assigned teaching classes and shift hours...</p>
+                        </div>
+                    </div>
+                    <div class="schedule-cutoff-badge" id="scheduleCutoffBadge">
+                        <i class="fas fa-calendar-check"></i>
+                        <span>Faculty Attendance: <strong id="cutoffTimeDisplay">Active Duty</strong></span>
+                        <span id="scheduleStatusPill" class="schedule-pill on-time">Active Window</span>
+                    </div>
                 </div>
-                <div class="cutoff-pill">
-                    <i class="fas fa-info-circle"></i>
-                    <span>Time In Cutoff: <strong>8:00 AM</strong></span>
-                    <span id="lateWarning" style="display:none; color:#fde047; margin-left:6px;">(Late arrival)</span>
-                </div>
+                <div class="schedule-classes-chips" id="scheduleClassesChips" style="display:none;"></div>
             </div>
 
             <!-- Alert Container -->
@@ -116,7 +126,7 @@
                         <div class="stat-icon present"><i class="fas fa-check-circle"></i></div>
                     </div>
                     <div class="stat-number" id="presentDaysStat">0</div>
-                    <div class="stat-label">On time arrivals</div>
+                    <div class="stat-label">Present Sessions</div>
                 </div>
 
                 <div class="stat-card late">
@@ -125,7 +135,7 @@
                         <div class="stat-icon late"><i class="fas fa-clock"></i></div>
                     </div>
                     <div class="stat-number" id="lateDaysStat">0</div>
-                    <div class="stat-label">After 8:00 AM</div>
+                    <div class="stat-label">Late Recorded</div>
                 </div>
 
                 <div class="stat-card absent">
@@ -185,6 +195,9 @@
                             <i class="fas fa-sync-alt"></i>
                         </button>
                     </div>
+                    <button type="button" class="btn-direct-validate" id="btnDirectValidate">
+                        <i class="fas fa-shield-check"></i> <span id="btnDirectValidateText">Validate & Record Attendance Now</span>
+                    </button>
                 </div>
 
                 <!-- Right: Profile & Today's Attendance -->
@@ -217,7 +230,7 @@
                             </div>
                         </div>
                         <p style="font-size: 12px; color: #64748b; margin: 0; text-align: center;">
-                            <i class="fas fa-info-circle"></i> Daily cutoff is 8:00 AM. Time in after 8:00 AM is logged as Late.
+                            <i class="fas fa-info-circle"></i> Actual clock-in and clock-out times are recorded directly for faculty attendance.
                         </p>
                     </div>
                 </div>
@@ -233,7 +246,6 @@
                                 <th>Date</th>
                                 <th>Time In</th>
                                 <th>Time Out</th>
-                                <th>Status</th>
                                 <th>Verification</th>
                             </tr>
                         </thead>
@@ -241,6 +253,20 @@
                             <!-- Populated dynamically -->
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            <!-- Real-Time Activity Log Feed -->
+            <div class="activity-feed-card" id="activityFeedCard">
+                <div class="activity-feed-header">
+                    <h3><i class="fas fa-stream"></i> Today's Attendance Activities & Audit Trail</h3>
+                    <span style="font-size: 12.5px; color: #64748b;"><i class="fas fa-circle" style="color: #10b981; font-size: 8px;"></i> Live Recorded</span>
+                </div>
+                <div class="activity-timeline" id="activityTimelineList">
+                    <!-- Populated dynamically from activity_logs -->
+                    <div style="text-align: center; padding: 20px; color: #94a3b8;">
+                        <i class="fas fa-circle-notch fa-spin"></i> Loading attendance activities...
+                    </div>
                 </div>
             </div>
         </main>

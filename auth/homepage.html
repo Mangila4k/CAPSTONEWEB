@@ -14,15 +14,16 @@
         <!-- ===== NAVBAR ===== -->
         <nav class="navbar">
             <div class="brand">
-                <img src="../pictures/logo sa skwelahan.jpg" alt="H.E.S Logo" class="brand-logo"
+                <img src="../pictures/logo sa skwelahan.jpg" alt="PLSNSH Logo" class="brand-logo"
                     onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
                 <span class="brand-icon-fallback"
-                    style="display: none; background: #0a015c; color: white; width: 40px; height: 40px; align-items: center; justify-content: center; border-radius: 10px; font-weight: 700; font-size: 1rem;">H</span>
-                <span class="brand-name">H.<span>E.S</span></span>
+                    style="display: none; background: #1a225a; color: white; width: 40px; height: 40px; align-items: center; justify-content: center; border-radius: 10px; font-weight: 700; font-size: 1rem;">PLS</span>
+                <span class="brand-name">PLS<span>NSH</span></span>
             </div>
             <div class="nav-menu">
                 <div class="nav-links">
                     <a href="homepage.html" data-page="home" class="active">Home</a>
+                    <a href="homepage.html#curriculum" data-page="curriculum">Curriculum</a>
                     <a href="homepage.html#features" data-page="features">Features</a>
                     <a href="homepage.html#about" data-page="about">About</a>
                     <a href="homepage.html#contact" data-page="contact">Contact</a>
@@ -38,7 +39,10 @@
             <section id="page-home" class="page-section active">
                 <div class="hero-section">
                     <div class="hero-content">
-                        <h1 class="hero-title">Welcome to HES</h1>
+                        <div class="matatag-hero-badge">
+                            <i class="fas fa-graduation-cap"></i> DepEd MATATAG · Bansang Makabata, Batang Makabansa
+                        </div>
+                        <h1 class="hero-title">Welcome to <span>PLSNHS</span></h1>
                         <p class="hero-sub">Your seamless gateway to academic enrollment and management</p>
                         <div class="hero-buttons">
                             <a href="../student/enrollment.html" class="btn-enroll" style="text-decoration: none;">
@@ -51,7 +55,8 @@
                 <!-- FEATURES -->
                 <section class="features-section" id="features">
                     <div class="container">
-                        <h2 class="section-title">Why Choose HES, Hiraya Enrollment System</h2>
+                        <h2 class="section-title">Why Choose PLSNHS, <P>Placido L. Señor National High School</P>
+                        </h2>
                         <div class="features-row">
                             <div class="feature-card" data-feature="enrollment">
                                 <i class="fas fa-file-signature"></i>
@@ -76,8 +81,11 @@
                     <div class="container">
                         <div class="about-stats-wrap">
                             <div class="about-text">
-                                <h2>About HES</h2>
-                                <p>HES, Hiraya Enrollment System is a modern enrollment management system. We streamline the admission process, making it easier
+                                <h2>About PLSNHS</h2>
+                                <p>PLSNHS, Integrated Development of an Educational Management System For Placido L.
+                                    Señor National High School is a modern online enrollment system. We
+                                    streamline
+                                    the admission process, making it easier
                                     for students, parents, and administrators to manage enrollments efficiently.</p>
                                 <ul class="about-list">
                                     <li><i class="fas fa-check-circle"></i> Paperless enrollment process</li>
@@ -103,13 +111,2065 @@
                         </div>
                     </div>
                 </section>
+                <section class="curriculum-section" id="curriculum">
+                    <div class="container">
+                        <div class="curriculum-header-box">
+                            <span class="curriculum-eyebrow">
+                                <i class="fas fa-graduation-cap"></i> Official DepEd Academic Curriculum
+                            </span>
+                            <h2 class="curriculum-title">Curriculum by Year Level</h2>
+                            <p class="curriculum-subtitle">Explore Placido L. Señor National High School's comprehensive
+                                academic offerings structured by year level. Featuring complete DepEd Junior High School
+                                foundations and Senior High School TVL-ICT specializations.</p>
+                        </div>
+
+                        <!-- Highlights Stats Bar -->
+                        <div class="curriculum-stats-bar">
+                            <div class="curriculum-stat-pill pill-blue">
+                                <div class="stat-pill-icon"><i class="fas fa-layer-group"></i></div>
+                                <div class="stat-pill-data">
+                                    <strong>6 Year Levels</strong>
+                                    <span>Grades 7 to 12</span>
+                                </div>
+                            </div>
+                            <div class="curriculum-stat-pill pill-amber">
+                                <div class="stat-pill-icon"><i class="fas fa-book-open"></i></div>
+                                <div class="stat-pill-data">
+                                    <strong>62 Total Subjects</strong>
+                                    <span>DepEd K-12 Standard</span>
+                                </div>
+                            </div>
+                            <div class="curriculum-stat-pill pill-emerald">
+                                <div class="stat-pill-icon"><i class="fas fa-school"></i></div>
+                                <div class="stat-pill-data">
+                                    <strong>32 JHS Subjects</strong>
+                                    <span>Grades 7–10 Core</span>
+                                </div>
+                            </div>
+                            <div class="curriculum-stat-pill pill-purple">
+                                <div class="stat-pill-icon"><i class="fas fa-laptop-code"></i></div>
+                                <div class="stat-pill-data">
+                                    <strong>30 SHS Subjects</strong>
+                                    <span>Grades 11–12 TVL-ICT</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Year Level Navigation Tabs -->
+                        <div class="year-tabs-container">
+                            <div class="year-tabs-nav" id="homeYearTabs">
+                                <button type="button" class="year-tab-btn active" data-target="home-panel-g7">
+                                    <span class="tab-num">7</span> Grade 7 <span class="tab-badge">8 Subjects</span>
+                                </button>
+                                <button type="button" class="year-tab-btn" data-target="home-panel-g8">
+                                    <span class="tab-num">8</span> Grade 8 <span class="tab-badge">8 Subjects</span>
+                                </button>
+                                <button type="button" class="year-tab-btn" data-target="home-panel-g9">
+                                    <span class="tab-num">9</span> Grade 9 <span class="tab-badge">8 Subjects</span>
+                                </button>
+                                <button type="button" class="year-tab-btn" data-target="home-panel-g10">
+                                    <span class="tab-num">10</span> Grade 10 <span class="tab-badge">8 Subjects</span>
+                                </button>
+                                <button type="button" class="year-tab-btn" data-target="home-panel-g11">
+                                    <span class="tab-num">11</span> Grade 11 <span class="tab-badge">18 Subjects</span>
+                                </button>
+                                <button type="button" class="year-tab-btn" data-target="home-panel-g12">
+                                    <span class="tab-num">12</span> Grade 12 <span class="tab-badge">12 Subjects</span>
+                                </button>
+                                <button type="button" class="year-tab-btn" data-target="home-panel-all">
+                                    <i class="fas fa-th-large"></i> All Grades Overview
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="year-content-panel active" id="home-panel-g7">
+                            <div class="year-panel-banner">
+                                <div class="year-panel-info">
+                                    <h3>Grade 7 Curriculum <span class="level-tag jhs">Junior High School · 1st
+                                            Year</span></h3>
+                                    <p>Foundational secondary education establishing academic competencies in critical
+                                        thinking, science literacy, communication, and exploratory technical skills.</p>
+                                </div>
+                                <div class="year-panel-meta">
+                                    <span class="year-meta-pill"><i class="fas fa-book"></i> 8 Core Subjects</span>
+                                    <span class="year-meta-pill"><i class="far fa-calendar-check"></i> Full Academic
+                                        Year</span>
+                                    <span class="year-meta-pill"><i class="fas fa-award"></i> DepEd JHS Standards</span>
+                                </div>
+                            </div>
+                            <div class="subjects-showcase-grid">
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">MATH-7</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> Full
+                                                    Year</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-math"><i class="fas fa-calculator"></i>
+                                            </div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Mathematics 7</h4>
+                                                <p class="subject-desc">Numbers and Number Sense, Measurement, Algebraic
+                                                    Expressions, Linear Equations, Geometry, and Basic Statistics.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 4 hrs / week</span>
+                                        <span class="strand-tag">JHS Core</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">SCI-7</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> Full
+                                                    Year</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-science"><i class="fas fa-flask"></i>
+                                            </div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Science 7</h4>
+                                                <p class="subject-desc">Integrated Science covering Matter (Solutions &
+                                                    Mixtures), Living Things and Their Environment, Waves, and Earth
+                                                    Systems.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 4 hrs / week</span>
+                                        <span class="strand-tag">JHS Core</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">ENG-7</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> Full
+                                                    Year</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-english"><i
+                                                    class="fas fa-book-open"></i></div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">English 7</h4>
+                                                <p class="subject-desc">Philippine Literature in the Post-Colonial
+                                                    Period, Reading Comprehension, Subject-Verb Agreement, and Oral
+                                                    Communication.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 4 hrs / week</span>
+                                        <span class="strand-tag">JHS Core</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">FIL-7</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> Full
+                                                    Year</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-filipino"><i
+                                                    class="fas fa-language"></i></div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Filipino 7</h4>
+                                                <p class="subject-desc">Mga Akdang Pampanitikan ng Mindanao, Bisaya, at
+                                                    Luzon; Wastong Gramatika, Retorika, at Ibong Adarna bilang Korido.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 4 hrs / week</span>
+                                        <span class="strand-tag">JHS Core</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">AP-7</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> Full
+                                                    Year</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-ap"><i class="fas fa-landmark"></i>
+                                            </div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Araling Panlipunan 7</h4>
+                                                <p class="subject-desc">Araling Asyano: Heograpiya ng Asya, Sinaunang
+                                                    Kabihasnan, Kolonyalismo, Nasyonalismo, at Kasalukuyang Asya.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 3 hrs / week</span>
+                                        <span class="strand-tag">JHS Core</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">ESP-7</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> Full
+                                                    Year</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-esp"><i class="fas fa-heart"></i></div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Edukasyon sa Pagpapakatao 7</h4>
+                                                <p class="subject-desc">Pagtuklas ng Sariling Talento, Hilig, at
+                                                    Kakayahan; Pagpapaunlad ng Tiwala sa Sarili at Moral na Pagpapasiya.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 2 hrs / week</span>
+                                        <span class="strand-tag">JHS Core</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">MAPEH-7</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> Full
+                                                    Year</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-mapeh"><i class="fas fa-running"></i>
+                                            </div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">MAPEH 7</h4>
+                                                <p class="subject-desc">Music of Lowlands & Highlands, Indigenous Arts &
+                                                    Crafts, Physical Fitness Assessments, and Adolescent Health &
+                                                    Nutrition.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 4 hrs / week</span>
+                                        <span class="strand-tag">JHS Core</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">TLE-7</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> Full
+                                                    Year</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-tle"><i class="fas fa-tools"></i></div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Technology & Livelihood Education 7</h4>
+                                                <p class="subject-desc">Exploratory courses introducing Information &
+                                                    Communications Technology (ICT), Computer Operations, and Technical
+                                                    Arts.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 4 hrs / week</span>
+                                        <span class="strand-tag">JHS Core</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ===== GRADE 8 PANEL ===== -->
+                        <div class="year-content-panel" id="home-panel-g8">
+                            <div class="year-panel-banner">
+                                <div class="year-panel-info">
+                                    <h3>Grade 8 Curriculum <span class="level-tag jhs">Junior High School · 2nd
+                                            Year</span></h3>
+                                    <p>Expanding analytical competencies with world history perspectives, Afro-Asian
+                                        literary appreciation, algebraic functions, and biodiversity systems.</p>
+                                </div>
+                                <div class="year-panel-meta">
+                                    <span class="year-meta-pill"><i class="fas fa-book"></i> 8 Core Subjects</span>
+                                    <span class="year-meta-pill"><i class="far fa-calendar-check"></i> Full Academic
+                                        Year</span>
+                                    <span class="year-meta-pill"><i class="fas fa-award"></i> DepEd JHS Standards</span>
+                                </div>
+                            </div>
+                            <div class="subjects-showcase-grid">
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">MATH-8</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> Full
+                                                    Year</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-math"><i class="fas fa-calculator"></i>
+                                            </div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Mathematics 8</h4>
+                                                <p class="subject-desc">Factoring Polynomials, Rational Algebraic
+                                                    Expressions, Linear Equations in Two Variables, Axiomatic Geometry,
+                                                    and Probability.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 4 hrs / week</span>
+                                        <span class="strand-tag">JHS Core</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">SCI-8</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> Full
+                                                    Year</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-science"><i class="fas fa-flask"></i>
+                                            </div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Science 8</h4>
+                                                <p class="subject-desc">Laws of Motion, Work, Power & Energy,
+                                                    Earthquakes and Faults, Typhoons, Atomic Structure, and Ecosystem
+                                                    Biodiversity.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 4 hrs / week</span>
+                                        <span class="strand-tag">JHS Core</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">ENG-8</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> Full
+                                                    Year</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-english"><i
+                                                    class="fas fa-book-open"></i></div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">English 8</h4>
+                                                <p class="subject-desc">Afro-Asian Literature, Context Clues, Modals,
+                                                    Active and Passive Voices, and Informative Expository Essays.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 4 hrs / week</span>
+                                        <span class="strand-tag">JHS Core</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">FIL-8</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> Full
+                                                    Year</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-filipino"><i
+                                                    class="fas fa-language"></i></div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Filipino 8</h4>
+                                                <p class="subject-desc">Panitikang Pilipino: Karunungang-bayan, Alamat,
+                                                    Epiko, Balagtasan, Sarsuwela, at ang Klasikong Florante at Laura ni
+                                                    Balagtas.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 4 hrs / week</span>
+                                        <span class="strand-tag">JHS Core</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">AP-8</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> Full
+                                                    Year</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-ap"><i class="fas fa-globe-asia"></i>
+                                            </div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Araling Panlipunan 8</h4>
+                                                <p class="subject-desc">Kasaysayan ng Daigdig: Sinaunang Sibilisasyon,
+                                                    Gitnang Panahon, Panahon ng Eksplorasyon, at Mga Pandaigdigang
+                                                    Digmaan.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 3 hrs / week</span>
+                                        <span class="strand-tag">JHS Core</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">ESP-8</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> Full
+                                                    Year</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-esp"><i class="fas fa-heart"></i></div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Edukasyon sa Pagpapakatao 8</h4>
+                                                <p class="subject-desc">Ang Pamilya Bilang Sandigan ng Pagkatao,
+                                                    Pakikipagkaibigan, Emosyonal na Katatagan, at Mapanagutang Pamumuno.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 2 hrs / week</span>
+                                        <span class="strand-tag">JHS Core</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">MAPEH-8</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> Full
+                                                    Year</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-mapeh"><i class="fas fa-running"></i>
+                                            </div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">MAPEH 8</h4>
+                                                <p class="subject-desc">Music & Arts of Southeast Asia and East Asia,
+                                                    Team Sports (Basketball & Volleyball), and Family Health Dynamics.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 4 hrs / week</span>
+                                        <span class="strand-tag">JHS Core</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">TLE-8</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> Full
+                                                    Year</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-tle"><i class="fas fa-tools"></i></div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Technology & Livelihood Education 8</h4>
+                                                <p class="subject-desc">Exploratory Technical-Vocational skills
+                                                    including Technical Drafting, Hardware Servicing, and Digital
+                                                    Productivity Tools.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 4 hrs / week</span>
+                                        <span class="strand-tag">JHS Core</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ===== GRADE 9 PANEL ===== -->
+                        <div class="year-content-panel" id="home-panel-g9">
+                            <div class="year-panel-banner">
+                                <div class="year-panel-info">
+                                    <h3>Grade 9 Curriculum <span class="level-tag jhs">Junior High School · 3rd
+                                            Year</span></h3>
+                                    <p>Deepening secondary mastery in microeconomics, trigonometry, organic chemistry,
+                                        Anglo-American drama, and specialized pre-vocational ICT competencies.</p>
+                                </div>
+                                <div class="year-panel-meta">
+                                    <span class="year-meta-pill"><i class="fas fa-book"></i> 8 Core Subjects</span>
+                                    <span class="year-meta-pill"><i class="far fa-calendar-check"></i> Full Academic
+                                        Year</span>
+                                    <span class="year-meta-pill"><i class="fas fa-award"></i> DepEd JHS Standards</span>
+                                </div>
+                            </div>
+                            <div class="subjects-showcase-grid">
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">MATH-9</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> Full
+                                                    Year</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-math"><i class="fas fa-calculator"></i>
+                                            </div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Mathematics 9</h4>
+                                                <p class="subject-desc">Quadratic Equations and Functions, Variations,
+                                                    Radicals, Parallelograms, Triangle Similarity, and Basic
+                                                    Trigonometry.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 4 hrs / week</span>
+                                        <span class="strand-tag">JHS Core</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">SCI-9</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> Full
+                                                    Year</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-science"><i class="fas fa-flask"></i>
+                                            </div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Science 9</h4>
+                                                <p class="subject-desc">Respiratory and Circulatory Systems, Genetics,
+                                                    Chemical Bonding, Carbon Compounds, Volcanoes, and Projectile
+                                                    Motion.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 4 hrs / week</span>
+                                        <span class="strand-tag">JHS Core</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">ENG-9</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> Full
+                                                    Year</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-english"><i
+                                                    class="fas fa-book-open"></i></div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">English 9</h4>
+                                                <p class="subject-desc">Anglo-American Literature, Dramatic Traditions
+                                                    (Shakespeare), Conditionals, Argumentative Texts, and Literary
+                                                    Devices.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 4 hrs / week</span>
+                                        <span class="strand-tag">JHS Core</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">FIL-9</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> Full
+                                                    Year</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-filipino"><i
+                                                    class="fas fa-language"></i></div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Filipino 9</h4>
+                                                <p class="subject-desc">Panitikang Asyano: Maikling Kuwento, Tula, Dula,
+                                                    at Nobela; Pagsusuri sa Obra Maestrang Noli Me Tangere ni Dr. Jose
+                                                    Rizal.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 4 hrs / week</span>
+                                        <span class="strand-tag">JHS Core</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">AP-9</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> Full
+                                                    Year</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-ap"><i class="fas fa-chart-line"></i>
+                                            </div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Araling Panlipunan 9</h4>
+                                                <p class="subject-desc">Ekonomiks: Konsepto ng Alokasyon, Demand at
+                                                    Supply, Estruktura ng Pamilihan, Patakarang Piskal, at Pambansang
+                                                    Kita.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 3 hrs / week</span>
+                                        <span class="strand-tag">JHS Core</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">ESP-9</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> Full
+                                                    Year</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-esp"><i class="fas fa-heart"></i></div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Edukasyon sa Pagpapakatao 9</h4>
+                                                <p class="subject-desc">Lipunang Sibil at Kabutihang Panlahat,
+                                                    Katarungang Panlipunan, Kagalingan sa Paggawa, at Pamamahala sa
+                                                    Paggamit ng Oras.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 2 hrs / week</span>
+                                        <span class="strand-tag">JHS Core</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">MAPEH-9</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> Full
+                                                    Year</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-mapeh"><i class="fas fa-running"></i>
+                                            </div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">MAPEH 9</h4>
+                                                <p class="subject-desc">Western Classical Music, Renaissance & Baroque
+                                                    Art, Sports Officiating (Badminton & Table Tennis), and Community
+                                                    Health Action.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 4 hrs / week</span>
+                                        <span class="strand-tag">JHS Core</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">TLE-9</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> Full
+                                                    Year</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-tle"><i class="fas fa-tools"></i></div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Technology & Livelihood Education 9</h4>
+                                                <p class="subject-desc">Specialized technical-vocational training in
+                                                    Computer Systems Servicing, Networking Essentials, and Electronic
+                                                    Products Assembly.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 4 hrs / week</span>
+                                        <span class="strand-tag">JHS Core</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ===== GRADE 10 PANEL ===== -->
+                        <div class="year-content-panel" id="home-panel-g10">
+                            <div class="year-panel-banner">
+                                <div class="year-panel-info">
+                                    <h3>Grade 10 Curriculum <span class="level-tag jhs">Junior High School · Completer
+                                            Year</span></h3>
+                                    <p>Culminating Junior High School year preparing students for Moving-Up credentials,
+                                        Senior High School track selection, contemporary issues, and research readiness.
+                                    </p>
+                                </div>
+                                <div class="year-panel-meta">
+                                    <span class="year-meta-pill"><i class="fas fa-book"></i> 8 Core Subjects</span>
+                                    <span class="year-meta-pill"><i class="far fa-calendar-check"></i> Completer
+                                        Year</span>
+                                    <span class="year-meta-pill"><i class="fas fa-award"></i> Certificate of
+                                        Completion</span>
+                                </div>
+                            </div>
+                            <div class="subjects-showcase-grid">
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">MATH-10</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> Full
+                                                    Year</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-math"><i class="fas fa-calculator"></i>
+                                            </div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Mathematics 10</h4>
+                                                <p class="subject-desc">Arithmetic & Geometric Sequences, Polynomial
+                                                    Functions, Circles, Coordinate Geometry, Permutations, Combinations,
+                                                    and Probability.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 4 hrs / week</span>
+                                        <span class="strand-tag">JHS Core</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">SCI-10</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> Full
+                                                    Year</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-science"><i class="fas fa-flask"></i>
+                                            </div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Science 10</h4>
+                                                <p class="subject-desc">Plate Tectonics, Electromagnetic Spectrum, Light
+                                                    & Optics, Endocrine & Reproductive Systems, Heredity, and Chemical
+                                                    Reactions.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 4 hrs / week</span>
+                                        <span class="strand-tag">JHS Core</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">ENG-10</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> Full
+                                                    Year</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-english"><i
+                                                    class="fas fa-book-open"></i></div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">English 10</h4>
+                                                <p class="subject-desc">World Literature (Greek & Roman Mythologies,
+                                                    Masterpieces), Persuasive Texts, Public Speaking, and Formal
+                                                    Academic Research.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 4 hrs / week</span>
+                                        <span class="strand-tag">JHS Core</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">FIL-10</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> Full
+                                                    Year</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-filipino"><i
+                                                    class="fas fa-language"></i></div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Filipino 10</h4>
+                                                <p class="subject-desc">Pandaigdigang Panitikan: Mitolohiya, Sanaysay,
+                                                    Maikling Kuwento; at Malalimang Pag-aaral sa Obra Maestrang El
+                                                    Filibusterismo.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 4 hrs / week</span>
+                                        <span class="strand-tag">JHS Core</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">AP-10</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> Full
+                                                    Year</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-ap"><i
+                                                    class="fas fa-globe-americas"></i></div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Araling Panlipunan 10</h4>
+                                                <p class="subject-desc">Mga Kontemporaryong Isyu: Kalamidad,
+                                                    Globalisasyon, Isyung Pang-ekonomiya, Karapatang Pantao, at Aktibong
+                                                    Pagkamamamayan.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 3 hrs / week</span>
+                                        <span class="strand-tag">JHS Core</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">ESP-10</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> Full
+                                                    Year</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-esp"><i class="fas fa-heart"></i></div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Edukasyon sa Pagpapakatao 10</h4>
+                                                <p class="subject-desc">Moral na Pagpapasiya, Paninindigan sa
+                                                    Katotohanan, Paggalang sa Dignidad ng Tao, at Espiritwalidad sa
+                                                    Makabagong Panahon.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 2 hrs / week</span>
+                                        <span class="strand-tag">JHS Core</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">MAPEH-10</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> Full
+                                                    Year</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-mapeh"><i class="fas fa-running"></i>
+                                            </div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">MAPEH 10</h4>
+                                                <p class="subject-desc">20th-Century Music, Digital and Multimedia Arts,
+                                                    Active Recreation (Cheerdance & Street Dance), and Global Health
+                                                    Initiatives.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 4 hrs / week</span>
+                                        <span class="strand-tag">JHS Core</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">TLE-10</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> Full
+                                                    Year</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-tle"><i class="fas fa-tools"></i></div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Technology & Livelihood Education 10</h4>
+                                                <p class="subject-desc">Advanced technical skills aligned with TESDA
+                                                    National Certificate (NC) competencies in Computer Systems and
+                                                    Digital Tech.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 4 hrs / week</span>
+                                        <span class="strand-tag">JHS Core</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ===== GRADE 11 PANEL ===== -->
+                        <div class="year-content-panel" id="home-panel-g11">
+                            <div class="year-panel-banner shs">
+                                <div class="year-panel-info">
+                                    <h3>Grade 11 Curriculum <span class="level-tag shs">Senior High School · Core &
+                                            TVL-ICT</span></h3>
+                                    <p>First year Senior High School curriculum combining national core academic
+                                        standards with Applied Tracks and TVL-ICT specialization in Computer Systems
+                                        Servicing & Programming.</p>
+                                </div>
+                                <div class="year-panel-meta">
+                                    <span class="year-meta-pill"><i class="fas fa-book"></i> 18 Total Subjects</span>
+                                    <span class="year-meta-pill"><i class="fas fa-code"></i> TVL-ICT
+                                        Specialization</span>
+                                    <span class="year-meta-pill"><i class="far fa-calendar-alt"></i> 2 Semesters</span>
+                                </div>
+                            </div>
+
+                            <!-- Semester 1 -->
+                            <div class="shs-semester-heading">
+                                <h4><i class="fas fa-calendar-day"></i> 1st Semester <span class="sem-badge">9
+                                        Subjects</span></h4>
+                                <span class="sem-hours">80 Hours per Subject · 20 Hours PE</span>
+                            </div>
+                            <div class="subjects-showcase-grid">
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">CORE-1</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> 1st
+                                                    Sem</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-english"><i
+                                                    class="fas fa-comments"></i></div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Oral Communication in Context</h4>
+                                                <p class="subject-desc">Development of listening and speaking skills and
+                                                    strategies for effective communication in diverse social contexts.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 80 Hours</span>
+                                        <span class="strand-tag">Core Academic</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">CORE-3</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> 1st
+                                                    Sem</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-filipino"><i
+                                                    class="fas fa-language"></i></div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Komunikasyon at Pananaliksik sa Wika at
+                                                    Kulturang Pilipino</h4>
+                                                <p class="subject-desc">Pag-aaral tungo sa pananaliksik ukol sa
+                                                    kalikasan, gamit, at ebolusyon ng Wikang Pambansa sa lipunang
+                                                    Pilipino.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 80 Hours</span>
+                                        <span class="strand-tag">Core Academic</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">CORE-8</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> 1st
+                                                    Sem</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-math"><i
+                                                    class="fas fa-square-root-alt"></i></div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">General Mathematics</h4>
+                                                <p class="subject-desc">Functions, Rational, Exponential, and
+                                                    Logarithmic Equations, Business Mathematics (Interest & Annuities),
+                                                    and Logic.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 80 Hours</span>
+                                        <span class="strand-tag">Core Academic</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">CORE-10</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> 1st
+                                                    Sem</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-science"><i
+                                                    class="fas fa-globe-americas"></i></div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Earth and Life Science</h4>
+                                                <p class="subject-desc">Earth's subsystems, geological history, plate
+                                                    tectonics, cellular biology, genetics, and ecosystem dynamics.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 80 Hours</span>
+                                        <span class="strand-tag">Core Academic</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">CORE-12</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> 1st
+                                                    Sem</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-esp"><i class="fas fa-brain"></i></div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Introduction to Philosophy of the Human Person
+                                                </h4>
+                                                <p class="subject-desc">Philosophical inquiry into human freedom,
+                                                    embodied existence, intersubjectivity, and mortality.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 80 Hours</span>
+                                        <span class="strand-tag">Core Academic</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">CORE-13-1</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> 1st
+                                                    Sem</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-mapeh"><i class="fas fa-running"></i>
+                                            </div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Physical Education and Health 1</h4>
+                                                <p class="subject-desc">Aerobic, muscle-and bone-strengthening
+                                                    activities, fitness goal-setting, and healthy lifestyle habits.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 20 Hours</span>
+                                        <span class="strand-tag">Core Academic</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">CORE-14</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> 1st
+                                                    Sem</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-esp"><i class="fas fa-user-check"></i>
+                                            </div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Personal Development</h4>
+                                                <p class="subject-desc">Adolescent development, emotional intelligence,
+                                                    personal relationships, and career exploration.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 80 Hours</span>
+                                        <span class="strand-tag">Core Academic</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">APP-1</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge applied">Applied</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> 1st
+                                                    Sem</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-ict"><i class="fas fa-laptop"></i>
+                                            </div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Computer System Servicing 1</h4>
+                                                <p class="subject-desc">PC Hardware Assembly, Operating System
+                                                    installation, device drivers, and basic diagnostic procedures.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 80 Hours</span>
+                                        <span class="strand-tag">TVL Track</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">APP-2</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge applied">Applied</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> 1st
+                                                    Sem</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-mapeh"><i
+                                                    class="fas fa-paint-brush"></i></div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Illustration (NC II)</h4>
+                                                <p class="subject-desc">Digital vector illustration, graphic styling,
+                                                    drawing fundamentals, and commercial visual design concepts.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 80 Hours</span>
+                                        <span class="strand-tag">TVL Track</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Semester 2 -->
+                            <div class="shs-semester-heading">
+                                <h4><i class="fas fa-calendar-day"></i> 2nd Semester <span class="sem-badge">9
+                                        Subjects</span></h4>
+                                <span class="sem-hours">80 Hours per Subject · 20 Hours PE</span>
+                            </div>
+                            <div class="subjects-showcase-grid">
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">CORE-2</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> 2nd
+                                                    Sem</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-english"><i
+                                                    class="fas fa-book-open"></i></div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Reading and Writing Skills</h4>
+                                                <p class="subject-desc">Critical reading of diverse texts and
+                                                    development of writing skills for academic and professional
+                                                    purposes.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 80 Hours</span>
+                                        <span class="strand-tag">Core Academic</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">CORE-4</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> 2nd
+                                                    Sem</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-filipino"><i
+                                                    class="fas fa-file-alt"></i></div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Pagbasa at Pagsusuri ng Teksto Tungo sa
+                                                    Pananaliksik</h4>
+                                                <p class="subject-desc">Pagsusuri ng iba't ibang uri ng teksto tungo sa
+                                                    pagbuo ng makabuluhang konseptong papel at pananaliksik.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 80 Hours</span>
+                                        <span class="strand-tag">Core Academic</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">CORE-9</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> 2nd
+                                                    Sem</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-math"><i class="fas fa-chart-pie"></i>
+                                            </div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Statistics and Probability</h4>
+                                                <p class="subject-desc">Random Variables, Probability Distributions,
+                                                    Normal Distribution, Sampling, and Hypothesis Testing.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 80 Hours</span>
+                                        <span class="strand-tag">Core Academic</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">CORE-13-2</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> 2nd
+                                                    Sem</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-mapeh"><i class="fas fa-heartbeat"></i>
+                                            </div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Physical Education and Health 2</h4>
+                                                <p class="subject-desc">Individual, dual, and team sports fundamentals,
+                                                    tournament organization, and active recreation.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 20 Hours</span>
+                                        <span class="strand-tag">Core Academic</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">APP-3</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge applied">Applied</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> 2nd
+                                                    Sem</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-english"><i class="fas fa-pen-nib"></i>
+                                            </div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">English for Academic & Professional Purposes
+                                                </h4>
+                                                <p class="subject-desc">Writing critiques, concept papers, position
+                                                    papers, and structured technical reports for academic rigor.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 80 Hours</span>
+                                        <span class="strand-tag">Applied Track</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">APP-4</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge applied">Applied</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> 2nd
+                                                    Sem</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-research"><i class="fas fa-search"></i>
+                                            </div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Research in Daily Life 1</h4>
+                                                <p class="subject-desc">Qualitative Research designs, thematic analysis,
+                                                    interview coding, and qualitative defense.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 80 Hours</span>
+                                        <span class="strand-tag">Applied Track</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">APP-5</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge applied">Applied</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> 2nd
+                                                    Sem</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-ict"><i
+                                                    class="fas fa-network-wired"></i></div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Empowerment Technologies</h4>
+                                                <p class="subject-desc">ICT for social change, web publishing,
+                                                    multimedia integration, online collaboration, and digital ethics.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 80 Hours</span>
+                                        <span class="strand-tag">Applied Track</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">TVL-3</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge specialized">Specialized</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> 2nd
+                                                    Sem</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-ict"><i class="fas fa-desktop"></i>
+                                            </div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Computer System Servicing 2</h4>
+                                                <p class="subject-desc">Local Area Networks (LAN) cabling, router/switch
+                                                    configuration, and client-server setup.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 80 Hours</span>
+                                        <span class="strand-tag">TVL-ICT</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">TVL-4</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge specialized">Specialized</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> 2nd
+                                                    Sem</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-ict"><i class="fas fa-code"></i></div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Computer Programming (.NET) NC III</h4>
+                                                <p class="subject-desc">Object-Oriented Programming, GUI application
+                                                    development, SQL database integration, and software testing.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 80 Hours</span>
+                                        <span class="strand-tag">TVL-ICT</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ===== GRADE 12 PANEL ===== -->
+                        <div class="year-content-panel" id="home-panel-g12">
+                            <div class="year-panel-banner shs">
+                                <div class="year-panel-info">
+                                    <h3>Grade 12 Curriculum <span class="level-tag shs">Senior High School · Graduating
+                                            Year</span></h3>
+                                    <p>Culminating academic track preparing students for college entrance, National
+                                        Certificate (NC II) assessments, entrepreneurship, and hands-on industry work
+                                        immersion.</p>
+                                </div>
+                                <div class="year-panel-meta">
+                                    <span class="year-meta-pill"><i class="fas fa-book"></i> 12 Total Subjects</span>
+                                    <span class="year-meta-pill"><i class="fas fa-briefcase"></i> Work Immersion</span>
+                                    <span class="year-meta-pill"><i class="fas fa-user-graduate"></i> Graduating
+                                        Year</span>
+                                </div>
+                            </div>
+
+                            <!-- Semester 1 -->
+                            <div class="shs-semester-heading">
+                                <h4><i class="fas fa-calendar-day"></i> 1st Semester <span class="sem-badge">7
+                                        Subjects</span></h4>
+                                <span class="sem-hours">80 Hours per Subject · 20 Hours PE</span>
+                            </div>
+                            <div class="subjects-showcase-grid">
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">CORE-15</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> 1st
+                                                    Sem</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-english"><i class="fas fa-book"></i>
+                                            </div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">21st Century Literature from Philippines &
+                                                    World</h4>
+                                                <p class="subject-desc">Study of contemporary literary genres,
+                                                    electronic literature, and regional cross-cultural texts.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 80 Hours</span>
+                                        <span class="strand-tag">Core Academic</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">CORE-16</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> 1st
+                                                    Sem</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-mapeh"><i class="fas fa-palette"></i>
+                                            </div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Contemporary Philippine Arts from the Regions
+                                                </h4>
+                                                <p class="subject-desc">Appreciation of modern art forms, regional
+                                                    visual aesthetics, and National Artists of the Philippines.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 80 Hours</span>
+                                        <span class="strand-tag">Core Academic</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">CORE-17</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> 1st
+                                                    Sem</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-ict"><i class="fas fa-tv"></i></div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Media and Information Literacy</h4>
+                                                <p class="subject-desc">Critical analysis of digital information, media
+                                                    ethics, copyright, and responsible digital citizenship.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 80 Hours</span>
+                                        <span class="strand-tag">Core Academic</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">CORE-13-3</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> 1st
+                                                    Sem</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-mapeh"><i class="fas fa-running"></i>
+                                            </div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Physical Education and Health 3</h4>
+                                                <p class="subject-desc">Philippine folk dances, contemporary dance
+                                                    choreography, and physiological conditioning.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 20 Hours</span>
+                                        <span class="strand-tag">Core Academic</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">APP-6</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge applied">Applied</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> 1st
+                                                    Sem</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-research"><i
+                                                    class="fas fa-microscope"></i></div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Practical Research 2</h4>
+                                                <p class="subject-desc">Quantitative Research methodology, survey
+                                                    instrumentation, statistical analysis, and oral defense.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 80 Hours</span>
+                                        <span class="strand-tag">Applied Track</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">APP-9</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge applied">Applied</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> 1st
+                                                    Sem</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-filipino"><i
+                                                    class="fas fa-file-signature"></i></div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Filipino sa Piling Larang (Tech-Voc)</h4>
+                                                <p class="subject-desc">Pagsulat ng teknikal at bokasyonal na sulatin
+                                                    tulad ng manwal, liham-pangnegosyo, at feasibility study.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 80 Hours</span>
+                                        <span class="strand-tag">Applied Track</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">TVL-5</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge specialized">Specialized</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> 1st
+                                                    Sem</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-ict"><i class="fas fa-server"></i>
+                                            </div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Computer Systems Servicing NC II (Advanced)
+                                                </h4>
+                                                <p class="subject-desc">Server configuration, virtualization, network
+                                                    security protocols, and advanced system maintenance.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 80 Hours</span>
+                                        <span class="strand-tag">TVL-ICT</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Semester 2 -->
+                            <div class="shs-semester-heading">
+                                <h4><i class="fas fa-calendar-day"></i> 2nd Semester <span class="sem-badge">5
+                                        Subjects</span></h4>
+                                <span class="sem-hours">80 Hours per Subject · 20 Hours PE · Work Immersion</span>
+                            </div>
+                            <div class="subjects-showcase-grid">
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">CORE-11</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> 2nd
+                                                    Sem</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-ap"><i class="fas fa-users"></i></div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Understanding Culture, Society and Politics
+                                                </h4>
+                                                <p class="subject-desc">Anthropological, sociological, and political
+                                                    analysis of human origins, cultural relativism, and power dynamics.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 80 Hours</span>
+                                        <span class="strand-tag">Core Academic</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">CORE-13-4</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge core">Core</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> 2nd
+                                                    Sem</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-mapeh"><i class="fas fa-dumbbell"></i>
+                                            </div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Physical Education and Health 4</h4>
+                                                <p class="subject-desc">Recreational and outdoor activities,
+                                                    mountaineering/orienteering principles, and lifetime fitness habits.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 20 Hours</span>
+                                        <span class="strand-tag">Core Academic</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">APP-7</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge applied">Applied</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> 2nd
+                                                    Sem</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-research"><i
+                                                    class="fas fa-lightbulb"></i></div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Inquiries, Investigations, and Immersion (3Is)
+                                                </h4>
+                                                <p class="subject-desc">Culminating capstone research synthesis, project
+                                                    documentation, and public academic defense.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 80 Hours</span>
+                                        <span class="strand-tag">Applied Track</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">APP-8</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge applied">Applied</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> 2nd
+                                                    Sem</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-tle"><i class="fas fa-store"></i></div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Entrepreneurship</h4>
+                                                <p class="subject-desc">Business plan formulation, enterprise financial
+                                                    modeling, product pitching, and small business operations.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 80 Hours</span>
+                                        <span class="strand-tag">Applied Track</span>
+                                    </div>
+                                </div>
+
+                                <div class="subject-item-card">
+                                    <div>
+                                        <div class="subject-card-top">
+                                            <span class="subject-code-tag">TVL-6</span>
+                                            <div class="subject-tags-wrap">
+                                                <span class="category-badge specialized">Specialized</span>
+                                                <span class="subject-sem-tag"><i class="far fa-calendar-alt"></i> 2nd
+                                                    Sem</span>
+                                            </div>
+                                        </div>
+                                        <div class="subject-card-body">
+                                            <div class="subject-domain-icon icon-immersion"><i
+                                                    class="fas fa-briefcase"></i></div>
+                                            <div class="subject-card-info">
+                                                <h4 class="subject-name">Work Immersion / Culminating Activity</h4>
+                                                <p class="subject-desc">80 hours of authentic workplace simulation and
+                                                    industry internship under certified tech partners.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subject-card-footer">
+                                        <span class="hours-info"><i class="far fa-clock"></i> 80 Hours</span>
+                                        <span class="strand-tag">TVL-ICT Track</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ===== OVERVIEW GRID PANEL (ALL 6 GRADES) ===== -->
+                        <div class="year-content-panel" id="home-panel-all">
+                            <div class="overview-grades-grid">
+                                <!-- Grade 7 Card -->
+                                <div class="overview-grade-card">
+                                    <div>
+                                        <div class="overview-grade-header">
+                                            <div class="overview-grade-icon">7</div>
+                                            <div class="overview-grade-title">
+                                                <h3>Grade 7</h3>
+                                                <span>Junior High School · 8 Subjects</span>
+                                            </div>
+                                        </div>
+                                        <p style="color: #64748b; font-size: 0.9rem; line-height: 1.5;">Foundational
+                                            academic discipline covering essential secondary sciences, algebra, and
+                                            exploratory technical arts.</p>
+                                        <ul class="overview-pill-list">
+                                            <li class="overview-pill"><i class="fas fa-calculator"></i> Math 7</li>
+                                            <li class="overview-pill"><i class="fas fa-flask"></i> Science 7</li>
+                                            <li class="overview-pill"><i class="fas fa-book-open"></i> English 7</li>
+                                            <li class="overview-pill"><i class="fas fa-language"></i> Filipino 7</li>
+                                            <li class="overview-pill"><i class="fas fa-landmark"></i> AP 7</li>
+                                            <li class="overview-pill"><i class="fas fa-heart"></i> EsP 7</li>
+                                            <li class="overview-pill"><i class="fas fa-running"></i> MAPEH 7</li>
+                                            <li class="overview-pill"><i class="fas fa-tools"></i> TLE 7</li>
+                                        </ul>
+                                    </div>
+                                    <button type="button" class="btn-explore-grade"
+                                        onclick="window.switchHomeYearTab('home-panel-g7')">
+                                        <i class="fas fa-eye"></i> View Grade 7 Curriculum
+                                    </button>
+                                </div>
+
+                                <!-- Grade 8 Card -->
+                                <div class="overview-grade-card">
+                                    <div>
+                                        <div class="overview-grade-header">
+                                            <div class="overview-grade-icon">8</div>
+                                            <div class="overview-grade-title">
+                                                <h3>Grade 8</h3>
+                                                <span>Junior High School · 8 Subjects</span>
+                                            </div>
+                                        </div>
+                                        <p style="color: #64748b; font-size: 0.9rem; line-height: 1.5;">Expanding
+                                            competencies in world history, Asian cultures, algebraic functions, and
+                                            biodiversity systems.</p>
+                                        <ul class="overview-pill-list">
+                                            <li class="overview-pill"><i class="fas fa-calculator"></i> Math 8</li>
+                                            <li class="overview-pill"><i class="fas fa-flask"></i> Science 8</li>
+                                            <li class="overview-pill"><i class="fas fa-book-open"></i> English 8</li>
+                                            <li class="overview-pill"><i class="fas fa-language"></i> Filipino 8</li>
+                                            <li class="overview-pill"><i class="fas fa-globe-asia"></i> AP 8</li>
+                                            <li class="overview-pill"><i class="fas fa-heart"></i> EsP 8</li>
+                                            <li class="overview-pill"><i class="fas fa-running"></i> MAPEH 8</li>
+                                            <li class="overview-pill"><i class="fas fa-tools"></i> TLE 8</li>
+                                        </ul>
+                                    </div>
+                                    <button type="button" class="btn-explore-grade"
+                                        onclick="window.switchHomeYearTab('home-panel-g8')">
+                                        <i class="fas fa-eye"></i> View Grade 8 Curriculum
+                                    </button>
+                                </div>
+
+                                <!-- Grade 9 Card -->
+                                <div class="overview-grade-card">
+                                    <div>
+                                        <div class="overview-grade-header">
+                                            <div class="overview-grade-icon">9</div>
+                                            <div class="overview-grade-title">
+                                                <h3>Grade 9</h3>
+                                                <span>Junior High School · 8 Subjects</span>
+                                            </div>
+                                        </div>
+                                        <p style="color: #64748b; font-size: 0.9rem; line-height: 1.5;">Deepening
+                                            secondary studies in economics, trigonometry, chemical reactions, drama, and
+                                            pre-vocational ICT.</p>
+                                        <ul class="overview-pill-list">
+                                            <li class="overview-pill"><i class="fas fa-calculator"></i> Math 9</li>
+                                            <li class="overview-pill"><i class="fas fa-flask"></i> Science 9</li>
+                                            <li class="overview-pill"><i class="fas fa-book-open"></i> English 9</li>
+                                            <li class="overview-pill"><i class="fas fa-language"></i> Filipino 9</li>
+                                            <li class="overview-pill"><i class="fas fa-chart-line"></i> AP 9</li>
+                                            <li class="overview-pill"><i class="fas fa-heart"></i> EsP 9</li>
+                                            <li class="overview-pill"><i class="fas fa-running"></i> MAPEH 9</li>
+                                            <li class="overview-pill"><i class="fas fa-tools"></i> TLE 9</li>
+                                        </ul>
+                                    </div>
+                                    <button type="button" class="btn-explore-grade"
+                                        onclick="window.switchHomeYearTab('home-panel-g9')">
+                                        <i class="fas fa-eye"></i> View Grade 9 Curriculum
+                                    </button>
+                                </div>
+
+                                <!-- Grade 10 Card -->
+                                <div class="overview-grade-card">
+                                    <div>
+                                        <div class="overview-grade-header">
+                                            <div class="overview-grade-icon">10</div>
+                                            <div class="overview-grade-title">
+                                                <h3>Grade 10</h3>
+                                                <span>Junior High Completer · 8 Subjects</span>
+                                            </div>
+                                        </div>
+                                        <p style="color: #64748b; font-size: 0.9rem; line-height: 1.5;">Completer year
+                                            preparing students for Moving-Up and Senior High School strand transition.
+                                        </p>
+                                        <ul class="overview-pill-list">
+                                            <li class="overview-pill"><i class="fas fa-calculator"></i> Math 10</li>
+                                            <li class="overview-pill"><i class="fas fa-flask"></i> Science 10</li>
+                                            <li class="overview-pill"><i class="fas fa-book-open"></i> English 10</li>
+                                            <li class="overview-pill"><i class="fas fa-language"></i> Filipino 10</li>
+                                            <li class="overview-pill"><i class="fas fa-globe-americas"></i> AP 10</li>
+                                            <li class="overview-pill"><i class="fas fa-heart"></i> EsP 10</li>
+                                            <li class="overview-pill"><i class="fas fa-running"></i> MAPEH 10</li>
+                                            <li class="overview-pill"><i class="fas fa-tools"></i> TLE 10</li>
+                                        </ul>
+                                    </div>
+                                    <button type="button" class="btn-explore-grade"
+                                        onclick="window.switchHomeYearTab('home-panel-g10')">
+                                        <i class="fas fa-eye"></i> View Grade 10 Curriculum
+                                    </button>
+                                </div>
+
+                                <!-- Grade 11 Card -->
+                                <div class="overview-grade-card">
+                                    <div>
+                                        <div class="overview-grade-header">
+                                            <div class="overview-grade-icon shs">11</div>
+                                            <div class="overview-grade-title">
+                                                <h3>Grade 11</h3>
+                                                <span>Senior High School · 18 Subjects</span>
+                                            </div>
+                                        </div>
+                                        <p style="color: #64748b; font-size: 0.9rem; line-height: 1.5;">Senior High
+                                            academic core accompanied by TVL-ICT modules: Computer Hardware Servicing &
+                                            Programming.</p>
+                                        <ul class="overview-pill-list">
+                                            <li class="overview-pill"><i class="fas fa-comments"></i> Oral Com</li>
+                                            <li class="overview-pill"><i class="fas fa-square-root-alt"></i> Gen Math
+                                            </li>
+                                            <li class="overview-pill"><i class="fas fa-globe-americas"></i> Earth
+                                                Science</li>
+                                            <li class="overview-pill"><i class="fas fa-chart-pie"></i> Statistics</li>
+                                            <li class="overview-pill"><i class="fas fa-laptop"></i> CSS 1 & 2</li>
+                                            <li class="overview-pill"><i class="fas fa-code"></i> Programming</li>
+                                            <li class="overview-pill"><i class="fas fa-paint-brush"></i> Illustration
+                                            </li>
+                                            <li class="overview-pill"><i class="fas fa-search"></i> Research 1</li>
+                                        </ul>
+                                    </div>
+                                    <button type="button" class="btn-explore-grade"
+                                        onclick="window.switchHomeYearTab('home-panel-g11')">
+                                        <i class="fas fa-eye"></i> View Grade 11 Curriculum
+                                    </button>
+                                </div>
+
+                                <!-- Grade 12 Card -->
+                                <div class="overview-grade-card">
+                                    <div>
+                                        <div class="overview-grade-header">
+                                            <div class="overview-grade-icon shs">12</div>
+                                            <div class="overview-grade-title">
+                                                <h3>Grade 12</h3>
+                                                <span>Senior High Graduating · 12 Subjects</span>
+                                            </div>
+                                        </div>
+                                        <p style="color: #64748b; font-size: 0.9rem; line-height: 1.5;">Advanced
+                                            preparation featuring Quantitative Research, Entrepreneurship, and 80-hour
+                                            Industry Work Immersion.</p>
+                                        <ul class="overview-pill-list">
+                                            <li class="overview-pill"><i class="fas fa-book"></i> 21st Lit</li>
+                                            <li class="overview-pill"><i class="fas fa-palette"></i> Arts</li>
+                                            <li class="overview-pill"><i class="fas fa-tv"></i> Media Lit</li>
+                                            <li class="overview-pill"><i class="fas fa-microscope"></i> Research 2</li>
+                                            <li class="overview-pill"><i class="fas fa-lightbulb"></i> 3Is</li>
+                                            <li class="overview-pill"><i class="fas fa-store"></i> Entrepreneurship</li>
+                                            <li class="overview-pill"><i class="fas fa-server"></i> CSS NC II</li>
+                                            <li class="overview-pill"><i class="fas fa-briefcase"></i> Work Immersion
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <button type="button" class="btn-explore-grade"
+                                        onclick="window.switchHomeYearTab('home-panel-g12')">
+                                        <i class="fas fa-eye"></i> View Grade 12 Curriculum
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
             </section>
 
             <!-- ===== FEATURES PAGE ===== -->
             <section id="page-features" class="page-section">
                 <div class="container page-container">
                     <h1 class="page-title">📋 Features</h1>
-                    <p class="page-subtitle">Discover what makes HES the best choice for your academic journey.</p>
+                    <p class="page-subtitle">Discover what makes PLSNHS the best choice for your academic journey.</p>
                     <div class="features-row">
                         <div class="feature-card">
                             <i class="fas fa-user-graduate"></i>
@@ -145,17 +2205,16 @@
                 </div>
             </section>
 
-            <!-- ===== ABOUT PAGE ===== -->
             <section id="page-about" class="page-section">
                 <div class="container page-container">
-                    <h1 class="page-title">About HES</h1>
+                    <h1 class="page-title">About PLSNHS </h1>
                     <p class="page-subtitle">Learn more about our mission and vision.</p>
                     <div class="about-grid">
                         <div class="feature-card">
                             <i class="fas fa-bullseye"></i>
                             <h3>Our Mission</h3>
                             <p>To provide accessible, efficient, and quality enrollment management services for students
-                                and stakeholders of HES, Hiraya Enrollment System.</p>
+                                and stakeholders of PLSNHS, Placido L. Señor National High School.</p>
                         </div>
                         <div class="feature-card">
                             <i class="fas fa-eye"></i>
@@ -173,11 +2232,10 @@
                 </div>
             </section>
 
-            <!-- ===== CONTACT PAGE ===== -->
             <section id="page-contact" class="page-section">
                 <div class="container page-container">
                     <h1 class="page-title">Contact Us</h1>
-                    <p class="page-subtitle">Get in touch with HES, Hiraya Enrollment System</p>
+                    <p class="page-subtitle">Get in touch with PLSNHS, Placido L. Señor National High School</p>
 
                     <div class="contact-info">
                         <div class="contact-item">
@@ -202,7 +2260,9 @@
                             <i class="fas fa-envelope"></i>
                             <div>
                                 <h4>Email</h4>
-                                <p><a href="https://mail.google.com/mail/?view=cm&fs=1&to=registrar@hes.edu.ph" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">registrar@hes.edu.ph</a></p>
+                                <p><a href="https://mail.google.com/mail/?view=cm&fs=1&to=registrar@hes.edu.ph"
+                                        target="_blank" rel="noopener noreferrer"
+                                        style="color: inherit; text-decoration: none;">registrar@hes.edu.ph</a></p>
                             </div>
                         </div>
                     </div>
@@ -210,13 +2270,12 @@
             </section>
         </main>
 
-        <!-- ===== FOOTER ===== -->
         <footer class="footer">
             <div class="container">
                 <div class="footer-links">
                     <div class="footer-brand">
                         <div class="footer-brand-title">
-                            <span class="brand-name">H.<span>E.S</span></span>
+                            <span class="brand-name">PLS<span>NSH</span></span>
                         </div>
                         <p>Your seamless gateway to academic enrollment and school management.</p>
                     </div>
@@ -224,10 +2283,16 @@
                     <div class="footer-col">
                         <h4>Quick Links</h4>
                         <div class="footer-nav-list">
-                            <a href="homepage.html" data-page="home"><i class="fas fa-chevron-right footer-link-icon"></i> Home</a>
-                            <a href="homepage.html#features" data-page="features"><i class="fas fa-chevron-right footer-link-icon"></i> Features</a>
-                            <a href="homepage.html#about" data-page="about"><i class="fas fa-chevron-right footer-link-icon"></i> About</a>
-                            <a href="homepage.html#contact" data-page="contact"><i class="fas fa-chevron-right footer-link-icon"></i> Contact</a>
+                            <a href="homepage.html" data-page="home"><i
+                                    class="fas fa-chevron-right footer-link-icon"></i> Home</a>
+                            <a href="homepage.html#curriculum" data-page="curriculum"><i
+                                    class="fas fa-chevron-right footer-link-icon"></i> Curriculum (Grades 7–12)</a>
+                            <a href="homepage.html#features" data-page="features"><i
+                                    class="fas fa-chevron-right footer-link-icon"></i> Features</a>
+                            <a href="homepage.html#about" data-page="about"><i
+                                    class="fas fa-chevron-right footer-link-icon"></i> About</a>
+                            <a href="homepage.html#contact" data-page="contact"><i
+                                    class="fas fa-chevron-right footer-link-icon"></i> Contact</a>
                         </div>
                     </div>
 
@@ -235,8 +2300,10 @@
                         <h4>Support</h4>
                         <div class="footer-nav-list">
                             <a href="#" data-page="faq"><i class="fas fa-chevron-right footer-link-icon"></i> FAQ</a>
-                            <a href="#" data-page="privacy"><i class="fas fa-chevron-right footer-link-icon"></i> Privacy Policy</a>
-                            <a href="#" data-page="terms"><i class="fas fa-chevron-right footer-link-icon"></i> Terms of Service</a>
+                            <a href="#" data-page="privacy"><i class="fas fa-chevron-right footer-link-icon"></i>
+                                Privacy Policy</a>
+                            <a href="#" data-page="terms"><i class="fas fa-chevron-right footer-link-icon"></i> Terms of
+                                Service</a>
                         </div>
                     </div>
 
@@ -253,9 +2320,8 @@
                                 <span class="contact-icon-box"><i class="fas fa-phone-alt"></i></span>
                                 <span class="contact-text">(032) 123-4567</span>
                             </a>
-                            <a href="https://mail.google.com/mail/?view=cm&fs=1&to=registrar@hes.edu.ph"
-                                target="_blank" rel="noopener noreferrer" class="contact-item-row"
-                                title="Send Email">
+                            <a href="https://mail.google.com/mail/?view=cm&fs=1&to=registrar@hes.edu.ph" target="_blank"
+                                rel="noopener noreferrer" class="contact-item-row" title="Send Email">
                                 <span class="contact-icon-box"><i class="fas fa-envelope"></i></span>
                                 <span class="contact-text">registrar@hes.edu.ph</span>
                             </a>
@@ -264,13 +2330,13 @@
                 </div>
 
                 <div class="footer-note">
-                    <p>© 2024–2025 HES. All rights reserved. | <span>Hiraya Enrollment System</span></p>
+                    <p>© 2024–2025 PLSNHS. All rights reserved. | <span>Placido L. Señor National High School </span>
+                    </p>
                 </div>
             </div>
         </footer>
     </div>
 
-    <!-- ===== JAVASCRIPT (external) ===== -->
     <script src="js/homepage.js"></script>
 </body>
 

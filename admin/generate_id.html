@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Official Student ID Card Generator - Admin | PLSNHS</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/student.css">
+    <link rel="stylesheet" href="../css/student_id_card.css">
+    <link rel="stylesheet" href="../css/chatbot.css">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <div class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo"
+                            onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
+                    </div>
+                    <div class="logo-text">PLS<span>NHS</span></div>
+                </div>
+                <div class="school-badge">Placido L. Señor National High School</div>
+            </div>
+
+            <div class="admin-profile">
+                <div class="admin-avatar">
+                    <div class="avatar-initial" id="adminAvatar">A</div>
+                    <div class="online-dot"></div>
+                </div>
+                <div class="admin-name" id="adminName">Admin</div>
+                <div class="admin-role"><i class="fas fa-shield-alt"></i> Administrator</div>
+            </div>
+
+            <div class="nav-menu">
+                <div class="nav-section">
+                    <div class="nav-section-title">MAIN MENU</div>
+                    <ul class="nav-items">
+                        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                        <li><a href="student.html"><i class="fas fa-user-graduate"></i> Students</a></li>
+                        <li><a href="generate_id.html" class="active"><i class="fas fa-id-card"></i> ID Generator</a></li>
+                        <li><a href="teachers.html"><i class="fas fa-chalkboard-user"></i> Teachers</a></li>
+                        <li><a href="sections.html"><i class="fas fa-layer-group"></i> Sections</a></li>
+                        <li><a href="subjects.html"><i class="fas fa-book"></i> Subjects</a></li>
+                        <li><a href="enrollments.html"><i class="fas fa-file-signature"></i> Enrollments</a></li>
+                        <li><a href="announcements.html"><i class="fas fa-bullhorn"></i> Announcements</a></li>
+                        <li><a href="reports.html"><i class="fas fa-chart-bar"></i> Reports</a></li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">ACCOUNT</div>
+                    <ul class="nav-items">
+                        <li><a href="profile.html"><i class="fas fa-user"></i> Profile</a></li>
+                        <li><a href="../auth/logout.html"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Navigation -->
+            <header class="top-nav">
+                <div class="page-title">
+                    <h1>Official Student ID Card Generator</h1>
+                    <p>Official QR-code enabled student identification card generator for Placido L. Señor National High School</p>
+                </div>
+                <div class="nav-actions">
+                    <a href="student.html" class="btn-primary" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; padding: 10px 18px; border-radius: 10px; font-weight: 700; font-size: 13.5px; background: #1a225a; color: #fff;">
+                        <i class="fas fa-arrow-left"></i> Back to Students Roster
+                    </a>
+                </div>
+            </header>
+
+            <div class="content-body" style="padding: 24px;">
+                <div id="idGeneratorApp">
+                    <div style="text-align: center; padding: 60px 20px; color: #64748b;">
+                        <i class="fas fa-spinner fa-spin fa-2x" style="color: #1a225a;"></i>
+                        <p style="margin-top: 14px; font-weight: 600;">Loading Student ID Generator...</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- External QR & Canvas Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <!-- Initialize Generator -->
+    <script type="module">
+        import { StudentIdGenerator } from '../js/student_id_generator.js';
+        
+        function initApp() {
+            try {
+                window.idGen = new StudentIdGenerator({
+                    containerId: 'idGeneratorApp',
+                    defaultPrincipal: 'New Principal Name',
+                    defaultSchoolYear: '2024-2025'
+                });
+            } catch (err) {
+                console.error('Initialization error:', err);
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initApp);
+        } else {
+            initApp();
+        }
+    </script>
+    <script src="../js/chatbot.js"></script>
+</body>
+</html>

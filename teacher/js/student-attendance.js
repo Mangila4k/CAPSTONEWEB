@@ -660,7 +660,7 @@ import { supabase } from '../../supabase/config.js';
                             </button>
                             <button type="button" class="status-btn ${isExcused ? 'active status-excused' : ''}" 
                                 onclick="window.setStudentStatus('${studentId}', 'Excused')" ${isSelectedDateWeekend ? 'disabled' : ''}>
-                                <i class="fas fa-shield-halved"></i> Excused
+                                <i class="fas fa-shield-alt"></i> Excused
                             </button>
                         </div>
                     </td>

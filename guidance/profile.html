@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Counselor Profile - HES Guidance</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/profile.css">
+    <link rel="stylesheet" href="../css/chatbot.css">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <div class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
+                    </div>
+                    <div class="logo-text">PLS<span>NSH</span></div>
+                </div>
+                <div class="school-badge">Guidance & Counseling Services</div>
+            </div>
+
+            <div class="counselor-profile">
+                <div class="counselor-avatar">
+                    <div class="avatar-initial" id="counselorAvatar">G</div>
+                    <div class="online-dot"></div>
+                </div>
+                <div class="counselor-name" id="counselorName">Guidance Counselor</div>
+                <div class="counselor-role"><i class="fas fa-heart-pulse"></i> Guidance Office</div>
+            </div>
+
+            <nav class="nav-menu">
+                <div class="nav-section">
+                    <div class="nav-section-title">MAIN MENU</div>
+                    <ul class="nav-items">
+                        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                        <li><a href="violations.html"><i class="fas fa-clipboard-list"></i> Guidance Records</a></li>
+                        <li><a href="add_violation.html"><i class="fas fa-file-circle-plus"></i> Log Guidance Case</a></li>
+                        <li><a href="counseling.html"><i class="fas fa-user-doctor"></i> Counseling Sessions</a></li>
+                        <li><a href="students.html"><i class="fas fa-user-graduate"></i> Student Directory</a></li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">RECORDS & REPORTS</div>
+                    <ul class="nav-items">
+                        <li><a href="reports.html"><i class="fas fa-chart-pie"></i> Discipline Reports</a></li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">ACCOUNT</div>
+                    <ul class="nav-items">
+                        <li><a href="profile.html" class="active"><i class="fas fa-user-gear"></i> Counselor Profile</a></li>
+                        <li><a href="../auth/logout.html"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                    </ul>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-header">
+                <div>
+                    <h1>Counselor Profile & Office Settings</h1>
+                    <p class="subtitle">Manage your guidance credentials, contact information, and account security.</p>
+                </div>
+            </div>
+
+            <!-- Alert Container -->
+            <div id="alertContainer"></div>
+
+            <div class="profile-layout">
+                <!-- Left Card: Profile Summary -->
+                <div class="profile-sidebar-card">
+                    <div class="profile-avatar-large" id="profileLargeAvatar">S</div>
+                    <h3 id="profileCardName">Sarah Guidance Counselor</h3>
+                    <span class="role-badge"><i class="fas fa-certificate"></i> Registered Guidance Counselor</span>
+
+                    <div class="profile-meta-list">
+                        <div class="meta-row">
+                            <i class="fas fa-envelope"></i>
+                            <div>
+                                <span style="font-size: 11px; display: block;">Official Email</span>
+                                <strong id="profileCardEmail">guidance@hiraya.edu.ph</strong>
+                            </div>
+                        </div>
+
+                        <div class="meta-row">
+                            <i class="fas fa-phone"></i>
+                            <div>
+                                <span style="font-size: 11px; display: block;">Contact Number</span>
+                                <strong id="profileCardPhone">09123456789</strong>
+                            </div>
+                        </div>
+
+                        <div class="meta-row">
+                            <i class="fas fa-door-open"></i>
+                            <div>
+                                <span style="font-size: 11px; display: block;">Office Room</span>
+                                <strong>Building A, Room 102</strong>
+                            </div>
+                        </div>
+
+                        <div class="meta-row">
+                            <i class="fas fa-clock"></i>
+                            <div>
+                                <span style="font-size: 11px; display: block;">Office Consultation Hours</span>
+                                <strong>Mon - Fri: 8:00 AM - 4:30 PM</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Profile Settings & Password Change -->
+                <div>
+                    <!-- Personal Info Form -->
+                    <div class="content-card">
+                        <div class="card-header-flex">
+                            <h3><i class="fas fa-user-pen"></i> Counselor Credentials</h3>
+                        </div>
+
+                        <form id="profileForm">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="profFirstName">First Name <span class="req">*</span></label>
+                                    <input type="text" id="profFirstName" class="form-control" value="Sarah" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="profLastName">Last Name <span class="req">*</span></label>
+                                    <input type="text" id="profLastName" class="form-control" value="Counselor" required>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="profEmail">Email Address <span class="req">*</span></label>
+                                    <input type="email" id="profEmail" class="form-control" value="guidance@hiraya.edu.ph" readonly style="background: #f1f5f9;">
+                                </div>
+                                <div class="form-group">
+                                    <label for="profContact">Contact Number</label>
+                                    <input type="text" id="profContact" class="form-control" value="09123456789">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="profBio">Counselor Statement & Philosophy</label>
+                                <textarea id="profBio" class="form-control" rows="3">Dedicated to creating an empathetic, nurturing, and restorative guidance environment to help every Hiraya student realize their highest potential through compassionate counseling and character formation.</textarea>
+                            </div>
+
+                            <div style="text-align: right;">
+                                <button type="submit" class="btn-primary" id="saveProfileBtn">
+                                    <i class="fas fa-save"></i> Update Profile Details
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Password Change Form -->
+                    <div class="content-card">
+                        <div class="card-header-flex">
+                            <h3><i class="fas fa-lock"></i> Security & Password</h3>
+                        </div>
+
+                        <form id="passwordForm">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="newPassword">New Password <span class="req">*</span></label>
+                                    <input type="password" id="newPassword" class="form-control" placeholder="Enter new password" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="confirmPassword">Confirm Password <span class="req">*</span></label>
+                                    <input type="password" id="confirmPassword" class="form-control" placeholder="Repeat new password" required>
+                                </div>
+                            </div>
+
+                            <div style="text-align: right;">
+                                <button type="submit" class="btn-primary" id="changePasswordBtn" style="background: #0B4F2E;">
+                                    <i class="fas fa-key"></i> Change Password
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="js/profile.js"></script>
+</body>
+</html>

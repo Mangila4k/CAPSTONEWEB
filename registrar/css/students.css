@@ -1032,33 +1032,36 @@ body {
 }
 
 .action-btn.view {
-    background: rgba(59, 130, 246, 0.1);
-    color: #3b82f6;
+    background: #3b82f6;
+    color: #fff !important;
 }
 
 .action-btn.view:hover {
-    background: #3b82f6;
-    color: white;
+    background: #2563eb;
+    color: #fff !important;
+    transform: scale(1.05);
 }
 
 .action-btn.edit {
-    background: rgba(245, 158, 11, 0.1);
-    color: var(--warning);
+    background: #f59e0b;
+    color: #fff !important;
 }
 
 .action-btn.edit:hover {
-    background: var(--warning);
-    color: white;
+    background: #d97706;
+    color: #fff !important;
+    transform: scale(1.05);
 }
 
 .action-btn.delete {
-    background: rgba(239, 68, 68, 0.1);
-    color: var(--danger);
+    background: #ef4444;
+    color: #fff !important;
 }
 
 .action-btn.delete:hover {
-    background: var(--danger);
-    color: white;
+    background: #dc2626;
+    color: #fff !important;
+    transform: scale(1.05);
 }
 
 /* ===== NO DATA ===== */
@@ -1211,4 +1214,15 @@ body {
         width: 36px;
         height: 36px;
     }
+}
+
+/* ID Card Action Button */
+.action-btn.id-card {
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.12);
+}
+.action-btn.id-card:hover {
+    background: #f59e0b;
+    color: #070526;
+    transform: translateY(-2px);
 }

@@ -414,40 +414,65 @@
 }
 
 /* ===== ACTION BUTTONS ===== */
-.actions {
+.actions,
+.action-btns {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
 }
 
 .action-btn {
     width: 32px;
     height: 32px;
-    border-radius: 8px;
-    border: 1px solid #e2e8f0;
-    background: #fff;
-    color: #64748b;
-    cursor: pointer;
+    border-radius: 6px;
+    border: none;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 13px;
+    cursor: pointer;
     transition: all 0.2s;
     text-decoration: none;
+    color: #fff !important;
+    font-size: 13px;
+    box-sizing: border-box;
+}
+
+.action-btn i {
+    color: #fff !important;
+    font-size: 13px;
 }
 
 .action-btn.view {
-    color: #1B2A4A;
-    background: #f1f5f9;
-    border-color: #e2e8f0;
+    background: #3b82f6;
+    color: #fff !important;
 }
 
 .action-btn.view:hover {
-    background: #1B2A4A;
-    color: #ffffff;
-    border-color: #1B2A4A;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(27, 42, 74, 0.2);
+    background: #2563eb;
+    color: #fff !important;
+    transform: scale(1.05);
+}
+
+.action-btn.edit {
+    background: #f59e0b;
+    color: #fff !important;
+}
+
+.action-btn.edit:hover {
+    background: #d97706;
+    color: #fff !important;
+    transform: scale(1.05);
+}
+
+.action-btn.delete {
+    background: #ef4444;
+    color: #fff !important;
+}
+
+.action-btn.delete:hover {
+    background: #dc2626;
+    color: #fff !important;
+    transform: scale(1.05);
 }
 
 /* ===== EMPTY / LOADING STATE ===== */
@@ -700,4 +725,15 @@
     .stat-number {
         font-size: 24px;
     }
+}
+
+/* ID Card Action Button */
+.action-btn.id-card {
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.12);
+}
+.action-btn.id-card:hover {
+    background: #f59e0b;
+    color: #070526;
+    transform: translateY(-2px);
 }

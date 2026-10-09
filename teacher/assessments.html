@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assessments & Classwork - Teacher Dashboard | HES</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Assessments CSS -->
+    <link rel="stylesheet" href="css/assessments.css">
+    <link rel="stylesheet" href="../css/chatbot.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- ===== SIDEBAR ===== -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
+                    </div>
+                    <div class="logo-text">PLS<span>NSH</span></div>
+                </div>
+                <div class="school-badge">Placido L. Señor National High School</div>
+            </div>
+
+            <div class="teacher-profile">
+                <div class="teacher-avatar">
+                    <div class="avatar-initial" id="teacherInitial">T</div>
+                    <div class="online-dot"></div>
+                </div>
+                <div class="teacher-name" id="teacherName">Teacher</div>
+                <div class="teacher-role"><i class="fas fa-chalkboard-user"></i> Teacher</div>
+            </div>
+
+            <nav class="nav-menu">
+                <div class="nav-section">
+                    <div class="nav-section-title">MAIN MENU</div>
+                    <ul class="nav-items">
+                        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+                        <li><a href="attendance-face.html"><i class="fas fa-camera"></i> <span>Face Attendance</span></a></li>
+                        <li><a href="student-attendance.html"><i class="fas fa-user-check"></i> <span>Student Attendance</span></a></li>
+                        <li><a href="classes.html"><i class="fas fa-users"></i> <span>My Classes</span></a></li>
+                        <li><a href="class-program.html"><i class="fas fa-calendar-alt"></i> <span>Class Program</span></a></li>
+                        <li><a href="teacher-load.html"><i class="fas fa-clock"></i> <span>Teacher Load</span></a></li>
+                        <li><a href="assessments.html" class="active"><i class="fas fa-clipboard-list"></i> <span>Assessments</span></a></li>
+                        <li><a href="grades.html"><i class="fas fa-star"></i> <span>Grades</span></a></li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">ACCOUNT</div>
+                    <ul class="nav-items">
+                        <li><a href="profile.html"><i class="fas fa-user"></i> <span>Profile</span></a></li>
+                        <li><a href="../auth/login.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+                    </ul>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- ===== MAIN CONTENT ===== -->
+        <main class="main-content">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div>
+                    <h1><i class="fas fa-clipboard-check text-primary"></i> Assessments & Classwork</h1>
+                    <p>Create assignments, activities, and quizzes for students to complete and pass</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn-primary" id="btnOpenCreateModal">
+                        <i class="fas fa-plus"></i> Create Assessment
+                    </button>
+                </div>
+            </div>
+
+            <!-- Alert Container -->
+            <div id="alertContainer"></div>
+
+            <!-- KPI Statistics -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <h3>Total Created</h3>
+                        <div class="stat-number" id="statTotalAssessments">0</div>
+                        <div class="stat-label">Assessments assigned</div>
+                    </div>
+                    <div class="stat-icon blue">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <h3>Active / Due Soon</h3>
+                        <div class="stat-number" id="statActiveAssessments">0</div>
+                        <div class="stat-label">Currently open tasks</div>
+                    </div>
+                    <div class="stat-icon amber">
+                        <i class="fas fa-hourglass-half"></i>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <h3>Passed / Turned In</h3>
+                        <div class="stat-number" id="statTotalPassed">0</div>
+                        <div class="stat-label">Student submissions</div>
+                    </div>
+                    <div class="stat-icon green">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <h3>Needs Grading</h3>
+                        <div class="stat-number" id="statPendingGrading">0</div>
+                        <div class="stat-label">Submissions to score</div>
+                    </div>
+                    <div class="stat-icon purple">
+                        <i class="fas fa-marker"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search and Filter Bar -->
+            <div class="filter-bar">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchAssessmentInput" placeholder="Search by title, subject, or description...">
+                </div>
+
+                <div class="filter-controls">
+                    <select class="filter-select" id="filterSectionSelect">
+                        <option value="">All Sections</option>
+                    </select>
+
+                    <select class="filter-select" id="filterSubjectSelect">
+                        <option value="">All Subjects</option>
+                    </select>
+
+                    <select class="filter-select" id="filterTypeSelect">
+                        <option value="">All Types</option>
+                        <option value="Assignment">Assignment</option>
+                        <option value="Quiz">Quiz</option>
+                        <option value="Activity">Activity</option>
+                        <option value="Project">Project</option>
+                        <option value="Homework">Homework</option>
+                        <option value="Exam">Exam</option>
+                    </select>
+
+                    <select class="filter-select" id="filterStatusSelect">
+                        <option value="">All Status</option>
+                        <option value="published">Published</option>
+                        <option value="draft">Draft</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Assessments Grid -->
+            <div class="assessments-grid" id="assessmentsGrid">
+                <!-- Dynamic cards populated by assessments.js -->
+            </div>
+        </main>
+    </div>
+
+    <!-- ===== CREATE / EDIT ASSESSMENT MODAL ===== -->
+    <div class="modal-overlay" id="assessmentModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-header-left">
+                    <div class="modal-header-icon">
+                        <i class="fas fa-file-signature"></i>
+                    </div>
+                    <div>
+                        <h2 id="modalTitle"><i class="fas fa-plus-circle"></i> Create New Assessment</h2>
+                        <p class="modal-subtitle">Configure assignment guidelines, scoring, schedules, and materials</p>
+                    </div>
+                </div>
+                <button type="button" class="modal-close-btn" id="btnCloseModal" title="Close dialog">&times;</button>
+            </div>
+            
+            <form id="assessmentForm">
+                <input type="hidden" id="assessmentId">
+                <div class="modal-body">
+                    <!-- SECTION 1: General Details -->
+                    <div class="modal-section-card">
+                        <div class="modal-section-header">
+                            <i class="fas fa-info-circle"></i>
+                            <span>General Information</span>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group full-width">
+                                <label for="assessmentTitle">
+                                    <i class="fas fa-heading"></i> Assessment Title <span class="req">*</span>
+                                </label>
+                                <input type="text" id="assessmentTitle" class="form-control" placeholder="e.g., Essay on Biodiversity & Ecosystems" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="assessmentType">
+                                    <i class="fas fa-layer-group"></i> Assessment Type
+                                </label>
+                                <select id="assessmentType" class="form-control">
+                                    <option value="Assignment">Assignment</option>
+                                    <option value="Quiz">Quiz</option>
+                                    <option value="Activity">Activity / Performance Task</option>
+                                    <option value="Project">Quarter Project</option>
+                                    <option value="Homework">Homework</option>
+                                    <option value="Exam">Exam / Long Test</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="assessmentPoints">
+                                    <i class="fas fa-award"></i> Total Points (Pts) <span class="req">*</span>
+                                </label>
+                                <input type="number" id="assessmentPoints" class="form-control" value="100" min="1" max="1000" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="assessmentSection">
+                                    <i class="fas fa-users"></i> Target Section / Class <span class="req">*</span>
+                                </label>
+                                <select id="assessmentSection" class="form-control" required>
+                                    <option value="">Select Section</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="assessmentSubject">
+                                    <i class="fas fa-book-open"></i> Subject
+                                </label>
+                                <select id="assessmentSubject" class="form-control">
+                                    <option value="">Select Subject</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECTION 2: Timeline & Deadlines -->
+                    <div class="modal-section-card">
+                        <div class="modal-section-header">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>Schedule & Submission Deadline</span>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="assessmentDueDate">
+                                    <i class="far fa-calendar-check"></i> Due Date
+                                </label>
+                                <input type="date" id="assessmentDueDate" class="form-control">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="assessmentDueTime">
+                                    <i class="far fa-clock"></i> Due Time
+                                </label>
+                                <input type="time" id="assessmentDueTime" class="form-control" value="23:59">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECTION 3: Instructions & Resources -->
+                    <div class="modal-section-card">
+                        <div class="modal-section-header">
+                            <i class="fas fa-clipboard-list"></i>
+                            <span>Instructions & Guidelines</span>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group full-width">
+                                <label for="assessmentInstructions">
+                                    <i class="fas fa-align-left"></i> Details, Steps, & Criteria
+                                </label>
+                                <textarea id="assessmentInstructions" class="form-control" rows="4" placeholder="Detail the steps, rubrics, questions, or requirements for students to follow..."></textarea>
+                            </div>
+
+                            <div class="form-group full-width">
+                                <label for="assessmentLink">
+                                    <i class="fas fa-link"></i> Web Resource or Cloud Drive Link (Optional)
+                                </label>
+                                <div class="input-with-icon">
+                                    <i class="fas fa-globe"></i>
+                                    <input type="url" id="assessmentLink" class="form-control with-icon" placeholder="Paste link (Google Drive, Docs, YouTube, or web link)...">
+                                </div>
+                            </div>
+
+                            <div class="form-group full-width">
+                                <label>
+                                    <i class="fas fa-paperclip"></i> Attachment & Reference File (Optional)
+                                </label>
+                                <div class="file-upload-dropzone" onclick="document.getElementById('assessmentFile').click()">
+                                    <div class="dropzone-icon-circle">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                    </div>
+                                    <div class="dropzone-info">
+                                        <p class="dropzone-main-text">Click to browse or upload worksheet, rubric, or reference file</p>
+                                        <p class="dropzone-sub-text">Supported: PDF, DOC, DOCX, XLS, PPT, PNG, JPG (Up to 25MB)</p>
+                                    </div>
+                                    <div class="dropzone-file-pill">
+                                        <i class="fas fa-file-alt"></i>
+                                        <span id="fileSelectedLabel">No file chosen</span>
+                                    </div>
+                                    <input type="file" id="assessmentFile" style="display: none;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECTION 4: Settings & Submission Policies -->
+                    <div class="modal-section-card">
+                        <div class="modal-section-header">
+                            <i class="fas fa-sliders-h"></i>
+                            <span>Publication & Submission Rules</span>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="assessmentStatus">
+                                    <i class="fas fa-broadcast-tower"></i> Publication Status
+                                </label>
+                                <select id="assessmentStatus" class="form-control">
+                                    <option value="published">🚀 Publish Immediately (Visible to Students)</option>
+                                    <option value="draft">📁 Save as Draft (Hidden from Students)</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>
+                                    <i class="fas fa-user-clock"></i> Submission Policy
+                                </label>
+                                <label class="toggle-card" for="allowLateCheckbox">
+                                    <div class="toggle-card-info">
+                                        <span class="toggle-card-title">Allow Late Submissions</span>
+                                        <span class="toggle-card-desc">Students can submit past due date marked as "Late"</span>
+                                    </div>
+                                    <div class="toggle-switch">
+                                        <input type="checkbox" id="allowLateCheckbox" checked>
+                                        <span class="slider"></span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <div class="modal-footer-hint">
+                        <i class="fas fa-bell"></i>
+                        <span>Enrolled students in the section will be notified automatically upon publish.</span>
+                    </div>
+                    <div class="modal-footer-actions">
+                        <button type="button" class="btn-secondary btn-modal-cancel" id="btnCancelModal">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                        <button type="submit" class="btn-primary btn-modal-submit" id="btnSaveAssessment">
+                            <i class="fas fa-check"></i> Save & Publish
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===== SUBMISSIONS & GRADING MODAL ===== -->
+    <div class="modal-overlay submissions-modal" id="submissionsModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div>
+                    <h2 id="subsAssessmentTitle"><i class="fas fa-tasks"></i> Student Submissions</h2>
+                </div>
+                <button type="button" class="modal-close-btn" id="btnCloseSubsModal">&times;</button>
+            </div>
+
+            <div class="subs-meta-banner">
+                <div id="subsMetaInfo" style="font-size: 0.9rem; color: var(--gray-700); font-weight: 500;">
+                    <!-- Assessment Meta info -->
+                </div>
+                <div class="subs-kpis">
+                    <span class="subs-kpi-pill total">Enrolled: <strong id="kpiTotalEnrolled" style="margin-left: 4px;">0</strong></span>
+                    <span class="subs-kpi-pill passed">Passed: <strong id="kpiPassed" style="margin-left: 4px;">0</strong></span>
+                    <span class="subs-kpi-pill graded">Graded: <strong id="kpiGraded" style="margin-left: 4px;">0</strong></span>
+                    <span class="subs-kpi-pill missing">Missing: <strong id="kpiMissing" style="margin-left: 4px;">0</strong></span>
+                </div>
+            </div>
+
+            <div style="padding: 12px 1.75rem; background: white; border-bottom: 1px solid var(--gray-200); display: flex; justify-content: flex-end; align-items: center; gap: 10px;">
+                <label for="subsFilterSelect" style="font-size: 0.85rem; font-weight: 600; color: var(--gray-600);">Filter Students:</label>
+                <select id="subsFilterSelect" class="filter-select" style="padding: 6px 12px; font-size: 0.85rem;">
+                    <option value="all">All Students</option>
+                    <option value="passed">Passed / Turned In Only</option>
+                    <option value="pending_grade">Passed (Needs Grade)</option>
+                    <option value="graded">Graded</option>
+                    <option value="missing">Not Passed / Missing</option>
+                </select>
+            </div>
+
+            <div class="modal-body" style="padding: 0;">
+                <div class="subs-table-wrap">
+                    <table class="subs-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 25%;">Student</th>
+                                <th style="width: 20%;">Status & Time</th>
+                                <th style="width: 32%;">Submitted Work / Files</th>
+                                <th style="width: 23%;">Grade & Feedback</th>
+                            </tr>
+                        </thead>
+                        <tbody id="subsTableBody">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="modal-footer" style="justify-content: space-between; align-items: center;">
+                <small style="color: var(--gray-500);"><i class="fas fa-info-circle"></i> Returning a grade automatically sends a notification to the student's dashboard.</small>
+                <button type="button" class="btn-secondary" onclick="document.getElementById('submissionsModal').classList.remove('active')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="js/teacher_avatar_sync.js"></script>
+    <script type="module" src="js/assessments.js"></script>
+    <script src="../js/chatbot.js"></script>
+</body>
+</html>

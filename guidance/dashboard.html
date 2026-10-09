@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guidance Dashboard - HES, Hiraya Enrollment System</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="../css/chatbot.css">
+</head>
+
+<body>
+    <!-- Mobile Menu Toggle -->
+    <div class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo"
+                            onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
+                    </div>
+                    <div class="logo-text">PLS<span>NSH</span></div>
+                </div>
+                <div class="school-badge">Guidance & Counseling Services</div>
+            </div>
+
+            <div class="counselor-profile">
+                <div class="counselor-avatar">
+                    <div class="avatar-initial" id="counselorAvatar">G</div>
+                    <div class="online-dot"></div>
+                </div>
+                <div class="counselor-name" id="counselorName">Guidance Counselor</div>
+                <div class="counselor-role"><i class="fas fa-heart-pulse"></i> Guidance Office</div>
+            </div>
+
+            <nav class="nav-menu">
+                <div class="nav-section">
+                    <div class="nav-section-title">MAIN MENU</div>
+                    <ul class="nav-items">
+                        <li><a href="dashboard.html" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                        </li>
+                        <li><a href="violations.html"><i class="fas fa-clipboard-list"></i> Guidance Records</a></li>
+                        <li><a href="add_violation.html"><i class="fas fa-file-circle-plus"></i> Log Guidance Case</a>
+                        </li>
+                        <li><a href="counseling.html"><i class="fas fa-user-doctor"></i> Counseling Sessions</a></li>
+                        <li><a href="students.html"><i class="fas fa-user-graduate"></i> Student Directory</a></li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">RECORDS & REPORTS</div>
+                    <ul class="nav-items">
+                        <li><a href="reports.html"><i class="fas fa-chart-pie"></i> Reports</a></li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">ACCOUNT</div>
+                    <ul class="nav-items">
+                        <li><a href="profile.html"><i class="fas fa-user-gear"></i> Profile</a></li>
+                        <li><a href="../auth/logout.html"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                    </ul>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Greeting Banner -->
+            <div class="dashboard-greeting">
+                <div class="greeting-text">
+                    <h2>Guidance & Discipline Portal</h2>
+                    <p>Track student infractions, conduct nurturing counseling interventions, and support positive
+                        student behavior at Hiraya Enrollment System.</p>
+                </div>
+                <div class="greeting-actions">
+                    <a href="add_violation.html" class="btn-white"><i class="fas fa-plus-circle"></i> Log Incident</a>
+                    <a href="counseling.html" class="btn-primary"
+                        style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4);"><i
+                            class="fas fa-calendar-plus"></i> Schedule Session</a>
+                </div>
+            </div>
+
+            <!-- Alert Container -->
+            <div id="alertContainer"></div>
+
+            <!-- KPI Statistics Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <h3>Total Incidents</h3>
+                        <div class="stat-icon"><i class="fas fa-triangle-exclamation"></i></div>
+                    </div>
+                    <div class="stat-number" id="statTotalViolations">0</div>
+                    <div class="stat-label"><i class="fas fa-calendar-alt"></i> Academic Year 2025-2026</div>
+                </div>
+
+                <div class="stat-card card-warning">
+                    <div class="stat-header">
+                        <h3>Minor Infractions</h3>
+                        <div class="stat-icon"><i class="fas fa-circle-exclamation"></i></div>
+                    </div>
+                    <div class="stat-number" id="statMinorViolations">0</div>
+                    <div class="stat-label">Uniform, Tardiness, Cutting</div>
+                </div>
+
+                <div class="stat-card card-danger">
+                    <div class="stat-header">
+                        <h3>Major Violations</h3>
+                        <div class="stat-icon"><i class="fas fa-shield-alt"></i></div>
+                    </div>
+                    <div class="stat-number" id="statMajorViolations">0</div>
+                    <div class="stat-label">Requires Case Conference</div>
+                </div>
+
+                <div class="stat-card card-purple">
+                    <div class="stat-header">
+                        <h3>Counseling Cases</h3>
+                        <div class="stat-icon"><i class="fas fa-hand-holding-heart"></i></div>
+                    </div>
+                    <div class="stat-number" id="statCounselingSessions">0</div>
+                    <div class="stat-label">Active & Follow-ups</div>
+                </div>
+
+                <div class="stat-card card-success">
+                    <div class="stat-header">
+                        <h3>Resolved / Restored</h3>
+                        <div class="stat-icon"><i class="fas fa-circle-check"></i></div>
+                    </div>
+                    <div class="stat-number" id="statResolvedCases">0</div>
+                    <div class="stat-label">Positive behavioral outcome</div>
+                </div>
+            </div>
+
+            <!-- Two Columns Section -->
+            <div class="dashboard-columns">
+                <!-- Left: Recent Violation Reports -->
+                <div class="content-card">
+                    <div class="card-header-flex">
+                        <h3><i class="fas fa-clock-rotate-left"></i> Recent Guidance Cases</h3>
+                        <a href="violations.html" class="btn-secondary"
+                            style="padding: 6px 14px; font-size: 12.5px;">View All Records <i
+                                class="fas fa-arrow-right"></i></a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="hes-table">
+                            <thead>
+                                <tr>
+                                    <th>Student</th>
+                                    <th>Violation Type</th>
+                                    <th>Severity</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentViolationsTableBody">
+                                <tr>
+                                    <td colspan="6"
+                                        style="text-align: center; color: var(--text-muted); padding: 30px;">
+                                        <i class="fas fa-spinner fa-spin"></i> Loading violations...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Right: Upcoming Counseling & Quick Actions -->
+                <div style="display: flex; flex-direction: column; gap: 24px;">
+                    <!-- Upcoming Counseling Appointments -->
+                    <div class="content-card" style="margin-bottom: 0;">
+                        <div class="card-header-flex">
+                            <h3><i class="fas fa-calendar-check"></i> Upcoming Counseling</h3>
+                            <a href="counseling.html"
+                                style="font-size: 12px; color: var(--accent); font-weight: 600; text-decoration: none;">Manage</a>
+                        </div>
+                        <div id="upcomingCounselingList">
+                            <p style="color: var(--text-muted); font-size: 13px; text-align: center; padding: 20px 0;">
+                                Loading appointments...</p>
+                        </div>
+                    </div>
+
+                    <!-- Quick Guidance Tools -->
+                    <div class="content-card" style="margin-bottom: 0;">
+                        <div class="card-header-flex">
+                            <h3><i class="fas fa-bolt"></i> Quick Guidance Tools</h3>
+                        </div>
+                        <div class="quick-tools-grid">
+                            <a href="add_violation.html" class="quick-tool-btn">
+                                <i class="fas fa-pen-to-square"></i>
+                                <span>Record Incident</span>
+                            </a>
+                            <a href="students.html" class="quick-tool-btn">
+                                <i class="fas fa-user-graduate"></i>
+                                <span>Learner Directory</span>
+                            </a>
+                            <a href="counseling.html" class="quick-tool-btn">
+                                <i class="fas fa-comments"></i>
+                                <span>Session Notes</span>
+                            </a>
+                            <a href="reports.html" class="quick-tool-btn">
+                                <i class="fas fa-chart-pie"></i>
+                                <span>Discipline Matrix</span>
+                            </a>
+                            <a href="reports.html?tab=student" class="quick-tool-btn">
+                                <i class="fas fa-file-lines"></i>
+                                <span>Student Report</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="js/dashboard.js"></script>
+</body>
+
+</html>

@@ -321,6 +321,8 @@ import { supabase } from '../../supabase/config.js';
                     localStorage.setItem('hes_registrar_name', fullName);
                 } else if (userRole === 'parent') {
                     localStorage.setItem('hes_parent_name', fullName);
+                } else if (userRole === 'guidance') {
+                    localStorage.setItem('hes_guidance_name', fullName);
                 }
 
                 // 5. Handle Remember Me

@@ -128,7 +128,7 @@
         admin: {
             name: "Admin System Copilot",
             roleBadge: "System Administrator Assistant",
-            avatarIcon: "fa-shield-halved",
+            avatarIcon: "fa-shield-alt",
             welcomeHeadline: "Administrator Command Center",
             welcomeDesc: "I assist in managing user accounts, teachers, subjects, master schedules, sections, and overall school system analytics.",
             storageKey: "hes_chat_history_admin",
@@ -691,6 +691,7 @@
                 title: "Senior High Strands & Career Pathways",
                 response: `HES offers **STEM** (Science/Tech/Engineering/Math), **ABM** (Business/Accountancy), **HUMSS** (Humanities/Law/Teaching), and **TVL** (ICT Programming & Home Economics).\n\n<button type="button" class="hes-cb-choice-btn" data-query="Help me assess which strand fits me best"><span>💡 <strong>Take Strand Advisor Quiz</strong></span> <i class="fas fa-chevron-right"></i></button>`
             },
+            {
                 keywords: ['attendance', 'face', 'qr', 'scan', 'scanner', 'biometric', 'absent', 'present', 'tardy', 'late', 'rate', 'record'],
                 title: "Daily Attendance & Biometric Face Tracking",
                 response: `Faculty attendance is logged in real-time through AI biometric facial recognition. Student attendance is managed under section attendance logs.\n\n<a href="${role === 'teacher' ? 'attendance-face.html' : (role === 'student' ? 'attendance.html' : `${rootPrefix}auth/login.html`)}" class="hes-cb-action-btn"><i class="fas fa-camera"></i> Open Attendance</a>`

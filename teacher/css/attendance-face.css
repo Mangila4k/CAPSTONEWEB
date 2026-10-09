@@ -1023,3 +1023,309 @@ body {
 .btn-modal-done:hover {
     background: #24385e;
 }
+
+/* ===== ADJUSTED SCHEDULE BANNER & ACTIVITY FEED ===== */
+.schedule-banner-card {
+    background: linear-gradient(135deg, #0f2744 0%, #1e3a8a 100%);
+    color: #fff;
+    border-radius: var(--radius-lg);
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 10px 25px -5px rgba(15, 39, 68, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    position: relative;
+    overflow: hidden;
+}
+
+.schedule-banner-card::before {
+    content: '';
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 150px;
+    height: 150px;
+    background: radial-gradient(circle, rgba(250, 204, 21, 0.2) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.schedule-banner-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.schedule-banner-main {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.schedule-day-badge {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13.5px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    backdrop-filter: blur(8px);
+}
+
+.schedule-title-wrap h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: 3px;
+    color: #ffffff;
+}
+
+.schedule-title-wrap p {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.85);
+    margin: 0;
+}
+
+.schedule-cutoff-badge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    padding: 10px 18px;
+    border-radius: 12px;
+    font-size: 13px;
+    backdrop-filter: blur(8px);
+}
+
+.schedule-cutoff-badge strong {
+    color: #facc15;
+    font-weight: 700;
+}
+
+.schedule-pill {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.schedule-pill.on-time {
+    background: #10b981;
+    color: #fff;
+}
+
+.schedule-pill.late {
+    background: #f59e0b;
+    color: #fff;
+}
+
+.schedule-classes-chips {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.class-chip-item {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.class-chip-item strong {
+    color: #fde047;
+}
+
+/* Activity Feed Section */
+.activity-feed-card {
+    background: #fff;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    margin-top: 24px;
+    box-shadow: var(--shadow-sm);
+}
+
+.activity-feed-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--gray-100);
+}
+
+.activity-feed-header h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--gray-900);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.activity-feed-header h3 i {
+    color: #2563eb;
+}
+
+.activity-timeline {
+    position: relative;
+    padding-left: 28px;
+}
+
+.activity-timeline::before {
+    content: '';
+    position: absolute;
+    top: 6px;
+    bottom: 6px;
+    left: 11px;
+    width: 2px;
+    background: var(--gray-200);
+}
+
+.timeline-entry {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.timeline-entry:last-child {
+    margin-bottom: 0;
+}
+
+.timeline-dot {
+    position: absolute;
+    left: -28px;
+    top: 2px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid #2563eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.timeline-dot.success {
+    border-color: #10b981;
+    color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12);
+}
+
+.timeline-dot.warning {
+    border-color: #f59e0b;
+    color: #f59e0b;
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.12);
+}
+
+.timeline-box {
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    transition: var(--transition);
+}
+
+.timeline-box:hover {
+    background: #fff;
+    box-shadow: var(--shadow);
+    border-color: #cbd5e1;
+}
+
+.timeline-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.timeline-action-title {
+    font-weight: 700;
+    font-size: 13.5px;
+    color: var(--gray-900);
+}
+
+.timeline-time-rel {
+    font-size: 12px;
+    color: var(--gray-500);
+}
+
+.timeline-desc {
+    font-size: 13px;
+    color: var(--gray-600);
+    line-height: 1.5;
+    margin-bottom: 8px;
+}
+
+.timeline-meta-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.timeline-tag {
+    font-size: 11.5px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: #e2e8f0;
+    color: var(--gray-700);
+    font-weight: 500;
+}
+
+.timeline-tag.tag-success {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.timeline-tag.tag-warning {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.timeline-tag.tag-info {
+    background: #eff6ff;
+    color: #1e40af;
+}
+
+.btn-direct-validate {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: #10b981;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: var(--transition);
+    width: 100%;
+    margin-top: 10px;
+}
+
+.btn-direct-validate:hover {
+    background: #059669;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+

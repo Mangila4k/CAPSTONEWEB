@@ -6,31 +6,59 @@
 }
 
 body {
-    font-family: 'Inter', sans-serif;
-    background: #f0f4f8;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #1a225a;
+    background-image: 
+        radial-gradient(ellipse at 85% 15%, rgba(245, 158, 11, 0.16) 0%, transparent 45%),
+        radial-gradient(ellipse at 15% 70%, rgba(251, 191, 36, 0.10) 0%, transparent 50%),
+        linear-gradient(180deg, rgba(26, 34, 90, 0.65) 0%, rgba(20, 27, 72, 0.78) 50%, rgba(13, 17, 50, 0.88) 100%),
+        url('../../pictures/deped_matatag_banner.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
     min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 40px 20px;
+    padding: 48px 20px;
+    color: #1e293b;
+    -webkit-font-smoothing: antialiased;
 }
 
 .enrollment-wrapper {
     width: 100%;
-    max-width: 900px;
+    max-width: 920px;
+    margin: 0 auto;
 }
 
 .enrollment-container {
-    background: white;
+    background: #ffffff;
     border-radius: 24px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.10);
-    padding: 40px 45px;
+    box-shadow: 
+        0 10px 25px -5px rgba(10, 14, 42, 0.22),
+        0 25px 50px -12px rgba(10, 14, 42, 0.35);
+    padding: 44px 48px;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Subtle decorative top bar in school colors */
+.enrollment-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, #1a225a 0%, #24307d 60%, #f59e0b 100%);
 }
 
 /* ====== HEADER ====== */
 .enrollment-header {
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 32px;
 }
 
 .logo-section {
@@ -38,82 +66,94 @@ body {
     align-items: center;
     justify-content: center;
     gap: 16px;
-    margin-bottom: 10px;
+    margin-bottom: 14px;
 }
 
 .school-logo img {
-    width: 65px;
-    height: 65px;
+    width: 68px;
+    height: 68px;
     border-radius: 50%;
     object-fit: cover;
-    border: 3px solid #1a2a6c;
+    border: 3px solid #1a225a;
+    box-shadow: 0 4px 14px rgba(26, 34, 90, 0.25);
 }
 
 .school-name h1 {
-    font-size: 22px;
-    color: #1a2a6c;
-    letter-spacing: 1px;
+    font-size: 24px;
+    font-weight: 800;
+    color: #1a225a;
+    letter-spacing: 0.5px;
+    line-height: 1.15;
 }
 
 .school-name p {
     font-size: 13px;
-    color: #555;
+    color: #64748b;
     font-weight: 500;
+    margin-top: 2px;
 }
 
 .enrollment-header h2 {
     font-size: 28px;
-    color: #1a2a6c;
-    margin-top: 8px;
+    font-weight: 800;
+    color: #0f172a;
+    margin-top: 10px;
+    letter-spacing: -0.5px;
 }
 
-/* "Student" ug "Enrollment" - BOTH BLUE */
 .enrollment-header h2 .highlight {
-    color: #1a2a6c;
+    color: #1a225a;
 }
 
 .enrollment-header h2 .highlight2 {
-    color: #1a2a6c;
+    background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline-block;
 }
 
 .subtitle {
-    color: #666;
-    font-size: 14px;
-    margin-top: 4px;
+    color: #64748b;
+    font-size: 14.5px;
+    margin-top: 6px;
+    font-weight: 400;
 }
 
-/* ====== ALERT ====== */
+/* ====== ALERTS ====== */
 #alertContainer {
-    margin-bottom: 18px;
+    margin-bottom: 22px;
 }
 
 .alert {
     padding: 14px 18px;
-    border-radius: 10px;
+    border-radius: 12px;
     font-weight: 500;
     display: flex;
     align-items: center;
     gap: 12px;
     font-size: 14px;
     animation: slideDown 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .alert-success {
-    background: #d4edda;
-    color: #155724;
-    border-left: 5px solid #28a745;
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+    border-left: 5px solid #10b981;
 }
 
 .alert-error {
-    background: #f8d7da;
-    color: #721c24;
-    border-left: 5px solid #dc3545;
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+    border-left: 5px solid #ef4444;
 }
 
 @keyframes slideDown {
     from {
         opacity: 0;
-        transform: translateY(-12px);
+        transform: translateY(-10px);
     }
     to {
         opacity: 1;
@@ -123,41 +163,53 @@ body {
 
 /* ====== FORM SECTIONS ====== */
 .form-section {
-    margin-bottom: 30px;
-    padding-bottom: 25px;
-    border-bottom: 2px solid #e8ecf0;
+    margin-bottom: 32px;
+    padding-bottom: 28px;
+    border-bottom: 1.5px solid #f1f5f9;
 }
 
 .form-section:last-of-type {
     border-bottom: none;
     margin-bottom: 0;
+    padding-bottom: 0;
 }
 
 .section-title {
-    font-size: 18px;
-    color: #1a2a6c;
-    margin-bottom: 18px;
+    font-size: 17px;
+    font-weight: 700;
+    color: #1a225a;
+    margin-bottom: 20px;
     display: flex;
     align-items: center;
     gap: 10px;
+    letter-spacing: -0.2px;
 }
 
 .section-title i {
-    color: #1a2a6c;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: #eff6ff;
+    color: #1a225a;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
 }
 
 /* ====== EXISTING ENROLLMENT ====== */
 #existingEnrollment {
-    background: #f8f9fa;
+    background: #f8fafc;
     border-radius: 16px;
     padding: 24px;
-    margin-bottom: 20px;
-    border: 2px solid #1a2a6c;
+    margin-bottom: 24px;
+    border: 1.5px solid #cbd5e1;
 }
 
 #existingEnrollment h3 {
-    color: #1a2a6c;
+    color: #1a225a;
     font-size: 18px;
+    font-weight: 700;
     margin-bottom: 12px;
 }
 
@@ -171,44 +223,48 @@ body {
 }
 
 .status-pending {
-    background: #fff3cd;
-    color: #856404;
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
 }
 
 .status-approved {
-    background: #d4edda;
-    color: #155724;
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
 }
 
 .status-rejected {
-    background: #f8d7da;
-    color: #721c24;
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
 }
 
 .enrollment-details p {
-    margin: 5px 0;
+    margin: 6px 0;
     font-size: 14px;
+    color: #475569;
 }
 
-/* ====== FORM ====== */
+/* ====== FORM INPUTS & LAYOUT ====== */
 #enrollmentForm {
     display: block;
 }
 
 .form-group {
-    margin-bottom: 16px;
+    margin-bottom: 18px;
 }
 
 .form-group label {
     display: block;
     font-weight: 600;
-    font-size: 14px;
-    color: #333;
-    margin-bottom: 5px;
+    font-size: 13.5px;
+    color: #334155;
+    margin-bottom: 7px;
 }
 
 .form-group label span {
-    color: #e74c3c;
+    color: #ef4444;
     font-weight: 700;
 }
 
@@ -234,28 +290,43 @@ body {
 .input-wrapper textarea {
     width: 100%;
     padding: 12px 16px;
-    border: 2px solid #e0e0e0;
-    border-radius: 10px;
+    border: 1.5px solid #dbe3ee;
+    border-radius: 12px;
     font-size: 14px;
     font-family: 'Inter', sans-serif;
-    transition: 0.2s;
-    background: white;
+    color: #1e293b;
+    background: #f8fafc;
+    transition: all 0.2s ease;
+}
+
+.input-wrapper input::placeholder,
+.input-wrapper textarea::placeholder {
+    color: #94a3b8;
+}
+
+.input-wrapper input:hover,
+.input-wrapper select:hover,
+.input-wrapper textarea:hover {
+    border-color: #cbd5e1;
+    background: #ffffff;
 }
 
 .input-wrapper input:focus,
 .input-wrapper select:focus,
 .input-wrapper textarea:focus {
     outline: none;
-    border-color: #1a2a6c;
-    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.10);
+    border-color: #1a225a;
+    background: #ffffff;
+    box-shadow: 0 0 0 4px rgba(26, 34, 90, 0.14);
 }
 
 .input-wrapper textarea {
     resize: vertical;
-    min-height: 50px;
+    min-height: 60px;
+    line-height: 1.5;
 }
 
-/* ====== GRADE OPTIONS ====== */
+/* ====== GRADE OPTIONS (INTERACTIVE CARDS) ====== */
 .grade-options {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -263,17 +334,22 @@ body {
 }
 
 .grade-option {
-    border: 2px solid #e0e0e0;
-    border-radius: 12px;
-    padding: 14px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 14px 16px;
     text-align: center;
-    transition: 0.2s;
+    background: #f8fafc;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
+    position: relative;
+    user-select: none;
 }
 
 .grade-option:hover {
-    border-color: #1a2a6c;
-    background: #f0f4ff;
+    border-color: #93c5fd;
+    background: #f0f6ff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(26, 34, 90, 0.08);
 }
 
 .grade-option input[type="radio"] {
@@ -282,39 +358,47 @@ body {
 
 .grade-option label {
     display: block;
-    font-weight: 600;
-    font-size: 16px;
-    color: #333;
+    font-weight: 700;
+    font-size: 15px;
+    color: #334155;
     cursor: pointer;
-}
-
-.grade-option input[type="radio"]:checked+label {
-    color: #1a2a6c;
+    margin: 0;
+    transition: color 0.2s ease;
 }
 
 .grade-option:has(input:checked) {
-    border-color: #1a2a6c;
-    background: #eef2ff;
+    border-color: #1a225a;
+    background: #eff6ff;
+    box-shadow: 0 0 0 2px #1a225a, 0 6px 16px rgba(26, 34, 90, 0.16);
+    transform: translateY(-2px);
+}
+
+.grade-option:has(input:checked) label {
+    color: #1a225a;
 }
 
 /* ====== STRAND OPTIONS ====== */
 .strand-options {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    gap: 14px;
 }
 
 .strand-option {
-    border: 2px solid #e0e0e0;
-    border-radius: 12px;
-    padding: 14px 18px;
-    transition: 0.2s;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 16px 18px;
+    background: #f8fafc;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
+    user-select: none;
 }
 
 .strand-option:hover {
-    border-color: #1a2a6c;
-    background: #f0f4ff;
+    border-color: #93c5fd;
+    background: #f0f6ff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(26, 34, 90, 0.08);
 }
 
 .strand-option input[type="radio"] {
@@ -325,31 +409,41 @@ body {
     display: flex;
     flex-direction: column;
     cursor: pointer;
+    margin: 0;
 }
 
 .strand-option .strand-name {
-    font-weight: 700;
+    font-weight: 800;
     font-size: 16px;
-    color: #1a2a6c;
+    color: #1a225a;
+    margin-bottom: 4px;
+    transition: color 0.2s ease;
 }
 
 .strand-option .strand-desc {
-    font-size: 12px;
-    color: #666;
+    font-size: 12.5px;
+    color: #64748b;
+    line-height: 1.45;
 }
 
 .strand-option:has(input:checked) {
-    border-color: #1a2a6c;
-    background: #eef2ff;
+    border-color: #1a225a;
+    background: #eff6ff;
+    box-shadow: 0 0 0 2px #1a225a, 0 6px 16px rgba(26, 34, 90, 0.16);
+    transform: translateY(-2px);
+}
+
+.strand-option:has(input:checked) .strand-name {
+    color: #1a225a;
 }
 
 /* ====== TVL SPECIALIZATION SUB-OPTIONS ====== */
 .tvl-specialization-container {
-    margin-top: 14px;
-    padding: 16px;
-    background: #f8faff;
-    border: 1.5px dashed #3b82f6;
-    border-radius: 12px;
+    margin-top: 16px;
+    padding: 18px 20px;
+    background: #f4f7fe;
+    border: 1.5px solid #cce0fc;
+    border-radius: 16px;
     animation: fadeInSlide 0.3s ease;
 }
 
@@ -370,8 +464,8 @@ body {
     gap: 8px;
     font-size: 13.5px !important;
     font-weight: 700 !important;
-    color: #1e40af !important;
-    margin-bottom: 10px !important;
+    color: #1a225a !important;
+    margin-bottom: 12px !important;
 }
 
 .tvl-spec-options {
@@ -382,52 +476,73 @@ body {
 
 .tvl-spec-options .spec-option {
     background: #ffffff;
-    border: 2px solid #cbd5e1;
+    border: 1.5px solid #dbe3ee;
+    border-radius: 12px;
+    padding: 14px 16px;
+    transition: all 0.2s ease;
+    cursor: pointer;
 }
 
 .tvl-spec-options .spec-option:hover {
-    border-color: #2563eb;
-    background: #eff6ff;
+    border-color: #1a225a;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(26, 34, 90, 0.08);
 }
 
 .tvl-spec-options .spec-option:has(input:checked) {
-    border-color: #2563eb;
-    background: #e0e7ff;
-    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.15);
+    border-color: #1a225a;
+    background: #eef4ff;
+    box-shadow: 0 0 0 2px #1a225a;
 }
 
 .tvl-spec-options .spec-option .strand-name {
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 15px;
-    color: #1e3a8a;
+    font-size: 14.5px;
+    font-weight: 700;
+    color: #1a225a;
 }
 
-/* ====== REQUIREMENTS ====== */
+/* ====== REQUIREMENTS SECTION ====== */
 #requirementsSection {
-    margin-top: 20px;
-    padding: 20px;
-    background: #fafcff;
-    border-radius: 14px;
-    border: 2px solid #e0e8f0;
+    margin-top: 24px;
+    padding: 22px;
+    background: #f8fafc;
+    border-radius: 16px;
+    border: 1.5px solid #e2e8f0;
 }
 
 #requirementsSection h4 {
-    color: #1a2a6c;
-    margin-bottom: 14px;
+    color: #1a225a;
+    margin-bottom: 16px;
     font-size: 16px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .requirement-item {
-    background: white;
-    border-radius: 10px;
-    padding: 14px 18px;
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 16px 18px;
     margin-bottom: 12px;
-    border: 1px solid #e8ecf0;
+    border: 1.5px solid #e2e8f0;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
+    transition: all 0.2s ease;
+}
+
+.requirement-item:last-child {
+    margin-bottom: 0;
+}
+
+.requirement-item:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
 }
 
 .requirement-name {
@@ -436,50 +551,61 @@ body {
     align-items: center;
     flex-wrap: wrap;
     gap: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    color: #1e293b;
 }
 
 .req-badge {
-    font-size: 11px;
+    font-size: 11.5px;
     padding: 3px 12px;
     border-radius: 20px;
-    font-weight: 600;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
 }
 
 .badge-required {
     background: #fee2e2;
     color: #b91c1c;
+    border: 1px solid #fecaca;
 }
 
 .badge-optional {
-    background: #e0e7ff;
-    color: #1a2a6c;
+    background: #eef4ff;
+    color: #1a225a;
+    border: 1px solid #cce0fc;
 }
 
 .badge-follow {
     background: #fef3c7;
     color: #92400e;
+    border: 1px solid #fde68a;
 }
 
 .file-upload-area {
     border: 2px dashed #cbd5e1;
-    border-radius: 8px;
-    padding: 12px;
+    border-radius: 10px;
+    padding: 14px;
     text-align: center;
     cursor: pointer;
-    transition: 0.2s;
-    color: #475569;
-    font-size: 13px;
+    transition: all 0.2s ease;
+    color: #64748b;
+    font-size: 13.5px;
+    background: #f8fafc;
 }
 
 .file-upload-area:hover {
-    border-color: #1a2a6c;
-    background: #f8faff;
+    border-color: #1a225a;
+    background: #eff4ff;
+    color: #1a225a;
 }
 
 .file-name {
-    font-size: 12px;
+    font-size: 12.5px;
     color: #16a34a;
-    margin-top: 2px;
+    margin-top: 4px;
+    font-weight: 600;
 }
 
 .file-name i {
@@ -490,72 +616,101 @@ body {
 .form-buttons {
     display: flex;
     justify-content: flex-end;
+    align-items: center;
     gap: 14px;
-    margin-top: 25px;
+    margin-top: 32px;
     flex-wrap: wrap;
+    padding-top: 20px;
+    border-top: 1.5px solid #f1f5f9;
 }
 
 .btn {
-    padding: 12px 32px;
+    padding: 13px 36px;
     border: none;
-    border-radius: 10px;
-    font-weight: 600;
-    font-size: 14px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 14.5px;
     cursor: pointer;
-    transition: 0.2s;
+    transition: all 0.25s ease;
     font-family: 'Inter', sans-serif;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    user-select: none;
 }
 
 .btn-prev {
-    background: #e8ecf0;
-    color: #333;
+    background: #f1f5f9;
+    color: #475569;
+    border: 1.5px solid #e2e8f0;
 }
 
 .btn-prev:hover {
-    background: #d5dbe3;
+    background: #e2e8f0;
+    color: #1e293b;
 }
 
-/* SUBMIT BUTTON - BLUE */
+/* SUBMIT BUTTON - ROYAL BLUE WITH GOLD ACCENT */
 .btn-submit {
-    background: #1a2a6c;
-    color: white;
-    padding: 12px 40px;
+    background: linear-gradient(135deg, #1a225a 0%, #24307d 100%);
+    color: #ffffff;
+    padding: 14px 44px;
     font-size: 15px;
+    box-shadow: 0 4px 16px rgba(26, 34, 90, 0.35);
 }
 
 .btn-submit:hover {
-    background: #1a2a6c;
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: #070526;
     transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.30);
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
 }
 
 .btn:disabled {
     opacity: 0.6;
     cursor: not-allowed;
     transform: none !important;
+    box-shadow: none !important;
 }
 
 /* ====== BACK LINK ====== */
 .back-link {
     text-align: center;
     margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid #f1f5f9;
 }
 
 .back-link a {
-    color: #1a2a6c;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #64748b;
     text-decoration: none;
-    font-weight: 500;
+    font-weight: 600;
     font-size: 14px;
+    padding: 8px 18px;
+    border-radius: 20px;
+    background: #f1f5f9;
+    transition: all 0.2s ease;
 }
 
 .back-link a:hover {
-    text-decoration: underline;
+    background: #e2e8f0;
+    color: #1a225a;
+    transform: translateX(-3px);
 }
 
 /* ====== RESPONSIVE ====== */
 @media (max-width: 640px) {
+    body {
+        padding: 24px 12px;
+    }
+
     .enrollment-container {
-        padding: 24px 18px;
+        padding: 28px 20px;
+        border-radius: 18px;
     }
 
     .form-row {
@@ -571,6 +726,10 @@ body {
     }
 
     .strand-options {
+        grid-template-columns: 1fr;
+    }
+
+    .tvl-spec-options {
         grid-template-columns: 1fr;
     }
 

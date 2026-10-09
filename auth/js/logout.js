@@ -13,7 +13,6 @@
 
     const logoutBtn = document.getElementById('logoutBtn');
     const cancelBtn = document.getElementById('cancelBtn');
-    const timerCount = document.getElementById('timerCount');
     const userAvatar = document.getElementById('userAvatar');
     const userName = document.getElementById('userName');
     const userEmail = document.getElementById('userEmail');
@@ -129,36 +128,12 @@
     }
 
     // ============================================
-    // TIMER (15 seconds auto logout)
-    // ============================================
-
-    let timer = 15;
-    let timerInterval = null;
-
-    function startTimer() {
-        timerInterval = setInterval(function() {
-            timer--;
-            timerCount.textContent = timer;
-
-            if (timer <= 5) {
-                timerCount.style.color = '#ef4444';
-            }
-
-            if (timer <= 0) {
-                clearInterval(timerInterval);
-                performLogout();
-            }
-        }, 1000);
-    }
-
-    // ============================================
     // EVENT LISTENERS
     // ============================================
 
     if (logoutBtn) {
         logoutBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            clearInterval(timerInterval);
             performLogout();
         });
     }
@@ -166,7 +141,6 @@
     if (cancelBtn) {
         cancelBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            clearInterval(timerInterval);
             cancelLogout();
         });
     }
@@ -174,11 +148,9 @@
     // Keyboard shortcuts
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
-            clearInterval(timerInterval);
             cancelLogout();
         }
         if (e.key === 'Enter') {
-            clearInterval(timerInterval);
             performLogout();
         }
     });
@@ -187,7 +159,6 @@
     // INIT
     // ============================================
 
-    startTimer();
     console.log('✅ Logout ready');
 
 })();

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Assessments & Classwork - Student Dashboard | HES</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Assessments CSS -->
+    <link rel="stylesheet" href="css/assessments.css">
+    <link rel="stylesheet" href="../css/chatbot.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- ===== SIDEBAR ===== -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo"
+                            onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
+                    </div>
+                    <div class="logo-text">PLS<span>NSH</span></div>
+                </div>
+                <div class="school-badge">Placido L. Señor National High School</div>
+            </div>
+
+            <div class="student-profile">
+                <div class="student-avatar">
+                    <div class="avatar-initial" id="studentInitial">S</div>
+                    <div class="online-dot"></div>
+                </div>
+                <div class="student-name" id="studentName">Student</div>
+                <div class="student-role"><i class="fas fa-user-graduate"></i> Student</div>
+            </div>
+
+            <nav class="nav-menu">
+                <div class="nav-section">
+                    <div class="nav-section-title">MAIN MENU</div>
+                    <ul class="nav-items">
+                        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                        <li><a href="attendance.html"><i class="fas fa-calendar-check"></i> Attendance</a></li>
+                        <li><a href="schedule.html"><i class="fas fa-calendar-alt"></i> Class Program</a></li>
+                        <li><a href="assessments.html" class="active"><i class="fas fa-clipboard-list"></i> Assessments</a></li>
+                        <li><a href="grades.html"><i class="fas fa-star"></i> My Grades</a></li>
+                        <li><a href="requirements.html"><i class="fas fa-file-alt"></i> Requirements</a></li>
+                        <li><a href="violations.html"><i class="fas fa-scale-balanced"></i> Guidance & Violations</a></li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">ACCOUNT</div>
+                    <ul class="nav-items">
+                        <li><a href="profile.html"><i class="fas fa-user-circle"></i> My Profile</a></li>
+                        <li><a href="../auth/login.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                    </ul>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- ===== MAIN CONTENT ===== -->
+        <main class="main-content">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div>
+                    <h1><i class="fas fa-graduation-cap text-primary"></i> Assessments & Classwork</h1>
+                    <p>View assigned tasks from your teachers, pass your work, and track returned grades</p>
+                </div>
+            </div>
+
+            <!-- Google Classroom Filter Tabs -->
+            <div class="classroom-tabs">
+                <button class="classroom-tab active" id="tabAll">
+                    <i class="fas fa-layer-group"></i> All Classwork <span class="tab-badge" id="countAll">0</span>
+                </button>
+                <button class="classroom-tab" id="tabTodo">
+                    <i class="fas fa-clock"></i> Assigned / To-Do <span class="tab-badge" id="countTodo">0</span>
+                </button>
+                <button class="classroom-tab" id="tabPassed">
+                    <i class="fas fa-check-circle"></i> Turned In / Passed <span class="tab-badge" id="countPassed">0</span>
+                </button>
+                <button class="classroom-tab" id="tabGraded">
+                    <i class="fas fa-star text-warning"></i> Graded <span class="tab-badge" id="countGraded">0</span>
+                </button>
+                <button class="classroom-tab" id="tabMissing">
+                    <i class="fas fa-exclamation-circle text-danger"></i> Missing <span class="tab-badge" id="countMissing">0</span>
+                </button>
+            </div>
+
+            <!-- Filter & Search Bar -->
+            <div class="filter-bar">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchAssessmentInput" placeholder="Search assignments, quizzes, or subjects...">
+                </div>
+
+                <select class="filter-select" id="filterSubjectSelect">
+                    <option value="">All Subjects</option>
+                </select>
+            </div>
+
+            <!-- Assessments Grid -->
+            <div class="student-assessments-grid" id="studentAssessmentsGrid">
+                <!-- Dynamically loaded -->
+            </div>
+        </main>
+    </div>
+
+    <!-- ===== GOOGLE CLASSROOM MODAL (DETAIL & PASS SUBMISSION) ===== -->
+    <div class="classroom-modal" id="classroomModal">
+        <div class="classroom-modal-card">
+            <div class="classroom-modal-header">
+                <h2 id="modalTopTitle"><i class="fas fa-book-open"></i> Classwork Details</h2>
+                <button type="button" class="modal-close-icon" id="btnCloseModal">&times;</button>
+            </div>
+
+            <div class="classroom-modal-body">
+                <!-- Left Column: Instructions & Details -->
+                <div class="assignment-details-panel">
+                    <div class="assignment-header-info">
+                        <div class="assignment-subject-badge" id="detailSubjectBadge">Subject • Category</div>
+                        <h1 class="assignment-title-large" id="detailTitle">Assessment Title</h1>
+                        <div class="assignment-submeta">
+                            <div><i class="fas fa-chalkboard-teacher"></i> Teacher: <span id="detailTeacher">Teacher</span></div>
+                            <div class="assignment-points-badge" id="detailPoints">100 points</div>
+                            <div id="detailDue"><i class="fas fa-clock"></i> Due Date</div>
+                        </div>
+                    </div>
+
+                    <div class="assignment-instructions-box">
+                        <div class="instructions-title"><i class="fas fa-align-left"></i> Instructions & Directions</div>
+                        <div class="instructions-content" id="detailInstructions">
+                            Loading assessment instructions...
+                        </div>
+                    </div>
+
+                    <!-- Teacher Attachments / Links -->
+                    <div id="detailReferences"></div>
+                </div>
+
+                <!-- Right Column: "Your Work" Panel (Google Classroom Experience) -->
+                <div class="your-work-panel">
+                    <div class="your-work-card">
+                        <div class="your-work-header">
+                            <h3>Your Work</h3>
+                            <span class="card-status-badge assigned" id="yourWorkStatusBadge">Assigned</span>
+                        </div>
+
+                        <!-- Graded Section (Visible if teacher graded) -->
+                        <div id="gradedSection" style="display: none;">
+                            <div class="graded-score-card">
+                                <div class="score-number" id="gradedScoreDisplay">-- / 100</div>
+                                <div class="score-label">Graded by Teacher</div>
+                            </div>
+                            <div class="teacher-feedback-bubble" id="teacherRemarksBox">
+                                <!-- Remarks -->
+                            </div>
+                        </div>
+
+                        <!-- Submission Notice (Visible when turned in / passed) -->
+                        <div id="submissionNotice" class="submission-status-banner" style="display: none;">
+                            <i class="fas fa-check-circle" style="font-size: 1.2rem;"></i>
+                            <div id="submissionNoticeText">Turned In</div>
+                        </div>
+
+                        <!-- Submitted Work Preview -->
+                        <div id="submittedWorkPreview" style="display: none; margin-bottom: 12px;"></div>
+
+                        <!-- Submission Form (Visible when not turned in, or editing/resubmitting) -->
+                        <form id="submissionForm" onsubmit="return false;">
+                            <div class="submission-form-group">
+                                <label for="studentAnswerText"><i class="fas fa-pen"></i> Your Answer / Notes:</label>
+                                <textarea id="studentAnswerText" class="submission-textarea" placeholder="Type your answers, explanation, or notes for the teacher..."></textarea>
+                            </div>
+
+                            <div class="submission-form-group">
+                                <label><i class="fas fa-paperclip"></i> Attach File (PDF, Word, Image):</label>
+                                <button type="button" class="file-attach-btn" onclick="document.getElementById('studentFileInput').click()">
+                                    <i class="fas fa-plus"></i> Add or create file
+                                </button>
+                                <input type="file" id="studentFileInput" style="display: none;">
+                                <div class="attached-file-pill" id="attachedFilePill" style="display: none;">
+                                    <span id="attachedFileName">document.pdf</span>
+                                    <button type="button" id="btnRemoveFile" title="Remove">&times;</button>
+                                </div>
+                            </div>
+
+                            <div class="submission-form-group">
+                                <label for="studentLinkInput"><i class="fas fa-link"></i> Web / Drive Link (Optional):</label>
+                                <input type="url" id="studentLinkInput" class="filter-select" style="width: 100%;" placeholder="https://docs.google.com/...">
+                            </div>
+                        </form>
+
+                        <!-- Primary Action Buttons -->
+                        <button type="button" class="btn-turn-in" id="btnTurnIn">
+                            <i class="fas fa-check-circle"></i> Turn In / Pass Assessment
+                        </button>
+
+                        <button type="button" class="btn-unsubmit" id="btnUnsubmit" style="display: none;">
+                            <i class="fas fa-undo-alt"></i> Unsubmit / Edit Work
+                        </button>
+                    </div>
+
+                    <div style="font-size: 0.8rem; color: var(--gray-500); text-align: center; margin-top: auto; padding: 10px;">
+                        <i class="fas fa-shield-alt"></i> Placido L. Señor National High School • Student Assessment Portal
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="js/student_avatar_sync.js"></script>
+    <script type="module" src="js/assessments.js"></script>
+    <script src="../js/chatbot.js"></script>
+</body>
+</html>

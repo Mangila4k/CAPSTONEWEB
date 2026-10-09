@@ -201,6 +201,11 @@ body {
     width: 20px;
     text-align: center;
     font-size: 1rem;
+    color: inherit;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
 }
 
 .nav-items a:hover {
@@ -208,8 +213,17 @@ body {
     color: white;
 }
 
+.nav-items a:hover i {
+    color: white;
+}
+
 .nav-items a.active {
     background: rgba(255, 215, 0, 0.12);
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.nav-items a.active i {
     color: var(--accent);
 }
 
@@ -920,5 +934,601 @@ body {
     }
     .logo-sub {
         font-size: 0.45rem;
+    }
+}
+
+/* ===== PRINT SCHEDULE BUTTON & UPLOADED BANNER STYLES ===== */
+.btn-print-schedule {
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    padding: 9px 18px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: var(--transition);
+    box-shadow: 0 2px 4px rgba(11, 43, 74, 0.15);
+}
+
+.btn-print-schedule:hover {
+    background: var(--primary-light);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(11, 43, 74, 0.2);
+}
+
+/* Uploaded Document Banner */
+.uploaded-doc-banner {
+    background: #fff;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-left: 4px solid var(--success);
+    border-radius: var(--radius);
+    padding: 18px 22px;
+    margin-bottom: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    box-shadow: var(--shadow-sm);
+    animation: fadeIn 0.3s ease;
+}
+
+.udb-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--success);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.udb-content {
+    flex: 1;
+    min-width: 240px;
+}
+
+.udb-content h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin: 0;
+}
+
+.udb-content p {
+    color: var(--gray-500);
+    font-size: 0.84rem;
+    margin-top: 3px;
+    margin-bottom: 0;
+}
+
+.udb-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.btn-udb {
+    padding: 7px 14px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.84rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: var(--transition);
+}
+
+.btn-udb.view {
+    background: var(--primary);
+    color: #fff;
+    border: none;
+}
+.btn-udb.view:hover {
+    background: var(--primary-light);
+}
+
+.btn-udb.download {
+    background: #fff;
+    color: var(--primary);
+    border: 1px solid var(--gray-300);
+}
+.btn-udb.download:hover {
+    background: var(--gray-50);
+}
+
+.btn-udb.gdocs {
+    background: #1a73e8;
+    color: #fff;
+    border: none;
+    text-decoration: none;
+}
+.btn-udb.gdocs:hover {
+    background: #1557b0;
+    color: #fff;
+}
+
+.btn-udb.print {
+    background: rgba(16, 185, 129, 0.1);
+    color: #065f46;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+.btn-udb.print:hover {
+    background: rgba(16, 185, 129, 0.2);
+}
+
+/* Fallback Notice when timetable grid is not yet entered */
+.schedule-doc-fallback-card {
+    background: #fff;
+    border: 1.5px dashed #3b82f6;
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    animation: fadeIn 0.3s ease;
+}
+
+.schedule-doc-fallback-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.schedule-doc-fallback-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: #eff6ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    flex-shrink: 0;
+}
+
+.schedule-doc-fallback-title {
+    flex: 1;
+    min-width: 220px;
+}
+
+.schedule-doc-fallback-title h3 {
+    margin: 0;
+    color: var(--primary);
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.schedule-doc-fallback-title p {
+    margin: 4px 0 0 0;
+    color: var(--gray-600);
+    font-size: 0.88rem;
+    line-height: 1.4;
+}
+
+.schedule-doc-preview-frame {
+    width: 100%;
+    height: 480px;
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    background: #f8fafc;
+}
+
+/* Print Official Header & Footer (Hidden by default on screen) */
+.print-official-header,
+.print-official-footer {
+    display: none;
+}
+
+/* ===== HIGH QUALITY SINGLE-SHEET BOND PAPER PRINT MEDIA QUERIES ===== */
+@media print {
+    @page {
+        size: letter portrait;
+        margin: 6mm 8mm 6mm 8mm;
+    }
+
+    /* Universal print resets to enforce 1-page fit */
+    *, *:before, *:after {
+        box-sizing: border-box !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    html, body {
+        height: 100% !important;
+        max-height: 100% !important;
+        overflow: hidden !important;
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+        font-size: 8pt !important;
+        line-height: 1.2 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .app-container {
+        display: block !important;
+        width: 100% !important;
+        height: 100% !important;
+        max-height: 100% !important;
+        overflow: hidden !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        page-break-after: avoid !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        break-after: avoid !important;
+    }
+
+    .main-content {
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        height: 100% !important;
+        max-height: 100% !important;
+        overflow: hidden !important;
+        page-break-after: avoid !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        break-after: avoid !important;
+    }
+
+    /* Hide non-printable web interactive elements */
+    .sidebar,
+    .page-header,
+    .date-badge,
+    .btn-print-schedule,
+    .uploaded-doc-banner,
+    .today-card,
+    .legend,
+    .section-card,
+    .stats-grid,
+    .summary-grid,
+    .summary-card,
+    #sectionInfo,
+    .alert,
+    #alertContainer,
+    #modalStudentDocViewer,
+    #chatbotContainer,
+    #chatbotToggle,
+    button,
+    nav {
+        display: none !important;
+    }
+
+    /* Official School Letterhead (Compact single-sheet fit) */
+    .print-official-header {
+        display: block !important;
+        margin: 0 0 6px 0 !important;
+        padding: 0 0 4px 0 !important;
+        border-bottom: 1.5px solid #000 !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+
+    .print-logo-row {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 12px !important;
+        margin-bottom: 3px !important;
+    }
+
+    .print-school-logo {
+        width: 44px !important;
+        height: 44px !important;
+        object-fit: cover !important;
+        border-radius: 50% !important;
+        border: 1px solid #111 !important;
+        flex-shrink: 0 !important;
+    }
+
+    .print-title-block {
+        text-align: center !important;
+        line-height: 1.15 !important;
+    }
+
+    .print-rep {
+        font-size: 7.5pt !important;
+        color: #444 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+    }
+
+    .print-dep {
+        font-size: 8.5pt !important;
+        font-weight: 700 !important;
+        color: #111 !important;
+    }
+
+    .print-div {
+        font-size: 7pt !important;
+        color: #333 !important;
+    }
+
+    .print-school {
+        font-size: 11pt !important;
+        font-weight: 800 !important;
+        letter-spacing: 0.4px !important;
+        color: #0b2b4a !important;
+        margin: 1px 0 !important;
+    }
+
+    .print-loc {
+        font-size: 7pt !important;
+        color: #444 !important;
+    }
+
+    .print-banner-bar {
+        background: #0b2b4a !important;
+        color: #ffffff !important;
+        text-align: center !important;
+        font-size: 8.5pt !important;
+        font-weight: 800 !important;
+        padding: 3px 6px !important;
+        margin: 3px 0 5px 0 !important;
+        letter-spacing: 1px !important;
+        text-transform: uppercase !important;
+        border-radius: 2px !important;
+    }
+
+    .print-meta-grid {
+        display: grid !important;
+        grid-template-columns: 2fr 1.3fr 1.6fr 1.4fr 1.2fr 1.6fr !important;
+        gap: 4px 8px !important;
+        font-size: 7.2pt !important;
+        border: 1px solid #000 !important;
+        padding: 4px 6px !important;
+        background: #f8fafc !important;
+        line-height: 1.2 !important;
+        margin-bottom: 6px !important;
+    }
+
+    .print-meta-grid div {
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    .print-meta-grid strong {
+        color: #000 !important;
+        font-weight: 700 !important;
+    }
+
+    /* Timetable Grid on Print */
+    .schedule-container {
+        display: block !important;
+        box-shadow: none !important;
+        border: 1px solid #000 !important;
+        padding: 0 !important;
+        margin: 0 0 6px 0 !important;
+        border-radius: 0 !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        overflow: visible !important;
+    }
+
+    .schedule-header {
+        display: none !important;
+    }
+
+    .table-responsive {
+        overflow: visible !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .schedule-table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        font-size: 7.2pt !important;
+        table-layout: fixed !important;
+    }
+
+    .schedule-table thead th {
+        border: 1px solid #000 !important;
+        background: #e2e8f0 !important;
+        color: #000 !important;
+        padding: 3px 2px !important;
+        font-weight: 700 !important;
+        text-align: center !important;
+        font-size: 7.6pt !important;
+    }
+
+    .schedule-table thead th small {
+        display: block !important;
+        font-size: 6.2pt !important;
+        font-weight: 500 !important;
+        color: #333 !important;
+    }
+
+    .schedule-table thead th:first-child {
+        width: 16% !important;
+    }
+
+    .schedule-table thead th:not(:first-child) {
+        width: 16.8% !important;
+    }
+
+    .schedule-table tbody td {
+        border: 1px solid #000 !important;
+        padding: 2px 3px !important;
+        vertical-align: middle !important;
+        height: 38px !important;
+        color: #000 !important;
+        font-size: 7.2pt !important;
+        line-height: 1.15 !important;
+        text-align: center !important;
+    }
+
+    .schedule-table .time-col,
+    .schedule-table .time-column {
+        font-weight: 700 !important;
+        background: #f1f5f9 !important;
+        text-align: center !important;
+        font-size: 6.8pt !important;
+        padding: 2px 3px !important;
+        color: #000 !important;
+    }
+
+    .recess-row td,
+    .recess-cell {
+        background: #fef3c7 !important;
+        font-weight: 700 !important;
+        font-size: 7pt !important;
+        height: 20px !important;
+        text-align: center !important;
+        padding: 1px !important;
+        color: #78350f !important;
+        letter-spacing: 0.5px !important;
+    }
+
+    .schedule-cell.active {
+        background: #f8fafc !important;
+        padding: 2px 3px !important;
+    }
+
+    .class-item {
+        background: #f0f4f8 !important;
+        border-left: 2.5px solid #0b2b4a !important;
+        color: #000 !important;
+        padding: 2px 3px !important;
+        border-radius: 2px !important;
+        text-align: left !important;
+    }
+
+    .class-item .subject-name,
+    .schedule-cell .subj-name {
+        font-weight: 700 !important;
+        font-size: 7.2pt !important;
+        color: #000 !important;
+        line-height: 1.1 !important;
+        margin-bottom: 1px !important;
+    }
+
+    .class-item .teacher-name,
+    .schedule-cell .subj-teacher {
+        font-size: 6.5pt !important;
+        color: #222 !important;
+        line-height: 1 !important;
+    }
+
+    .class-item .room,
+    .schedule-cell .subj-room {
+        font-size: 6.2pt !important;
+        color: #444 !important;
+        line-height: 1 !important;
+    }
+
+    .schedule-cell.empty {
+        color: #94a3b8 !important;
+        text-align: center !important;
+        font-size: 7pt !important;
+        background: #ffffff !important;
+    }
+
+    /* Print Official Footer & DepEd Signatures */
+    .print-official-footer {
+        display: block !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        page-break-after: avoid !important;
+        break-after: avoid !important;
+        margin-top: 4px !important;
+    }
+
+    .print-summary-strip {
+        border: 1px solid #000 !important;
+        background: #f8fafc !important;
+        padding: 3px 6px !important;
+        margin-bottom: 6px !important;
+        font-size: 6.8pt !important;
+        line-height: 1.25 !important;
+    }
+
+    .pss-header {
+        font-weight: 700 !important;
+        font-size: 6.8pt !important;
+        margin-bottom: 2px !important;
+        text-transform: uppercase !important;
+        color: #0b2b4a !important;
+    }
+
+    .pss-list {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 3px 10px !important;
+        font-size: 6.6pt !important;
+        color: #222 !important;
+    }
+
+    .pss-item {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 3px !important;
+    }
+
+    .print-signatures-block {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 40px !important;
+        margin: 6px 12px 3px 12px !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+
+    .print-sig-col {
+        text-align: center !important;
+    }
+
+    .sig-prompt {
+        font-size: 7pt !important;
+        text-align: left !important;
+        color: #444 !important;
+        margin-bottom: 20px !important;
+    }
+
+    .sig-space {
+        height: 0 !important;
+    }
+
+    .sig-line {
+        border-top: 1px solid #000 !important;
+        font-weight: 700 !important;
+        font-size: 7.5pt !important;
+        padding-top: 2px !important;
+        color: #000 !important;
+        text-transform: uppercase !important;
+    }
+
+    .sig-sub {
+        font-size: 6.5pt !important;
+        color: #444 !important;
+        margin-top: 1px !important;
+    }
+
+    .print-doc-footer-meta {
+        display: flex !important;
+        justify-content: space-between !important;
+        font-size: 5.8pt !important;
+        color: #666 !important;
+        border-top: 0.5px solid #bbb !important;
+        padding-top: 2px !important;
+        margin-top: 4px !important;
     }
 }

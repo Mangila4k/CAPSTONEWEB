@@ -1,0 +1,651 @@
+/* =========================================================
+   OFFICIAL STUDENT ID CARD STYLESHEET
+   Placido L. Señor National High School (PLSNHS)
+   100% Exact Reference Design Implementation:
+   - Front & Back use the official high-resolution reference
+     artwork with the bottom address bar removed.
+   - Dynamic real-time overlay system for photo, student name,
+     grade level, ID No, LRN, emergency contact, and QR code.
+   - High-resolution print & PNG export.
+   ========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+:root {
+    --id-blue: #0b1a3d;
+    --id-blue-royal: #113f88;
+    --id-gold: #c89b27;
+    --id-text-navy: #0c1a3a;
+    --id-card-w: 318px;
+    --id-card-h: 485px;
+}
+
+/* ===== ID CARD SHOWCASE & PREVIEW CONTAINER ===== */
+.id-showcase-container {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 40px;
+    padding: 30px 20px;
+    background: radial-gradient(circle at 50% 20%, #f8fafc 0%, #e2e8f0 100%);
+    border-radius: 20px;
+    border: 1px solid #cbd5e1;
+    margin: 20px 0;
+}
+
+/* Badge Holder / Lanyard Unit */
+.id-badge-unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    user-select: none;
+}
+
+/* Lanyard Ribbon Top */
+.lanyard-strap {
+    width: 58px;
+    height: 70px;
+    background: #111827;
+    position: relative;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px 4px 0 0;
+    overflow: hidden;
+}
+
+.lanyard-strap::after {
+    content: 'PLACIDO L. SEÑOR';
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+/* Metallic Swivel Hook / Clip */
+.lanyard-clip {
+    width: 32px;
+    height: 38px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 5;
+    margin-top: -2px;
+    margin-bottom: -10px;
+}
+
+.clip-ring {
+    width: 22px;
+    height: 12px;
+    border: 3px solid #94a3b8;
+    border-radius: 6px;
+    background: linear-gradient(180deg, #e2e8f0 0%, #64748b 100%);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.clip-hook {
+    width: 14px;
+    height: 24px;
+    border: 3px solid #64748b;
+    border-top: none;
+    border-radius: 0 0 7px 7px;
+    background: linear-gradient(135deg, #cbd5e1 0%, #475569 100%);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.25);
+}
+
+/* Translucent Plastic Badge Casing */
+.badge-holder-pouch {
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(6px);
+    border: 2px solid rgba(255, 255, 255, 0.85);
+    border-radius: 20px;
+    padding: 16px 14px 18px;
+    box-shadow: 
+        0 20px 45px rgba(15, 23, 42, 0.22),
+        0 4px 12px rgba(15, 23, 42, 0.12),
+        inset 0 1px 2px rgba(255, 255, 255, 0.8);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Badge Punch Slots at Top of Plastic Sleeve */
+.badge-punch-slots {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 22px;
+    width: 100%;
+    margin-bottom: 12px;
+}
+
+.punch-slot-center {
+    width: 44px;
+    height: 8px;
+    background: #cbd5e1;
+    border-radius: 4px;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+.punch-slot-side {
+    width: 22px;
+    height: 6px;
+    background: #cbd5e1;
+    border-radius: 3px;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+/* =========================================================
+   ACTUAL CARD ELEMENT (CR80 EXACT DIMENSIONS: 318px x 485px)
+   ========================================================= */
+.student-id-card {
+    width: var(--id-card-w);
+    height: var(--id-card-h);
+    min-width: var(--id-card-w);
+    min-height: var(--id-card-h);
+    max-width: var(--id-card-w);
+    max-height: var(--id-card-h);
+    background: #ffffff;
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.16);
+    display: block;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: var(--id-text-navy);
+    box-sizing: border-box;
+}
+
+/* Card Badge Tag (Front / Back label for preview) */
+.card-face-tag {
+    position: absolute;
+    bottom: -32px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #475569;
+    background: #e2e8f0;
+    padding: 3px 14px;
+    border-radius: 12px;
+}
+
+/* =========================================================
+   EXACT ARTWORK BACKGROUNDS
+   ========================================================= */
+.id-card-front {
+    background-image: url('../pictures/card_front_exact.jpg');
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.id-card-back {
+    background-image: url('../pictures/card_back_exact.jpg');
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+/* =========================================================
+   DYNAMIC OVERLAYS FOR THE FRONT CARD
+   (Rendered over the exact artwork when modifying data)
+   ========================================================= */
+
+/* Custom Student 2x2 Photo Overlay */
+.id-photo-custom-wrap {
+    position: absolute;
+    top: 98px;
+    left: 88px;
+    width: 142px;
+    height: 142px;
+    border-radius: 50%;
+    overflow: hidden;
+    display: none;
+    z-index: 5;
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.id-photo-custom-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Custom Student Name Overlay (Right-Aligned) */
+.id-name-custom-wrap {
+    position: absolute;
+    top: 254px;
+    right: 18px;
+    display: none;
+    flex-direction: column;
+    align-items: flex-end;
+    text-align: right;
+    background: #ffffff;
+    padding: 0 4px;
+    border-radius: 4px;
+    z-index: 5;
+    box-shadow: 0 0 6px rgba(255, 255, 255, 0.95);
+}
+
+.id-name-custom-wrap .id-name-line {
+    font-size: 26px;
+    font-weight: 900;
+    color: var(--id-text-navy);
+    line-height: 1.0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    word-break: break-word;
+    display: block;
+    text-align: right;
+}
+
+/* Custom Student Level Overlay */
+.id-level-custom-wrap {
+    position: absolute;
+    top: 342px;
+    right: 18px;
+    display: none;
+    background: #ffffff;
+    padding: 0 4px;
+    border-radius: 4px;
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--id-text-navy);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    text-align: right;
+    z-index: 5;
+    box-shadow: 0 0 6px rgba(255, 255, 255, 0.95);
+}
+
+/* Custom ID No & LRN Values Overlay */
+.id-num-custom-wrap {
+    position: absolute;
+    top: 391px;
+    left: 154px;
+    display: none;
+    background: #ffffff;
+    padding: 0 4px;
+    border-radius: 3px;
+    font-size: 13.5px;
+    font-weight: 800;
+    color: var(--id-text-navy);
+    font-family: 'Inter', monospace;
+    z-index: 5;
+    box-shadow: 0 0 4px rgba(255, 255, 255, 0.95);
+}
+
+.id-lrn-custom-wrap {
+    position: absolute;
+    top: 415px;
+    left: 154px;
+    display: none;
+    background: #ffffff;
+    padding: 0 4px;
+    border-radius: 3px;
+    font-size: 13.5px;
+    font-weight: 800;
+    color: var(--id-text-navy);
+    font-family: 'Inter', monospace;
+    z-index: 5;
+    box-shadow: 0 0 4px rgba(255, 255, 255, 0.95);
+}
+
+/* =========================================================
+   DYNAMIC OVERLAYS FOR THE BACK CARD
+   ========================================================= */
+
+/* Real-Time Scannable QR Code Box inside Gold Corner Brackets */
+.id-qr-custom-wrap {
+    position: absolute;
+    top: 209px;
+    left: 222px;
+    width: 63px;
+    height: 65px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+    z-index: 5;
+}
+
+.id-qr-custom-wrap canvas,
+.id-qr-custom-wrap img {
+    width: 100% !important;
+    height: 100% !important;
+    display: block;
+}
+
+/* Custom Emergency Info Overlay */
+.id-emergency-custom-wrap {
+    position: absolute;
+    top: 130px;
+    left: 20px;
+    display: none;
+    background: #ffffff;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--id-text-navy);
+    line-height: 1.35;
+    z-index: 5;
+    box-shadow: 0 0 6px rgba(255, 255, 255, 0.95);
+}
+
+/* Custom Student Signature Printed Name */
+.id-sig-student-custom {
+    position: absolute;
+    bottom: 10px;
+    left: 20px;
+    width: 125px;
+    text-align: center;
+    display: none;
+    background: #ffffff;
+    padding: 1px 4px;
+    border-radius: 3px;
+    z-index: 5;
+}
+
+/* Custom Principal Printed Name */
+.id-sig-principal-custom {
+    position: absolute;
+    bottom: 10px;
+    right: 20px;
+    width: 125px;
+    text-align: center;
+    display: none;
+    background: #ffffff;
+    padding: 1px 4px;
+    border-radius: 3px;
+    z-index: 5;
+}
+
+.sig-script {
+    font-family: 'Caveat', cursive, sans-serif;
+    font-size: 15px;
+    color: #0b1a3d;
+    line-height: 1;
+    margin-bottom: 2px;
+}
+
+.sig-line {
+    width: 100%;
+    height: 1px;
+    background: #0b1a3d;
+    margin: 2px 0;
+}
+
+.sig-label-name {
+    font-size: 8px;
+    font-weight: 800;
+    color: var(--id-text-navy);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    line-height: 1.1;
+}
+
+/* =========================================================
+   INTERACTIVE ID GENERATOR DASHBOARD CONTROLS
+   ========================================================= */
+.id-generator-layout {
+    display: grid;
+    grid-template-columns: 1fr 420px;
+    gap: 28px;
+    align-items: flex-start;
+}
+
+@media (max-width: 1080px) {
+    .id-generator-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+.id-preview-pane {
+    background: #ffffff;
+    border-radius: 20px;
+    border: 1px solid #e2e8f0;
+    padding: 26px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.id-preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.id-preview-header h3 {
+    font-size: 18px;
+    font-weight: 800;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.id-controls-pane {
+    background: #ffffff;
+    border-radius: 20px;
+    border: 1px solid #e2e8f0;
+    padding: 26px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.id-form-group {
+    margin-bottom: 16px;
+}
+
+.id-form-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+}
+
+.id-form-group input,
+.id-form-group select {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1.5px solid #cbd5e1;
+    font-size: 13.5px;
+    color: #0f172a;
+    background: #f8fafc;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+}
+
+.id-form-group input:focus,
+.id-form-group select:focus {
+    border-color: var(--id-blue);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(11, 26, 61, 0.15);
+    background: #ffffff;
+}
+
+.id-btn-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 24px;
+}
+
+.btn-id-action {
+    flex: 1;
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 13.5px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.btn-id-print {
+    background: linear-gradient(135deg, #0b1a3d 0%, #113f88 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(11, 26, 61, 0.35);
+}
+
+.btn-id-print:hover {
+    background: linear-gradient(135deg, #d4a329 0%, #b68a22 100%);
+    color: #051025;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(212, 163, 41, 0.35);
+}
+
+.btn-id-download {
+    background: #f1f5f9;
+    color: #1e293b;
+    border: 1px solid #cbd5e1;
+}
+
+.btn-id-download:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+}
+
+/* =========================================================
+   PRINT STYLES FOR OFFICIAL PVC / PAPER CARD PRODUCTION
+   ========================================================= */
+@media print {
+    @page {
+        size: A4 portrait;
+        margin: 8mm 6mm;
+    }
+
+    /* 1. Global Reset & Print Color Adjust */
+    html, body {
+        background: #ffffff !important;
+        background-image: none !important;
+        color: #0c1a3a !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        min-height: auto !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    /* 2. Hide all layout chrome, navigation, headers, controls, and chatbot */
+    .sidebar,
+    .top-nav,
+    .page-header,
+    .menu-toggle,
+    .id-preview-header,
+    .id-controls-pane,
+    .chat-widget,
+    .chatbot-toggler,
+    .chat-container,
+    .card-face-tag,
+    .btn-id-action,
+    .lanyard-strap,
+    .lanyard-clip,
+    .badge-punch-slots {
+        display: none !important;
+        visibility: hidden !important;
+    }
+
+    /* 3. Collapse wrapping containers */
+    .app-container,
+    .main-content,
+    .content-body,
+    #idGeneratorApp,
+    .id-generator-layout,
+    .id-preview-pane {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    /* 4. Showcase Area: Print-ready side-by-side flex container */
+    .printable-id-card-area,
+    .id-showcase-container {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: center !important;
+        align-items: flex-start !important;
+        flex-wrap: nowrap !important;
+        gap: 15mm !important;
+        padding: 10mm 5mm !important;
+        margin: 0 auto !important;
+        width: 100% !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    /* 5. Units & Pouches: Stripped to transparent wrappers */
+    .id-badge-unit {
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+
+    .badge-holder-pouch {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        backdrop-filter: none !important;
+        display: block !important;
+    }
+
+    /* 6. The Official ID Cards: Exact Print Output */
+    .student-id-card {
+        display: block !important;
+        width: 318px !important;
+        height: 485px !important;
+        min-width: 318px !important;
+        min-height: 485px !important;
+        max-width: 318px !important;
+        max-height: 485px !important;
+        border-radius: 12px !important;
+        border: 1px dashed #94a3b8 !important;
+        box-shadow: none !important;
+        background-color: #ffffff !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        position: relative !important;
+        overflow: hidden !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    .student-id-card * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        visibility: visible !important;
+    }
+}

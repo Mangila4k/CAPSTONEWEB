@@ -543,29 +543,100 @@ body {
 }
 
 .subject-list {
-    padding: 0.5rem 1rem;
+    padding: 0.6rem 0.8rem;
     display: flex;
     flex-direction: column;
-    gap: 0.3rem;
+    gap: 0.5rem;
 }
 
 .subject-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.5rem 0.8rem;
+    padding: 0.75rem 0.9rem;
     border-radius: var(--radius);
-    border: 1px solid var(--gray-100);
+    border: 1px solid var(--gray-200);
+    background: #ffffff;
+    transition: all 0.2s ease;
+    gap: 0.75rem;
 }
 
 .subject-item:hover {
-    background: var(--gray-50);
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    transform: translateX(3px);
+}
+
+.subject-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+}
+
+.subject-item-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: #f1f5f9;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    flex-shrink: 0;
 }
 
 .subject-info h4 {
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: var(--gray-700);
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--gray-800);
+    margin: 0 0 2px;
+}
+
+.subject-code-tag-sm {
+    display: inline-block;
+    background: #0b2b4a;
+    color: #ffd700;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 1px 7px;
+    border-radius: 6px;
+    font-family: monospace;
+    letter-spacing: 0.5px;
+}
+
+.subject-badges-col {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.subject-cat-tag {
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.subject-cat-tag.core {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+}
+
+.subject-cat-tag.applied {
+    background: #ecfdf5;
+    color: #047857;
+    border: 1px solid #a7f3d0;
+}
+
+.subject-cat-tag.specialized {
+    background: #faf5ff;
+    color: #7e22ce;
+    border: 1px solid #e9d5ff;
 }
 
 /* ===== NO DATA ===== */
@@ -665,3 +736,374 @@ body {
         flex-wrap: wrap;
     }
 }
+
+/* ===== FACULTY ATTENDANCE & ADJUSTED SCHEDULE WIDGET ===== */
+.faculty-attendance-widget {
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1.5px solid #e2e8f0;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
+    margin-bottom: 24px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.faculty-attendance-widget:hover {
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
+}
+
+.faw-header {
+    background: linear-gradient(135deg, #0b2b4a 0%, #1e3a5f 100%);
+    color: #ffffff;
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.faw-title-group {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.faw-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(255, 215, 0, 0.2);
+    color: #FFD700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.faw-title {
+    font-size: 17px;
+    font-weight: 700;
+    margin: 0 0 3px 0;
+    color: #ffffff;
+}
+
+.faw-subtitle {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0;
+}
+
+.faw-badges {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.faw-pill-day {
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12.5px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.faw-pill-shift {
+    background: rgba(255, 215, 0, 0.2);
+    color: #FFD700;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12.5px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid rgba(255, 215, 0, 0.35);
+}
+
+.faw-body {
+    padding: 22px 24px;
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    gap: 20px;
+}
+
+@media (max-width: 900px) {
+    .faw-body {
+        grid-template-columns: 1fr;
+    }
+}
+
+.faw-status-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+@media (max-width: 550px) {
+    .faw-status-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.faw-status-item {
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.faw-status-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 700;
+    color: #334155;
+    margin-bottom: 8px;
+}
+
+.faw-tag {
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    text-transform: uppercase;
+}
+
+.faw-tag.pending { background: #e2e8f0; color: #64748b; }
+.faw-tag.success { background: #dcfce7; color: #166534; }
+.faw-tag.warning { background: #fef3c7; color: #92400e; }
+
+.faw-status-time {
+    font-size: 22px;
+    font-weight: 800;
+    color: #0f172a;
+    font-family: 'JetBrains Mono', 'Segoe UI Mono', monospace;
+    margin-bottom: 4px;
+}
+
+.faw-status-note {
+    font-size: 11.5px;
+    color: #64748b;
+}
+
+.faw-actions-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.faw-action-btns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.btn-faw-validate {
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.btn-faw-validate.in {
+    background: #10b981;
+    color: #ffffff;
+}
+
+.btn-faw-validate.in:hover {
+    background: #059669;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.25);
+}
+
+.btn-faw-validate.out {
+    background: #0b2b4a;
+    color: #ffffff;
+}
+
+.btn-faw-validate.out:hover {
+    background: #1a3d5f;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(11, 43, 74, 0.25);
+}
+
+.btn-faw-validate:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.btn-faw-link {
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    background: #ffffff;
+    color: #1e293b;
+    border: 1.5px solid #cbd5e1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.btn-faw-link:hover {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+}
+
+.faw-recent-activity {
+    background: #f1f5f9;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+/* FAW History Section inside Faculty Widget */
+.faw-history-section {
+    border-top: 1px solid #e2e8f0;
+    background: #f8fafc;
+    padding: 16px 24px;
+}
+
+.faw-history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.faw-history-header h4 {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.faw-history-header h4 i {
+    color: var(--primary);
+}
+
+.faw-history-badge {
+    font-size: 11px;
+    color: #64748b;
+    font-weight: 600;
+    background: #e2e8f0;
+    padding: 2px 8px;
+    border-radius: 12px;
+}
+
+.faw-history-table-wrap {
+    overflow-x: auto;
+    border-radius: 8px;
+    border: 1.5px solid #e2e8f0;
+    background: #ffffff;
+}
+
+.faw-history-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+}
+
+.faw-history-table th {
+    background: #f1f5f9;
+    padding: 10px 14px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    text-align: left;
+    border-bottom: 1.5px solid #e2e8f0;
+    white-space: nowrap;
+}
+
+.faw-history-table td {
+    padding: 11px 14px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #1e293b;
+    vertical-align: middle;
+}
+
+.faw-history-table tr:last-child td {
+    border-bottom: none;
+}
+
+.faw-history-table tr:hover td {
+    background: #f8fafc;
+}
+
+.faw-history-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.faw-history-pill.present {
+    background: #ecfdf5;
+    color: #047857;
+    border: 1px solid #a7f3d0;
+}
+
+.faw-history-pill.completed {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+}
+
+.faw-history-pill.late {
+    background: #fffbeb;
+    color: #b45309;
+    border: 1px solid #fde68a;
+}
+
+.faw-history-method {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11.5px;
+    color: #475569;
+    font-weight: 500;
+}
+
+.faw-history-method i {
+    color: var(--primary);
+}
+

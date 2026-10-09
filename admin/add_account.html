@@ -27,9 +27,9 @@
                     <div class="logo-icon">
                         <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
                     </div>
-                    <div class="logo-text">H.<span>E.S</span></div>
+                    <div class="logo-text">PLS<span>NSH</span></div>
                 </div>
-                <div class="school-badge">Hiraya Enrollment System</div>
+                <div class="school-badge">Placido L. Señor National High School</div>
             </div>
 
             <div class="admin-profile">
@@ -81,7 +81,7 @@
             <div class="page-header">
                 <div>
                     <h1>Add New Account</h1>
-                    <p class="subtitle">Create a new teacher, registrar, or administrator account</p>
+                    <p class="subtitle">Create a new user account with role-based permissions and auto-generated ID</p>
                 </div>
                 <a href="manage_accounts.html" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Accounts</a>
             </div>
@@ -94,9 +94,13 @@
                 <i class="fas fa-info-circle"></i>
                 <div>
                     <strong>Auto-generated ID Numbers:</strong><br>
-                    • Teacher accounts: <strong>HES-TCH-XXXXX</strong> (e.g., HES-TCH-00001)<br>
-                    • Registrar accounts: <strong>HES-RGR-XXXXX</strong> (e.g., HES-RGR-00001)<br>
-                    • Admin accounts: <strong>HES-ADM-XXXXX</strong> (e.g., HES-ADM-00001)
+                    • Teacher accounts: <strong>HES-TCH-XXXXX</strong><br>
+                    • Registrar accounts: <strong>HES-RGR-XXXXX</strong><br>
+                    • Guidance accounts: <strong>HES-GDC-XXXXX</strong><br>
+                    • Admin accounts: <strong>HES-ADM-XXXXX</strong><br>
+                    • Student accounts: <strong>HES-STU-XXXXX</strong><br>
+                    • Parent accounts: <strong>HES-PAR-XXXXX</strong><br>
+                    • Principal accounts: <strong>HES-PRN-XXXXX</strong>
                 </div>
             </div>
 
@@ -108,7 +112,7 @@
                         <h3>Account Information</h3>
                     </div>
 
-                    <form method="POST" action="" id="accountForm">
+                    <form method="POST" action="#" id="accountForm">
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="fullname">Full Name <span>*</span></label>
@@ -136,7 +140,11 @@
                                     <option value="">Select Role</option>
                                     <option value="Teacher">Teacher (Faculty)</option>
                                     <option value="Registrar">Registrar</option>
+                                    <option value="Guidance">Guidance Counselor</option>
                                     <option value="Admin">Administrator</option>
+                                    <option value="Student">Student</option>
+                                    <option value="Parent">Parent / Guardian</option>
+                                    <option value="Principal">School Principal</option>
                                 </select>
                                 <div class="form-hint">
                                     <i class="fas fa-info-circle"></i>

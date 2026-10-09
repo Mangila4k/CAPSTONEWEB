@@ -703,3 +703,93 @@ body {
     display: block;
     margin-top: 2px;
 }
+
+/* ===== TEACHER SCHEDULE PRINT MEDIA QUERY (1-PAGE BOND PAPER FIT) ===== */
+@media print {
+    @page {
+        size: letter portrait;
+        margin: 6mm 8mm;
+    }
+
+    *, *:before, *:after {
+        box-sizing: border-box !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    html, body {
+        height: 100% !important;
+        max-height: 100% !important;
+        overflow: hidden !important;
+        background: #fff !important;
+        color: #000 !important;
+        font-size: 8pt !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .sidebar,
+    .btn-header-action,
+    .controls-card,
+    .stats-grid,
+    #alertContainer,
+    #chatbotContainer,
+    #chatbotToggle,
+    button,
+    nav {
+        display: none !important;
+    }
+
+    .app-container,
+    .main-content {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        page-break-after: avoid !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+
+    .page-header {
+        border-bottom: 2px solid #000 !important;
+        padding-bottom: 6px !important;
+        margin-bottom: 10px !important;
+    }
+
+    .page-header h1 {
+        font-size: 14pt !important;
+        color: #0b2b4a !important;
+    }
+
+    .schedule-item-card {
+        padding: 6px 10px !important;
+        border: 1px solid #000 !important;
+        box-shadow: none !important;
+        margin-bottom: 6px !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+
+    .timetable-grid-card {
+        display: block !important;
+        border: 1px solid #000 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+    }
+
+    .timetable-table th {
+        background: #0b2b4a !important;
+        color: #fff !important;
+        padding: 4px !important;
+        font-size: 7.5pt !important;
+    }
+
+    .timetable-table td {
+        padding: 4px !important;
+        height: 48px !important;
+        font-size: 7.2pt !important;
+    }
+}

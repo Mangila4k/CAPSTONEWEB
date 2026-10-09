@@ -286,9 +286,29 @@
     color: #92400e;
 }
 
+.preview-role-badge.guidance {
+    background: #e0e7ff;
+    color: #3730a3;
+}
+
 .preview-role-badge.admin {
     background: #1B2A4A;
     color: #ffffff;
+}
+
+.preview-role-badge.student {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.preview-role-badge.parent {
+    background: #f3e8ff;
+    color: #6b21a8;
+}
+
+.preview-role-badge.principal {
+    background: #ffedd5;
+    color: #9a3412;
 }
 
 .preview-email,

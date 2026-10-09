@@ -184,12 +184,15 @@ import { EmailNotificationService } from '../../js/email_service.js';
                 else status = 'Pending';
 
                 // Check missing documents
-                const hasForm138 = Boolean(student.form_138_url || doc.report_card || sDocs.some(d => d.document_type === 'form_138' || d.document_type === 'report_card'));
+                const isTransferee = String(enr.student_type || student.student_type || '').toLowerCase().includes('transfer') || String(enr.student_type || student.student_type || '').toLowerCase().includes('different');
+                const hasForm138 = Boolean(student.form_138_url || doc.report_card || sDocs.some(d => d.document_type === 'form_138' || d.document_type === 'report_card' || (d.title && d.title.toLowerCase().includes('report card'))));
                 const hasPsa = Boolean(student.psa_birth_url || doc.birth_certificate || sDocs.some(d => d.document_type === 'psa' || d.document_type === 'birth_certificate'));
                 const hasGoodMoral = Boolean(student.good_moral_url || doc.good_moral || sDocs.some(d => d.document_type === 'good_moral'));
+                const has2x2 = Boolean(student.two_by_two_picture_url || student.avatar_url || sDocs.some(d => d.document_type === 'two_by_two_picture' || (d.title && d.title.includes('2x2'))));
 
                 const missingList = [];
-                if (!hasForm138) missingList.push('Form 138 (Report Card)');
+                if (!has2x2) missingList.push('2x2 ID Picture');
+                if (!hasForm138) missingList.push('Report Card');
                 if (!hasPsa) missingList.push('PSA Birth Certificate');
                 if (!hasGoodMoral) missingList.push('Good Moral Certificate');
 
@@ -225,12 +228,15 @@ import { EmailNotificationService } from '../../js/email_service.js';
                     const gradeLevel = student.grade_level || 'Grade 11';
                     const strand = student.strand || (gradeLevel.includes('11') || gradeLevel.includes('12') ? 'TVL-ICT' : '');
                     
+                    const isTransferee = String(student.student_type || '').toLowerCase().includes('transfer') || String(student.student_type || '').toLowerCase().includes('different');
                     const hasForm138 = Boolean(student.form_138_url);
                     const hasPsa = Boolean(student.psa_birth_url);
                     const hasGoodMoral = Boolean(student.good_moral_url);
+                    const has2x2 = Boolean(student.two_by_two_picture_url || student.avatar_url);
 
                     const missingList = [];
-                    if (!hasForm138) missingList.push('Form 138 (Report Card)');
+                    if (!has2x2) missingList.push('2x2 ID Picture');
+                    if (!hasForm138) missingList.push('Report Card');
                     if (!hasPsa) missingList.push('PSA Birth Certificate');
                     if (!hasGoodMoral) missingList.push('Good Moral Certificate');
 

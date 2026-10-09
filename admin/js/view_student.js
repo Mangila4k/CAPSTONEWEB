@@ -163,6 +163,12 @@ import { supabase } from '../../supabase/config.js';
 
             currentStudent = student;
 
+            // Update Edit Student button URL in header action bar
+            const editBtn = document.getElementById('editStudentHeaderBtn');
+            if (editBtn) {
+                editBtn.href = `edit_student.html?id=${encodeURIComponent(student.id)}`;
+            }
+
             // 2. Fetch Enrollments for this student
             let enrollments = [];
             try {
@@ -182,6 +188,7 @@ import { supabase } from '../../supabase/config.js';
             renderPersonalInfo();
             renderCurrentEnrollment();
             renderHistory();
+            await renderStudentViolations();
 
         } catch (error) {
             console.error('❌ Error loading student details:', error);
@@ -436,32 +443,268 @@ import { supabase } from '../../supabase/config.js';
     }
 
     // ============================================
-    // DELETE STUDENT
+    // RENDER GUIDANCE & DISCIPLINARY RECORDS
     // ============================================
+    async function renderStudentViolations() {
+        const container = document.getElementById('studentViolationsContainer');
+        if (!container || !currentStudent) return;
 
-    window.deleteStudent = async function() {
+        try {
+            let query = supabase.from('student_violations').select('*');
+            if (currentStudent.id && currentStudent.lrn) {
+                query = query.or(`student_id.eq.${currentStudent.id},lrn.eq.${currentStudent.lrn}`);
+            } else if (currentStudent.id) {
+                query = query.eq('student_id', currentStudent.id);
+            } else if (currentStudent.lrn) {
+                query = query.eq('lrn', currentStudent.lrn);
+            }
+
+            const { data: vList, error: vErr } = await query.order('incident_date', { ascending: false });
+
+            if (vErr || !vList || vList.length === 0) {
+                container.innerHTML = `
+                    <div style="background: #ecfdf5; border: 1.5px solid #a7f3d0; border-radius: 10px; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <i class="fas fa-check-circle" style="color: #10b981; font-size: 24px;"></i>
+                            <div>
+                                <strong style="color: #065f46; font-size: 14px; display: block;">Clean Disciplinary Record</strong>
+                                <span style="font-size: 12.5px; color: #047857;">This student has no recorded offenses or pending guidance referrals.</span>
+                            </div>
+                        </div>
+                        <a href="guidance_violations.html" style="padding: 6px 14px; border-radius: 6px; background: #0b2b4a; color: #fff; text-decoration: none; font-size: 12px; font-weight: 600;">
+                            <i class="fas fa-plus"></i> Log Violation
+                        </a>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `
+                <table class="enrollments-table" style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                    <thead>
+                        <tr style="background: #f8fafc; border-bottom: 1.5px solid #e2e8f0;">
+                            <th style="padding: 10px 14px; text-align: left;">Incident / Violation</th>
+                            <th style="padding: 10px 14px; text-align: left;">Offense Level</th>
+                            <th style="padding: 10px 14px; text-align: left;">Date</th>
+                            <th style="padding: 10px 14px; text-align: left;">Guidance Action Taken</th>
+                            <th style="padding: 10px 14px; text-align: left;">Status</th>
+                            <th style="padding: 10px 14px; text-align: right;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            vList.forEach(v => {
+                const rawStatus = (v.status || 'Pending').toLowerCase();
+                let statusBadgeStyle = 'background: #f1f5f9; color: #475569;';
+                if (rawStatus === 'resolved') statusBadgeStyle = 'background: #d1fae5; color: #065f46;';
+                else if (rawStatus.includes('counseling')) statusBadgeStyle = 'background: #e0e7ff; color: #3730a3;';
+                else if (rawStatus.includes('progress')) statusBadgeStyle = 'background: #fef3c7; color: #854d0e;';
+
+                const formattedDate = v.incident_date ? new Date(v.incident_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A';
+
+                html += `
+                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                        <td style="padding: 12px 14px;">
+                            <strong style="color: #0f172a; display: block;">${v.violation_title || 'Incident'}</strong>
+                            <small style="color: #64748b;">${v.violation_category || 'General'}</small>
+                        </td>
+                        <td style="padding: 12px 14px;">
+                            <span style="padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; background: #dbeafe; color: #1e40af;">
+                                ${v.offense_level || '1st Offense'}
+                            </span>
+                        </td>
+                        <td style="padding: 12px 14px; color: #475569;">${formattedDate}</td>
+                        <td style="padding: 12px 14px;">
+                            <span style="font-weight: 600; color: #0b2b4a;">${v.action_taken || 'Pending Review'}</span>
+                            ${v.sanction_details ? `<small style="display: block; color: #64748b;">${v.sanction_details}</small>` : ''}
+                        </td>
+                        <td style="padding: 12px 14px;">
+                            <span style="padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; ${statusBadgeStyle}">
+                                ${v.status || 'Pending'}
+                            </span>
+                        </td>
+                        <td style="padding: 12px 14px; text-align: right;">
+                            <a href="guidance_violations.html" style="padding: 5px 10px; border-radius: 6px; background: #1B2A4A; color: #fff; text-decoration: none; font-size: 11.5px; font-weight: 600;">
+                                <i class="fas fa-gavel"></i> Update Action
+                            </a>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `</tbody></table>`;
+            container.innerHTML = html;
+
+        } catch (e) {
+            console.warn('Error loading student violations:', e);
+            container.innerHTML = `<p style="color: #64748b; font-size: 12px;">No guidance records found.</p>`;
+        }
+    }
+
+    // ============================================
+    // DELETE STUDENT (WITH MANDATORY REASON PROMPT & TRANSFER DESTINATION)
+    // ============================================
+    window.openDeleteStudentModal = function() {
         if (!currentStudent) return;
+        const modal = document.getElementById('modalDeleteStudent');
+        const targetName = document.getElementById('deleteTargetStudentName');
         const sName = `${currentStudent.first_name || ''} ${currentStudent.last_name || ''}`.trim() || 'this student';
 
-        if (!confirm(`Are you sure you want to delete ${sName}? This action cannot be undone and will remove associated records.`)) {
+        if (targetName) targetName.textContent = sName;
+
+        // Reset or set defaults
+        const effDateInput = document.getElementById('effectiveDateView');
+        if (effDateInput) {
+            effDateInput.value = new Date().toISOString().split('T')[0];
+        }
+
+        const catSelect = document.getElementById('deleteReasonCategory');
+        const transferGroup = document.getElementById('transferDetailsGroupView');
+        const destInput = document.getElementById('destinationSchoolView');
+        if (catSelect && transferGroup) {
+            const isTransfer = catSelect.value === 'Transferred to Another School';
+            transferGroup.style.display = isTransfer ? 'block' : 'none';
+            if (destInput) {
+                if (isTransfer) destInput.setAttribute('required', 'required');
+                else destInput.removeAttribute('required');
+            }
+        }
+
+        if (modal) modal.style.display = 'flex';
+    };
+
+    window.closeDeleteStudentModal = function() {
+        const modal = document.getElementById('modalDeleteStudent');
+        if (modal) modal.style.display = 'none';
+        const notes = document.getElementById('deleteReasonNotes');
+        if (notes) notes.value = '';
+        const destInput = document.getElementById('destinationSchoolView');
+        if (destInput) destInput.value = '';
+    };
+
+    // Listen for reason category change to toggle transfer destination school field
+    const deleteReasonCatSelect = document.getElementById('deleteReasonCategory');
+    const transferDetailsGroupView = document.getElementById('transferDetailsGroupView');
+    const destinationSchoolView = document.getElementById('destinationSchoolView');
+
+    if (deleteReasonCatSelect && transferDetailsGroupView) {
+        deleteReasonCatSelect.addEventListener('change', function() {
+            if (this.value === 'Transferred to Another School') {
+                transferDetailsGroupView.style.display = 'block';
+                if (destinationSchoolView) destinationSchoolView.setAttribute('required', 'required');
+            } else {
+                transferDetailsGroupView.style.display = 'none';
+                if (destinationSchoolView) destinationSchoolView.removeAttribute('required');
+            }
+        });
+    }
+
+    window.confirmDeleteWithReason = async function() {
+        if (!currentStudent) return;
+
+        const category = document.getElementById('deleteReasonCategory')?.value || 'Transferred to Another School';
+        const destSchool = document.getElementById('destinationSchoolView')?.value.trim() || '';
+        const effDate = document.getElementById('effectiveDateView')?.value || new Date().toISOString().split('T')[0];
+        const notes = document.getElementById('deleteReasonNotes')?.value.trim() || '';
+        const removalMode = document.querySelector('input[name="removalModeView"]:checked')?.value || 'archive';
+
+        if (category === 'Transferred to Another School' && !destSchool) {
+            alert('Please specify the destination school or receiving institution where the student is transferring.');
+            document.getElementById('destinationSchoolView')?.focus();
             return;
         }
 
+        const sName = `${currentStudent.first_name || ''} ${currentStudent.last_name || ''}`.trim() || 'this student';
+        const sLrn = currentStudent.lrn || 'N/A';
+        const confirmBtn = document.getElementById('btnConfirmDeleteWithReason');
+
+        if (confirmBtn) {
+            confirmBtn.disabled = true;
+            confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+        }
+
         try {
-            showAlert('Deleting student record...', 'info');
+            showAlert('Processing removal record and registering audit log...', 'info');
 
-            await supabase
-                .from('students')
-                .delete()
-                .eq('id', currentStudent.id);
+            // 1. If Transfer, record in transferees registry
+            if (category === 'Transferred to Another School') {
+                try {
+                    await supabase.from('transferees').insert([{
+                        student_id: currentStudent.id,
+                        type: 'Transferred Out',
+                        from_school: 'Placido L. Señor National High School',
+                        to_school: destSchool,
+                        reason: notes ? `${category}: ${notes}` : category,
+                        status: 'Transferred',
+                        requested_date: new Date(effDate).toISOString(),
+                        created_at: new Date().toISOString()
+                    }]);
+                    console.log('✅ Formally recorded to transferees registry');
+                } catch (tErr) {
+                    console.warn('Transferees table insert warning:', tErr);
+                }
+            }
 
-            showAlert('✅ Student deleted successfully!', 'success');
+            // 2. Perform Removal or Archival
+            if (removalMode === 'permanent') {
+                const { error: delErr } = await supabase
+                    .from('students')
+                    .delete()
+                    .eq('id', currentStudent.id);
+
+                if (delErr) throw delErr;
+
+                if (currentStudent.user_id) {
+                    try {
+                        await supabase.from('users').delete().eq('id', currentStudent.user_id);
+                    } catch (uDelErr) {
+                        console.warn('User account delete warning:', uDelErr);
+                    }
+                }
+            } else {
+                // Archive / Mark as Transferred Out (Safe soft delete preserving records)
+                const { error: updErr } = await supabase
+                    .from('students')
+                    .update({
+                        documents_status: `Archived: ${category}${destSchool ? ' -> ' + destSchool : ''}`,
+                        student_type: category.includes('Transfer') ? 'Transferee' : 'Inactive',
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', currentStudent.id);
+
+                if (updErr) {
+                    console.warn('Update student status warning:', updErr);
+                }
+            }
+
+            // 3. Log to activity_logs table
+            try {
+                await supabase.from('activity_logs').insert([{
+                    user_id: currentUser?.id && currentUser.id.length === 36 ? currentUser.id : null,
+                    role: 'admin',
+                    action: `Student ${removalMode === 'permanent' ? 'Deleted' : 'Archived / Transferred Out'}`,
+                    details: `Student: ${sName} (LRN: ${sLrn}) | Reason: ${category}${destSchool ? ' | Destination: ' + destSchool : ''}${notes ? ' | Notes: ' + notes : ''} | Mode: ${removalMode === 'permanent' ? 'Permanent Delete' : 'Archived / Inactive'} | Date: ${effDate}`,
+                    timestamp: new Date().toISOString()
+                }]);
+            } catch(logErr) {
+                console.warn('Activity log fallback:', logErr);
+            }
+
+            window.closeDeleteStudentModal();
+            showAlert(`✅ Student "${sName}" ${removalMode === 'permanent' ? 'permanently removed' : 'marked as ' + (category.includes('Transfer') ? 'Transferred Out' : 'Inactive')} successfully! Reason recorded: "${category}".`, 'success');
+
             setTimeout(() => {
                 window.location.href = 'student.html';
-            }, 1200);
+            }, 1500);
+
         } catch (error) {
-            console.error('❌ Error deleting student:', error);
-            showAlert('Failed to delete student: ' + error.message, 'error');
+            console.error('❌ Error removing student with reason:', error);
+            showAlert('Failed to remove student: ' + error.message, 'error');
+            if (confirmBtn) {
+                confirmBtn.disabled = false;
+                confirmBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Confirm Removal';
+            }
         }
     };
 

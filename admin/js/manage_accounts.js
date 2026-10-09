@@ -54,6 +54,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         switch((role || '').toLowerCase()) {
             case 'admin': return '#dc3545';
             case 'registrar': return '#fd7e14';
+            case 'guidance': return '#1D4ED8';
             case 'teacher': return '#28a745';
             case 'student': return '#007bff';
             case 'parent': return '#8b5cf6';
@@ -115,6 +116,12 @@ document.addEventListener('DOMContentLoaded', async function() {
                     idNumber = `HES-ADM-${u.id.substring(0, 5).toUpperCase()}`;
                 } else if (roleLower === 'registrar') {
                     idNumber = `HES-RGR-${u.id.substring(0, 5).toUpperCase()}`;
+                } else if (roleLower === 'guidance') {
+                    idNumber = `HES-GDC-${u.id.substring(0, 5).toUpperCase()}`;
+                } else if (roleLower === 'parent') {
+                    idNumber = `HES-PAR-${u.id.substring(0, 5).toUpperCase()}`;
+                } else if (roleLower === 'principal') {
+                    idNumber = `HES-PRN-${u.id.substring(0, 5).toUpperCase()}`;
                 } else {
                     idNumber = `HES-${(u.role || 'USR').substring(0, 3).toUpperCase()}-${u.id.substring(0, 5).toUpperCase()}`;
                 }

@@ -70,6 +70,9 @@ import { supabase } from '../../supabase/config.js';
     let sectionData = null;
     let enrolledStudents = [];
     let classSchedules = [];
+    let allSubjects = [];
+    let allTeachers = [];
+    let currentUploadedSchedule = null;
     let sectionAttendanceState = {}; // student_id -> { status, timeIn, timeOut, remarks }
     let isWeekendSelected = false;
 
@@ -252,6 +255,7 @@ import { supabase } from '../../supabase/config.js';
 
             // 3. Load schedules for this section
             await loadSectionSchedules(currentSectionId);
+            setupScheduleHandlers();
 
             // 4. Load attendance for the active date
             handleDateSelectionChange();
@@ -408,35 +412,196 @@ import { supabase } from '../../supabase/config.js';
     }
 
     // ============================================
-    // LOAD SECTION SCHEDULES
+    // LOAD SECTION SCHEDULES & DOCUMENT UPLOAD
     // ============================================
+
+    function formatTimeDisplay(t) {
+        if (!t) return '--:--';
+        try {
+            if (t.toUpperCase().includes('AM') || t.toUpperCase().includes('PM')) return t;
+            const parts = t.split(':');
+            const h = parseInt(parts[0], 10);
+            const m = parts[1] || '00';
+            const period = h >= 12 ? 'PM' : 'AM';
+            const h12 = h % 12 || 12;
+            return `${String(h12).padStart(2, '0')}:${m} ${period}`;
+        } catch(e) {
+            return t;
+        }
+    }
 
     async function loadSectionSchedules(sectionId) {
         try {
-            const { data } = await supabase
-                .from('class_schedules')
-                .select('*')
-                .eq('section_id', sectionId);
+            // 1. Load subjects and teachers for period dropdown & mapping
+            const [{ data: sRows }, { data: subjRows }, { data: tchrRows }] = await Promise.all([
+                supabase.from('schedules').select('*').eq('section_id', sectionId),
+                supabase.from('subjects').select('*').order('name', { ascending: true }),
+                supabase.from('teachers').select('id, employee_id, user_id, users(first_name, last_name, email)')
+            ]);
 
-            if (data && data.length > 0) {
-                classSchedules = data;
+            allSubjects = subjRows || [];
+            allTeachers = tchrRows || [];
+            populatePeriodFormSelects();
+
+            // 2. Map schedules
+            if (sRows && sRows.length > 0) {
+                // Sort by day order and start time
+                const dayWeight = { 'Monday': 1, 'Tuesday': 2, 'Wednesday': 3, 'Thursday': 4, 'Friday': 5, 'Saturday': 6, 'Sunday': 7 };
+                classSchedules = sRows.sort((a, b) => {
+                    const dDiff = (dayWeight[a.day] || 99) - (dayWeight[b.day] || 99);
+                    if (dDiff !== 0) return dDiff;
+                    return (a.start_time || '').localeCompare(b.start_time || '');
+                }).map(s => {
+                    const sub = allSubjects.find(sub => sub.id === s.subject_id);
+                    const tch = allTeachers.find(t => t.id === s.teacher_id || t.user_id === s.teacher_id);
+                    const teacherName = tch?.users ? `${tch.users.first_name || ''} ${tch.users.last_name || ''}`.trim() : (s.teacher_name || 'Faculty');
+                    return {
+                        id: s.id,
+                        section_id: s.section_id,
+                        subject_id: s.subject_id,
+                        subject: sub ? (sub.name || sub.code) : (s.subject || s.subject_name || 'General Subject'),
+                        subject_code: sub?.code || '',
+                        teacher_id: s.teacher_id,
+                        teacher: teacherName,
+                        day: s.day || 'Monday',
+                        start_time: s.start_time || '07:30:00',
+                        end_time: s.end_time || '08:30:00',
+                        room: s.room || 'Room 101'
+                    };
+                });
             } else {
-                classSchedules = [
-                    { id: '1', day: 'Monday', subject: 'General Mathematics', time: '07:30 AM - 08:30 AM', room: 'Room 204' },
-                    { id: '2', day: 'Tuesday', subject: 'Empowerment Technologies', time: '08:30 AM - 09:30 AM', room: 'Computer Lab 1' },
-                    { id: '3', day: 'Wednesday', subject: 'Earth and Life Science', time: '09:45 AM - 10:45 AM', room: 'Science Lab' },
-                    { id: '4', day: 'Thursday', subject: 'Oral Communication', time: '10:45 AM - 11:45 AM', room: 'Room 204' },
-                    { id: '5', day: 'Friday', subject: 'Physical Education and Health', time: '01:00 PM - 02:00 PM', room: 'Gymnasium' }
-                ];
+                classSchedules = [];
             }
 
             if (totalSubjects) totalSubjects.textContent = classSchedules.length;
-            if (subjectsTaught) subjectsTaught.textContent = classSchedules.length > 0 ? 2 : 0;
+            if (subjectsTaught) subjectsTaught.textContent = classSchedules.length > 0 ? new Set(classSchedules.map(c => c.subject)).size : 0;
             if (scheduleCountBadge) scheduleCountBadge.textContent = `${classSchedules.length} classes`;
 
             renderSchedule(classSchedules);
+
+            // 3. Load uploaded official schedule document
+            loadUploadedScheduleDoc(sectionId);
+
         } catch (e) {
             console.warn('Schedule load notice:', e);
+        }
+    }
+
+    function populatePeriodFormSelects() {
+        const subSelect = document.getElementById('periodSubjectSelect');
+        const tchSelect = document.getElementById('periodTeacherSelect');
+
+        if (subSelect && allSubjects.length > 0) {
+            subSelect.innerHTML = '<option value="">Select Subject...</option>' + 
+                allSubjects.map(s => `<option value="${s.id}">${s.name || s.code} (${s.code || 'Core'})</option>`).join('');
+        }
+
+        if (tchSelect && allTeachers.length > 0) {
+            tchSelect.innerHTML = '<option value="">Assign Teacher (Optional)...</option>' +
+                allTeachers.map(t => {
+                    const name = t.users ? `${t.users.first_name || ''} ${t.users.last_name || ''}`.trim() : (t.employee_id || 'Teacher');
+                    return `<option value="${t.id}">${name} (${t.employee_id || 'Faculty'})</option>`;
+                }).join('');
+        }
+    }
+
+    async function loadUploadedScheduleDoc(sectionId) {
+        const secName = sectionData?.name || '';
+        let docData = null;
+
+        // 1. Try from database section record first
+        if (sectionData?.schedule_doc_url) {
+            const isGDocs = sectionData.schedule_doc_type === 'google_docs' || (sectionData.schedule_doc_url || '').includes('docs.google.com') || (sectionData.schedule_doc_url || '').includes('drive.google.com');
+            const isImg = (sectionData.schedule_doc_type || '').startsWith('image/') || /\.(png|jpe?g|webp|gif)$/i.test(sectionData.schedule_doc_name || '') || (sectionData.schedule_doc_url && sectionData.schedule_doc_url.startsWith('data:image/'));
+
+            docData = {
+                sectionId: currentSectionId,
+                sectionName: secName,
+                fileName: sectionData.schedule_doc_name || (isGDocs ? `${secName} Student Load (Google Docs)` : isImg ? `${secName}_Student_Load.png` : 'Student_Load.pdf'),
+                fileType: sectionData.schedule_doc_type || (isGDocs ? 'google_docs' : isImg ? 'image/png' : 'application/pdf'),
+                fileData: sectionData.schedule_doc_url,
+                url: sectionData.schedule_doc_url,
+                isGoogleDocs: isGDocs,
+                isImage: isImg,
+                uploadDate: sectionData.schedule_doc_updated_at || new Date().toISOString(),
+                uploadedBy: sectionData.schedule_doc_uploaded_by || 'Teacher'
+            };
+        } else {
+            // 2. Fallback to localStorage
+            const raw = localStorage.getItem('hes_section_schedule_' + sectionId) ||
+                        (secName ? localStorage.getItem('hes_section_schedule_' + secName.trim().toUpperCase()) : null);
+            if (raw) {
+                try {
+                    docData = JSON.parse(raw);
+                } catch(e) {}
+            }
+        }
+
+        const uploadedBox = document.getElementById('uploadedScheduleBox');
+        const dropzone = document.getElementById('scheduleUploadDropzone');
+        const activeBadge = document.getElementById('docActiveBadge');
+        const fileNameEl = document.getElementById('docFileName');
+        const metaEl = document.getElementById('docMetaInfo');
+        const iconBox = document.getElementById('docIconBox');
+        const openGDocBtn = document.getElementById('btnOpenGDocLink');
+        const previewBtn = document.getElementById('btnPreviewUploadedDoc');
+        const downloadBtn = document.getElementById('btnDownloadUploadedDoc');
+
+        if (docData && (docData.fileData || docData.url)) {
+            currentUploadedSchedule = docData;
+            const isGDocs = docData.isGoogleDocs || docData.fileType === 'google_docs' || (docData.url && (docData.url.includes('docs.google.com') || docData.url.includes('drive.google.com')));
+            const isImg = docData.isImage || (docData.fileType || '').startsWith('image/') || /\.(png|jpe?g|webp|gif)$/i.test(docData.fileName || '') || (docData.fileData && docData.fileData.startsWith('data:image/'));
+
+            if (uploadedBox) uploadedBox.style.display = 'block';
+            if (dropzone) dropzone.style.display = 'none';
+            if (activeBadge) {
+                activeBadge.style.display = 'inline-flex';
+                activeBadge.innerHTML = isGDocs 
+                    ? '<i class="fab fa-google-drive"></i> Active Google Doc' 
+                    : isImg 
+                        ? '<i class="fas fa-file-image"></i> Active Schedule Image' 
+                        : '<i class="fas fa-file-pdf"></i> Active PDF Document';
+                activeBadge.style.background = isGDocs ? '#eff6ff' : isImg ? '#ecfdf5' : '#fef2f2';
+                activeBadge.style.color = isGDocs ? '#1d4ed8' : isImg ? '#047857' : '#b91c1c';
+                activeBadge.style.borderColor = isGDocs ? '#bfdbfe' : isImg ? '#a7f3d0' : '#fecaca';
+            }
+            if (fileNameEl) fileNameEl.textContent = docData.fileName || (isGDocs ? `${secName} Student Load (Google Docs)` : isImg ? `${secName}_Student_Load.png` : 'Student_Load.pdf');
+            if (metaEl) {
+                const dateStr = docData.uploadDate ? new Date(docData.uploadDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Recently';
+                const sizeStr = docData.fileSizeFormatted ? ` • ${docData.fileSizeFormatted}` : '';
+                const byStr = docData.uploadedBy ? `Assigned by ${docData.uploadedBy}` : 'Assigned by Teacher';
+                metaEl.textContent = `${isGDocs ? 'Google Docs Student Load' : isImg ? 'Schedule Image' : 'PDF Document'} • Sent on ${dateStr}${sizeStr} • ${byStr}`;
+            }
+            if (iconBox) {
+                if (isGDocs) {
+                    iconBox.innerHTML = '<i class="fab fa-google-drive" style="color: #4285F4; font-size: 1.6rem;"></i>';
+                } else if (isImg) {
+                    iconBox.innerHTML = '<i class="fas fa-file-image text-success"></i>';
+                } else {
+                    iconBox.innerHTML = '<i class="fas fa-file-pdf text-danger"></i>';
+                }
+            }
+
+            if (openGDocBtn) {
+                if (isGDocs) {
+                    openGDocBtn.style.display = 'inline-flex';
+                    openGDocBtn.href = docData.url || docData.fileData;
+                } else {
+                    openGDocBtn.style.display = 'none';
+                }
+            }
+            if (downloadBtn) {
+                downloadBtn.style.display = isGDocs ? 'none' : 'inline-flex';
+            }
+            if (previewBtn) {
+                previewBtn.style.display = 'inline-flex';
+            }
+        } else {
+            currentUploadedSchedule = null;
+            if (uploadedBox) uploadedBox.style.display = 'none';
+            if (dropzone) dropzone.style.display = 'block';
+            if (activeBadge) activeBadge.style.display = 'none';
+            if (openGDocBtn) openGDocBtn.style.display = 'none';
         }
     }
 
@@ -446,27 +611,489 @@ import { supabase } from '../../supabase/config.js';
             scheduleList.innerHTML = `
                 <div class="no-data">
                     <i class="fas fa-calendar-times"></i>
-                    <h3>No Schedule Yet</h3>
-                    <p>No classes scheduled for this section.</p>
+                    <h3>No Timetable Periods Yet</h3>
+                    <p>No individual class periods have been added for this section. Click "+ Add Class Period" or send the student load schedule image/document above.</p>
                 </div>
             `;
             return;
         }
 
         scheduleList.innerHTML = schedules.map(item => `
-            <div class="schedule-item" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; border-bottom: 1px solid var(--gray-200); background: #fff;">
-                <div>
-                    <div style="font-weight: 700; color: var(--primary); font-size: 0.95rem;">${item.subject || item.subject_name || 'Subject'}</div>
-                    <div style="color: var(--gray-500); font-size: 0.85rem; margin-top: 3px;">
-                        <i class="fas fa-clock"></i> ${item.time || (item.start_time + ' - ' + item.end_time) || 'N/A'} • <i class="fas fa-door-open"></i> ${item.room || 'Room 204'}
+            <div class="schedule-item" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; border-bottom: 1px solid var(--gray-200); background: #fff; transition: background 0.2s;">
+                <div style="flex: 1;">
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        <span style="font-weight: 700; color: var(--primary); font-size: 0.96rem;">${item.subject || 'Subject'}</span>
+                        ${item.subject_code ? `<span class="badge" style="background: rgba(11,43,74,0.08); color: var(--primary); font-size: 0.72rem; padding: 2px 8px; border-radius: 4px;">${item.subject_code}</span>` : ''}
+                    </div>
+                    <div style="color: var(--gray-500); font-size: 0.85rem; margin-top: 4px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+                        <span><i class="fas fa-clock text-primary"></i> ${formatTimeDisplay(item.start_time)} - ${formatTimeDisplay(item.end_time)}</span>
+                        <span><i class="fas fa-door-open text-primary"></i> ${item.room || 'Room 101'}</span>
+                        <span><i class="fas fa-chalkboard-teacher text-primary"></i> ${item.teacher || 'Faculty'}</span>
                     </div>
                 </div>
-                <span class="badge" style="background: var(--gray-100); color: var(--primary); font-weight: 600; padding: 6px 12px; border-radius: 8px;">
-                    ${item.day || item.day_name || 'Weekday'}
-                </span>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span class="badge" style="background: var(--gray-100); color: var(--primary); font-weight: 600; padding: 6px 12px; border-radius: 8px;">
+                        ${item.day}
+                    </span>
+                    <button type="button" onclick="window.editSchedulePeriod('${item.id}')" title="Edit Period" style="background: #fff; border: 1px solid var(--gray-300); color: var(--primary); width: 32px; height: 32px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button type="button" onclick="window.deleteSchedulePeriod('${item.id}')" title="Delete Period" style="background: #fff; border: 1px solid #fca5a5; color: #ef4444; width: 32px; height: 32px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
             </div>
         `).join('');
     }
+
+    // Schedule actions: Upload, Edit, Delete, View, Download, Print
+    function setupScheduleHandlers() {
+        const fileInput = document.getElementById('scheduleFileInput');
+        const triggerBtn = document.getElementById('btnTriggerUpload');
+        const dropzone = document.getElementById('areaFileDropzone');
+        const replaceBtn = document.getElementById('btnReplaceDoc');
+        const deleteBtn = document.getElementById('btnDeleteDoc');
+        const previewBtn = document.getElementById('btnPreviewUploadedDoc');
+        const downloadBtn = document.getElementById('btnDownloadUploadedDoc');
+        const addPeriodBtn = document.getElementById('btnAddPeriodBtn');
+        const modalPeriod = document.getElementById('modalSchedulePeriod');
+        const closePeriodBtn = document.getElementById('btnClosePeriodModal');
+        const cancelPeriodBtn = document.getElementById('btnCancelPeriodModal');
+        const formPeriod = document.getElementById('formSchedulePeriod');
+        const modalDocViewer = document.getElementById('modalDocViewer');
+        const closeDocViewer = document.getElementById('btnCloseDocViewer');
+        const printModalDoc = document.getElementById('btnPrintModalDoc');
+
+        // Method Toggles: File vs Google Docs
+        const btnToggleMethodFile = document.getElementById('btnToggleMethodFile');
+        const btnToggleMethodGDocs = document.getElementById('btnToggleMethodGDocs');
+        const areaFileDropzone = document.getElementById('areaFileDropzone');
+        const areaGDocsInput = document.getElementById('areaGDocsInput');
+        const gdocsUrlInput = document.getElementById('gdocsUrlInput');
+        const btnSaveGDocsLink = document.getElementById('btnSaveGDocsLink');
+
+        if (btnToggleMethodFile && btnToggleMethodGDocs) {
+            btnToggleMethodFile.addEventListener('click', () => {
+                btnToggleMethodFile.style.background = 'var(--primary)';
+                btnToggleMethodFile.style.color = '#fff';
+                btnToggleMethodFile.style.borderColor = 'var(--primary)';
+                btnToggleMethodGDocs.style.background = '#fff';
+                btnToggleMethodGDocs.style.color = 'var(--gray-700)';
+                btnToggleMethodGDocs.style.borderColor = 'var(--gray-300)';
+                if (areaFileDropzone) areaFileDropzone.style.display = 'block';
+                if (areaGDocsInput) areaGDocsInput.style.display = 'none';
+            });
+
+            btnToggleMethodGDocs.addEventListener('click', () => {
+                btnToggleMethodGDocs.style.background = '#1a73e8';
+                btnToggleMethodGDocs.style.color = '#fff';
+                btnToggleMethodGDocs.style.borderColor = '#1a73e8';
+                btnToggleMethodFile.style.background = '#fff';
+                btnToggleMethodFile.style.color = 'var(--gray-700)';
+                btnToggleMethodFile.style.borderColor = 'var(--gray-300)';
+                if (areaFileDropzone) areaFileDropzone.style.display = 'none';
+                if (areaGDocsInput) areaGDocsInput.style.display = 'block';
+                if (gdocsUrlInput) gdocsUrlInput.focus();
+            });
+        }
+
+        if (btnSaveGDocsLink && gdocsUrlInput) {
+            btnSaveGDocsLink.addEventListener('click', async () => {
+                const url = gdocsUrlInput.value.trim();
+                if (!url) {
+                    alert('Please enter a valid Google Docs or Google Drive link.');
+                    return;
+                }
+                if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                    alert('Please enter a full URL starting with https://');
+                    return;
+                }
+
+                btnSaveGDocsLink.disabled = true;
+                btnSaveGDocsLink.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Attaching...';
+
+                const secName = sectionData?.name || 'Section';
+                const teacherName = (sessionUser.firstName ? `${sessionUser.firstName} ${sessionUser.lastName || ''}`.trim() : 'Teacher');
+
+                const payload = {
+                    sectionId: currentSectionId,
+                    sectionName: secName,
+                    fileName: `${secName} Student Load (Google Docs)`,
+                    fileType: 'google_docs',
+                    url: url,
+                    fileData: url,
+                    isGoogleDocs: true,
+                    uploadDate: new Date().toISOString(),
+                    uploadedBy: teacherName
+                };
+
+                // 1. Update in Supabase sections table
+                try {
+                    await supabase.from('sections').update({
+                        schedule_doc_url: url,
+                        schedule_doc_name: `${secName} Student Load (Google Docs)`,
+                        schedule_doc_type: 'google_docs',
+                        schedule_doc_uploaded_by: teacherName,
+                        schedule_doc_updated_at: new Date().toISOString()
+                    }).eq('id', currentSectionId);
+                    if (sectionData) {
+                        sectionData.schedule_doc_url = url;
+                        sectionData.schedule_doc_name = `${secName} Student Load (Google Docs)`;
+                        sectionData.schedule_doc_type = 'google_docs';
+                        sectionData.schedule_doc_uploaded_by = teacherName;
+                    }
+                } catch(err) {
+                    console.warn('Database sections update error:', err);
+                }
+
+                // 2. Save to localStorage
+                localStorage.setItem('hes_section_schedule_' + currentSectionId, JSON.stringify(payload));
+                localStorage.setItem('hes_section_schedule_' + secName.trim().toUpperCase(), JSON.stringify(payload));
+                localStorage.setItem('hes_section_schedule_last_sync', Date.now().toString());
+
+                // 3. Activity log
+                try {
+                    await supabase.from('activity_logs').insert([{
+                        user_id: sessionUser.id,
+                        role: 'teacher',
+                        action: 'Section Student Load Shared',
+                        details: `Teacher ${teacherName} shared official Google Docs student load for Section ${secName}.`,
+                        timestamp: new Date().toISOString()
+                    }]);
+                } catch(e) {}
+
+                btnSaveGDocsLink.disabled = false;
+                btnSaveGDocsLink.innerHTML = '<i class="fas fa-link"></i> Attach Google Doc';
+                gdocsUrlInput.value = '';
+
+                loadUploadedScheduleDoc(currentSectionId);
+                showAlert(`✅ Official Google Docs student load linked successfully! Students in Section ${secName} can now access and view it.`, 'success');
+            });
+        }
+
+        if (triggerBtn && fileInput) triggerBtn.addEventListener('click', () => fileInput.click());
+        if (dropzone && fileInput) {
+            dropzone.addEventListener('click', (e) => {
+                if (e.target !== triggerBtn) fileInput.click();
+            });
+            dropzone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropzone.style.borderColor = 'var(--primary)';
+                dropzone.style.background = '#f0fdf4';
+            });
+            dropzone.addEventListener('dragleave', () => {
+                dropzone.style.borderColor = 'var(--gray-300)';
+                dropzone.style.background = 'var(--gray-50)';
+            });
+            dropzone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropzone.style.borderColor = 'var(--gray-300)';
+                dropzone.style.background = 'var(--gray-50)';
+                if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                    processScheduleFile(e.dataTransfer.files[0]);
+                }
+            });
+        }
+        if (fileInput) {
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files && e.target.files[0]) {
+                    processScheduleFile(e.target.files[0]);
+                }
+            });
+        }
+        if (replaceBtn && fileInput) replaceBtn.addEventListener('click', () => fileInput.click());
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', async () => {
+                if (!confirm('Are you sure you want to remove the uploaded student load schedule for this section?')) return;
+                const secName = sectionData?.name || '';
+                try {
+                    await supabase.from('sections').update({
+                        schedule_doc_url: null,
+                        schedule_doc_name: null,
+                        schedule_doc_type: null,
+                        schedule_doc_uploaded_by: null,
+                        schedule_doc_updated_at: new Date().toISOString()
+                    }).eq('id', currentSectionId);
+                    if (sectionData) {
+                        sectionData.schedule_doc_url = null;
+                        sectionData.schedule_doc_name = null;
+                        sectionData.schedule_doc_type = null;
+                    }
+                } catch(e) {}
+
+                localStorage.removeItem('hes_section_schedule_' + currentSectionId);
+                if (secName) localStorage.removeItem('hes_section_schedule_' + secName.trim().toUpperCase());
+                localStorage.setItem('hes_section_schedule_last_sync', Date.now().toString());
+
+                loadUploadedScheduleDoc(currentSectionId);
+                showAlert('Student load schedule removed successfully.', 'success');
+            });
+        }
+        if (previewBtn) previewBtn.addEventListener('click', () => openDocViewer(currentUploadedSchedule));
+        if (downloadBtn) downloadBtn.addEventListener('click', () => downloadScheduleDoc(currentUploadedSchedule));
+        if (closeDocViewer && modalDocViewer) closeDocViewer.addEventListener('click', () => modalDocViewer.style.display = 'none');
+        if (printModalDoc) printModalDoc.addEventListener('click', () => printScheduleDoc(currentUploadedSchedule));
+
+        // Add / Edit Period modal
+        if (addPeriodBtn && modalPeriod) {
+            addPeriodBtn.addEventListener('click', () => {
+                document.getElementById('editPeriodId').value = '';
+                document.getElementById('modalPeriodTitle').innerHTML = '<i class="fas fa-calendar-plus"></i> Add Class Period';
+                formPeriod.reset();
+                modalPeriod.style.display = 'flex';
+            });
+        }
+        if (closePeriodBtn && modalPeriod) closePeriodBtn.addEventListener('click', () => modalPeriod.style.display = 'none');
+        if (cancelPeriodBtn && modalPeriod) cancelPeriodBtn.addEventListener('click', () => modalPeriod.style.display = 'none');
+
+        if (formPeriod) {
+            formPeriod.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await handleSavePeriod();
+            });
+        }
+    }
+
+    function processScheduleFile(file) {
+        if (!file) return;
+        if (file.size > 15 * 1024 * 1024) {
+            alert('File exceeds maximum allowed size of 15MB.');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = async function(evt) {
+            const dataUrl = evt.target.result;
+            const sizeKb = Math.round(file.size / 1024);
+            const sizeFormatted = sizeKb > 1024 ? `${(sizeKb / 1024).toFixed(1)} MB` : `${sizeKb} KB`;
+            const secName = sectionData?.name || 'Section';
+            const teacherName = (sessionUser.firstName ? `${sessionUser.firstName} ${sessionUser.lastName || ''}`.trim() : 'Teacher');
+            const isImg = (file.type || '').startsWith('image/') || /\.(png|jpe?g|webp|gif)$/i.test(file.name);
+            const fileType = file.type || (file.name.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image/jpeg');
+
+            const payload = {
+                sectionId: currentSectionId,
+                sectionName: secName,
+                fileName: file.name,
+                fileType: fileType,
+                fileSize: file.size,
+                fileSizeFormatted: sizeFormatted,
+                fileData: dataUrl,
+                isImage: isImg,
+                uploadDate: new Date().toISOString(),
+                uploadedBy: teacherName
+            };
+
+            // 1. Save to Supabase sections table
+            try {
+                await supabase.from('sections').update({
+                    schedule_doc_url: dataUrl,
+                    schedule_doc_name: file.name,
+                    schedule_doc_type: fileType,
+                    schedule_doc_uploaded_by: teacherName,
+                    schedule_doc_updated_at: new Date().toISOString()
+                }).eq('id', currentSectionId);
+                if (sectionData) {
+                    sectionData.schedule_doc_url = dataUrl;
+                    sectionData.schedule_doc_name = file.name;
+                    sectionData.schedule_doc_type = fileType;
+                    sectionData.schedule_doc_uploaded_by = teacherName;
+                }
+            } catch(e) {
+                console.warn('Database sections file update error:', e);
+            }
+
+            // 2. Save to localStorage
+            localStorage.setItem('hes_section_schedule_' + currentSectionId, JSON.stringify(payload));
+            localStorage.setItem('hes_section_schedule_' + secName.trim().toUpperCase(), JSON.stringify(payload));
+            localStorage.setItem('hes_section_schedule_last_sync', Date.now().toString());
+
+            // 3. Log activity log
+            try {
+                await supabase.from('activity_logs').insert([{
+                    user_id: sessionUser.id,
+                    role: 'teacher',
+                    action: 'Section Student Load Uploaded',
+                    details: `Teacher ${teacherName} sent/uploaded official student load schedule (${file.name}) for Section ${secName}.`,
+                    timestamp: new Date().toISOString()
+                }]);
+            } catch(e) {}
+
+            loadUploadedScheduleDoc(currentSectionId);
+            showAlert(`✅ Official student load schedule ${isImg ? 'image' : 'file'} "${file.name}" sent successfully! Students can now view, download, and print it.`, 'success');
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function openDocViewer(doc) {
+        if (!doc || (!doc.fileData && !doc.url)) return;
+        const modal = document.getElementById('modalDocViewer');
+        const container = document.getElementById('docViewerContent');
+        const titleEl = document.getElementById('docViewerTitle');
+        if (!modal || !container) return;
+
+        const isGDocs = doc.isGoogleDocs || doc.fileType === 'google_docs' || (doc.url && (doc.url.includes('docs.google.com') || doc.url.includes('drive.google.com')));
+        const isPdf = (doc.fileType || '').includes('pdf') || (doc.fileName || '').toLowerCase().endsWith('.pdf');
+        const isImg = doc.isImage || (doc.fileType || '').startsWith('image/') || /\.(png|jpe?g|webp|gif)$/i.test(doc.fileName || '') || (doc.fileData && doc.fileData.startsWith('data:image/'));
+
+        if (titleEl) {
+            titleEl.innerHTML = isGDocs 
+                ? `<i class="fab fa-google-drive" style="color: #4285F4;"></i> ${doc.fileName || 'Google Docs Student Load'}`
+                : isImg 
+                    ? `<i class="fas fa-file-image" style="color: #10b981;"></i> ${doc.fileName || 'Schedule Image'}`
+                    : `<i class="fas fa-file-pdf" style="color: #ef4444;"></i> ${doc.fileName || 'PDF Student Load'}`;
+        }
+
+        if (isGDocs) {
+            let embedUrl = doc.url || doc.fileData;
+            if (embedUrl.includes('/edit')) {
+                embedUrl = embedUrl.replace('/edit', '/preview');
+            }
+            container.innerHTML = `
+                <div style="width: 100%; height: 100%; display: flex; flex-direction: column;">
+                    <div style="padding: 10px 14px; background: #eff6ff; border-bottom: 1px solid #bfdbfe; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.85rem; color: #1e40af; font-weight: 600;">
+                            <i class="fab fa-google-drive"></i> Google Docs Student Load
+                        </span>
+                        <a href="${doc.url || doc.fileData}" target="_blank" rel="noopener noreferrer" style="font-size: 0.85rem; color: #1d4ed8; text-decoration: underline; font-weight: 600;">
+                            Open in New Tab <i class="fas fa-external-link-alt"></i>
+                        </a>
+                    </div>
+                    <iframe src="${embedUrl}" style="flex: 1; width: 100%; border: none;"></iframe>
+                </div>
+            `;
+        } else if (isPdf) {
+            container.innerHTML = `<iframe src="${doc.fileData || doc.url}" style="width: 100%; height: 100%; border: none; border-radius: 8px;"></iframe>`;
+        } else {
+            container.innerHTML = `<img src="${doc.fileData || doc.url}" alt="Student Load Schedule Preview" style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">`;
+        }
+        modal.style.display = 'flex';
+    }
+
+    function downloadScheduleDoc(doc) {
+        if (!doc || (!doc.fileData && !doc.url)) return;
+        const a = document.createElement('a');
+        a.href = doc.fileData || doc.url;
+        a.download = doc.fileName || `Section_Student_Load_${doc.sectionName || ''}`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
+
+    function printScheduleDoc(doc) {
+        if (!doc || (!doc.fileData && !doc.url)) return;
+        const printWin = window.open('', '_blank');
+        const isPdf = (doc.fileType || '').includes('pdf') || (doc.fileName || '').toLowerCase().endsWith('.pdf');
+        const fileSrc = doc.fileData || doc.url;
+        if (isPdf) {
+            printWin.document.write(`
+                <html><head><title>Print Student Load Schedule - ${doc.fileName || 'Schedule'}</title></head>
+                <body style="margin:0;padding:0;">
+                    <iframe src="${fileSrc}" style="width:100vw;height:100vh;border:none;"></iframe>
+                </body></html>
+            `);
+        } else {
+            printWin.document.write(`
+                <html><head><title>Print Student Load Schedule - ${doc.fileName || 'Schedule Image'}</title>
+                <style>
+                    @page { size: letter portrait; margin: 6mm 8mm; }
+                    html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+                    img { max-width: 100%; max-height: 100%; object-fit: contain; }
+                </style>
+                </head>
+                <body onload="window.print();">
+                    <img src="${fileSrc}" alt="Student Load Schedule">
+                </body></html>
+            `);
+        }
+        printWin.document.close();
+    }
+
+    async function handleSavePeriod() {
+        const editId = document.getElementById('editPeriodId').value;
+        const subjectId = document.getElementById('periodSubjectSelect').value;
+        const day = document.getElementById('periodDaySelect').value;
+        const room = document.getElementById('periodRoomInput').value.trim();
+        const startTime = document.getElementById('periodStartTime').value;
+        const endTime = document.getElementById('periodEndTime').value;
+        const teacherIdVal = document.getElementById('periodTeacherSelect').value || null;
+
+        if (!subjectId || !day || !room || !startTime || !endTime) {
+            alert('Please fill out all required fields.');
+            return;
+        }
+
+        const saveBtn = document.getElementById('btnSavePeriod');
+        if (saveBtn) {
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+        }
+
+        try {
+            const rowData = {
+                section_id: currentSectionId,
+                subject_id: subjectId,
+                day: day,
+                room: room,
+                start_time: startTime.length === 5 ? startTime + ':00' : startTime,
+                end_time: endTime.length === 5 ? endTime + ':00' : endTime,
+                teacher_id: teacherIdVal
+            };
+
+            if (editId) {
+                const { error } = await supabase
+                    .from('schedules')
+                    .update(rowData)
+                    .eq('id', editId);
+                if (error) throw error;
+                showAlert('✅ Class period updated successfully!', 'success');
+            } else {
+                const { error } = await supabase
+                    .from('schedules')
+                    .insert([rowData]);
+                if (error) throw error;
+                showAlert('✅ New class period added to schedule!', 'success');
+            }
+
+            document.getElementById('modalSchedulePeriod').style.display = 'none';
+            await loadSectionSchedules(currentSectionId);
+
+        } catch (err) {
+            console.error('Save period error:', err);
+            showAlert('❌ Failed to save period: ' + err.message, 'error');
+        } finally {
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Save Period';
+            }
+        }
+    }
+
+    window.deleteSchedulePeriod = async function(id) {
+        if (!confirm('Are you sure you want to delete this class period from the schedule?')) return;
+        try {
+            const { error } = await supabase.from('schedules').delete().eq('id', id);
+            if (error) throw error;
+            showAlert('Class period removed from schedule.', 'success');
+            await loadSectionSchedules(currentSectionId);
+        } catch(e) {
+            showAlert('Failed to delete period: ' + e.message, 'error');
+        }
+    };
+
+    window.editSchedulePeriod = function(id) {
+        const item = classSchedules.find(s => s.id === id);
+        if (!item) return;
+        document.getElementById('editPeriodId').value = item.id;
+        document.getElementById('modalPeriodTitle').innerHTML = '<i class="fas fa-edit"></i> Edit Class Period';
+        if (item.subject_id) document.getElementById('periodSubjectSelect').value = item.subject_id;
+        document.getElementById('periodDaySelect').value = item.day || 'Monday';
+        document.getElementById('periodRoomInput').value = item.room || '';
+        document.getElementById('periodStartTime').value = (item.start_time || '').slice(0, 5);
+        document.getElementById('periodEndTime').value = (item.end_time || '').slice(0, 5);
+        if (item.teacher_id) document.getElementById('periodTeacherSelect').value = item.teacher_id;
+        document.getElementById('modalSchedulePeriod').style.display = 'flex';
+    };
 
     // ============================================
     // SECTION ATTENDANCE CONTROLS & LOGIC

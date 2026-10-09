@@ -1,0 +1,519 @@
+/* ===== GUIDANCE VIOLATIONS PAGE CSS ===== */
+
+/* ===== FILTER TOOLBAR ===== */
+.filter-toolbar {
+    background: #fff;
+    border-radius: 12px;
+    padding: 14px 18px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    margin-bottom: 22px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.search-box-wrap {
+    flex: 1 1 280px;
+    min-width: 240px;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-box-wrap i {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    font-size: 14px;
+    pointer-events: none;
+    transition: color 0.2s ease;
+}
+
+.search-box-wrap input,
+.search-box-wrap .form-control {
+    width: 100% !important;
+    height: 40px;
+    padding: 0 14px 0 38px !important;
+    border-radius: 8px;
+    border: 1.5px solid var(--border-color);
+    font-size: 13.5px;
+    font-family: inherit;
+    color: var(--text-main);
+    background: #f8fafc;
+    transition: all 0.2s ease;
+}
+
+.search-box-wrap:focus-within i {
+    color: var(--primary);
+}
+
+.search-box-wrap input:focus,
+.search-box-wrap .form-control:focus {
+    outline: none;
+    background: #fff;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(27, 42, 74, 0.1);
+}
+
+.filters-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.filter-select,
+select.filter-select {
+    width: auto !important;
+    min-width: 145px;
+    height: 40px;
+    padding: 0 32px 0 12px !important;
+    border-radius: 8px;
+    border: 1.5px solid var(--border-color);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-main);
+    background-color: #fff;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2364748b'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.21 8.27a.75.75 0 01.02-1.06z' clip-rule='evenodd'/%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 16px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.filter-select:hover,
+select.filter-select:hover {
+    border-color: #cbd5e1;
+    background-color: #f8fafc;
+}
+
+.filter-select:focus,
+select.filter-select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(27, 42, 74, 0.1);
+    background-color: #fff;
+}
+
+#resetFiltersBtn {
+    height: 40px;
+    padding: 0 14px !important;
+    border-radius: 8px;
+    border: 1.5px solid var(--border-color);
+    background: #fff;
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+#resetFiltersBtn:hover {
+    background: #f1f5f9;
+    color: var(--primary);
+    border-color: #cbd5e1;
+}
+
+@media (max-width: 992px) {
+    .filter-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-box-wrap {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .filters-group {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        width: 100%;
+        gap: 10px;
+    }
+
+    .filter-select,
+    select.filter-select {
+        width: 100% !important;
+        min-width: 0;
+    }
+
+    #resetFiltersBtn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Card Header Title Group & Count Pill */
+.card-title-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.card-title-group h3 {
+    margin: 0;
+    font-size: 16.5px;
+    font-weight: 700;
+    color: #1B2A4A;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.count-pill {
+    background: #EEF2FF;
+    color: #1D4ED8;
+    font-size: 12px;
+    font-weight: 800;
+    padding: 2px 10px;
+    border-radius: 20px;
+    border: 1px solid #C7D2FE;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    line-height: 1.2;
+}
+
+/* Student Details Cell */
+.student-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.student-mini-avatar {
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1B2A4A 0%, #1e3a8a 100%);
+    color: #FACC15;
+    font-weight: 800;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(27, 42, 74, 0.18);
+    border: 2px solid #ffffff;
+}
+
+.student-info-text {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.student-info-text strong {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.25;
+}
+
+.student-sub {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    color: #64748b;
+    flex-wrap: wrap;
+}
+
+.lrn-tag {
+    background: #f1f5f9;
+    color: #475569;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.2px;
+}
+
+.grade-tag {
+    color: #0284c7;
+    font-weight: 600;
+    font-size: 11.5px;
+}
+
+/* Violation / Offense Column */
+.violation-title {
+    display: block;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #1B2A4A;
+    line-height: 1.3;
+}
+
+.violation-desc {
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 3px;
+    max-width: 250px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Severity Badges */
+.badge-minor {
+    background: #FEF3C7 !important;
+    color: #92400E !important;
+    border: 1px solid #FDE68A !important;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11.5px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.badge-major {
+    background: #FEE2E2 !important;
+    color: #991B1B !important;
+    border: 1px solid #FECACA !important;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11.5px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* Offense Level Badges */
+.offense-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+}
+
+.offense-1 { background: #E0F2FE; color: #0369A1; border: 1px solid #BAE6FD; }
+.offense-2 { background: #FEF3C7; color: #B45309; border: 1px solid #FDE68A; }
+.offense-3 { background: #FFEDD5; color: #C2410C; border: 1px solid #FED7AA; }
+.offense-4 { background: #FEE2E2; color: #B91C1C; border: 1px solid #FECACA; }
+
+/* Incident Date */
+.date-cell {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #334155;
+    white-space: nowrap;
+}
+
+.date-cell i {
+    color: #0284C7;
+    font-size: 12px;
+}
+
+/* Reported By */
+.reporter-cell strong {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    color: #1e293b;
+    line-height: 1.25;
+}
+
+.reporter-role {
+    display: inline-block;
+    font-size: 11px;
+    color: #64748b;
+    font-weight: 500;
+    margin-top: 1px;
+}
+
+/* Status Badges */
+.status-badge {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 11.5px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.status-resolved {
+    background: #ECFDF5;
+    color: #065F46;
+    border: 1px solid #A7F3D0;
+}
+
+.status-counseling {
+    background: #F5F3FF;
+    color: #6D28D9;
+    border: 1px solid #DDD6FE;
+}
+
+.status-progress {
+    background: #FFFBEB;
+    color: #B45309;
+    border: 1px solid #FDE68A;
+}
+
+.status-reported {
+    background: #EFF6FF;
+    color: #1D4ED8;
+    border: 1px solid #BFDBFE;
+}
+
+/* Table Actions - 4 Distinct Sleek Buttons */
+.table-actions {
+    display: flex;
+    gap: 7px;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.btn-action-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 13px;
+    text-decoration: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.btn-action-icon:hover {
+    transform: translateY(-2px);
+}
+
+.action-dossier {
+    background: #EEF2FF;
+    color: #4338CA;
+    border: 1px solid #C7D2FE;
+}
+
+.action-dossier:hover {
+    background: #4338CA;
+    color: #ffffff;
+    box-shadow: 0 4px 10px rgba(67, 56, 202, 0.25);
+}
+
+.action-view {
+    background: #E0F2FE;
+    color: #0284C7;
+    border: 1px solid #BAE6FD;
+}
+
+.action-view:hover {
+    background: #0284C7;
+    color: #ffffff;
+    box-shadow: 0 4px 10px rgba(2, 132, 199, 0.25);
+}
+
+.action-call-slip {
+    background: #FEF3C7;
+    color: #B45309;
+    border: 1px solid #FDE68A;
+}
+
+.action-call-slip:hover {
+    background: #F59E0B;
+    color: #ffffff;
+    box-shadow: 0 4px 10px rgba(245, 158, 11, 0.25);
+}
+
+.action-delete {
+    background: #FEE2E2;
+    color: #DC2626;
+    border: 1px solid #FECACA;
+}
+
+.action-delete:hover {
+    background: #EF4444;
+    color: #ffffff;
+    box-shadow: 0 4px 10px rgba(239, 68, 68, 0.25);
+}
+
+/* Modals */
+.incident-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.detail-item {
+    background: #f8fafc;
+    padding: 12px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.detail-item-full {
+    grid-column: span 2;
+}
+
+.detail-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.detail-value {
+    font-size: 13.5px;
+    color: var(--text-main);
+    font-weight: 500;
+}
+
+/* Call slip notice */
+.call-slip-container {
+    background: #fffbeb;
+    border: 1.5px dashed #f59e0b;
+    border-radius: 12px;
+    padding: 18px;
+    margin-top: 16px;
+}
+
+.call-slip-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.call-slip-header h4 {
+    color: #92400e;
+    font-size: 14px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}

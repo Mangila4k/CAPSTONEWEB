@@ -210,9 +210,234 @@ document.addEventListener('DOMContentLoaded', async function() {
                 }
             }
 
+            // 5. Fetch Teacher Load Schedules & Admin Document
+            await loadTeacherSchedulesAndDoc(teacherRecord?.id || teacherId, userRecord?.id);
+
         } catch (err) {
             console.error('Error loading teacher profile:', err);
             showAlert('Failed to load teacher profile: ' + err.message, 'error');
+        }
+    }
+
+    async function loadTeacherSchedulesAndDoc(tId, uId) {
+        const badgeEl = document.getElementById('adminTeacherLoadBadge');
+        const tbodyEl = document.getElementById('adminTeacherLoadTableBody');
+        const uploadBox = document.getElementById('adminUploadedLoadBox');
+        const docNameEl = document.getElementById('adminDocFileName');
+        const docMetaEl = document.getElementById('adminDocMeta');
+        const iconBox = document.getElementById('adminDocIconBox');
+        const fileInput = document.getElementById('inputAdminTeacherLoadFile');
+        const triggerBtn = document.getElementById('btnTriggerUploadTeacherLoad');
+        const previewBtn = document.getElementById('btnAdminDocPreviewInView');
+        const deleteBtn = document.getElementById('btnAdminDocDeleteInView');
+        const modal = document.getElementById('modalAdminDocViewerInTeacher');
+        const modalContent = document.getElementById('modalAdminDocViewerContent');
+        const modalTitle = document.getElementById('modalAdminDocViewerTitle');
+        const closeModalBtn = document.getElementById('btnCloseModalAdminDocViewer');
+
+        // Fetch schedules
+        let schedules = [];
+        try {
+            const { data: sRows } = await supabase
+                .from('schedules')
+                .select('*')
+                .eq('teacher_id', tId);
+            if (sRows && sRows.length > 0) {
+                schedules = sRows;
+            } else if (uId) {
+                const { data: sByUser } = await supabase
+                    .from('schedules')
+                    .select('*')
+                    .eq('teacher_id', uId);
+                if (sByUser) schedules = sByUser;
+            }
+        } catch (e) {
+            console.warn('Error fetching schedules:', e);
+        }
+
+        // Fetch section and subject names
+        const secIds = [...new Set(schedules.map(s => s.section_id).filter(Boolean))];
+        const subIds = [...new Set(schedules.map(s => s.subject_id).filter(Boolean))];
+        const secMap = {};
+        const subMap = {};
+
+        if (secIds.length > 0) {
+            const { data: secs } = await supabase.from('sections').select('id, name, grade_level, room').in('id', secIds);
+            (secs || []).forEach(s => { secMap[s.id] = s; });
+        }
+        if (subIds.length > 0) {
+            const { data: subs } = await supabase.from('subjects').select('id, name, code').in('id', subIds);
+            (subs || []).forEach(s => { subMap[s.id] = s; });
+        }
+
+        if (badgeEl) badgeEl.textContent = `${schedules.length} classes assigned`;
+
+        if (tbodyEl) {
+            if (schedules.length === 0) {
+                tbodyEl.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 24px; color: #64748b;">
+                            <i class="fas fa-calendar-times" style="font-size: 24px; color: #cbd5e1; margin-bottom: 6px;"></i>
+                            <p style="margin: 4px 0 0 0;">No classes currently scheduled for this teacher.</p>
+                            <a href="sections.html" style="font-size: 12px; color: #2563eb; text-decoration: underline; margin-top: 4px; display: inline-block;">Assign in Section Schedules &rarr;</a>
+                        </td>
+                    </tr>
+                `;
+            } else {
+                tbodyEl.innerHTML = schedules.map((item, idx) => {
+                    const sec = secMap[item.section_id] || {};
+                    const sub = subMap[item.subject_id] || {};
+                    const subjTitle = item.subject || sub.name || 'Subject';
+                    const secTitle = sec.name || 'Section';
+                    const formatTime = (t) => {
+                        if (!t) return '';
+                        const [h, m] = t.split(':');
+                        const hr = parseInt(h, 10);
+                        const ampm = hr >= 12 ? 'PM' : 'AM';
+                        const hr12 = hr % 12 || 12;
+                        return `${hr12}:${m || '00'} ${ampm}`;
+                    };
+                    const timeStr = `${formatTime(item.start_time)} - ${formatTime(item.end_time)}`;
+
+                    return `
+                        <tr style="border-bottom: 1px solid #e2e8f0;">
+                            <td style="padding: 10px 12px; color: #64748b; font-weight: 700;">${idx + 1}</td>
+                            <td style="padding: 10px 12px; font-weight: 700; color: #0b2b4a;">
+                                ${subjTitle} ${sub.code ? `<span class="badge badge-info" style="font-size: 10px;">${sub.code}</span>` : ''}
+                            </td>
+                            <td style="padding: 10px 12px; color: #1e293b;">
+                                ${secTitle} ${sec.grade_level ? `<span style="font-size: 11px; color: #64748b;">(Grade ${sec.grade_level})</span>` : ''}
+                            </td>
+                            <td style="padding: 10px 12px;">
+                                <span class="badge badge-info" style="padding: 3px 8px;">${item.day || 'Monday'}</span>
+                            </td>
+                            <td style="padding: 10px 12px; font-weight: 600; color: #0b2b4a;">${timeStr}</td>
+                            <td style="padding: 10px 12px; color: #64748b;">${item.room || sec.room || 'Room 101'}</td>
+                            <td style="padding: 10px 12px;">
+                                <a href="create_schedule.html?section_id=${item.section_id || ''}" class="badge badge-warning" style="text-decoration: none; padding: 4px 8px; font-size: 11.5px;">
+                                    <i class="fas fa-edit"></i> Edit in Section
+                                </a>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+        }
+
+        // Check for official teacher load document
+        let activeDoc = null;
+        const localDocKey = `hes_teacher_load_doc_${tId}`;
+        const rawLocal = localStorage.getItem(localDocKey) || (uId ? localStorage.getItem(`hes_teacher_load_doc_${uId}`) : null);
+        if (rawLocal) {
+            try { activeDoc = JSON.parse(rawLocal); } catch(e) {}
+        }
+
+        function renderActiveDocUI() {
+            if (activeDoc && (activeDoc.fileData || activeDoc.url)) {
+                if (uploadBox) uploadBox.style.display = 'block';
+                if (docNameEl) docNameEl.textContent = activeDoc.fileName || 'Teacher_Load_Schedule';
+                if (docMetaEl) {
+                    const dateStr = activeDoc.uploadDate ? new Date(activeDoc.uploadDate).toLocaleDateString() : 'Recently';
+                    docMetaEl.textContent = `Issued by Administration • ${dateStr}`;
+                }
+                if (iconBox) {
+                    const isImg = (activeDoc.fileType || '').startsWith('image/') || /\.(png|jpe?g|webp|gif)$/i.test(activeDoc.fileName || '') || (activeDoc.fileData && activeDoc.fileData.startsWith('data:image/'));
+                    iconBox.innerHTML = isImg ? '<i class="fas fa-file-image text-success"></i>' : '<i class="fas fa-file-pdf text-danger"></i>';
+                }
+            } else {
+                if (uploadBox) uploadBox.style.display = 'none';
+            }
+        }
+
+        renderActiveDocUI();
+
+        // Upload triggers
+        if (triggerBtn && fileInput) {
+            triggerBtn.onclick = () => fileInput.click();
+        }
+
+        if (fileInput) {
+            fileInput.onchange = (e) => {
+                const file = e.target.files && e.target.files[0];
+                if (!file) return;
+                if (file.size > 15 * 1024 * 1024) {
+                    alert('File exceeds 15MB size limit.');
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = async function(evt) {
+                    const dataUrl = evt.target.result;
+                    const isImg = (file.type || '').startsWith('image/') || /\.(png|jpe?g|webp|gif)$/i.test(file.name);
+                    const fileType = file.type || (isImg ? 'image/png' : 'application/pdf');
+
+                    activeDoc = {
+                        teacherId: tId,
+                        fileName: file.name,
+                        fileType: fileType,
+                        fileData: dataUrl,
+                        url: dataUrl,
+                        isImage: isImg,
+                        uploadDate: new Date().toISOString(),
+                        issuedBy: 'Administration'
+                    };
+
+                    localStorage.setItem(localDocKey, JSON.stringify(activeDoc));
+                    if (uId) localStorage.setItem(`hes_teacher_load_doc_${uId}`, JSON.stringify(activeDoc));
+                    localStorage.setItem('hes_teacher_load_admin_doc', JSON.stringify(activeDoc));
+
+                    try {
+                        await supabase.from('teachers').update({
+                            teacher_load_url: dataUrl,
+                            teacher_load_name: file.name,
+                            teacher_load_updated_at: new Date().toISOString()
+                        }).eq('id', tId);
+                    } catch(err) {}
+
+                    renderActiveDocUI();
+                    showAlert('Official Teacher Load document/image uploaded and published to faculty!', 'success');
+                };
+                reader.readAsDataURL(file);
+            };
+        }
+
+        // Preview & Delete
+        if (previewBtn) {
+            previewBtn.onclick = () => {
+                if (!activeDoc || (!activeDoc.fileData && !activeDoc.url)) return;
+                if (modal && modalContent) {
+                    const isImg = activeDoc.isImage || (activeDoc.fileType || '').startsWith('image/') || /\.(png|jpe?g|webp|gif)$/i.test(activeDoc.fileName || '');
+                    if (isImg) {
+                        modalContent.innerHTML = `<img src="${activeDoc.fileData || activeDoc.url}" alt="Schedule Preview" style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px;">`;
+                    } else {
+                        modalContent.innerHTML = `<iframe src="${activeDoc.fileData || activeDoc.url}" style="width: 100%; height: 100%; border: none;"></iframe>`;
+                    }
+                    if (modalTitle) modalTitle.textContent = activeDoc.fileName || 'Teacher Load Document';
+                    modal.style.display = 'flex';
+                }
+            };
+        }
+
+        if (deleteBtn) {
+            deleteBtn.onclick = async () => {
+                if (!confirm('Are you sure you want to remove this official teacher load document?')) return;
+                activeDoc = null;
+                localStorage.removeItem(localDocKey);
+                if (uId) localStorage.removeItem(`hes_teacher_load_doc_${uId}`);
+                try {
+                    await supabase.from('teachers').update({
+                        teacher_load_url: null,
+                        teacher_load_name: null,
+                        teacher_load_updated_at: new Date().toISOString()
+                    }).eq('id', tId);
+                } catch(e) {}
+                renderActiveDocUI();
+                showAlert('Teacher Load document removed.', 'success');
+            };
+        }
+
+        if (closeModalBtn && modal) {
+            closeModalBtn.onclick = () => { modal.style.display = 'none'; };
         }
     }
 
