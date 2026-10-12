@@ -391,6 +391,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
                 actionsHtml += `<button class="action-btn view" onclick="window.viewEnrollment('${enrollment.id}')" title="View Full Details"><i class="fas fa-eye"></i></button>`;
                 actionsHtml += `<button class="action-btn delete" onclick="window.deleteEnrollment('${enrollment.id}', '${enrollment.fullname.replace(/'/g, "\\'")}')" title="Delete Record"><i class="fas fa-trash"></i></button>`;
             } else {
+                actionsHtml += `<a class="action-btn generate-id" href="generate_id.html?enrollment_id=${enrollment.id}${enrollment.student_id ? '&id=' + enrollment.student_id : ''}" title="Generate Official Student ID" style="background:#c89b27; color:#070526; display:inline-flex; align-items:center; justify-content:center; text-decoration:none;"><i class="fas fa-id-card"></i></a>`;
                 actionsHtml += `<button class="action-btn pending" onclick="window.pendingEnrollment('${enrollment.id}')" title="Revert to Pending"><i class="fas fa-undo-alt"></i></button>`;
                 actionsHtml += `<button class="action-btn view" onclick="window.viewEnrollment('${enrollment.id}')" title="View Full Details"><i class="fas fa-eye"></i></button>`;
                 actionsHtml += `<button class="action-btn delete" onclick="window.deleteEnrollment('${enrollment.id}', '${enrollment.fullname.replace(/'/g, "\\'")}')" title="Delete Record"><i class="fas fa-trash"></i></button>`;
@@ -519,37 +520,41 @@ import { EmailNotificationService } from '../../js/email_service.js';
                 }
             }
 
-            // 3. Update students table
+            // 3. Update / create students table with safe non-null defaults & 2x2 picture
             let studentTableId = item.student_id;
+            const studentPayload = {
+                first_name: firstName,
+                last_name: lastName,
+                middle_name: item.middle_name || null,
+                email: email,
+                grade_level: gradeName,
+                strand: strand || null,
+                lrn: item.lrn || item.id_number || ('141525' + String(Date.now()).slice(-6)),
+                date_of_birth: item.date_of_birth || item.dob || '2008-01-01',
+                contact_number: item.contact_number || item.guardian_contact || '09000000000',
+                enrollment_id: id,
+                two_by_two_picture_url: item.two_by_two_picture_url || null,
+                avatar_url: item.two_by_two_picture_url || null,
+                documents_status: 'complete',
+                updated_at: new Date().toISOString()
+            };
+
             if (studentTableId) {
                 await supabase
                     .from('students')
-                    .update({
-                        documents_status: 'complete',
-                        grade_level: gradeName,
-                        strand: strand,
-                        enrollment_id: id,
-                        updated_at: new Date().toISOString()
-                    })
+                    .update(studentPayload)
                     .eq('id', studentTableId);
             } else if (email) {
-                const { data: createdStudent } = await supabase
+                studentPayload.created_at = new Date().toISOString();
+                const { data: createdStudent, error: sErr } = await supabase
                     .from('students')
-                    .insert([{
-                        first_name: firstName,
-                        last_name: lastName,
-                        email: email,
-                        grade_level: gradeName,
-                        strand: strand,
-                        enrollment_id: id,
-                        documents_status: 'complete',
-                        created_at: new Date().toISOString(),
-                        updated_at: new Date().toISOString()
-                    }])
+                    .insert([studentPayload])
                     .select();
 
                 if (createdStudent && createdStudent.length > 0) {
                     studentTableId = createdStudent[0].id;
+                } else if (sErr) {
+                    console.warn('Students insert notice:', sErr);
                 }
             }
 
@@ -605,8 +610,17 @@ import { EmailNotificationService } from '../../js/email_service.js';
                 studentFullName: item.fullname || `${firstName} ${lastName}`,
                 gradeLevel: gradeName,
                 strand: strand || '',
-                schoolYear: item.school_year || '2026-2027'
+                schoolYear: item.school_year || '2026-2027',
+                enrollmentId: id,
+                studentId: studentTableId || studentUserId
             };
+
+            // Automatic email dispatch to student's email address
+            try {
+                await EmailNotificationService.sendCredentialsEmail(credsPayload);
+            } catch (mailErr) {
+                console.warn('Email dispatch notice:', mailErr);
+            }
 
             showCredentialsModal(credsPayload);
             showAlert(`✅ Enrollment for ${item.fullname} approved! Account created (Username: ${email}, Password: ${lastName}).`, 'success');
@@ -634,6 +648,11 @@ import { EmailNotificationService } from '../../js/email_service.js';
         if (credName) credName.textContent = creds.studentFullName || `${creds.firstName} ${creds.lastName}`;
         if (credUser) credUser.textContent = creds.email;
         if (credPass) credPass.textContent = creds.lastName;
+
+        const genIdBtn = document.getElementById('modalGenerateIdBtn');
+        if (genIdBtn) {
+            genIdBtn.href = `generate_id.html?enrollment_id=${creds.enrollmentId || ''}&id=${creds.studentId || ''}&email=${encodeURIComponent(creds.email || '')}`;
+        }
 
         if (credModal) {
             credModal.style.display = 'flex';
@@ -937,9 +956,79 @@ import { EmailNotificationService } from '../../js/email_service.js';
     });
 
     // ============================================
+    // REALTIME & NOTIFICATIONS
+    // ============================================
+
+    function playNotificationChime() {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+            osc.frequency.setValueAtTime(880, ctx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.2, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.35);
+        } catch(e) {}
+    }
+
+    function setupRealtimeSubscription() {
+        try {
+            supabase
+                .channel('admin-enrollments-realtime')
+                .on('postgres_changes', {
+                    event: '*',
+                    schema: 'public',
+                    table: 'enrollments'
+                }, (payload) => {
+                    console.log('⚡ Realtime enrollment update:', payload);
+                    loadEnrollments();
+                    if (payload.eventType === 'INSERT') {
+                        playNotificationChime();
+                        showAlert(`🔔 New enrollment submitted: ${payload.new?.first_name || ''} ${payload.new?.last_name || ''}`, 'info');
+                    }
+                })
+                .on('postgres_changes', {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'notifications'
+                }, (payload) => {
+                    const notif = payload.new;
+                    if (!notif.role || notif.role === 'admin' || notif.role === 'all') {
+                        playNotificationChime();
+                        showAlert(`🔔 ${notif.title || 'Notification'}: ${notif.message || ''}`, 'info');
+                        loadEnrollments();
+                    }
+                })
+                .subscribe();
+        } catch (err) {
+            console.warn('Realtime subscription notice in admin enrollments:', err);
+        }
+
+        // Cross-tab synchronization
+        window.addEventListener('storage', (e) => {
+            if ((e.key === 'hes_latest_notification' || e.key === 'hes_admin_latest_notification') && e.newValue) {
+                try {
+                    const data = JSON.parse(e.newValue);
+                    if (!data.role || data.role === 'admin' || data.role === 'all' || (data.roles && data.roles.includes('admin'))) {
+                        loadEnrollments();
+                        playNotificationChime();
+                        showAlert(`🔔 ${data.title || 'New Enrollment'}: ${data.message || ''}`, 'info');
+                    }
+                } catch(err) {}
+            }
+        });
+    }
+
+    // ============================================
     // INIT
     // ============================================
 
     loadEnrollments();
+    setupRealtimeSubscription();
 
 })();

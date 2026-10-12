@@ -48,28 +48,6 @@
     };
 
     function navigateTo(pageId) {
-        if (pageId === 'curriculum') {
-            Object.values(pages).forEach(page => {
-                if (page) page.classList.remove('active');
-            });
-            if (pages.home) {
-                pages.home.classList.add('active');
-            }
-            document.querySelectorAll('.nav-links a[data-page], .footer-col a[data-page]').forEach(link => {
-                link.classList.remove('active');
-                if (link.dataset.page === 'curriculum') {
-                    link.classList.add('active');
-                }
-            });
-            const curSection = document.getElementById('curriculum');
-            if (curSection) {
-                setTimeout(() => {
-                    curSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }, 50);
-            }
-            return;
-        }
-
         Object.values(pages).forEach(page => {
             if (page) page.classList.remove('active');
         });
@@ -93,7 +71,7 @@
         link.addEventListener('click', function(e) {
             e.preventDefault();
             const page = this.dataset.page;
-            if (page === 'curriculum' || (page && pages[page])) {
+            if (page && pages[page]) {
                 navigateTo(page);
             }
         });
@@ -102,9 +80,7 @@
     // Hash navigation on initial load or URL change
     function handleHashNavigation() {
         const hash = (window.location.hash || '').replace('#', '');
-        if (hash === 'curriculum') {
-            navigateTo('curriculum');
-        } else if (hash && pages[hash]) {
+        if (hash && pages[hash]) {
             navigateTo(hash);
         }
     }
@@ -222,58 +198,6 @@
     }
 
     // ============================================
-    // CURRICULUM YEAR-LEVEL TABS (HOMEPAGE)
-    // ============================================
-
-    function initHomepageCurriculumTabs() {
-        const tabContainer = document.getElementById('homeYearTabs');
-        if (!tabContainer) return;
-
-        const tabButtons = tabContainer.querySelectorAll('.year-tab-btn');
-        const panels = document.querySelectorAll('.curriculum-section .year-content-panel');
-
-        function activateTab(targetId) {
-            tabButtons.forEach(btn => {
-                if (btn.dataset.target === targetId) {
-                    btn.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
-                }
-            });
-
-            panels.forEach(panel => {
-                if (panel.id === targetId) {
-                    panel.classList.add('active');
-                } else {
-                    panel.classList.remove('active');
-                }
-            });
-        }
-
-        tabButtons.forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.preventDefault();
-                const target = this.dataset.target;
-                if (target) {
-                    activateTab(target);
-                }
-            });
-        });
-
-        // Global switcher for "Explore Grade" buttons inside overview cards
-        window.switchHomeYearTab = function(panelId) {
-            activateTab(panelId);
-            const section = document.getElementById('curriculum');
-            if (section) {
-                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        };
-    }
-
-    initHomepageCurriculumTabs();
-
-
-    // ============================================
     // CONSOLE WELCOME
     // ============================================
     
@@ -281,7 +205,6 @@
     console.log('  📌 Click "Home", "Features", "About", "Contact" to navigate');
     console.log('  🔐 Login button redirects to login page');
     console.log('  📊 Stats animate when scrolled into view');
-    console.log('  📚 Curriculum organized by year level with DepEd codes');
     console.log('  🍞 Toast notifications for feedback');
     console.log('✅ Ready na!');
 

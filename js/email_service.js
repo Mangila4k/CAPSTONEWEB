@@ -516,6 +516,55 @@ Langtad, City of Naga, Cebu, Philippines
             }
         }
     }
+
+    /**
+     * Sends student approval credentials email via Supabase Edge Function and/or Gmail Web
+     */
+    async sendCredentialsEmail({ studentName, firstName, lastName, email, gradeLevel, strand, schoolYear, autoLaunchGmail = false }) {
+        const emailData = this.buildCredentialsEmail({ studentName, firstName, lastName, email, gradeLevel, strand, schoolYear });
+        let edgeSuccess = false;
+
+        // 1. Try Supabase Edge Function: send-enrollment-email
+        try {
+            const client = (typeof window !== "undefined" && window.supabase) ? window.supabase : null;
+            if (client && client.functions) {
+                const fullName = studentName || ((firstName || "") + " " + (lastName || "")).trim() || "Student";
+                const { data, error } = await client.functions.invoke("send-enrollment-email", {
+                    body: {
+                        to_email: email,
+                        to_name: fullName,
+                        status: "approved",
+                        grade_level: gradeLevel || "N/A",
+                        strand: strand || "N/A",
+                        password: lastName || "Student"
+                    }
+                });
+
+                if (!error && data && data.success) {
+                    edgeSuccess = true;
+                    console.log("✅ Edge function sent email successfully to:", email);
+                } else if (error) {
+                    console.warn("Edge function returned error (falling back to client mail):", error);
+                }
+            }
+        } catch (err) {
+            console.warn("Notice invoking send-enrollment-email edge function:", err);
+        }
+
+        // 2. If requested or if Edge Function didn't confirm delivery, open Gmail Web compose
+        if (autoLaunchGmail || !edgeSuccess) {
+            this.sendViaGmailWeb(emailData);
+        }
+
+        // 3. Always copy to clipboard for convenience
+        await this.copyEmailText(emailData);
+
+        return {
+            success: true,
+            edgeSuccess,
+            emailData
+        };
+    },
 };
 
 // Also attach to window for non-module scripts

@@ -324,6 +324,11 @@ import { EmailNotificationService } from '../../js/email_service.js';
             renderSubmittedDocuments();
             renderStatusForm();
             renderHistoryTable();
+            const genIdBtn = document.getElementById('generateIdCardBtn');
+            if (genIdBtn && currentEnrollment) {
+                const sId = currentEnrollment.student_id || currentStudent?.id || '';
+                genIdBtn.href = `generate_id.html?enrollment_id=${currentEnrollment.id || ''}${sId ? `&id=${sId}` : ''}`;
+            }
 
         } catch (error) {
             console.error('Error loading enrollment details:', error);
@@ -878,6 +883,12 @@ import { EmailNotificationService } from '../../js/email_service.js';
         if (credUser) credUser.textContent = creds.email;
         if (credPass) credPass.textContent = creds.lastName;
 
+        const modalGenBtn = document.getElementById('modalGenerateIdBtn');
+        if (modalGenBtn) {
+            const sid = creds.student_id || creds.id || currentEnrollment?.student_id || currentEnrollment?.id || '';
+            const enrId = creds.enrollment_id || currentEnrollment?.id || '';
+            modalGenBtn.href = `generate_id.html?enrollment_id=${enrId}${sid ? `&id=${sid}` : ''}`;
+        }
         if (credModal) {
             credModal.style.display = 'flex';
         }
@@ -1021,22 +1032,23 @@ import { EmailNotificationService } from '../../js/email_service.js';
         let studentTableId = currentEnrollment?.student_id || currentStudent?.id || null;
 
         const studentPayload = {
+            lrn: currentEnrollment.lrn || currentStudent?.lrn || ('14' + Date.now().toString().slice(-10)),
             first_name: firstName,
             last_name: lastName,
             middle_name: currentEnrollment.middle_name || currentStudent?.middle_name || null,
             email: email,
             grade_level: gradeLevel,
             strand: strand,
-            date_of_birth: currentEnrollment.date_of_birth || currentEnrollment.dob || currentStudent?.date_of_birth || null,
-            birth_date: currentEnrollment.dob || currentStudent?.birth_date || null,
-            age: currentEnrollment.age || currentStudent?.age || null,
-            gender: currentEnrollment.gender || currentStudent?.gender || null,
+            date_of_birth: currentEnrollment.date_of_birth || currentEnrollment.dob || currentStudent?.date_of_birth || '2008-01-01',
+            birth_date: currentEnrollment.dob || currentStudent?.birth_date || '2008-01-01',
+            age: currentEnrollment.age || currentStudent?.age || 16,
+            gender: currentEnrollment.gender || currentStudent?.gender || 'Not specified',
             nationality: currentEnrollment.nationality || currentStudent?.nationality || 'Filipino',
             religion: currentEnrollment.religion || currentStudent?.religion || null,
-            address: currentEnrollment.address || currentStudent?.address || null,
-            contact_number: currentEnrollment.contact_number || currentEnrollment.guardian_contact || currentStudent?.contact_number || null,
-            parent_name: currentEnrollment.guardian_name || currentEnrollment.mother_name || currentEnrollment.father_name || currentStudent?.parent_name || null,
-            parent_contact: currentEnrollment.guardian_contact || currentStudent?.parent_contact || null,
+            address: currentEnrollment.address || currentStudent?.address || 'PLSNHS Campus',
+            contact_number: currentEnrollment.contact_number || currentEnrollment.guardian_contact || currentStudent?.contact_number || '09000000000',
+            parent_name: currentEnrollment.guardian_name || currentEnrollment.mother_name || currentEnrollment.father_name || currentStudent?.parent_name || 'Guardian',
+            parent_contact: currentEnrollment.guardian_contact || currentStudent?.parent_contact || '09000000000',
             enrollment_id: currentEnrollment.id,
             documents_status: 'complete',
             two_by_two_picture_url: currentEnrollment.two_by_two_picture_url || currentStudent?.two_by_two_picture_url || null,
@@ -1139,6 +1151,9 @@ import { EmailNotificationService } from '../../js/email_service.js';
         }
 
         return {
+            id: studentTableId,
+            student_id: studentTableId,
+            enrollment_id: currentEnrollment.id,
             email,
             lastName,
             firstName,
@@ -1184,6 +1199,20 @@ import { EmailNotificationService } from '../../js/email_service.js';
                         // APPROVAL FLOW: Provision user account, notify student with credentials
                         const creds = await provisionAndApproveStudent();
                         showCredentialsModal(creds);
+                        try {
+                            await EmailNotificationService.sendCredentialsEmail({
+                                studentName: creds.studentFullName,
+                                firstName: creds.firstName,
+                                lastName: creds.lastName,
+                                email: creds.email,
+                                gradeLevel: creds.gradeLevel,
+                                strand: creds.strand,
+                                schoolYear: currentEnrollment?.last_school_year || currentEnrollment?.school_year || '2026-2027',
+                                autoLaunchGmail: true
+                            });
+                        } catch (emailErr) {
+                            console.warn('Auto credentials email dispatch warning:', emailErr);
+                        }
                         showAlert(`✅ Enrollment approved! Status updated to "Enrolled". Student account credentials: Username = ${creds.email}, Password = ${creds.lastName}`, 'success');
                     } else {
                         // REJECTED / PENDING FLOW

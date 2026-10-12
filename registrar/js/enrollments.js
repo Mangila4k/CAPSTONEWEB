@@ -410,7 +410,11 @@ import { EmailNotificationService } from '../../js/email_service.js';
                                     <button type="button" class="action-btn reject" data-id="${row.id}" data-name="${fullname}" title="Reject Application">
                                         <i class="fas fa-times-circle"></i>
                                     </button>
-                                ` : ""}
+                                ` : `
+                                    <a href="generate_id.html?enrollment_id=${row.id}${row.student_id ? '&id=' + row.student_id : ''}" class="action-btn generate-id" title="Generate Student ID" style="background: #c89b27; color: #070526; display: inline-flex; align-items: center; justify-content: center; text-decoration: none;">
+                                        <i class="fas fa-id-card"></i>
+                                    </a>
+                                `}
                                 <button type="button" class="action-btn delete" data-id="${row.id}" data-name="${fullname}" title="Delete Record">
                                     <i class="fas fa-trash-alt"></i>
                                 </button>
@@ -583,6 +587,11 @@ import { EmailNotificationService } from '../../js/email_service.js';
         if (credUser) credUser.textContent = creds.email;
         if (credPass) credPass.textContent = creds.lastName;
 
+        const genIdBtn = document.getElementById('modalGenerateIdBtn');
+        if (genIdBtn) {
+            genIdBtn.href = `generate_id.html?enrollment_id=${creds.enrollment_id || creds.id || ''}&id=${creds.student_id || ''}&email=${encodeURIComponent(creds.email || '')}`;
+        }
+
         if (credModal) {
             credModal.style.display = 'flex';
         }
@@ -743,14 +752,17 @@ import { EmailNotificationService } from '../../js/email_service.js';
             email: email,
             grade_level: gradeLevel,
             strand: strand,
-            date_of_birth: enr.date_of_birth || enr.dob || studentData?.date_of_birth || null,
-            birth_date: enr.dob || studentData?.birth_date || null,
+            lrn: enr.lrn || studentData?.lrn || ('141525' + String(Date.now()).slice(-6)),
+            two_by_two_picture_url: enr.two_by_two_picture_url || studentData?.two_by_two_picture_url || null,
+            avatar_url: enr.two_by_two_picture_url || studentData?.avatar_url || null,
+            date_of_birth: enr.date_of_birth || enr.dob || studentData?.date_of_birth || '2008-01-01',
+            birth_date: enr.dob || studentData?.birth_date || '2008-01-01',
             age: enr.age || studentData?.age || null,
             gender: enr.gender || studentData?.gender || null,
             nationality: enr.nationality || studentData?.nationality || 'Filipino',
             religion: enr.religion || studentData?.religion || null,
             address: enr.address || studentData?.address || null,
-            contact_number: enr.contact_number || enr.guardian_contact || studentData?.contact_number || null,
+            contact_number: enr.contact_number || enr.guardian_contact || studentData?.contact_number || '09000000000',
             parent_name: enr.guardian_name || enr.mother_name || enr.father_name || studentData?.parent_name || null,
             parent_contact: enr.guardian_contact || studentData?.parent_contact || null,
             enrollment_id: enr.id,
@@ -872,7 +884,9 @@ import { EmailNotificationService } from '../../js/email_service.js';
             firstName,
             studentFullName,
             gradeLevel,
-            strand
+            strand,
+            enrollment_id: enr.id,
+            student_id: studentTableId || studentUserId
         };
     }
 
@@ -886,6 +900,11 @@ import { EmailNotificationService } from '../../js/email_service.js';
         try {
             showAlert('Processing enrollment approval & account creation...', 'info');
             const creds = await provisionAndApproveStudentById(id);
+            try {
+                await EmailNotificationService.sendCredentialsEmail(creds);
+            } catch (mailErr) {
+                console.warn('Email dispatch notice:', mailErr);
+            }
             showCredentialsModal(creds);
             showAlert(`✅ Enrollment approved for ${creds.studentFullName}! Student account created (Username: ${creds.email}, Password: ${creds.lastName}).`, 'success');
             await fetchEnrollments();
