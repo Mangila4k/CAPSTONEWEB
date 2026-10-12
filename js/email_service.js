@@ -515,7 +515,7 @@ Langtad, City of Naga, Cebu, Philippines
                 return false;
             }
         }
-    }
+    },
 
     /**
      * Sends student approval credentials email via Supabase Edge Function and/or Gmail Web

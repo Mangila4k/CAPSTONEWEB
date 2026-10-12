@@ -167,8 +167,8 @@ import { EmailNotificationService } from '../../js/email_service.js';
 
                 if (student.id) seenStudentIds.add(student.id);
 
-                const fName = (student.first_name || enr.first_name || user.first_name || '').trim();
-                const lName = (student.last_name || enr.last_name || user.last_name || '').trim();
+                const fName = (enr.first_name || student.first_name || user.first_name || '').trim();
+                const lName = (enr.last_name || student.last_name || user.last_name || '').trim();
                 const fullName = `${fName} ${lName}`.trim() || 'Student Applicant';
                 const email = enr.email || student.email || user.email || '—';
                 const lrn = student.lrn || enr.lrn || 'Not assigned';

@@ -1466,9 +1466,8 @@ import { EmailNotificationService } from '../../js/email_service.js';
 
     fetchEnrollments();
     loadNotifications();
-    setupRealtimeNotifications();
 
-})();
+
     // ============================================
     // REQUIREMENT REMINDER & GOOD MORAL REQUEST MODAL
     // ============================================
@@ -1685,3 +1684,8 @@ import { EmailNotificationService } from '../../js/email_service.js';
             openRequestReqModal({ id: sId, name: sName, email: sEmail, grade: sGrade });
         }
     });
+
+    setupRealtimeNotifications();
+
+})();
+
