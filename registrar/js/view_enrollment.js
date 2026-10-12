@@ -511,7 +511,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
                             <div class="info-card-icon"><i class="fas fa-layer-group"></i></div>
                             <div class="info-card-content">
                                 <span class="info-card-label">Grade Level & Strand</span>
-                                <span class="info-card-value"><strong>${gradeLevel}</strong> ${strand && strand !== 'Junior High' ? `<span class="strand-pill">${strand}</span>` : ''}</span>
+                                <span class="info-card-value"><strong>${gradeLevel}</strong> ${(parseInt((gradeLevel || '').replace(/\D/g, ''), 10) >= 11 && strand) ? `<span class="strand-pill">${strand}</span>` : ''}</span>
                             </div>
                         </div>
                         <div class="info-card-item">
@@ -627,7 +627,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
         `;
     }
 
-    // ============================================
+        // ============================================
     // RENDER REQUIREMENTS SECTION
     // ============================================
 
@@ -656,6 +656,12 @@ import { EmailNotificationService } from '../../js/email_service.js';
             }
         }
 
+        const targetStudentId = currentEnrollment?.student_id || currentEnrollment?.id || currentStudent?.id || '';
+        const targetEmail = (currentEnrollment?.email || currentStudent?.email || '').trim().toLowerCase();
+
+        const missingReqs = [];
+        let hasMissingGoodMoral = false;
+
         let html = '';
 
         reqs.forEach(req => {
@@ -663,34 +669,111 @@ import { EmailNotificationService } from '../../js/email_service.js';
                 (d.document_type && (
                     d.document_type.toLowerCase().includes(req.key.replace('_', ' ')) ||
                     (req.key === 'report_card' && (d.document_type.toLowerCase().includes('report card') || d.document_type.toLowerCase().includes('form 138'))) ||
-                    (req.key === 'form_138' && (d.document_type.toLowerCase().includes('report card') || d.document_type.toLowerCase().includes('form 138')))
+                    (req.key === 'form_138' && (d.document_type.toLowerCase().includes('report card') || d.document_type.toLowerCase().includes('form 138'))) ||
+                    (req.key === 'good_moral' && (d.document_type.toLowerCase().includes('good moral') || d.document_type.toLowerCase().includes('certificate of good moral')))
                 )) ||
                 (d.file_name && (
                     d.file_name.toLowerCase().includes(req.key.replace('_', ' ')) ||
-                    (req.key === 'report_card' && d.file_name.toLowerCase().includes('report'))
+                    (req.key === 'report_card' && d.file_name.toLowerCase().includes('report')) ||
+                    (req.key === 'good_moral' && d.file_name.toLowerCase().includes('good moral'))
                 )) ||
                 d[req.key] ||
-                (req.key === 'report_card' && (d.form_138 || currentStudent?.form_138_url)) ||
-                (req.key === 'form_138' && (d.report_card || currentStudent?.form_138_url))
-            );
+                (req.key === 'report_card' && (d.form_138 || currentStudent?.form_138_url || currentEnrollment?.form_138_url)) ||
+                (req.key === 'form_138' && (d.report_card || currentStudent?.form_138_url || currentEnrollment?.form_138_url)) ||
+                (req.key === 'good_moral' && (d.good_moral || currentStudent?.good_moral_url || currentEnrollment?.good_moral_url)) ||
+                (req.key === 'psa_birth_cert' && (d.psa_birth || currentStudent?.psa_birth_url || currentEnrollment?.psa_birth_url)) ||
+                (req.key === 'two_by_two_picture' && (d.two_by_two_picture || currentStudent?.two_by_two_picture_url || currentStudent?.profile_picture_url))
+            ) || (req.key === 'good_moral' && (currentStudent?.good_moral_url || currentEnrollment?.good_moral_url))
+              || (req.key === 'report_card' && (currentStudent?.form_138_url || currentEnrollment?.form_138_url))
+              || (req.key === 'psa_birth_cert' && (currentStudent?.psa_birth_url || currentEnrollment?.psa_birth_url))
+              || (req.key === 'two_by_two_picture' && (currentStudent?.two_by_two_picture_url || currentStudent?.profile_picture_url));
+
+            if (!hasDoc) {
+                missingReqs.push(req);
+                if (req.key === 'good_moral') hasMissingGoodMoral = true;
+            }
+
+            const isRequested = localStorage.getItem(`hes_req_requested_${targetStudentId}_${req.key}`) ||
+                                localStorage.getItem(`hes_req_requested_${targetEmail}_${req.key}`) ||
+                                (req.key === 'good_moral' && (
+                                    localStorage.getItem(`hes_req_requested_${targetStudentId}_good_moral`) ||
+                                    localStorage.getItem(`hes_req_requested_${targetEmail}_good_moral`) ||
+                                    localStorage.getItem(`hes_req_requested_${targetStudentId}_missing_goodmoral`) ||
+                                    localStorage.getItem(`hes_req_requested_${targetEmail}_missing_goodmoral`)
+                                ));
 
             html += `
-                <div class="requirement-item ${hasDoc ? 'complete' : 'incomplete'}">
-                    <div class="requirement-icon">
-                        <i class="fas ${hasDoc ? 'fa-check-circle' : 'fa-clock'}"></i>
-                    </div>
+                <div class="requirement-item ${hasDoc ? 'submitted' : 'missing'}">
                     <div class="requirement-info">
-                        <h4>${req.name}</h4>
-                        <span>${req.required ? 'Mandatory Requirement' : 'Optional Requirement'}</span>
+                        <i class="fas ${hasDoc ? 'fa-check-circle' : 'fa-clock'}"></i>
+                        <span class="requirement-name">${req.name}</span>
+                        <span class="requirement-badge ${req.required ? 'badge-required' : 'badge-optional'}">${req.required ? 'Required' : 'Optional'}</span>
+                        ${(!hasDoc && isRequested) ? `<span class="badge-reminder-sent"><i class="fas fa-paper-plane"></i> Reminder Sent</span>` : ''}
                     </div>
-                    <span class="req-status ${hasDoc ? 'status-complete' : 'status-pending'}">
-                        ${hasDoc ? 'Verified / Submitted' : 'Pending Submission'}
-                    </span>
+                    <div class="requirement-status-wrap" style="display: flex; align-items: center; gap: 8px;">
+                        <span class="${hasDoc ? 'status-submitted' : 'status-missing'}">
+                            ${hasDoc ? 'Verified / Submitted' : 'Pending'}
+                        </span>
+                        ${!hasDoc ? `
+                            <button type="button" class="btn-remind-inline ${req.key === 'good_moral' ? 'btn-remind-gm' : ''}" 
+                                data-req-key="${req.key}" 
+                                data-req-name="${req.name}" 
+                                title="${req.key === 'good_moral' ? 'Request Good Moral Certificate' : 'Send Reminder for ' + req.name}">
+                                <i class="fas ${req.key === 'good_moral' ? 'fa-award' : 'fa-bell'}"></i>
+                                <span>${req.key === 'good_moral' ? 'Request Good Moral' : 'Remind'}</span>
+                            </button>
+                        ` : ''}
+                    </div>
                 </div>
             `;
         });
 
         requirementsGrid.innerHTML = html;
+
+        // Bind .btn-remind-inline
+        requirementsGrid.querySelectorAll('.btn-remind-inline').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const key = this.dataset.reqKey;
+                const name = this.dataset.reqName;
+                if (key === 'good_moral') {
+                    openNoticeModal('missing_goodmoral');
+                } else if (key === 'report_card' || key === 'form_138') {
+                    openNoticeModal('missing_form138');
+                } else if (key === 'psa_birth' || key === 'psa_birth_cert') {
+                    openNoticeModal('missing_psa');
+                } else {
+                    openNoticeModal('custom');
+                    if (noticeTitleInput) noticeTitleInput.value = `📢 Missing Document: ${name}`;
+                    if (noticeMessageInput) noticeMessageInput.value = `This is an official notice from the Registrar's Office to submit your ${name} to finalize your enrollment record.`;
+                }
+            });
+        });
+
+        // Bind Header & Toolbar buttons
+        const headerRequestMoralBtn = document.getElementById('headerRequestMoralBtn');
+        if (headerRequestMoralBtn) {
+            headerRequestMoralBtn.onclick = () => openNoticeModal('missing_goodmoral');
+        }
+
+        const headerRemindReqBtn = document.getElementById('headerRemindReqBtn');
+        if (headerRemindReqBtn) {
+            headerRemindReqBtn.onclick = () => {
+                if (missingReqs.length > 0) {
+                    openNoticeModal('custom');
+                    const missingNames = missingReqs.map(m => m.name).join(', ');
+                    if (noticeTitleInput) noticeTitleInput.value = '⚠️ Reminder: Pending Enrollment Requirements';
+                    if (noticeMessageInput) noticeMessageInput.value = `Our records indicate that the following enrollment requirements are still pending submission: ${missingNames}. Please upload clear digital copies or present original physical documents to the Registrar's Office as soon as possible.`;
+                } else {
+                    openNoticeModal('custom');
+                }
+            };
+        }
+
+        const quickRequestGoodMoralBtn = document.getElementById('quickRequestGoodMoralBtn');
+        if (quickRequestGoodMoralBtn) {
+            quickRequestGoodMoralBtn.onclick = () => openNoticeModal('missing_goodmoral');
+        }
     }
 
     // ============================================
@@ -1265,7 +1348,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
         }
     };
 
-    function openNoticeModal() {
+    function openNoticeModal(presetKey = 'welcome_credentials') {
         if (!noticeModal) return;
 
         const firstName = currentEnrollment?.first_name || currentStudent?.first_name || '';
@@ -1286,6 +1369,15 @@ import { EmailNotificationService } from '../../js/email_service.js';
         const noticeStudentPassword = document.getElementById('noticeStudentPassword');
         if (noticeStudentUsername) noticeStudentUsername.textContent = sEmail || 'student@email.com';
         if (noticeStudentPassword) noticeStudentPassword.textContent = lastName;
+
+        if (noticePresetSelect) {
+            noticePresetSelect.value = presetKey;
+            const selected = noticePresets[presetKey] || noticePresets.welcome_credentials;
+            if (selected) {
+                if (noticeTitleInput) noticeTitleInput.value = selected.title;
+                if (noticeMessageInput) noticeMessageInput.value = selected.body;
+            }
+        }
 
         noticeModal.style.display = 'flex';
     }
@@ -1310,31 +1402,41 @@ import { EmailNotificationService } from '../../js/email_service.js';
     async function recordInAppNotice(title, message) {
         const targetStudentId = currentEnrollment?.student_id || currentEnrollment?.user_id || currentEnrollment?.id || null;
         const targetEmail = (currentEnrollment?.email || currentStudent?.email || '').trim().toLowerCase();
+        const isGoodMoral = title.toLowerCase().includes('good moral') || message.toLowerCase().includes('good moral');
 
-        await supabase
-            .from('notifications')
-            .insert([{
-                user_id: targetStudentId,
-                student_id: currentEnrollment?.student_id || null,
-                recipient_email: targetEmail || null,
-                role: 'student',
-                title: title,
-                message: message,
-                type: 'message',
-                enrollment_id: currentEnrollment?.id || null,
-                is_read: false,
-                read: false,
-                created_at: new Date().toISOString()
-            }]);
+        try {
+            await supabase
+                .from('notifications')
+                .insert([{
+                    user_id: targetStudentId,
+                    student_id: currentEnrollment?.student_id || null,
+                    recipient_email: targetEmail || null,
+                    role: 'student',
+                    title: title,
+                    message: message,
+                    type: isGoodMoral ? 'good_moral_request' : 'requirement_reminder',
+                    enrollment_id: currentEnrollment?.id || null,
+                    is_read: false,
+                    read: false,
+                    created_at: new Date().toISOString()
+                }]);
+        } catch(e) {
+            console.warn('Notice insert warning:', e);
+        }
 
+        const nowIso = new Date().toISOString();
         if (targetStudentId) {
             try {
+                if (isGoodMoral) {
+                    localStorage.setItem(`hes_req_requested_${targetStudentId}_good_moral`, nowIso);
+                    localStorage.setItem(`hes_req_requested_${targetStudentId}_missing_goodmoral`, nowIso);
+                }
                 const k = `hes_notifications_${targetStudentId}`;
                 const raw = localStorage.getItem(k);
                 let list = raw ? JSON.parse(raw) : [];
                 list.unshift({
                     id: 'notif_' + Date.now(),
-                    type: 'message',
+                    type: isGoodMoral ? 'good_moral_request' : 'message',
                     title: title,
                     message: message,
                     time: 'Just now',
@@ -1346,12 +1448,16 @@ import { EmailNotificationService } from '../../js/email_service.js';
 
         if (targetEmail) {
             try {
+                if (isGoodMoral) {
+                    localStorage.setItem(`hes_req_requested_${targetEmail}_good_moral`, nowIso);
+                    localStorage.setItem(`hes_req_requested_${targetEmail}_missing_goodmoral`, nowIso);
+                }
                 const kEm = `hes_notifications_${targetEmail}`;
                 const rawEm = localStorage.getItem(kEm);
                 let listEm = rawEm ? JSON.parse(rawEm) : [];
                 listEm.unshift({
                     id: 'notif_em_' + Date.now(),
-                    type: 'message',
+                    type: isGoodMoral ? 'good_moral_request' : 'message',
                     title: title,
                     message: message,
                     time: 'Just now',
@@ -1360,6 +1466,9 @@ import { EmailNotificationService } from '../../js/email_service.js';
                 localStorage.setItem(kEm, JSON.stringify(listEm.slice(0, 30)));
             } catch(e) {}
         }
+
+        window.dispatchEvent(new Event('storage'));
+        renderRequirementsSection();
     }
 
     if (sendNoticeGmailBtn) {

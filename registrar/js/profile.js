@@ -340,12 +340,12 @@ import { supabase } from '../../supabase/config.js';
     function renderEmailVerification() {
         if (!emailVerificationStatus) return;
         emailVerificationStatus.innerHTML = `
-            <div class="verification-badge verified">
+            <div class="verify-badge verified">
                 <i class="fas fa-check-circle"></i> Verified Official Email
             </div>
-            <div class="verification-info">
-                <p><i class="fas fa-check-circle" style="color: #28a745;"></i> Your email address has been verified for DepEd HES registrar operations.</p>
-                <p style="margin-top: 10px;">Authorized for student records processing, enrollment validation, and official grading endorsements.</p>
+            <div class="verify-info">
+                <p><i class="fas fa-check-circle" style="color: #10b981;"></i> Your email address has been verified for DepEd HES registrar operations.</p>
+                <p style="margin-top: 6px;">Authorized for student records processing, enrollment validation, and official grading endorsements.</p>
             </div>
         `;
     }
@@ -354,14 +354,14 @@ import { supabase } from '../../supabase/config.js';
         if (!emailChangeSection) return;
         emailChangeSection.innerHTML = `
             <form id="registrarEmailChangeForm" class="email-change-form">
-                <div class="form-group">
-                    <label>New Email Address</label>
-                    <input type="email" id="newRegistrarEmail" placeholder="Enter your new official email" required>
-                    <small style="color: #666; display: block; margin-top: 5px;">
+                <div class="form-group" style="margin-bottom: 14px;">
+                    <label class="form-label">New Email Address</label>
+                    <input type="email" id="newRegistrarEmail" class="email-input-field" placeholder="Enter your new official email" required>
+                    <small>
                         <i class="fas fa-info-circle"></i> A confirmation link will be sent to the updated email address.
                     </small>
                 </div>
-                <button type="submit" class="btn-verify">
+                <button type="submit" class="btn-verify-email">
                     <i class="fas fa-paper-plane"></i> Update Email Address
                 </button>
             </form>
@@ -385,105 +385,6 @@ import { supabase } from '../../supabase/config.js';
                 }
             });
         }
-    }
-
-    // ============================================
-    // EDIT PROFILE FORM
-    // ============================================
-
-    const editPhone = document.getElementById('editPhone');
-    const saveProfileBtn = document.getElementById('saveProfileBtn');
-
-    if (editProfileForm) {
-        editProfileForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const firstName = document.getElementById('editFirstName')?.value.trim() || '';
-            const lastName = document.getElementById('editLastName')?.value.trim() || '';
-            const gender = document.getElementById('editRegistrarGender')?.value || '';
-            const phone = editPhone ? editPhone.value.trim() : '';
-            const address = document.getElementById('editRegistrarAddress')?.value.trim() || '';
-
-            if (!firstName || !lastName) {
-                showAlert('First name and last name are required.', 'error');
-                return;
-            }
-
-            if (saveProfileBtn) {
-                saveProfileBtn.disabled = true;
-                saveProfileBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
-            }
-
-            try {
-                const fullname = `${firstName} ${lastName}`.trim();
-                const userUid = sessionUser?.uid || sessionUser?.id || userData?.id;
-
-                if (userUid) {
-                    try {
-                        const { error: updateErr } = await supabase
-                            .from('users')
-                            .update({
-                                first_name: firstName,
-                                last_name: lastName,
-                                gender: gender,
-                                phone: phone,
-                                address: address,
-                                updated_at: new Date().toISOString()
-                            })
-                            .eq('id', userUid);
-
-                        if (updateErr) console.warn('Database update note:', updateErr);
-                    } catch(dbErr) {
-                        console.warn('Database update fallback:', dbErr);
-                    }
-                }
-
-                // Update Session & Local Storage
-                if (sessionUser) {
-                    sessionUser.firstName = firstName;
-                    sessionUser.lastName = lastName;
-                    sessionUser.displayName = fullname;
-                    sessionUser.gender = gender;
-                    sessionUser.phone = phone;
-                    sessionUser.address = address;
-                    localStorage.setItem('currentUser', JSON.stringify(sessionUser));
-                }
-                localStorage.setItem('hes_registrar_name', fullname);
-
-                if (userData) {
-                    userData.first_name = firstName;
-                    userData.last_name = lastName;
-                    userData.gender = gender;
-                    userData.phone = phone;
-                    userData.address = address;
-                }
-
-                // Update UI and View Mode
-                if (profileName) profileName.textContent = fullname;
-                if (adminName) adminName.textContent = fullname;
-                const init = fullname.charAt(0).toUpperCase();
-                if (adminInitial) adminInitial.textContent = init;
-                if (avatarInitial) avatarInitial.textContent = init;
-
-                const empId = userData?.employee_id || 'HES-REG-2026';
-                const userEmail = sessionUser?.email || '';
-                renderRegistrarAccountInfoView(userData, fullname, userEmail, empId);
-                setRegistrarEditMode(false);
-
-                if (window.syncRegistrarAvatarAndName) {
-                    window.syncRegistrarAvatarAndName();
-                }
-
-                showAlert('✅ Account information updated successfully!', 'success');
-            } catch (err) {
-                console.error('Error saving registrar profile:', err);
-                showAlert('❌ Failed to update profile: ' + err.message, 'error');
-            } finally {
-                if (saveProfileBtn) {
-                    saveProfileBtn.disabled = false;
-                    saveProfileBtn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
-                }
-            }
-        });
     }
 
     // ============================================

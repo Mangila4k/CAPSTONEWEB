@@ -167,6 +167,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             requirement: 'fa-file-upload',
             profile: 'fa-user-edit',
             enrollment: 'fa-graduation-cap',
+            new_enrollment: 'fa-file-signature',
             account: 'fa-user-plus'
         };
 
@@ -279,7 +280,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             let url = notif.actionUrl;
             let label = notif.actionLabel;
             if (!url) {
-                if (notif.type === 'enrollment') { url = 'enrollments.html'; label = 'Go to Enrollments'; }
+                if (notif.type === 'enrollment' || notif.type === 'new_enrollment') { url = (notif.enrollment_id || notif.enrollmentId) ? `view_enrollment.html?id=${notif.enrollment_id || notif.enrollmentId}` : 'enrollments.html'; label = 'Go to Enrollments'; }
                 else if (notif.type === 'account') { url = 'manage_accounts.html'; label = 'Go to Accounts'; }
                 else if (notif.type === 'action') { url = 'sections.html'; label = 'Go to Sections'; }
                 else if (notif.type === 'profile') { url = 'student.html'; label = 'Go to Students'; }
@@ -315,7 +316,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         dashboardData.notifications.forEach(n => n.is_read = true);
         renderNotifications();
         try {
-            await supabase.from('notifications').update({ read: true }).eq('read', false);
+            await supabase.from('notifications').update({ read: true, is_read: true }).or('role.eq.admin,role.is.null').or('read.eq.false,is_read.eq.false');
         } catch(e) {
             console.warn('Error batch updating read status in DB:', e);
         }
@@ -458,47 +459,252 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     });
 
+    // Helper to calculate relative time
+    function getRelativeTimeStr(dateStr) {
+        if (!dateStr) return 'Just now';
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return 'Recently';
+        const diffMs = Date.now() - d.getTime();
+        const diffSecs = Math.floor(diffMs / 1000);
+        const diffMins = Math.floor(diffSecs / 60);
+        const diffHours = Math.floor(diffMins / 60);
+        const diffDays = Math.floor(diffHours / 24);
+
+        if (diffSecs < 60) return 'Just now';
+        if (diffMins < 60) return `${diffMins}m ago`;
+        if (diffHours < 24) return `${diffHours}h ago`;
+        if (diffDays === 1) return 'Yesterday';
+        if (diffDays < 7) return `${diffDays}d ago`;
+        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
+
+    // Parse unstructured activity text into structured data
+    function parseActivityItem(activity) {
+        const text = activity.description || '';
+        const rawAction = activity.action || activity.type || '';
+        let actor = activity.actor || '';
+        let actionLabel = 'Activity';
+        let actionType = 'system';
+        let status = '';
+        let lateInfo = '';
+        let validation = '';
+        let schedule = '';
+        let summary = text;
+
+        const lower = text.toLowerCase();
+
+        // 1. Extract Actor
+        if (!actor) {
+            if (text.includes(' recorded ')) {
+                actor = text.split(' recorded ')[0].trim();
+            } else if (text.includes(' validated ')) {
+                actor = text.split(' validated ')[0].trim();
+            } else if (text.startsWith('Account registered: ')) {
+                actor = text.replace('Account registered: ', '').split('(')[0].trim();
+            } else if (text.startsWith('Enrollment application')) {
+                const parts = text.split(':');
+                actor = parts[1] ? parts[1].split('(')[0].trim() : 'Student';
+            } else {
+                actor = 'System User';
+            }
+        }
+
+        // 2. Classify action type & label
+        if (lower.includes('time in') || lower.includes('time-in')) {
+            actionLabel = 'Time In';
+            actionType = 'time_in';
+        } else if (lower.includes('time out') || lower.includes('time-out')) {
+            actionLabel = 'Time Out';
+            actionType = 'time_out';
+        } else if (lower.includes('enroll')) {
+            actionLabel = 'Admissions';
+            actionType = 'enrollment';
+        } else if (lower.includes('account') || lower.includes('user') || lower.includes('register')) {
+            actionLabel = 'Account';
+            actionType = 'account';
+        } else if (lower.includes('security') || lower.includes('password') || lower.includes('auth')) {
+            actionLabel = 'Security';
+            actionType = 'security';
+        } else {
+            actionLabel = rawAction ? rawAction.replace(/_/g, ' ') : 'System Log';
+            actionType = 'system';
+        }
+
+        // 3. Extract time recorded
+        let timeRecorded = "";
+        const timeMatch = text.match(/(?:recorded\s+(?:Time\s+In|Time\s+Out)\s+at\s+)(\d{1,2}:\d{2}\s*[AP]M)/i);
+        if (timeMatch) {
+            timeRecorded = timeMatch[1].trim();
+        } else {
+            const timeAtMatch = text.match(/(?:at\s+)(\d{1,2}:\d{2}\s*[AP]M)/i);
+            if (timeAtMatch) {
+                timeRecorded = timeAtMatch[1].trim();
+            } else {
+                const genericTime = text.match(/(\d{1,2}:\d{2}\s*[AP]M)/i);
+                if (genericTime) timeRecorded = genericTime[1].trim();
+            }
+        }
+
+        // 4. Status determination (attendance is purely Time In or Time Out, no late penalties)
+        if (actionType === "time_in") {
+            status = "Time In";
+        } else if (actionType === "time_out") {
+            status = "Time Out";
+        } else if (lower.includes("completed")) {
+            status = "Completed";
+        } else if (lower.includes("approved")) {
+            status = "Approved";
+        } else if (lower.includes("pending")) {
+            status = "Pending";
+        } else {
+            const statusMatch = text.match(/Status:\s*([A-Za-z]+)/i);
+            if (statusMatch) status = statusMatch[1];
+        }
+
+        // 5. Craft clean summary
+        if (actionType === "time_in") {
+            summary = timeRecorded ? `Recorded Time In at ${timeRecorded}` : "Recorded Time In";
+        } else if (actionType === "time_out") {
+            summary = timeRecorded ? `Recorded Time Out at ${timeRecorded}` : "Recorded Time Out";
+        } else {
+            summary = text;
+        }
+
+        return { actor, actionLabel, actionType, status, timeRecorded, summary };
+    }
+
     // Render recent activities
     function renderActivities() {
         const list = document.getElementById('activityList');
         if (!list) return;
-        const activities = dashboardData.recentActivities;
+        const activities = (dashboardData.recentActivities || []).slice(0, 5);
+
+        const countBadge = document.getElementById('recentActivitiesCount');
+        if (countBadge) {
+            countBadge.textContent = `${activities.length} Recorded`;
+        }
 
         if (activities.length === 0) {
             list.innerHTML = `
-                <li class="activity-item">
-                    <div class="activity-icon"><i class="fas fa-bell"></i></div>
-                    <div class="activity-content">
-                        <div class="activity-text">No recent activities recorded</div>
-                    </div>
+                <li class="activity-empty-state">
+                    <div class="empty-icon-circle"><i class="fas fa-clock-rotate-left"></i></div>
+                    <h4>No Recent Activities</h4>
+                    <p>Live events, attendance, and audit logs will appear here in real-time.</p>
                 </li>
             `;
             return;
         }
 
-        const icons = {
-            enrollment: 'fa-user-graduate',
-            requirement: 'fa-file-upload',
-            profile: 'fa-user-edit',
-            admin_action: 'fa-shield-alt',
-            account_approval: 'fa-user-check',
-            enrollment_approval: 'fa-file-signature',
-            message: 'fa-envelope'
+        const typeConfig = {
+            time_in: {
+                icon: 'fa-arrow-right-to-bracket',
+                gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+            },
+            time_out: {
+                icon: 'fa-arrow-right-from-bracket',
+                gradient: 'linear-gradient(135deg, #0284c7 0%, #2563eb 100%)'
+            },
+            enrollment: {
+                icon: 'fa-file-signature',
+                gradient: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)'
+            },
+            account: {
+                icon: 'fa-user-check',
+                gradient: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)'
+            },
+            security: {
+                icon: 'fa-shield-halved',
+                gradient: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'
+            },
+            system: {
+                icon: 'fa-clock-rotate-left',
+                gradient: 'linear-gradient(135deg, #0b2b4a 0%, #1e3a5f 100%)'
+            }
         };
 
         let html = '';
         activities.forEach(activity => {
-            const icon = icons[activity.type] || 'fa-bell';
-            const time = new Date(activity.date).toLocaleString('en-US', {
-                month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit'
-            });
-            
+            const parsed = parseActivityItem(activity);
+            const cfg = typeConfig[parsed.actionType] || typeConfig.system;
+            const dObj = new Date(activity.date);
+            const dateStr = dObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+            // Determine badge and pulse dot
+            let statusLabel = 'Logged';
+            let badgeClass = 'status-pill-system';
+            let pulseClass = 'pulse-blue';
+
+            if (parsed.actionType === "time_in") {
+                statusLabel = "Time In";
+                badgeClass = "status-pill-timein";
+                pulseClass = "pulse-green";
+            } else if (parsed.actionType === "time_out") {
+                statusLabel = "Time Out";
+                badgeClass = "status-pill-timeout";
+                pulseClass = "pulse-blue";
+            } else if (parsed.status && (parsed.status.toLowerCase() === 'completed' || parsed.status.toLowerCase() === 'approved')) {
+                statusLabel = parsed.status;
+                badgeClass = 'status-pill-enrolled';
+                pulseClass = 'pulse-green';
+            } else if (parsed.status && parsed.status.toLowerCase() === 'pending') {
+                statusLabel = 'Pending';
+                badgeClass = 'status-pill-pending';
+                pulseClass = 'pulse-amber';
+            } else if (parsed.actionLabel) {
+                statusLabel = parsed.actionLabel;
+                badgeClass = 'status-pill-system';
+                pulseClass = 'pulse-blue';
+            }
+
+            // Determine sub-row chip (Icon + concise detail)
+            let subIcon = 'fa-circle-info';
+            let subText = 'Activity record';
+            if (parsed.actionType === 'time_in' || parsed.actionType === 'time_out') {
+                subIcon = 'fa-chalkboard-user';
+                subIcon = 'fa-clock';
+                subText = parsed.timeRecorded || dObj.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+            } else if (parsed.actionType === 'enrollment') {
+                subIcon = 'fa-file-signature';
+                subText = 'Admissions';
+            } else if (parsed.actionType === 'account') {
+                subIcon = 'fa-user-check';
+                subText = 'Account update';
+            } else if (parsed.actionType === 'security') {
+                subIcon = 'fa-shield-halved';
+                subText = 'Security audit';
+            } else {
+                subIcon = 'fa-clock-rotate-left';
+                subText = parsed.summary ? (parsed.summary.length > 28 ? parsed.summary.substring(0, 26) + '...' : parsed.summary) : 'System Log';
+            }
+
             html += `
-                <li class="activity-item">
-                    <div class="activity-icon"><i class="fas ${icon}"></i></div>
-                    <div class="activity-content">
-                        <div class="activity-text">${activity.description}</div>
-                        <div class="activity-time"><i class="far fa-clock"></i> ${time}</div>
+                <li class="enrollment-card-row activity-card-row" onclick="window.location.href='activities.html'" style="cursor: pointer;">
+                    <div class="enrollment-avatar-wrap">
+                        <div class="enrollment-avatar-gradient" style="background: ${cfg.gradient}; font-size: 16px;">
+                            <i class="fas ${cfg.icon}"></i>
+                        </div>
+                    </div>
+                    <div class="enrollment-main-col">
+                        <div class="enrollment-title-row">
+                            <h4 class="enrollment-student-name" title="${parsed.actor}">${parsed.actor}</h4>
+                            <span class="status-pill ${badgeClass}">
+                                <span class="status-dot ${pulseClass}"></span>
+                                ${statusLabel}
+                            </span>
+                        </div>
+                        <div class="enrollment-sub-row">
+                            <span class="enrollment-grade-chip" title="${subText}">
+                                <i class="fas ${subIcon}"></i> ${subText}
+                            </span>
+                            <span class="enrollment-date-chip" title="${dObj.toLocaleString()}">
+                                <i class="far fa-calendar-alt"></i> ${dateStr}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="enrollment-arrow-col">
+                        <div class="enrollment-action-btn" title="View Details">
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
                     </div>
                 </li>
             `;
@@ -511,42 +717,93 @@ document.addEventListener('DOMContentLoaded', async function() {
     function renderEnrollments() {
         const list = document.getElementById('enrollmentList');
         if (!list) return;
-        const enrollments = dashboardData.recentEnrollments;
+        const enrollments = dashboardData.recentEnrollments || [];
+
+        const countBadge = document.getElementById('recentEnrollmentsCount');
+        if (countBadge) countBadge.textContent = `${enrollments.length} Recent`;
 
         if (enrollments.length === 0) {
             list.innerHTML = `
-                <li class="enrollment-item">
-                    <div class="enrollment-info">
-                        <p>No recent enrollments recorded</p>
+                <li class="enrollment-empty-state">
+                    <div class="empty-icon-wrap">
+                        <i class="fas fa-user-graduate"></i>
                     </div>
+                    <h4>No Recent Enrollments</h4>
+                    <p>New student applications will appear here in real-time.</p>
                 </li>
             `;
             return;
         }
 
+        // Curated harmonious gradients for dynamic avatar generation
+        const gradientPalette = [
+            'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)', // Indigo-Violet
+            'linear-gradient(135deg, #0284c7 0%, #2563eb 100%)', // Sky-Blue
+            'linear-gradient(135deg, #059669 0%, #10b981 100%)', // Emerald
+            'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)', // Amber
+            'linear-gradient(135deg, #e11d48 0%, #f43f5e 100%)', // Rose
+            'linear-gradient(135deg, #7c3aed 0%, #c026d3 100%)', // Purple-Fuchsia
+            'linear-gradient(135deg, #0f766e 0%, #14b8a6 100%)'  // Teal
+        ];
+
         let html = '';
-        enrollments.forEach(enrollment => {
-            const initial = enrollment.fullname.charAt(0).toUpperCase();
-            const time = new Date(enrollment.created_at).toLocaleDateString('en-US', {
+        enrollments.forEach((enrollment, index) => {
+            const initial = (enrollment.fullname || 'S').charAt(0).toUpperCase();
+            const bgGradient = gradientPalette[index % gradientPalette.length];
+            const dateObj = new Date(enrollment.created_at || Date.now());
+            const dateStr = dateObj.toLocaleDateString('en-US', {
                 month: 'short', day: 'numeric', year: 'numeric'
             });
-            
+            const statusLower = (enrollment.status || 'enrolled').toLowerCase();
+            const isEnrolled = statusLower === 'enrolled' || statusLower === 'approved';
+            const isPending = statusLower === 'pending';
+            const pulseClass = isEnrolled ? 'pulse-green' : (isPending ? 'pulse-amber' : 'pulse-red');
+            const badgeClass = isEnrolled ? 'status-pill-enrolled' : (isPending ? 'status-pill-pending' : 'status-pill-rejected');
+            const statusLabel = isEnrolled ? 'Enrolled' : (isPending ? 'Pending' : enrollment.status);
+
             html += `
-                <li class="enrollment-item">
-                    <div class="enrollment-avatar">${initial}</div>
-                    <div class="enrollment-info">
-                        <h4>${enrollment.fullname}</h4>
-                        <div class="enrollment-meta">
-                            <span>${enrollment.grade_name}</span>
-                            <span class="status-badge status-${enrollment.status.toLowerCase()}">${enrollment.status}</span>
+                <li class="enrollment-card-row" data-name="${encodeURIComponent(enrollment.fullname || '')}">
+                    <div class="enrollment-avatar-wrap">
+                        <div class="enrollment-avatar-gradient" style="background: ${bgGradient};">
+                            ${initial}
                         </div>
-                        <div class="enrollment-date"><i class="far fa-calendar-alt"></i> ${time}</div>
+                    </div>
+                    <div class="enrollment-main-col">
+                        <div class="enrollment-title-row">
+                            <h4 class="enrollment-student-name">${enrollment.fullname}</h4>
+                            <span class="status-pill ${badgeClass}">
+                                <span class="status-dot ${pulseClass}"></span>
+                                ${statusLabel}
+                            </span>
+                        </div>
+                        <div class="enrollment-sub-row">
+                            <span class="enrollment-grade-chip">
+                                <i class="fas fa-graduation-cap"></i> ${enrollment.grade_name || 'Junior/Senior High'}
+                            </span>
+                            <span class="enrollment-date-chip">
+                                <i class="far fa-calendar-alt"></i> ${dateStr}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="enrollment-arrow-col">
+                        <div class="enrollment-action-btn" title="View Student in Enrollments">
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
                     </div>
                 </li>
             `;
         });
 
         list.innerHTML = html;
+
+        // Interactive row click handler
+        list.querySelectorAll('.enrollment-card-row').forEach(row => {
+            row.style.cursor = 'pointer';
+            row.addEventListener('click', function() {
+                const sName = this.dataset.name;
+                window.location.href = sName ? `enrollments.html?search=${sName}` : 'enrollments.html';
+            });
+        });
     }
 
     // Render admin actions table
@@ -946,7 +1203,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 supabase.from('students').select('*'),
                 supabase.from('users').select('*').order('created_at', { ascending: false }),
                 supabase.from('activity_logs').select('*').order('timestamp', { ascending: false }).limit(20),
-                supabase.from('notifications').select('*').order('created_at', { ascending: false }).limit(30)
+                supabase.from('notifications').select('*').or('role.eq.admin,role.is.null').order('created_at', { ascending: false }).limit(30)
             ]);
 
             dashboardData.stats.totalStudents = studentCount ?? (sData ? sData.length : 0);
@@ -1083,9 +1340,11 @@ document.addEventListener('DOMContentLoaded', async function() {
             // Populate recent activities from activity_logs or live enrollments/accounts
             if (actData && actData.length > 0) {
                 dashboardData.recentActivities = actData.map(log => ({
-                    type: log.action ? log.action.toLowerCase().includes('enroll') ? 'enrollment' : 'admin_action' : 'admin_action',
+                    type: log.action ? (log.action.toLowerCase().includes('enroll') ? 'enrollment' : (log.action.toLowerCase().includes('time') ? 'attendance' : 'admin_action')) : 'admin_action',
+                    action: log.action || '',
+                    actor: log.user_name || log.fullname || '',
                     description: log.details || log.action || 'System event recorded',
-                    date: log.timestamp || new Date().toISOString()
+                    date: log.timestamp || log.created_at || new Date().toISOString()
                 }));
             } else {
                 const events = [];
@@ -1123,6 +1382,120 @@ document.addEventListener('DOMContentLoaded', async function() {
         } catch (err) {
             console.warn('Dashboard live sync warning:', err);
         }
+    }
+
+
+
+    // ===== CHIME & TOAST ALERTS =====
+    function playNotificationChime() {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+            osc.frequency.setValueAtTime(880.00, ctx.currentTime + 0.12);
+            
+            gain.gain.setValueAtTime(0.2, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+            
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 0.5);
+        } catch(e) {}
+    }
+
+    function showNotificationToast(notif) {
+        let container = document.getElementById('alertContainer');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'alertContainer';
+            container.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 99999; display: flex; flex-direction: column; gap: 10px; max-width: 420px;';
+            document.body.appendChild(container);
+        }
+
+        const toast = document.createElement('div');
+        toast.className = 'notif-toast-banner';
+        toast.style.cssText = 'background: #ffffff; border-radius: 12px; padding: 14px 16px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.15), 0 8px 10px -6px rgba(0,0,0,0.1); border-left: 5px solid #1B2A4A; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: space-between; gap: 12px;';
+        
+        toast.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 12px; min-width: 0;">
+                <div style="width: 38px; height: 38px; border-radius: 50%; background: #e0e7ff; color: #4338ca; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <div style="min-width: 0;">
+                    <strong style="display: block; font-size: 13.5px; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${notif.title || 'New Enrollment Notification'}</strong>
+                    <span style="font-size: 12px; color: #475569; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${notif.message || ''}</span>
+                </div>
+            </div>
+            <button type="button" style="background: #1B2A4A; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; flex-shrink: 0;">
+                View
+            </button>
+        `;
+
+        toast.addEventListener('click', () => {
+            if (notif.enrollment_id || notif.enrollmentId) {
+                window.location.href = `view_enrollment.html?id=${notif.enrollment_id || notif.enrollmentId}`;
+            } else {
+                window.location.href = 'enrollments.html';
+            }
+        });
+
+        container.prepend(toast);
+
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(-10px)';
+            setTimeout(() => toast.remove(), 300);
+        }, 7000);
+    }
+
+    // ===== REALTIME & CROSS-TAB NOTIFICATIONS =====
+    function setupRealtimeNotifications() {
+        try {
+            supabase
+                .channel('admin_notifications_realtime')
+                .on('postgres_changes', {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'notifications'
+                }, (payload) => {
+                    if (!payload || !payload.new) return;
+                    const newNotif = payload.new;
+                    if (!newNotif.role || newNotif.role === 'admin') {
+                        syncLiveDashboardData();
+                        showNotificationToast(newNotif);
+                        playNotificationChime();
+                    }
+                })
+                .on('postgres_changes', {
+                    event: '*',
+                    schema: 'public',
+                    table: 'enrollments'
+                }, () => {
+                    syncLiveDashboardData();
+                })
+                .subscribe();
+        } catch (err) {
+            console.warn('Admin realtime subscription error:', err);
+        }
+
+        // Cross-tab immediate sync
+        window.addEventListener('storage', (e) => {
+            if ((e.key === 'hes_latest_notification' || e.key === 'hes_admin_latest_notification') && e.newValue) {
+                try {
+                    const data = JSON.parse(e.newValue);
+                    if (!data.role || data.role === 'admin' || data.role === 'all' || (data.roles && data.roles.includes('admin'))) {
+                        syncLiveDashboardData();
+                        showNotificationToast(data);
+                        playNotificationChime();
+                    }
+                } catch(err) {}
+            }
+        });
     }
 
     // ===== INIT =====

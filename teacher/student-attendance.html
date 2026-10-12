@@ -11,6 +11,7 @@
     <!-- Base & Custom CSS -->
     <link rel="stylesheet" href="css/student-attendance.css">
     <link rel="stylesheet" href="../css/chatbot.css">
+    <script>window.location.replace('attendance-qr.html');</script>
 </head>
 <body>
     <div class="app-container">
@@ -41,6 +42,7 @@
                     <ul class="nav-items">
                         <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
                         <li><a href="attendance-face.html"><i class="fas fa-camera"></i> <span>Face Attendance</span></a></li>
+                        <li><a href="attendance-qr.html"><i class="fas fa-qrcode"></i> <span>Student QR Scanner</span></a></li>
                         <li><a href="student-attendance.html" class="active"><i class="fas fa-user-check"></i> <span>Student Attendance</span></a></li>
                         <li><a href="classes.html"><i class="fas fa-users"></i> <span>My Classes</span></a></li>
                         <li><a href="class-program.html"><i class="fas fa-calendar-alt"></i> <span>Class Program</span></a></li>
@@ -227,6 +229,9 @@
                         <span class="active-filter-badge" id="activeFilterSummary">Showing all sections</span>
                     </div>
                     <div class="batch-actions-group">
+                        <a href="attendance-qr.html" class="btn-batch btn-scan-qr" style="background: linear-gradient(135deg, #0b2b4a 0%, #1e40af 100%); color: white; border: none; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-weight: 700;" title="Open Live Student ID QR Scanner Studio">
+                            <i class="fas fa-qrcode" style="color: #facc15;"></i> Scan Student QR
+                        </a>
                         <span class="batch-label">Quick Actions:</span>
                         <button type="button" class="btn-batch btn-batch-present" id="btnMarkAllPresent" title="Mark all filtered students as Present">
                             <i class="fas fa-check-double"></i> Mark All Present

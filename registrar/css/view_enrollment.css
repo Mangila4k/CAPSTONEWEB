@@ -42,7 +42,7 @@ body {
     width: 260px;
     background: var(--primary);
     color: white;
-    padding: 1.5rem 0;
+    padding: 14px 0;
     display: flex;
     flex-direction: column;
     position: fixed;
@@ -54,7 +54,7 @@ body {
 }
 
 .sidebar-header {
-    padding: 0 1.5rem 1.5rem;
+    padding: 0 1.25rem 14px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -103,7 +103,7 @@ body {
 }
 
 .admin-profile {
-    padding: 1.5rem;
+    padding: 10px 1.25rem 14px;
     text-align: center;
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
@@ -112,7 +112,7 @@ body {
     position: relative;
     width: 60px;
     height: 60px;
-    margin: 0 auto 0.5rem;
+    margin: 0 auto 8px;
 }
 
 .admin-avatar .avatar-initial {
@@ -155,7 +155,7 @@ body {
 
 .nav-menu {
     flex: 1;
-    padding: 1rem 1.5rem;
+    padding: 14px 1.25rem;
 }
 
 .nav-section-title {
@@ -163,7 +163,7 @@ body {
     text-transform: uppercase;
     letter-spacing: 1px;
     color: rgba(255, 255, 255, 0.3);
-    margin: 1rem 0 0.5rem;
+    margin: 14px 0 6px;
 }
 
 .nav-items {
@@ -177,8 +177,8 @@ body {
 .nav-items a {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 0.6rem 0.8rem;
+    gap: 14px;
+    padding: 7px 12px;
     border-radius: 10px;
     color: rgba(255, 255, 255, 0.6);
     text-decoration: none;
@@ -1421,4 +1421,54 @@ body {
     background: #f59e0b !important;
     color: #070526 !important;
     transform: translateY(-2px);
+}
+
+/* ===== REQUIREMENTS REMIND ACTIONS ===== */
+.btn-remind-inline {
+    background: #eff6ff;
+    color: #0284c7;
+    border: 1px solid #bfdbfe;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s ease;
+}
+.btn-remind-inline:hover {
+    background: #0284c7;
+    color: #ffffff;
+    border-color: #0284c7;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);
+}
+.btn-remind-inline.btn-remind-gm {
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+    color: #ffffff;
+    border: none;
+    box-shadow: 0 2px 4px rgba(2, 132, 199, 0.2);
+}
+.btn-remind-inline.btn-remind-gm:hover {
+    background: linear-gradient(135deg, #0369a1 0%, #075985 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(2, 132, 199, 0.35);
+}
+.badge-reminder-sent {
+    background: #e0f2fe;
+    color: #0369a1;
+    border: 1px solid #bae6fd;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.btn-req-head-action:hover {
+    opacity: 0.95;
+    transform: translateY(-1px);
 }

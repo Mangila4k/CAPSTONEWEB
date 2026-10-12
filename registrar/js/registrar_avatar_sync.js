@@ -1,27 +1,53 @@
 // ===== HES REGISTRAR AVATAR & INITIALS SYNC =====
 (function() {
     function getRegistrarInitials(name) {
-        if (!name || typeof name !== 'string') return 'R';
+        if (!name || typeof name !== 'string') return 'JM';
         const cleanName = name.replace(/^(mr\.?|mrs\.?|ms\.?|dr\.?|prof\.?|engr\.?|atty\.?)\s+/i, '').trim();
         const words = cleanName.split(/[\s,&-]+/).filter(w => w.length > 0 && !['and', 'the', 'of', '&'].includes(w.toLowerCase()));
-        if (words.length === 0) return name.charAt(0).toUpperCase();
+        if (words.length === 0) return 'JM';
         if (words.length === 1) return words[0].substring(0, Math.min(2, words[0].length)).toUpperCase();
         return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase();
     }
 
     function syncRegistrarAvatarAndName() {
         try {
-            const savedName = localStorage.getItem('hes_registrar_name');
-            const savedAvatar = localStorage.getItem('hes_registrar_avatar');
+            let registrarDisplayName = '';
 
-            if (savedName) {
-                document.querySelectorAll('.admin-name, #adminName').forEach(el => {
-                    el.textContent = savedName.split(' ')[0];
-                });
+            // 1. Check active user session
+            const currentUserStr = localStorage.getItem('currentUser');
+            if (currentUserStr) {
+                try {
+                    const user = JSON.parse(currentUserStr);
+                    if (user) {
+                        if (user.displayName) {
+                            registrarDisplayName = user.displayName.trim();
+                        } else if (user.firstName || user.lastName) {
+                            registrarDisplayName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+                        } else if (user.first_name || user.last_name) {
+                            registrarDisplayName = `${user.first_name || ''} ${user.last_name || ''}`.trim();
+                        }
+                    }
+                } catch(e) {}
             }
 
-            const name = savedName || (document.getElementById('adminName') ? document.getElementById('adminName').textContent : 'Registrar');
-            const initials = getRegistrarInitials(name);
+            // 2. Fallback to saved registrar name or default to Justine Mangila
+            if (!registrarDisplayName) {
+                registrarDisplayName = localStorage.getItem('hes_registrar_name') || 'Justine Mangila';
+            }
+
+            const savedAvatar = localStorage.getItem('hes_registrar_avatar');
+
+            // Set full name in all registrar name elements
+            document.querySelectorAll('.admin-name, #adminName').forEach(el => {
+                el.textContent = registrarDisplayName;
+            });
+
+            // Set role explicitly to Registrar
+            document.querySelectorAll('.admin-role, #adminRole').forEach(el => {
+                el.innerHTML = '<i class="fas fa-id-badge"></i> Registrar';
+            });
+
+            const initials = getRegistrarInitials(registrarDisplayName);
 
             document.querySelectorAll('.admin-avatar').forEach(avatar => {
                 if (savedAvatar) {
@@ -37,6 +63,7 @@
                 }
             });
 
+
             // Update sidebar enrollments links with pending badge if found
             document.querySelectorAll('.nav-items a[href*="enrollments.html"]').forEach(link => {
                 let badge = link.querySelector('#pendingEnrollmentsBadge') || link.querySelector('.nav-badge');
@@ -50,11 +77,32 @@
                 }
             });
 
+            // Update sidebar requirements links with pending badge if found
+            document.querySelectorAll('.nav-items a[href*="requirements.html"]').forEach(link => {
+                let badge = link.querySelector('#pendingRequirementsBadge');
+                if (!badge) {
+                    badge = document.createElement('span');
+                    badge.id = 'pendingRequirementsBadge';
+                    badge.className = 'nav-badge';
+                    badge.style.display = 'none';
+                    badge.textContent = '0';
+                    link.appendChild(badge);
+                }
+            });
+
             // Try to load and render pending badge from localStorage or Supabase
             const cachedPending = localStorage.getItem('hes_pending_enrollments_count');
             if (cachedPending && parseInt(cachedPending, 10) > 0) {
-                document.querySelectorAll('#pendingEnrollmentsBadge, .nav-badge').forEach(b => {
+                document.querySelectorAll('#pendingEnrollmentsBadge').forEach(b => {
                     b.textContent = cachedPending;
+                    b.style.display = 'inline-flex';
+                });
+            }
+
+            const cachedReqs = localStorage.getItem('hes_pending_requirements_count');
+            if (cachedReqs && parseInt(cachedReqs, 10) > 0) {
+                document.querySelectorAll('#pendingRequirementsBadge').forEach(b => {
+                    b.textContent = cachedReqs;
                     b.style.display = 'inline-flex';
                 });
             }

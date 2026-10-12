@@ -1,5 +1,6 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,6 +13,7 @@
     <link rel="stylesheet" href="css/reports.css">
     <link rel="stylesheet" href="../css/chatbot.css">
 </head>
+
 <body>
     <!-- Mobile Menu Toggle -->
     <div class="menu-toggle" id="menuToggle">
@@ -23,20 +25,22 @@
         <div class="sidebar-header">
             <div class="logo">
                 <div class="logo-icon">
-                    <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
+                    <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo"
+                        onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
                 </div>
                 <div class="logo-text">PLS<span>NSH</span></div>
             </div>
             <div class="school-badge">Placido L. Señor National High School</div>
         </div>
 
+        
         <div class="admin-profile">
             <div class="admin-avatar">
-                <div class="avatar-initial" id="adminInitial">R</div>
+                <div class="avatar-initial" id="adminInitial">JM</div>
                 <div class="online-dot"></div>
             </div>
-            <div class="admin-name" id="adminName">Registrar</div>
-            <div class="admin-role"><i class="fas fa-user-tie"></i> Registrar</div>
+            <div class="admin-name" id="adminName">Justine Mangila</div>
+            <div class="admin-role"><i class="fas fa-id-badge"></i> Registrar</div>
         </div>
 
         <nav class="nav-menu">
@@ -44,8 +48,12 @@
                 <div class="nav-section-title">MAIN MENU</div>
                 <ul class="nav-items">
                     <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-                    <li><a href="enrollments.html"><i class="fas fa-file-signature"></i> Enrollments <span class="nav-badge" id="pendingEnrollmentsBadge" style="display: none;">0</span></a></li>
+                    <li><a href="enrollments.html"><i class="fas fa-file-signature"></i> Enrollments <span
+                                class="nav-badge" id="pendingEnrollmentsBadge" style="display: none;">0</span></a></li>
                     <li><a href="students.html"><i class="fas fa-user-graduate"></i> Students</a></li>
+<li><a href="requirements.html"><i class="fas fa-clipboard-check"></i> Requirements <span
+                                    class="nav-badge" id="pendingRequirementsBadge" style="display: none;">0</span></a></li>
+                    <li><a href="generate_id.html"><i class="fas fa-id-card"></i> Student ID </a></li>
                     <li><a href="sections.html"><i class="fas fa-layer-group"></i> Sections</a></li>
                     <li><a href="reports.html" class="active"><i class="fas fa-chart-bar"></i> Reports</a></li>
                 </ul>
@@ -124,9 +132,9 @@
                     <label>Report Type</label>
                     <select name="report_type" id="reportType">
                         <option value="enrollment_summary">Enrollment Summary</option>
-                        <option value="student_list">Student List</option>
-                        <option value="enrollment_trends">Enrollment Trends</option>
-                        <option value="strand_distribution">Strand Distribution</option>
+                        <option value="student_list">Student Official Masterlist</option>
+                        <option value="system_activities">Recent Activities & Audit Logs</option>
+                        <option value="rejected_applications">Rejected Applications</option>
                     </select>
                 </div>
 
@@ -141,9 +149,31 @@
                 </div>
 
                 <div class="control-group">
+                    <label><i class="fas fa-layer-group"></i> School Level</label>
+                    <select name="school_level" id="levelFilter">
+                        <option value="all">All Departments (JHS & SHS)</option>
+                        <option value="jhs">Junior High School (Grades 7–10)</option>
+                        <option value="shs">Senior High School (Grades 11–12)</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
                     <label>Grade Level</label>
                     <select name="grade" id="gradeFilter">
                         <option value="">All Grades</option>
+                    </select>
+                </div>
+
+                <div class="control-group" id="strandFilterGroup">
+                    <label><i class="fas fa-shapes"></i> Senior High Strand</label>
+                    <select name="strand" id="strandFilter">
+                        <option value="">All Strands / Any</option>
+                        <option value="STEM">STEM</option>
+                        <option value="ABM">ABM</option>
+                        <option value="HUMSS">HUMSS</option>
+                        <option value="GAS">GAS</option>
+                        <option value="TVL-ICT">TVL-ICT</option>
+                        <option value="TVL-HE">TVL-HE</option>
                     </select>
                 </div>
 
@@ -170,16 +200,76 @@
 
         <!-- Report Display -->
         <div class="report-card" id="reportCard">
+            <!-- Printable Official Document Header (Visible ONLY on Print) -->
+            <div class="print-document-header" id="printDocumentHeader">
+                <div class="print-header-top">
+                    <div class="print-logo print-logo-left">
+                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" onerror="this.src='../pictures/logo sa skwelahan.png'">
+                    </div>
+                    <div class="print-header-center">
+                        <div class="deped-text">Republic of the Philippines</div>
+                        <div class="deped-dept">Department of Education</div>
+                        <div class="deped-reg">Region VII, Central Visayas • Division of Cebu Province</div>
+                        <h1 class="school-name">PLACIDO L. SEÑOR NATIONAL HIGH SCHOOL</h1>
+                        <div class="school-loc">Langtad, City of Naga, Cebu</div>
+                        <div class="office-name">OFFICE OF THE SCHOOL REGISTRAR</div>
+                    </div>
+                    <div class="print-logo print-logo-right">
+                        <img src="../pictures/logo sa skwelahan.jpg" alt="DepEd / School Seal" onerror="this.src='../pictures/logo sa skwelahan.png'">
+                    </div>
+                </div>
+                <div class="print-header-divider"></div>
+                <div class="print-doc-meta">
+                    <div class="print-doc-title">
+                        <h2 id="printReportTitle">OFFICIAL ENROLLMENT SUMMARY REPORT</h2>
+                        <div class="print-doc-dept" id="printDocDept">Basic Education Department • Junior & Senior High School</div>
+                    </div>
+                    <div class="print-doc-details">
+                        <div class="print-meta-item">
+                            <span class="meta-label">Reporting Period:</span>
+                            <span class="meta-value" id="printDatePeriod">Loading...</span>
+                        </div>
+                        <div class="print-meta-item">
+                            <span class="meta-label">Date Generated:</span>
+                            <span class="meta-value" id="printGeneratedDate">October 12, 2026</span>
+                        </div>
+                        <div class="print-meta-item">
+                            <span class="meta-label">Prepared by:</span>
+                            <span class="meta-value" id="printRegistrarName">Registrar</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="report-header">
                 <h2><i class="fas fa-chart-bar"></i> <span id="reportTitle">Enrollment Summary Report</span></h2>
                 <div class="report-actions">
                     <button class="btn-export" id="exportExcelBtn">
                         <i class="fas fa-file-excel"></i> Export Excel
                     </button>
-                    <button class="btn-print" id="printBtn">
-                        <i class="fas fa-print"></i> Print Report
+                    <button class="btn-print btn-print-jhs" id="printJhsBtn" title="Print Junior High School Report on Long Paper (8.5 x 13 in)">
+                        <i class="fas fa-school"></i> Print JHS Report
+                    </button>
+                    <button class="btn-print btn-print-shs" id="printShsBtn" title="Print Senior High School Report on Long Paper (8.5 x 13 in)">
+                        <i class="fas fa-graduation-cap"></i> Print SHS Report
+                    </button>
+                    <button class="btn-print btn-print-all" id="printBtn" title="Print All Records on Long Paper">
+                        <i class="fas fa-print"></i> Print All
                     </button>
                 </div>
+            </div>
+
+            <!-- Department Level Quick Tabs (Screen Only) -->
+            <div class="report-level-tabs" id="reportLevelTabs">
+                <button type="button" class="level-tab-btn active" data-level="all" id="tabAll">
+                    <i class="fas fa-layer-group"></i> All Levels <span class="tab-badge" id="badgeAllCount">0</span>
+                </button>
+                <button type="button" class="level-tab-btn" data-level="jhs" id="tabJhs">
+                    <i class="fas fa-school"></i> Junior High School (Grades 7–10) <span class="tab-badge" id="badgeJhsCount">0</span>
+                </button>
+                <button type="button" class="level-tab-btn" data-level="shs" id="tabShs">
+                    <i class="fas fa-graduation-cap"></i> Senior High School (Grades 11–12) <span class="tab-badge" id="badgeShsCount">0</span>
+                </button>
             </div>
 
             <div class="date-range" id="dateRange">
@@ -208,6 +298,36 @@
                     <tfoot id="reportFoot"></tfoot>
                 </table>
             </div>
+
+            <!-- Printable Signatories Block (Visible ONLY on Print) -->
+            <div class="print-signatories-block" id="printSignatoriesBlock">
+                <div class="signatories-grid">
+                    <div class="signatory-col">
+                        <p class="sign-label">Prepared by:</p>
+                        <div class="sign-space"></div>
+                        <div class="sign-line"></div>
+                        <p class="sign-name" id="signRegistrarName">SCHOOL REGISTRAR</p>
+                        <p class="sign-title">Office of the Registrar</p>
+                    </div>
+                    <div class="signatory-col">
+                        <p class="sign-label">Verified & Certified Correct:</p>
+                        <div class="sign-space"></div>
+                        <div class="sign-line"></div>
+                        <p class="sign-name">ASSISTANT PRINCIPAL / HT</p>
+                        <p class="sign-title">Academic Head / Records Custodian</p>
+                    </div>
+                    <div class="signatory-col">
+                        <p class="sign-label">Approved by:</p>
+                        <div class="sign-space"></div>
+                        <div class="sign-line"></div>
+                        <p class="sign-name">SCHOOL PRINCIPAL</p>
+                        <p class="sign-title">Principal II / Head of School</p>
+                    </div>
+                </div>
+                <div class="print-footer-tag">
+                    <span>Hiraya Educational Management System • Placido L. Señor National High School • Official Institutional Document</span>
+                </div>
+            </div>
         </div>
     </main>
     <!-- JavaScript -->
@@ -215,4 +335,5 @@
     <script type="module" src="js/reports.js"></script>
     <script src="../js/chatbot.js"></script>
 </body>
+
 </html>

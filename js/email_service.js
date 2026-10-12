@@ -26,7 +26,7 @@ export const EmailNotificationService = {
         const cleanSY = schoolYear || '2026-2027';
 
         const loginUrl = getPortalLoginUrl();
-        const subject = `🎉 Welcome to H.E.S! Your Student Portal Login Credentials`;
+        const subject = `🎉 Welcome to PLS-NSHS! Your Student Portal Login Credentials`;
 
         const body = `Dear ${studentName || cleanFirst},
 
@@ -46,7 +46,7 @@ ${cleanLast}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 HOW TO ACCESS YOUR ACCOUNT:
-1. Visit the H.E.S Student Portal login page: ${loginUrl}
+1. Visit the PLS-NSHS Student Portal login page: ${loginUrl}
 2. Enter your registered email as the Username: ${email}
 3. Enter your Last Name as the Password: ${cleanLast} (Case-insensitive)
 4. Click LOGIN to access your Student Dashboard.
@@ -55,7 +55,7 @@ Once logged in, you can view your Class Schedule, Grades, Attendance records, an
 
 If you have any questions or require assistance, please visit the Registrar's Office or reply directly to this email.
 
-Welcome to the H.E.S family!
+Welcome to the  PLS-NSHS family!
 
 Sincerely,
 Office of the Registrar
@@ -74,6 +74,58 @@ Langtad, City of Naga, Cebu
     /**
      * Constructs the official Enrollment Application Confirmation & Tracking Receipt email text
      */
+        /**
+     * Constructs official New Enrollment Alert email sent to Admin & Registrar
+     */
+    buildNewEnrollmentAdminRegistrarAlertEmail({ studentName, firstName, lastName, email, gradeLevel, strand, studentType, schoolYear, trackingId, createdAt }) {
+        const cleanName = studentName || `${firstName || ''} ${lastName || ''}`.trim() || 'Applicant';
+        const cleanGrade = gradeLevel || 'Junior/Senior High School';
+        const cleanStrand = strand ? ` (${strand})` : '';
+        const cleanSY = schoolYear || '2026-2027';
+        const cleanType = studentType || 'New Student';
+        const refNumber = trackingId || `HES-ENR-${Date.now().toString().slice(-6)}`;
+        const dateStr = createdAt ? new Date(createdAt).toLocaleString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : new Date().toLocaleString('en-US');
+
+        const subject = `📋 [NEW ENROLLMENT] Application Received: ${cleanName} - Ref: ${refNumber}`;
+
+        const body = `Attention: School Administrator & Office of the Registrar,
+
+A new student enrollment application has just been submitted via the Hiraya Enrollment Portal.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📋 ENROLLMENT APPLICATION SUMMARY:
+• Tracking / Ref ID: ${refNumber}
+• Applicant Name: ${cleanName}
+• Applicant Email: ${email}
+• Grade Level & Strand: ${cleanGrade}${cleanStrand}
+• Student Classification: ${cleanType}
+• School Year: ${cleanSY}
+• Submitted At: ${dateStr}
+• Status: Pending Registrar Verification
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+REQUIRED ACTIONS:
+1. Administrator: Review enrollment volume & analytics on the Admin Dashboard.
+2. Registrar: Evaluate submitted credentials and process admission in the Enrollments queue.
+
+PORTAL MANAGEMENT:
+• Admin Dashboard: ${getPortalLoginUrl().replace('/auth/login.html', '/admin/dashboard.html')}
+• Registrar Enrollments: ${getPortalLoginUrl().replace('/auth/login.html', '/registrar/enrollments.html')}
+
+Sincerely,
+Hiraya Enrollment System (HES) Automated Dispatch
+Placido L. Señor National High School
+Langtad, City of Naga, Cebu, Philippines
+`;
+
+        return {
+            subject,
+            body,
+            to: 'admin@hiraya.edu.ph, registrar@hes.edu.ph',
+            refNumber
+        };
+    },
+
     buildEnrollmentConfirmationEmail({ studentName, firstName, lastName, email, gradeLevel, strand, studentType, schoolYear, trackingId }) {
         const cleanFirst = firstName || (studentName ? studentName.split(' ')[0] : 'Applicant');
         const cleanGrade = gradeLevel || 'Junior/Senior High School';
@@ -87,7 +139,7 @@ Langtad, City of Naga, Cebu
 
         const body = `Dear ${studentName || cleanFirst},
 
-Thank you for submitting your online enrollment application to Hiraya Enrollment System (H.E.S).
+Thank you for submitting your online enrollment application to Placido L. Señor National High School (PLS-NSHS).
 
 We have successfully received your enrollment submission. Below are your official confirmation and tracking details:
 
@@ -113,7 +165,7 @@ If you need to update any submitted details or have inquiries, please contact th
 
 Sincerely,
 Office of the Registrar
-Hiraya Enrollment System
+Placido L. Señor National High School
 Langtad, City of Naga, Cebu, Philippines
 `;
 
@@ -129,15 +181,15 @@ Langtad, City of Naga, Cebu, Philippines
      * Constructs the official Password Reset & OTP Confirmation email text
      */
     buildPasswordResetEmail({ name, email, resetCode }) {
-        const userName = name || 'H.E.S User';
+        const userName = name || 'PLS-NSHS User';
         const code = resetCode || Math.floor(100000 + Math.random() * 900000);
         const loginUrl = `${window.location.origin}/auth/login.html`;
 
-        const subject = `🔐 [${code}] H.E.S Account Password Reset Confirmation Code`;
+        const subject = `🔐 [${code}] PLS-NSHS Account Password Reset Confirmation Code`;
 
         const body = `Dear ${userName},
 
-We received a request to reset the password for your Hiraya Enrollment System (H.E.S) account associated with ${email}.
+We received a request to reset the password for your Placido L. Señor National High School (PLS-NSHS) account associated with ${email}.
 
 Your 6-digit confirmation security code is:
 
@@ -157,7 +209,7 @@ If you did not request a password reset, please disregard this email or contact 
 
 Sincerely,
 Information & Technology Security Desk
-Hiraya Enrollment System
+Placido L. Señor National High School
 Langtad, City of Naga, Cebu, Philippines
 `;
 
@@ -181,7 +233,7 @@ Langtad, City of Naga, Cebu, Philippines
 
         const body = `Dear ${cleanName},
 
-This is an official notice from the Hiraya Enrollment System (H.E.S) Registrar's Office regarding your enrollment for ${gradeLevel || 'Junior/Senior High'}.
+This is an official notice from the Placido L. Señor National High School (PLS-NSHS) Registrar's Office regarding your enrollment for ${gradeLevel || 'Junior/Senior High'}.
 
 We noticed that the following mandatory requirement is still pending submission:
 • Required Document: ${reqDoc}
@@ -197,7 +249,7 @@ Login Page: ${loginUrl}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 HOW TO ACCESS YOUR DASHBOARD:
-1. Visit the H.E.S Student Portal: ${loginUrl}
+1. Visit the PLS-NSHS Student Portal: ${loginUrl}
 2. Enter your registered Gmail as Username: ${email}
 3. Enter your Last Name as Password: ${cleanLast}
 4. Click LOGIN to upload documents and view your records.
@@ -208,8 +260,8 @@ If you have any questions or require assistance, please visit the Registrar's Of
 
 Sincerely,
 Office of the Registrar
-Hiraya Enrollment System
-Dumanjug, Cebu, Philippines
+Placido L. Señor National High School
+Langtad, City of Naga, Cebu, Philippines
 `;
 
         return {
@@ -227,7 +279,7 @@ Dumanjug, Cebu, Philippines
         const cleanName = studentName || `${firstName || ''} ${lastName || ''}`.trim() || 'Student';
         const cleanLast = lastName || (studentName ? studentName.split(' ').pop() : '');
         const cleanTitle = messageTitle || 'Official Notice from Office of the Registrar';
-        const subject = `📢 H.E.S Registrar Notice: ${cleanTitle}`;
+        const subject = `📢 PLS-NSHS Registrar Notice: ${cleanTitle}`;
         const loginUrl = getPortalLoginUrl();
 
         let credentialsBlock = '';
@@ -240,7 +292,7 @@ Login Page: ${loginUrl}
 🔑 Password (Your Last Name): ${cleanLast} (Case-insensitive)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 HOW TO ACCESS YOUR ACCOUNT:
-1. Open the H.E.S Student Portal: ${loginUrl}
+1. Open the PLS-NSHS Student Portal: ${loginUrl}
 2. Enter your registered Gmail as your Username: ${email}
 3. Enter your Last Name as your Password: ${cleanLast}
 4. Click LOGIN to view your Schedule, Grades, Attendance, and Requirements.
@@ -249,7 +301,7 @@ HOW TO ACCESS YOUR ACCOUNT:
 
         const body = `Dear ${cleanName},
 
-This is an official communication from the Hiraya Enrollment System (H.E.S) Office of the Registrar.
+This is an official communication from the Placido L. Señor National High School (PLS-NSHS) Office of the Registrar.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📋 NOTICE DETAILS:
@@ -265,7 +317,7 @@ If you have any questions or require clarification, please visit the Registrar's
 
 Sincerely,
 Office of the Registrar
-Hiraya Enrollment System
+Placido L. Señor National High School
 Dumanjug, Cebu, Philippines
 `;
 
@@ -301,7 +353,7 @@ Dumanjug, Cebu, Philippines
         const isUrgent = priority === 'urgent';
         const priorityTag = isUrgent ? '🚨 [URGENT & ESSENTIAL]' : '📢 [OFFICIAL MEETING NOTICE]';
         const cleanTitle = title || 'Official School Meeting Notice';
-        const subject = `${priorityTag} H.E.S Meeting Notice: ${cleanTitle}`;
+        const subject = `${priorityTag} PLS-NSHS Meeting Notice: ${cleanTitle}`;
         const loginUrl = getPortalLoginUrl();
 
         // Target audience label
@@ -326,7 +378,7 @@ Dumanjug, Cebu, Philippines
                 const d = new Date(meeting_date);
                 dateDisplay = d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
             }
-        } catch(e) {}
+        } catch (e) { }
 
         // Agenda formatting
         let agendaBlock = '   • As detailed in the meeting description below';
@@ -358,7 +410,7 @@ Please log in to your portal to confirm your attendance:
 
         const body = `Dear ${audienceLabel},
 
-This is an official notification from Hiraya Enrollment System (H.E.S) regarding an upcoming ${typeLabel}.
+This is an official notification from Placido L. Señor National High School (PLS-NSHS) regarding an upcoming ${typeLabel}.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📋 WHAT THIS MEETING IS FOR (PURPOSE & OBJECTIVES):
@@ -383,7 +435,7 @@ ${agendaBlock}
 ${onlineLinkBlock}
 ${rsvpBlock}
 HOW TO ACCESS YOUR DASHBOARD:
-1. Open the H.E.S Portal: ${loginUrl}
+1. Open the PLS-NSHS Portal: ${loginUrl}
 2. Log in with your registered account credentials.
 3. Access the "Announcements" section to view live notices, meeting notes, and confirm your attendance (RSVP).
 
@@ -391,7 +443,7 @@ If you have any questions or require special accommodation, please contact the S
 
 Sincerely,
 ${author_name || 'Office of the School Administration'}
-Hiraya Enrollment System (H.E.S)
+Placido L. Señor National High School (PLS-NSHS)
 Langtad, City of Naga, Cebu, Philippines
 `;
 

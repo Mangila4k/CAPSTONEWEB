@@ -759,18 +759,29 @@
 /* Print Specific Stylesheet */
 @media print {
     @page {
-        margin: 12mm;
-        size: landscape;
+        margin: 0 !important; /* Strips browser default header (date, title) and footer (URL, page) */
+        size: 13in 8.5in; /* Standard Philippine Long / Folio Paper in Landscape (8.5 x 13 inches) */
+    }
+
+    html {
+        margin: 0 !important;
+        padding: 0 !important;
     }
 
     body {
         background: #fff !important;
         color: #000 !important;
         font-size: 10pt;
+        margin: 0 !important;
+        padding: 10mm 12mm !important; /* Re-applies paper margins internally without browser header */
+        box-sizing: border-box !important;
     }
 
     .sidebar,
+    #sidebar,
     .menu-toggle,
+    #menuToggle,
+    .page-header,
     .header-actions,
     .stats-grid,
     .charts-grid,
@@ -778,7 +789,20 @@
     .report-toolbar,
     .chatbot-bubble,
     .chatbot-window,
-    #alertContainer {
+    .chatbot-toggler,
+    .chatbot-widget,
+    #hirayaChatbot,
+    #hesChatbotContainer,
+    .hes-chatbot-launcher,
+    .hes-chatbot-teaser,
+    .hes-chatbot-window,
+    #hesChatbotTeaser,
+    #hesChatbotLauncher,
+    #hesChatbotWindow,
+    #hesChatbotToggleBtn,
+    .need-help-bubble,
+    #alertContainer,
+    button {
         display: none !important;
     }
 

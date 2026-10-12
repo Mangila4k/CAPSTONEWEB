@@ -565,28 +565,50 @@ async function submitEnrollment(e) {
             }
         }
 
-        // 2. Notify Registrar via notifications table in Supabase
+        // 2. Notify Admin and Registrar via notifications table in Supabase (only Admin and Registrar)
         try {
             await supabase
                 .from('notifications')
-                .insert([{
-                    role: 'registrar',
-                    title: notifTitle,
-                    message: notifMessage,
-                    type: 'new_enrollment',
-                    enrollment_id: createdEnrollmentId,
-                    is_read: false,
-                    read: false,
-                    created_at: new Date().toISOString()
-                }]);
+                .insert([
+                    {
+                        role: 'admin',
+                        title: notifTitle,
+                        message: notifMessage,
+                        type: 'new_enrollment',
+                        enrollment_id: createdEnrollmentId,
+                        is_read: false,
+                        read: false,
+                        created_at: new Date().toISOString()
+                    },
+                    {
+                        role: 'registrar',
+                        title: notifTitle,
+                        message: notifMessage,
+                        type: 'new_enrollment',
+                        enrollment_id: createdEnrollmentId,
+                        is_read: false,
+                        read: false,
+                        created_at: new Date().toISOString()
+                    }
+                ]);
         } catch(notifErr) {
             console.warn('Notification insert warning:', notifErr);
         }
 
-        // 3. Dispatch storage event for instant cross-tab synchronization
+        // 3. Dispatch storage event for instant cross-tab synchronization for both Admin and Registrar
         try {
             localStorage.setItem('hes_latest_notification', JSON.stringify({
-                role: 'registrar',
+                role: 'all',
+                roles: ['admin', 'registrar'],
+                title: notifTitle,
+                message: notifMessage,
+                type: 'new_enrollment',
+                enrollment_id: createdEnrollmentId,
+                timestamp: Date.now()
+            }));
+            localStorage.setItem('hes_admin_latest_notification', JSON.stringify({
+                role: 'admin',
+                roles: ['admin', 'registrar'],
                 title: notifTitle,
                 message: notifMessage,
                 type: 'new_enrollment',
@@ -631,6 +653,15 @@ async function submitEnrollment(e) {
         const gmailBtn = document.getElementById('sendEnrollmentGmailBtn');
         const copyReceiptBtn = document.getElementById('copyEnrollmentReceiptBtn');
         const mailtoBtn = document.getElementById('sendMailtoReceiptBtn');
+        const alertStaffBtn = document.getElementById('alertAdminRegistrarEmailBtn');
+        const adminRegEmailData = EmailNotificationService.buildNewEnrollmentAdminRegistrarAlertEmail(emailConfirmPayload);
+
+        if (alertStaffBtn) {
+            alertStaffBtn.onclick = () => {
+                EmailNotificationService.sendViaGmailWeb(adminRegEmailData);
+                showAlert('📧 Opening Gmail notice to Admin (admin@hiraya.edu.ph) & Registrar...', 'success');
+            };
+        }
         const doneBtn = document.getElementById('doneEnrollmentBtn');
 
         if (gmailBtn) {

@@ -454,8 +454,8 @@ export async function recordTeacherAttendance(supabase, params) {
     // 3. Insert into 'activity_logs' for full admin and faculty audit visibility
     try {
         const confText = confidence ? ` (${confidence}% biometric confidence)` : '';
-        const actionTitle = `Teacher ${actionLabel} (${status})`;
-        const logDetails = `Teacher ${displayName} recorded ${actionLabel} at ${timeFormatted} on ${formatDate(todayStr)}. Validated via ${validationMethod}${confText}. Status: ${status}.`;
+        const actionTitle = `Teacher ${actionLabel}`;
+        const logDetails = `Teacher ${displayName} recorded ${actionLabel} at ${timeFormatted} on ${formatDate(todayStr)}. Validated via ${validationMethod}${confText}.`;
 
         await supabase
             .from('activity_logs')

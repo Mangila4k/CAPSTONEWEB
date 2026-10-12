@@ -450,3 +450,93 @@
         min-width: 500px;
     }
 }
+
+/* ===== ATTACH SCHEDULE BUTTON & BADGE ===== */
+.action-btn.attach-schedule {
+    background: #fee2e2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+}
+
+.action-btn.attach-schedule:hover {
+    background: #dc2626;
+    color: #ffffff;
+    border-color: #dc2626;
+    transform: scale(1.08);
+    box-shadow: 0 4px 10px rgba(220, 38, 38, 0.3);
+}
+
+.action-btn.attach-schedule.has-schedule {
+    background: #ecfdf5;
+    color: #059669;
+    border-color: #a7f3d0;
+}
+
+.action-btn.attach-schedule.has-schedule:hover {
+    background: #059669;
+    color: #ffffff;
+    border-color: #059669;
+    box-shadow: 0 4px 10px rgba(5, 150, 105, 0.3);
+}
+
+.badge-pdf-attached {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    background: #fee2e2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+}
+
+/* ===== MODAL OVERLAY & DIALOG ===== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 20px;
+    animation: fadeInModal 0.25s ease;
+}
+
+.modal-dialog {
+    background: #fff;
+    border-radius: 14px;
+    width: 100%;
+    max-width: 580px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    animation: slideUpModal 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fadeInModal {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUpModal {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.drop-zone:hover {
+    border-color: #2563eb !important;
+    background: #eff6ff !important;
+}
+
+.drop-zone.dragover {
+    border-color: #16a34a !important;
+    background: #f0fdf4 !important;
+}

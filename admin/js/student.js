@@ -3,6 +3,7 @@
  */
 
 import { supabase } from '../../supabase/config.js';
+import { EmailNotificationService } from '../../js/email_service.js';
 
 (function() {
     'use strict';
@@ -48,6 +49,7 @@ import { supabase } from '../../supabase/config.js';
     const filterSection = document.getElementById('filterSection');
     const filterStrand = document.getElementById('filterStrand');
     const filterStatus = document.getElementById('filterStatus');
+    const filterStudentType = document.getElementById('filterStudentType');
     const refreshBtn = document.getElementById('refreshBtn');
     const gradeSummary = document.getElementById('gradeSummary');
 
@@ -151,10 +153,12 @@ import { supabase } from '../../supabase/config.js';
                     firstName: student.first_name || user?.first_name || 'Student',
                     lastName: student.last_name || user?.last_name || '',
                     email: student.email || user?.email || '—',
+                    password: user?.password || student.last_name || '',
                     grade: student.grade_level || student.year_level || 'Grade 11',
                     strand: student.strand || '—',
                     section: student.section || '—',
                     gender: student.gender || '—',
+                    student_type: student.student_type || 'New Student',
                     status: student.status || 'Active'
                 };
             });
@@ -260,6 +264,7 @@ import { supabase } from '../../supabase/config.js';
         const section = filterSection ? filterSection.value : '';
         const strand = filterStrand ? filterStrand.value : '';
         const status = filterStatus ? filterStatus.value : '';
+        const studentType = filterStudentType ? filterStudentType.value : '';
 
         filteredStudents = allStudents.filter(s => {
             const fullName = `${s.firstName} ${s.lastName}`.toLowerCase();
@@ -287,7 +292,17 @@ import { supabase } from '../../supabase/config.js';
 
             const matchStatus = !status || s.status.toLowerCase() === status.toLowerCase();
 
-            return matchSearch && matchGrade && matchSection && matchStrand && matchStatus;
+            let matchStudentType = true;
+            if (studentType) {
+                const sType = String(s.student_type || '').toLowerCase();
+                if (studentType === 'Transferee') {
+                    matchStudentType = sType.includes('transfer');
+                } else if (studentType === 'New Student') {
+                    matchStudentType = !sType.includes('transfer');
+                }
+            }
+
+            return matchSearch && matchGrade && matchSection && matchStrand && matchStatus && matchStudentType;
         });
 
         renderTable();
@@ -311,44 +326,121 @@ import { supabase } from '../../supabase/config.js';
             return;
         }
 
+        const avatarGradients = [
+            'linear-gradient(135deg, #4f46e5, #7c3aed)', // Indigo to Purple
+            'linear-gradient(135deg, #0284c7, #2563eb)', // Sky to Blue
+            'linear-gradient(135deg, #059669, #10b981)', // Emerald to Teal
+            'linear-gradient(135deg, #d97706, #f59e0b)', // Amber to Orange
+            'linear-gradient(135deg, #db2777, #f43f5e)', // Pink to Rose
+            'linear-gradient(135deg, #7c3aed, #9333ea)', // Purple to Violet
+            'linear-gradient(135deg, #0d9488, #06b6d4)'  // Teal to Cyan
+        ];
+
         tableBody.innerHTML = filteredStudents.map((s, index) => {
             const initial = (s.firstName || 'S').charAt(0).toUpperCase();
             const fullName = `${s.firstName} ${s.lastName}`.trim() || 'Unknown';
-            const statusClass = s.status === 'Active' ? 'badge-active' : 'badge-inactive';
+            const grad = avatarGradients[index % avatarGradients.length];
             const isSHS = ['Grade 11', 'Grade 12'].includes(s.grade);
-            const strandBadge = isSHS && s.strand && s.strand !== '—'
-                ? `<span class="badge badge-strand">${s.strand}</span>`
-                : `<span class="badge badge-jhs">${s.strand && s.strand !== '—' ? s.strand : 'General'}</span>`;
+
+            // Strand styling
+            const strandKey = (s.strand || '').toUpperCase();
+            let strandClass = 'strand-general';
+            if (strandKey.includes('TVL') || strandKey.includes('ICT')) strandClass = 'strand-ict';
+            else if (strandKey.includes('STEM')) strandClass = 'strand-stem';
+            else if (strandKey.includes('HUMSS')) strandClass = 'strand-humss';
+            else if (strandKey.includes('GAS')) strandClass = 'strand-gas';
+            else if (strandKey.includes('ABM')) strandClass = 'strand-abm';
+
+            const strandDisplay = s.strand && s.strand !== '—' ? s.strand : (isSHS ? 'Unspecified' : 'General');
+            const strandBadge = `<span class="strand-chip ${strandClass}">${strandDisplay}</span>`;
+
+            // Student Type Badge
+            const isTransferee = String(s.student_type || '').toLowerCase().includes('transfer');
+            const typeBadge = isTransferee 
+                ? `<span class="student-type-pill pill-transferee" title="Transferee Student"><i class="fas fa-right-left"></i> Transferee</span>`
+                : `<span class="student-type-pill pill-new" title="New Enrolled Student"><i class="fas fa-sparkles"></i> New</span>`;
+
+            // Gender icon & label
+            const isMale = (s.gender || '').toLowerCase() === 'male';
+            const isFemale = (s.gender || '').toLowerCase() === 'female';
+            const genderIcon = isMale ? 'fa-mars' : (isFemale ? 'fa-venus' : 'fa-circle-user');
+            const genderClass = isMale ? 'gender-male' : (isFemale ? 'gender-female' : 'gender-neutral');
+
+            // Status Badge
+            const isActive = (s.status || 'Active').toLowerCase() === 'active';
+            const statusBadge = `
+                <span class="student-status-pill ${isActive ? 'status-active' : 'status-inactive'}">
+                    <span class="status-dot"></span>
+                    ${s.status || 'Active'}
+                </span>
+            `;
 
             return `
-                <tr>
-                    <td>${index + 1}</td>
-                    <td>
+                <tr class="student-row" data-id="${s.id}">
+                    <td class="cell-center cell-index">${index + 1}</td>
+                    <td class="cell-student">
                         <div class="student-cell">
-                            <div class="student-avatar">${initial}</div>
+                            <div class="student-avatar" style="background: ${grad}">${initial}</div>
                             <div class="student-info-cell">
-                                <div class="name">${fullName}</div>
-                                <div class="sub">${s.gender || '—'}</div>
+                                <div class="student-name-row">
+                                    <span class="student-full-name">${fullName}</span>
+                                    ${typeBadge}
+                                </div>
+                                <div class="student-sub-row">
+                                    <span class="student-gender-chip ${genderClass}">
+                                        <i class="fas ${genderIcon}"></i> ${s.gender || '—'}
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </td>
-                    <td>${s.lrn || '—'}</td>
-                    <td><span class="grade-badge-cell">${s.grade || '—'}</span></td>
-                    <td><span class="section-badge-cell">${s.section || '—'}</span></td>
-                    <td>${strandBadge}</td>
-                    <td>${s.email || '—'}</td>
-                    <td><span class="badge ${statusClass}">${s.status || 'Active'}</span></td>
-                    <td>
-                        <div class="action-btns">
-                            <a href="view_student.html?id=${s.id}" class="action-btn view" title="View Student">
-                                <i class="fas fa-eye"></i>
-                            </a>
-                            <a href="edit_student.html?id=${s.id}" class="action-btn edit" title="Edit Student">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <button type="button" class="action-btn delete" data-id="${s.id}" title="Delete Student">
-                                <i class="fas fa-trash"></i>
+                    <td class="cell-center cell-lrn">
+                        <span class="lrn-code-pill" title="LRN: ${s.lrn || 'None'}">
+                            ${s.lrn && s.lrn !== '—' ? s.lrn : '<span class="text-muted">—</span>'}
+                        </span>
+                    </td>
+                    <td class="cell-center cell-grade">
+                        <span class="grade-pill grade-${(s.grade || '').toLowerCase().replace(/\s+/g, '-')}">
+                            ${s.grade || '—'}
+                        </span>
+                    </td>
+                    <td class="cell-center cell-section">
+                        ${s.section && s.section !== '—' 
+                            ? `<span class="section-pill"><i class="fas fa-users"></i> ${s.section}</span>` 
+                            : `<span class="section-pill unassigned">—</span>`}
+                    </td>
+                    <td class="cell-center cell-strand">${strandBadge}</td>
+                    <td class="cell-email">
+                        ${s.email && s.email !== '—' 
+                            ? `<a href="mailto:${s.email}" class="student-email-link" title="${s.email}"><i class="far fa-envelope"></i> <span>${s.email}</span></a>` 
+                            : `<span class="text-muted">—</span>`}
+                    </td>
+                    <td class="cell-center cell-status">${statusBadge}</td>
+                    <td class="cell-center cell-actions">
+                        <div class="manage-dropdown">
+                            <button type="button" class="btn-manage" aria-expanded="false" title="Manage Student Record">
+                                <span>Manage</span>
+                                <i class="fas fa-chevron-down"></i>
                             </button>
+                            <div class="manage-menu">
+                                <a href="view_student.html?id=${s.id}" class="manage-item view-item" title="View Student Profile">
+                                    <i class="fas fa-eye"></i>
+                                    <span>View Profile</span>
+                                </a>
+                                <a href="edit_student.html?id=${s.id}" class="manage-item edit-item" title="Edit Student Record">
+                                    <i class="fas fa-pen-to-square"></i>
+                                    <span>Edit Record</span>
+                                </a>
+                                <button type="button" class="manage-item gmail-item notify-gmail" data-id="${s.id}" title="Send Login Credentials to Student's Gmail">
+                                    <i class="fab fa-google"></i>
+                                    <span>Send to Gmail</span>
+                                </button>
+                                <div class="manage-divider"></div>
+                                <button type="button" class="manage-item delete-item delete" data-id="${s.id}" title="Delete Student Record">
+                                    <i class="fas fa-trash-can"></i>
+                                    <span>Delete Student</span>
+                                </button>
+                            </div>
                         </div>
                     </td>
                 </tr>
@@ -359,9 +451,71 @@ import { supabase } from '../../supabase/config.js';
             recordCount.textContent = `Showing ${filteredStudents.length} of ${allStudents.length} records`;
         }
 
-        tableBody.querySelectorAll('.action-btn.delete').forEach(btn => {
+        // Manage Dropdown Toggle
+        tableBody.querySelectorAll('.btn-manage').forEach(btn => {
             btn.addEventListener('click', function(e) {
                 e.preventDefault();
+                e.stopPropagation();
+                const dropdown = this.closest('.manage-dropdown');
+                const row = this.closest('tr');
+                const isOpen = dropdown.classList.contains('show');
+
+                // Close all open dropdowns
+                document.querySelectorAll('.manage-dropdown.show').forEach(d => {
+                    d.classList.remove('show');
+                    d.classList.remove('dropup');
+                    const r = d.closest('tr');
+                    if (r) r.classList.remove('dropdown-open');
+                });
+
+                if (!isOpen) {
+                    const rect = this.getBoundingClientRect();
+                    const spaceBelow = window.innerHeight - rect.bottom;
+                    if (spaceBelow < 190) {
+                        dropdown.classList.add('dropup');
+                    } else {
+                        dropdown.classList.remove('dropup');
+                    }
+                    dropdown.classList.add('show');
+                    if (row) row.classList.add('dropdown-open');
+                }
+            });
+        });
+
+        // Gmail Notification
+        tableBody.querySelectorAll('.notify-gmail').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const dropdown = this.closest('.manage-dropdown');
+                if (dropdown) dropdown.classList.remove('show');
+
+                const st = allStudents.find(s => s.id === this.dataset.id);
+                if (!st || !st.email || st.email === '—') {
+                    showAlert('This student does not have a registered email address.', 'error');
+                    return;
+                }
+                const emailPayload = EmailNotificationService.buildCredentialsEmail({
+                    studentName: `${st.firstName} ${st.lastName}`.trim(),
+                    firstName: st.firstName,
+                    lastName: st.password || st.lastName,
+                    email: st.email,
+                    gradeLevel: st.grade,
+                    strand: st.strand !== '—' ? st.strand : '',
+                    schoolYear: '2026-2027'
+                });
+                EmailNotificationService.sendViaGmailWeb(emailPayload);
+                showAlert(`Gmail compose opened for ${st.firstName} ${st.lastName}! (Username: ${st.email}, Password: ${st.password || st.lastName})`, 'success');
+            });
+        });
+
+        // Delete Student
+        tableBody.querySelectorAll('.delete').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const dropdown = this.closest('.manage-dropdown');
+                if (dropdown) dropdown.classList.remove('show');
                 openDeleteModal(this.dataset.id);
             });
         });
@@ -439,6 +593,18 @@ import { supabase } from '../../supabase/config.js';
                 </div>
             </div>
 
+            <!-- Credentials Gmail Notification Card in Modal -->
+            <div style="margin-top: 16px; background: #fef2f2; border: 1.5px solid #fecaca; border-radius: 10px; padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                <div style="font-size: 12.5px; color: #991b1b; line-height: 1.4;">
+                    <strong>Student Login Credentials:</strong><br>
+                    Username: <span style="font-family: monospace; font-weight: 700;">${student.email || '—'}</span> &bull; 
+                    Password: <span style="font-family: monospace; font-weight: 700;">${student.password || student.lastName}</span>
+                </div>
+                <button type="button" id="viewModalGmailBtn" style="padding: 8px 14px; background: #EA4335; color: white; border: none; border-radius: 8px; font-weight: 700; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap; box-shadow: 0 2px 6px rgba(234,67,53,0.3);">
+                    <i class="fab fa-google"></i> Send to Gmail
+                </button>
+            </div>
+
             <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; padding-top: 16px; border-top: 1px solid #e9edf4;">
                 <a href="view_student.html?id=${student.id}" class="btn-refresh" style="text-decoration: none; padding: 8px 14px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; color: #1e293b;">
                     <i class="fas fa-id-card"></i> View Full Profile
@@ -451,6 +617,27 @@ import { supabase } from '../../supabase/config.js';
                 </button>
             </div>
         `;
+
+        const viewGmailBtn = viewModalBody.querySelector('#viewModalGmailBtn');
+        if (viewGmailBtn) {
+            viewGmailBtn.addEventListener('click', function() {
+                if (!student.email || student.email === '—') {
+                    showAlert('This student has no registered email.', 'error');
+                    return;
+                }
+                const emailPayload = EmailNotificationService.buildCredentialsEmail({
+                    studentName: fullName,
+                    firstName: student.firstName,
+                    lastName: student.password || student.lastName,
+                    email: student.email,
+                    gradeLevel: student.grade,
+                    strand: student.strand !== '—' ? student.strand : '',
+                    schoolYear: '2026-2027'
+                });
+                EmailNotificationService.sendViaGmailWeb(emailPayload);
+                showAlert(`Gmail compose opened for ${fullName}!`, 'success');
+            });
+        }
 
         viewModal.classList.add('show');
     }
@@ -721,6 +908,7 @@ import { supabase } from '../../supabase/config.js';
     if (filterSection) filterSection.addEventListener('change', applyFilters);
     if (filterStrand) filterStrand.addEventListener('change', applyFilters);
     if (filterStatus) filterStatus.addEventListener('change', applyFilters);
+    if (filterStudentType) filterStudentType.addEventListener('change', applyFilters);
 
     if (refreshBtn) {
         refreshBtn.addEventListener('click', function() {
@@ -747,7 +935,26 @@ import { supabase } from '../../supabase/config.js';
     }
 
     document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') viewModal.classList.remove('show');
+        if (e.key === 'Escape') {
+            viewModal.classList.remove('show');
+            document.querySelectorAll('.manage-dropdown.show').forEach(d => {
+                d.classList.remove('show');
+                d.classList.remove('dropup');
+                const r = d.closest('tr');
+                if (r) r.classList.remove('dropdown-open');
+            });
+        }
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.manage-dropdown')) {
+            document.querySelectorAll('.manage-dropdown.show').forEach(d => {
+                d.classList.remove('show');
+                d.classList.remove('dropup');
+                const r = d.closest('tr');
+                if (r) r.classList.remove('dropdown-open');
+            });
+        }
     });
 
     // ============================================

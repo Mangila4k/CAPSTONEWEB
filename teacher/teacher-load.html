@@ -262,7 +262,7 @@
                     <ul class="nav-items">
                         <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
                         <li><a href="attendance-face.html"><i class="fas fa-camera"></i> <span>Face Attendance</span></a></li>
-                        <li><a href="student-attendance.html"><i class="fas fa-user-check"></i> <span>Student Attendance</span></a></li>
+                        <li><a href="attendance-qr.html"><i class="fas fa-qrcode"></i> <span>Student QR Scanner</span></a></li>
                         <li><a href="classes.html"><i class="fas fa-users"></i> <span>My Classes</span></a></li>
                         <li><a href="class-program.html"><i class="fas fa-calendar-alt"></i> <span>Class Program</span></a></li>
                         <li><a href="teacher-load.html" class="active"><i class="fas fa-clock"></i> <span>Teacher Load</span></a></li>
@@ -393,19 +393,20 @@
                 </div>
             </div>
 
-            <!-- Admin Teacher Load Document / Schedule Image Banner (if available) -->
-            <div class="admin-doc-card" id="adminDocCard" style="display: none;">
+            <!-- Admin Teacher Load Document / Schedule PDF Banner (Visible Only to Logged-in Teacher) -->
+            <div class="admin-doc-card" id="adminDocCard" style="display: none; border: 1.5px solid #bfdbfe; background: #fff; box-shadow: 0 4px 16px rgba(37,99,235,0.08);">
                 <div class="admin-doc-left">
-                    <div class="admin-doc-icon" id="adminDocIcon">
-                        <i class="fas fa-file-image"></i>
+                    <div class="admin-doc-icon" id="adminDocIcon" style="background: #fef2f2; color: #dc2626;">
+                        <i class="fas fa-file-pdf"></i>
                     </div>
                     <div>
                         <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                            <strong style="color: var(--primary); font-size: 1rem;" id="adminDocTitle">Official Teacher Load Document / Image</strong>
-                            <span class="admin-verified-badge"><i class="fas fa-check-circle"></i> Issued by Administration</span>
+                            <strong style="color: var(--primary); font-size: 1.05rem;" id="adminDocTitle">Official Teacher Workload Schedule (PDF)</strong>
+                            <span class="admin-verified-badge" style="background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0;"><i class="fas fa-check-circle"></i> Issued by Administration</span>
+                            <span class="admin-verified-badge" style="background: #fefce8; color: #854d0e; border: 1px solid #fef08a;"><i class="fas fa-lock"></i> Visible Only to You</span>
                         </div>
-                        <p style="color: var(--gray-500); font-size: 0.82rem; margin: 3px 0 0 0;" id="adminDocMeta">
-                            Official schedule document issued by the school administration.
+                        <p style="color: var(--gray-500); font-size: 0.82rem; margin: 4px 0 0 0;" id="adminDocMeta">
+                            Official workload schedule document issued exclusively to your account.
                         </p>
                     </div>
                 </div>
@@ -422,6 +423,21 @@
                     <button type="button" class="btn btn-sm" id="btnAdminDocPrint" style="padding: 7px 14px; border-radius: 6px; font-weight: 600; background: #fff; color: var(--gray-700); border: 1px solid var(--gray-300); cursor: pointer; display: flex; align-items: center; gap: 6px;">
                         <i class="fas fa-print"></i> Print
                     </button>
+                </div>
+            </div>
+
+            <!-- Empty State Notice when no schedule document attached yet -->
+            <div id="noAdminDocNotice" style="display: none; background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: var(--radius); padding: 18px 22px; margin-bottom: 24px; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                    <div style="width: 44px; height: 44px; border-radius: 10px; background: #f1f5f9; color: #64748b; display: flex; align-items: center; justify-content: center; font-size: 20px;">
+                        <i class="fas fa-file-shield"></i>
+                    </div>
+                    <div>
+                        <strong style="color: var(--primary); font-size: 0.95rem; display: block;">No Official Workload PDF Attached Yet</strong>
+                        <p style="color: var(--gray-500); font-size: 0.82rem; margin: 3px 0 0 0;">
+                            The school administration has not uploaded your official schedule document yet. Once issued, it will be strictly and privately accessible here only to you.
+                        </p>
+                    </div>
                 </div>
             </div>
 

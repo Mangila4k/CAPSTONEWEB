@@ -1,5 +1,6 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,6 +13,7 @@
     <link rel="stylesheet" href="css/profile.css">
     <link rel="stylesheet" href="../css/chatbot.css">
 </head>
+
 <body>
     <!-- Mobile Menu Toggle -->
     <div class="menu-toggle" id="menuToggle">
@@ -23,20 +25,22 @@
         <div class="sidebar-header">
             <div class="logo">
                 <div class="logo-icon">
-                    <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
+                    <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo"
+                        onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
                 </div>
                 <div class="logo-text">PLS<span>NSH</span></div>
             </div>
             <div class="school-badge">Placido L. Señor National High School</div>
         </div>
 
+        
         <div class="admin-profile">
             <div class="admin-avatar">
-                <div class="avatar-initial" id="adminInitial">R</div>
+                <div class="avatar-initial" id="adminInitial">JM</div>
                 <div class="online-dot"></div>
             </div>
-            <div class="admin-name" id="adminName">Registrar</div>
-            <div class="admin-role"><i class="fas fa-user-tie"></i> Registrar</div>
+            <div class="admin-name" id="adminName">Justine Mangila</div>
+            <div class="admin-role"><i class="fas fa-id-badge"></i> Registrar</div>
         </div>
 
         <nav class="nav-menu">
@@ -44,8 +48,12 @@
                 <div class="nav-section-title">MAIN MENU</div>
                 <ul class="nav-items">
                     <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-                    <li><a href="enrollments.html"><i class="fas fa-file-signature"></i> Enrollments <span class="nav-badge" id="pendingEnrollmentsBadge" style="display: none;">0</span></a></li>
+                    <li><a href="enrollments.html"><i class="fas fa-file-signature"></i> Enrollments <span
+                                class="nav-badge" id="pendingEnrollmentsBadge" style="display: none;">0</span></a></li>
                     <li><a href="students.html"><i class="fas fa-user-graduate"></i> Students</a></li>
+<li><a href="requirements.html"><i class="fas fa-clipboard-check"></i> Requirements <span
+                                    class="nav-badge" id="pendingRequirementsBadge" style="display: none;">0</span></a></li>
+                    <li><a href="generate_id.html"><i class="fas fa-id-card"></i> Student ID </a></li>
                     <li><a href="sections.html"><i class="fas fa-layer-group"></i> Sections</a></li>
                     <li><a href="reports.html"><i class="fas fa-chart-bar"></i> Reports</a></li>
                 </ul>
@@ -144,19 +152,27 @@
                         </div>
                         <div style="display: flex; align-items: center; gap: 8px;">
                             <span class="doc-upload-count" id="registrarDocCount">0 Files</span>
-                            <button type="button" id="registrarUploadTriggerBtn" style="padding: 4px 10px; font-size: 11.5px; border-radius: 6px; background: var(--primary); color: #fff; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; font-weight: 500;">
+                            <button type="button" id="registrarUploadTriggerBtn"
+                                style="padding: 4px 10px; font-size: 11.5px; border-radius: 6px; background: var(--primary); color: #fff; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; font-weight: 500;">
                                 <i class="fas fa-plus"></i> Upload
                             </button>
-                            <input type="file" id="registrarDocFileInput" accept=".pdf,image/png,image/jpeg,image/webp" style="display: none;">
+                            <input type="file" id="registrarDocFileInput" accept=".pdf,image/png,image/jpeg,image/webp"
+                                style="display: none;">
                         </div>
                     </div>
 
-                    <div id="registrarDocUploadForm" style="display: none; margin-bottom: 16px; background: #f8fafc; padding: 14px; border-radius: 10px; border: 1px solid #e2e8f0;">
-                        <div style="font-size: 13px; font-weight: 600; color: #0f172a; margin-bottom: 8px;">Selected: <span id="registrarDocSelectedName" style="color: var(--primary);"></span></div>
+                    <div id="registrarDocUploadForm"
+                        style="display: none; margin-bottom: 16px; background: #f8fafc; padding: 14px; border-radius: 10px; border: 1px solid #e2e8f0;">
+                        <div style="font-size: 13px; font-weight: 600; color: #0f172a; margin-bottom: 8px;">Selected:
+                            <span id="registrarDocSelectedName" style="color: var(--primary);"></span>
+                        </div>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
                             <div>
-                                <label style="font-size: 11px; font-weight: 600; color: #64748b; display: block; margin-bottom: 4px;">Document Type</label>
-                                <select id="registrarDocTypeSelect" style="width: 100%; padding: 7px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12.5px;">
+                                <label
+                                    style="font-size: 11px; font-weight: 600; color: #64748b; display: block; margin-bottom: 4px;">Document
+                                    Type</label>
+                                <select id="registrarDocTypeSelect"
+                                    style="width: 100%; padding: 7px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12.5px;">
                                     <option value="Appointment">Registrar Appointment Order</option>
                                     <option value="Valid ID">DepEd / Government ID</option>
                                     <option value="E-Signature Specimen">E-Signature Specimen</option>
@@ -165,13 +181,20 @@
                                 </select>
                             </div>
                             <div>
-                                <label style="font-size: 11px; font-weight: 600; color: #64748b; display: block; margin-bottom: 4px;">Document Label</label>
-                                <input type="text" id="registrarDocCustomTitle" placeholder="e.g. Official E-Signature 2026" style="width: 100%; padding: 7px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12.5px;">
+                                <label
+                                    style="font-size: 11px; font-weight: 600; color: #64748b; display: block; margin-bottom: 4px;">Document
+                                    Label</label>
+                                <input type="text" id="registrarDocCustomTitle"
+                                    placeholder="e.g. Official E-Signature 2026"
+                                    style="width: 100%; padding: 7px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12.5px;">
                             </div>
                         </div>
                         <div style="display: flex; gap: 8px; justify-content: flex-end;">
-                            <button type="button" class="btn-secondary" id="registrarDocCancelBtn" style="padding: 6px 14px; font-size: 12px; border-radius: 6px; cursor: pointer; background: #fff; border: 1px solid #cbd5e1;">Cancel</button>
-                            <button type="button" class="btn-primary" id="registrarDocSaveBtn" style="padding: 6px 16px; font-size: 12px; border-radius: 6px; background: var(--primary); color: #fff; border: none; cursor: pointer;"><i class="fas fa-upload"></i> Upload</button>
+                            <button type="button" class="btn-secondary" id="registrarDocCancelBtn"
+                                style="padding: 6px 14px; font-size: 12px; border-radius: 6px; cursor: pointer; background: #fff; border: 1px solid #cbd5e1;">Cancel</button>
+                            <button type="button" class="btn-primary" id="registrarDocSaveBtn"
+                                style="padding: 6px 16px; font-size: 12px; border-radius: 6px; background: var(--primary); color: #fff; border: none; cursor: pointer;"><i
+                                    class="fas fa-upload"></i> Upload</button>
                         </div>
                     </div>
 
@@ -185,26 +208,26 @@
             <!-- Right Column - Performance & Edit Forms -->
             <div>
                 <!-- Email Verification Section -->
-                <div class="form-card">
-                    <div class="verification-header">
+                <div class="verify-email-section" id="verifySection">
+                    <div class="verify-header">
                         <i class="fas fa-envelope"></i>
                         <h3>Email Verification</h3>
                     </div>
-                    
+
                     <div id="emailVerificationStatus">
-                        <!-- This will be populated by JavaScript -->
+                        <!-- Populated by JS -->
                     </div>
                 </div>
 
                 <!-- Email Change Section -->
-                <div class="form-card">
-                    <div class="verification-header">
+                <div class="verify-email-section">
+                    <div class="verify-header">
                         <i class="fas fa-exchange-alt"></i>
                         <h3>Change Email Address</h3>
                     </div>
-                    
+
                     <div id="emailChangeSection">
-                        <!-- This will be populated by JavaScript -->
+                        <!-- Populated by JS -->
                     </div>
                 </div>
 
@@ -225,7 +248,7 @@
                             <div class="perf-label">Total Students</div>
                         </div>
                     </div>
-                    
+
                     <div class="progress-container">
                         <div class="progress-label">
                             <span>Processing Rate</span>
@@ -234,168 +257,198 @@
                         <div class="progress-bar">
                             <div class="progress-fill" id="processingRateFill" style="width: 0%;"></div>
                         </div>
-                </div>
-
-                <!-- Account Information Card (View & Edit Modes) -->
-                <div class="account-info-card" id="accountInfoCard">
-                    <div class="card-header-with-action">
-                        <h3><i class="fas fa-id-card"></i> Account Information</h3>
-                        <button type="button" class="btn-edit-toggle" id="editRegistrarInfoToggleBtn">
-                            <i class="fas fa-edit"></i> Edit
-                        </button>
                     </div>
 
-                    <!-- VIEW MODE -->
-                    <div class="account-info-view" id="registrarInfoViewContainer">
-                        <div class="account-info-grid">
-                            <div class="account-info-item">
-                                <span class="account-info-label">Full Name</span>
-                                <span class="account-info-value" id="viewRegistrarFullName">-</span>
-                            </div>
-                            <div class="account-info-item">
-                                <span class="account-info-label">Email Address</span>
-                                <span class="account-info-value" id="viewRegistrarEmail">-</span>
-                            </div>
-                            <div class="account-info-item">
-                                <span class="account-info-label">Employee ID / Role</span>
-                                <span class="account-info-value" id="viewRegistrarEmployeeId">-</span>
-                            </div>
-                            <div class="account-info-item">
-                                <span class="account-info-label">Gender</span>
-                                <span class="account-info-value" id="viewRegistrarGender">-</span>
-                            </div>
-                            <div class="account-info-item">
-                                <span class="account-info-label">Contact Number</span>
-                                <span class="account-info-value" id="viewRegistrarPhone">-</span>
-                            </div>
-                            <div class="account-info-item">
-                                <span class="account-info-label">Office / Designation</span>
-                                <span class="account-info-value" id="viewRegistrarDesignation">-</span>
-                            </div>
-                            <div class="account-info-item full-width">
-                                <span class="account-info-label">Complete Home Address</span>
-                                <span class="account-info-value" id="viewRegistrarAddress">-</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- EDIT MODE (Form) -->
-                    <div class="account-info-edit-container" id="registrarInfoEditContainer" style="display: none;">
-                        <form id="editProfileForm">
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
-                                <div class="form-group">
-                                    <label class="form-label" style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; color: #1e293b;">First Name <span class="required" style="color: #ef4444;">*</span></label>
-                                    <input type="text" name="first_name" id="editFirstName" placeholder="First name" style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem;" required>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label" style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; color: #1e293b;">Last Name <span class="required" style="color: #ef4444;">*</span></label>
-                                    <input type="text" name="last_name" id="editLastName" placeholder="Last name" style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem;" required>
-                                </div>
-                            </div>
-
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px;">
-                                <div class="form-group">
-                                    <label class="form-label" style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; color: #1e293b;">Gender</label>
-                                    <select name="gender" id="editRegistrarGender" style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem; background: #fff;">
-                                        <option value="">Select Gender</option>
-                                        <option value="Male">Male</option>
-                                        <option value="Female">Female</option>
-                                        <option value="Prefer not to say">Prefer not to say</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label" style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; color: #1e293b;">Contact Number</label>
-                                    <input type="tel" name="phone" id="editPhone" placeholder="09XXXXXXXXX" style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem;">
-                                </div>
-                            </div>
-
-                            <div class="form-group" style="margin-top: 14px;">
-                                <label class="form-label" style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; color: #1e293b;">Complete Home Address</label>
-                                <textarea name="address" id="editRegistrarAddress" rows="2" placeholder="Barangay, City/Municipality, Province" style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem; resize: vertical;"></textarea>
-                            </div>
-
-                            <div class="form-group" style="margin-top: 14px;">
-                                <label class="form-label" style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; color: #1e293b;">Office / Designation</label>
-                                <input type="text" name="designation" id="editDesignation" value="Office of the Registrar" readonly style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem; background: #f8fafc; color: #64748b;">
-                            </div>
-
-                            <div class="account-info-actions">
-                                <button type="button" class="btn-secondary" id="cancelRegistrarEditBtn" style="padding: 9px 18px; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff; color: #475569; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
-                                    <i class="fas fa-times"></i> Cancel
-                                </button>
-                                <button type="submit" class="btn-submit" id="saveProfileBtn" style="padding: 9px 22px; background: #0b2b4a; color: #fff; border: none; border-radius: 8px; font-weight: 600; font-size: 0.92rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
-                                    <i class="fas fa-save"></i> Save Changes
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-
-                <!-- Change Password Form -->
-                <div class="form-card">
-                    <h3><i class="fas fa-lock"></i> Change Password</h3>
-                    
-                    <div class="password-section">
-                        <div class="password-header">
-                            <input type="checkbox" id="changePasswordCheckbox">
-                            <label for="changePasswordCheckbox">I want to change my password</label>
+                    <!-- Account Information Card (View & Edit Modes) -->
+                    <div class="account-info-card" id="accountInfoCard">
+                        <div class="card-header-with-action">
+                            <h3><i class="fas fa-id-card"></i> Account Information</h3>
+                            <button type="button" class="btn-edit-toggle" id="editRegistrarInfoToggleBtn">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
                         </div>
 
-                        <form id="passwordForm">
-                            <div class="password-fields" id="passwordFields">
-                                <div class="form-group">
-                                    <label>Current Password <span class="required">*</span></label>
-                                    <input type="password" name="current_password" id="currentPassword" disabled>
+                        <!-- VIEW MODE -->
+                        <div class="account-info-view" id="registrarInfoViewContainer">
+                            <div class="account-info-grid">
+                                <div class="account-info-item">
+                                    <span class="account-info-label">Full Name</span>
+                                    <span class="account-info-value" id="viewRegistrarFullName">-</span>
                                 </div>
+                                <div class="account-info-item">
+                                    <span class="account-info-label">Email Address</span>
+                                    <span class="account-info-value" id="viewRegistrarEmail">-</span>
+                                </div>
+                                <div class="account-info-item">
+                                    <span class="account-info-label">Employee ID / Role</span>
+                                    <span class="account-info-value" id="viewRegistrarEmployeeId">-</span>
+                                </div>
+                                <div class="account-info-item">
+                                    <span class="account-info-label">Gender</span>
+                                    <span class="account-info-value" id="viewRegistrarGender">-</span>
+                                </div>
+                                <div class="account-info-item">
+                                    <span class="account-info-label">Contact Number</span>
+                                    <span class="account-info-value" id="viewRegistrarPhone">-</span>
+                                </div>
+                                <div class="account-info-item">
+                                    <span class="account-info-label">Office / Designation</span>
+                                    <span class="account-info-value" id="viewRegistrarDesignation">-</span>
+                                </div>
+                                <div class="account-info-item full-width">
+                                    <span class="account-info-label">Complete Home Address</span>
+                                    <span class="account-info-value" id="viewRegistrarAddress">-</span>
+                                </div>
+                            </div>
+                        </div>
 
-                                <div class="form-row">
+                        <!-- EDIT MODE (Form) -->
+                        <div class="account-info-edit-container" id="registrarInfoEditContainer" style="display: none;">
+                            <form id="editProfileForm">
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
                                     <div class="form-group">
-                                        <label>New Password <span class="required">*</span></label>
-                                        <input type="password" name="new_password" id="newPassword" disabled>
-                                        
-                                        <!-- Password strength meter -->
-                                        <div class="password-strength">
-                                            <div class="password-strength-bar">
-                                                <div class="password-strength-fill" id="passwordStrengthFill"></div>
+                                        <label class="form-label"
+                                            style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; color: #1e293b;">First
+                                            Name <span class="required" style="color: #ef4444;">*</span></label>
+                                        <input type="text" name="first_name" id="editFirstName" placeholder="First name"
+                                            style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem;"
+                                            required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label"
+                                            style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; color: #1e293b;">Last
+                                            Name <span class="required" style="color: #ef4444;">*</span></label>
+                                        <input type="text" name="last_name" id="editLastName" placeholder="Last name"
+                                            style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem;"
+                                            required>
+                                    </div>
+                                </div>
+
+                                <div
+                                    style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px;">
+                                    <div class="form-group">
+                                        <label class="form-label"
+                                            style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; color: #1e293b;">Gender</label>
+                                        <select name="gender" id="editRegistrarGender"
+                                            style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem; background: #fff;">
+                                            <option value="">Select Gender</option>
+                                            <option value="Male">Male</option>
+                                            <option value="Female">Female</option>
+                                            <option value="Prefer not to say">Prefer not to say</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label"
+                                            style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; color: #1e293b;">Contact
+                                            Number</label>
+                                        <input type="tel" name="phone" id="editPhone" placeholder="09XXXXXXXXX"
+                                            style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem;">
+                                    </div>
+                                </div>
+
+                                <div class="form-group" style="margin-top: 14px;">
+                                    <label class="form-label"
+                                        style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; color: #1e293b;">Complete
+                                        Home Address</label>
+                                    <textarea name="address" id="editRegistrarAddress" rows="2"
+                                        placeholder="Barangay, City/Municipality, Province"
+                                        style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem; resize: vertical;"></textarea>
+                                </div>
+
+                                <div class="form-group" style="margin-top: 14px;">
+                                    <label class="form-label"
+                                        style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; color: #1e293b;">Office
+                                        / Designation</label>
+                                    <input type="text" name="designation" id="editDesignation"
+                                        value="Office of the Registrar" readonly
+                                        style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem; background: #f8fafc; color: #64748b;">
+                                </div>
+
+                                <div class="account-info-actions">
+                                    <button type="button" class="btn-secondary" id="cancelRegistrarEditBtn"
+                                        style="padding: 9px 18px; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff; color: #475569; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                                        <i class="fas fa-times"></i> Cancel
+                                    </button>
+                                    <button type="submit" class="btn-submit" id="saveProfileBtn"
+                                        style="padding: 9px 22px; background: #0b2b4a; color: #fff; border: none; border-radius: 8px; font-weight: 600; font-size: 0.92rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
+                                        <i class="fas fa-save"></i> Save Changes
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Change Password Form -->
+                    <div class="form-card">
+                        <h3><i class="fas fa-lock"></i> Change Password</h3>
+
+                        <div class="password-section">
+                            <div class="password-header">
+                                <input type="checkbox" id="changePasswordCheckbox">
+                                <label for="changePasswordCheckbox">I want to change my password</label>
+                            </div>
+
+                            <form id="passwordForm">
+                                <div class="password-fields" id="passwordFields">
+                                    <div class="form-group">
+                                        <label>Current Password <span class="required">*</span></label>
+                                        <input type="password" name="current_password" id="currentPassword" disabled>
+                                    </div>
+
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label>New Password <span class="required">*</span></label>
+                                            <input type="password" name="new_password" id="newPassword" disabled>
+
+                                            <!-- Password strength meter -->
+                                            <div class="password-strength">
+                                                <div class="password-strength-bar">
+                                                    <div class="password-strength-fill" id="passwordStrengthFill"></div>
+                                                </div>
+                                                <div class="password-strength-text" id="passwordStrengthText">
+                                                    <i class="fas fa-info-circle"></i>
+                                                    <span>Enter new password</span>
+                                                </div>
                                             </div>
-                                            <div class="password-strength-text" id="passwordStrengthText">
+
+                                            <!-- Password requirements checklist -->
+                                            <div class="password-requirements" id="passwordRequirements">
+                                                <small><i class="fas fa-shield-alt"></i> Password must contain:</small>
+                                                <ul>
+                                                    <li id="req-length"><i class="fas fa-circle"></i> At least 8
+                                                        characters</li>
+                                                    <li id="req-upper"><i class="fas fa-circle"></i> At least 1
+                                                        uppercase letter (A-Z)</li>
+                                                    <li id="req-lower"><i class="fas fa-circle"></i> At least 1
+                                                        lowercase letter (a-z)</li>
+                                                    <li id="req-number"><i class="fas fa-circle"></i> At least 1 number
+                                                        (0-9)</li>
+                                                    <li id="req-special"><i class="fas fa-circle"></i> At least 1
+                                                        special character (!@#$%^&*)</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label>Confirm Password <span class="required">*</span></label>
+                                            <input type="password" name="confirm_password" id="confirmPassword"
+                                                disabled>
+                                            <div class="password-match" id="passwordMatch">
                                                 <i class="fas fa-info-circle"></i>
-                                                <span>Enter new password</span>
+                                                <span>Re-enter new password</span>
                                             </div>
                                         </div>
-                                        
-                                        <!-- Password requirements checklist -->
-                                        <div class="password-requirements" id="passwordRequirements">
-                                            <small><i class="fas fa-shield-alt"></i> Password must contain:</small>
-                                            <ul>
-                                                <li id="req-length"><i class="fas fa-circle"></i> At least 8 characters</li>
-                                                <li id="req-upper"><i class="fas fa-circle"></i> At least 1 uppercase letter (A-Z)</li>
-                                                <li id="req-lower"><i class="fas fa-circle"></i> At least 1 lowercase letter (a-z)</li>
-                                                <li id="req-number"><i class="fas fa-circle"></i> At least 1 number (0-9)</li>
-                                                <li id="req-special"><i class="fas fa-circle"></i> At least 1 special character (!@#$%^&*)</li>
-                                            </ul>
-                                        </div>
                                     </div>
 
-                                    <div class="form-group">
-                                        <label>Confirm Password <span class="required">*</span></label>
-                                        <input type="password" name="confirm_password" id="confirmPassword" disabled>
-                                        <div class="password-match" id="passwordMatch">
-                                            <i class="fas fa-info-circle"></i>
-                                            <span>Re-enter new password</span>
-                                        </div>
-                                    </div>
+                                    <button type="submit" class="btn-submit" id="changePasswordBtn" disabled>
+                                        <i class="fas fa-key"></i> Change Password
+                                    </button>
                                 </div>
-
-                                <button type="submit" class="btn-submit" id="changePasswordBtn" disabled>
-                                    <i class="fas fa-key"></i> Change Password
-                                </button>
-                            </div>
-                        </form>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
     </main>
 
     <!-- ===== IMAGE UPLOAD MODAL ===== -->
@@ -411,7 +464,8 @@
                         <div class="preview-placeholder" id="previewPlaceholder">R</div>
                     </div>
                     <div class="file-input-wrapper">
-                        <input type="file" name="profile_picture" id="profilePicture" accept="image/jpeg,image/png,image/gif,image/webp">
+                        <input type="file" name="profile_picture" id="profilePicture"
+                            accept="image/jpeg,image/png,image/gif,image/webp">
                         <label for="profilePicture" class="file-input-label">
                             <i class="fas fa-upload"></i> Choose Image
                         </label>
@@ -444,7 +498,8 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn-secondary" id="dismissDocPreviewBtn">Close</button>
-                <a href="#" id="docDownloadBtn" class="btn-primary" download style="background: var(--primary); color: #fff; text-decoration: none; padding: 10px 20px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px;">
+                <a href="#" id="docDownloadBtn" class="btn-primary" download
+                    style="background: var(--primary); color: #fff; text-decoration: none; padding: 10px 20px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px;">
                     <i class="fas fa-download"></i> Download
                 </a>
             </div>
@@ -456,4 +511,5 @@
     <script type="module" src="js/profile.js"></script>
     <script src="../js/chatbot.js"></script>
 </body>
+
 </html>

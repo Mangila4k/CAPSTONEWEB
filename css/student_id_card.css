@@ -26,123 +26,22 @@
     flex-wrap: wrap;
     align-items: flex-start;
     justify-content: center;
-    gap: 40px;
-    padding: 30px 20px;
+    gap: 36px;
+    padding: 32px 24px;
     background: radial-gradient(circle at 50% 20%, #f8fafc 0%, #e2e8f0 100%);
     border-radius: 20px;
     border: 1px solid #cbd5e1;
     margin: 20px 0;
 }
 
-/* Badge Holder / Lanyard Unit */
+/* Card Unit Container */
 .id-badge-unit {
     display: flex;
     flex-direction: column;
     align-items: center;
     position: relative;
     user-select: none;
-}
-
-/* Lanyard Ribbon Top */
-.lanyard-strap {
-    width: 58px;
-    height: 70px;
-    background: #111827;
-    position: relative;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 4px 4px 0 0;
-    overflow: hidden;
-}
-
-.lanyard-strap::after {
-    content: 'PLACIDO L. SEÑOR';
-    writing-mode: vertical-rl;
-    text-orientation: mixed;
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 8px;
-    font-weight: 800;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-}
-
-/* Metallic Swivel Hook / Clip */
-.lanyard-clip {
-    width: 32px;
-    height: 38px;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    z-index: 5;
-    margin-top: -2px;
-    margin-bottom: -10px;
-}
-
-.clip-ring {
-    width: 22px;
-    height: 12px;
-    border: 3px solid #94a3b8;
-    border-radius: 6px;
-    background: linear-gradient(180deg, #e2e8f0 0%, #64748b 100%);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.clip-hook {
-    width: 14px;
-    height: 24px;
-    border: 3px solid #64748b;
-    border-top: none;
-    border-radius: 0 0 7px 7px;
-    background: linear-gradient(135deg, #cbd5e1 0%, #475569 100%);
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.25);
-}
-
-/* Translucent Plastic Badge Casing */
-.badge-holder-pouch {
-    background: rgba(255, 255, 255, 0.75);
-    backdrop-filter: blur(6px);
-    border: 2px solid rgba(255, 255, 255, 0.85);
-    border-radius: 20px;
-    padding: 16px 14px 18px;
-    box-shadow: 
-        0 20px 45px rgba(15, 23, 42, 0.22),
-        0 4px 12px rgba(15, 23, 42, 0.12),
-        inset 0 1px 2px rgba(255, 255, 255, 0.8);
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-/* Badge Punch Slots at Top of Plastic Sleeve */
-.badge-punch-slots {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 22px;
-    width: 100%;
-    margin-bottom: 12px;
-}
-
-.punch-slot-center {
-    width: 44px;
-    height: 8px;
-    background: #cbd5e1;
-    border-radius: 4px;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.35);
-    border: 1px solid rgba(255, 255, 255, 0.6);
-}
-
-.punch-slot-side {
-    width: 22px;
-    height: 6px;
-    background: #cbd5e1;
-    border-radius: 3px;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.35);
-    border: 1px solid rgba(255, 255, 255, 0.6);
+    gap: 14px;
 }
 
 /* =========================================================
@@ -159,7 +58,7 @@
     border-radius: 12px;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.16);
+    box-shadow: 0 16px 36px rgba(15, 23, 42, 0.18), 0 2px 8px rgba(15, 23, 42, 0.08);
     display: block;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     color: var(--id-text-navy);
@@ -168,233 +67,501 @@
 
 /* Card Badge Tag (Front / Back label for preview) */
 .card-face-tag {
-    position: absolute;
-    bottom: -32px;
-    font-size: 11px;
+    font-size: 11.5px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: #475569;
+    color: #334155;
     background: #e2e8f0;
-    padding: 3px 14px;
-    border-radius: 12px;
+    padding: 4px 16px;
+    border-radius: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 /* =========================================================
-   EXACT ARTWORK BACKGROUNDS
+   EXACT ARTWORK & VECTOR BACKGROUNDS
    ========================================================= */
-.id-card-front {
-    background-image: url('../pictures/card_front_exact.jpg');
-    background-size: 100% 100%;
-    background-repeat: no-repeat;
-    background-position: center;
-}
-
+.id-card-front,
 .id-card-back {
-    background-image: url('../pictures/card_back_exact.jpg');
+    background-color: #ffffff;
     background-size: 100% 100%;
     background-repeat: no-repeat;
     background-position: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.id-card-bg-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* Header Text on Front */
+.id-front-header {
+    position: absolute;
+    top: 15px;
+    left: 18px;
+    right: 68px;
+    z-index: 10;
+}
+
+.id-front-header h2 {
+    font-size: 13.5px;
+    font-weight: 900;
+    color: #0b1a3d;
+    line-height: 1.15;
+    letter-spacing: -0.2px;
+    text-transform: uppercase;
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+}
+
+.id-school-id-tag {
+    font-size: 8px;
+    font-weight: 800;
+    color: #b8861d;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    margin-top: 2.5px;
+    font-family: 'Inter', monospace, sans-serif;
+}
+
+.id-front-logo {
+    position: absolute;
+    top: 14px;
+    right: 16px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    z-index: 10;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    background: #ffffff;
+    object-fit: cover;
 }
 
 /* =========================================================
-   DYNAMIC OVERLAYS FOR THE FRONT CARD
-   (Rendered over the exact artwork when modifying data)
+   DYNAMIC FRONT CARD ELEMENTS (100% SEAMLESS, NO WHITE BOXES)
    ========================================================= */
 
-/* Custom Student 2x2 Photo Overlay */
+/* Student 2x2 Photo inside Gold Metallic Box Frame */
 .id-photo-custom-wrap {
     position: absolute;
-    top: 98px;
-    left: 88px;
-    width: 142px;
-    height: 142px;
-    border-radius: 50%;
+    top: 76px;
+    left: 82px;
+    width: 154px;
+    height: 154px;
+    border-radius: 8px;
+    padding: 4px;
+    background: linear-gradient(135deg, #f3d078 0%, #b8861d 40%, #8c6109 70%, #f7df94 100%);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2), inset 0 2px 4px rgba(255, 255, 255, 0.7);
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     overflow: hidden;
-    display: none;
-    z-index: 5;
-    background: #ffffff;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    box-sizing: border-box;
+    transform: none;
 }
 
 .id-photo-custom-wrap img {
     width: 100%;
     height: 100%;
+    border-radius: 5px;
     object-fit: cover;
+    object-position: center top;
+    background: #ffffff;
     display: block;
 }
 
-/* Custom Student Name Overlay (Right-Aligned) */
+.photo-empty-placeholder {
+    width: 100%;
+    height: 100%;
+    border-radius: 5px;
+    background: #ffffff;
+    border: 1.5px dashed #cbd5e1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    gap: 6px;
+    user-select: none;
+    box-sizing: border-box;
+}
+
+.photo-empty-placeholder i {
+    font-size: 34px;
+    color: #cbd5e1;
+}
+
+.photo-empty-placeholder span {
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: #94a3b8;
+}
+
+/* Student Name (Centered Bold Navy - Transparent Background) */
 .id-name-custom-wrap {
     position: absolute;
-    top: 254px;
-    right: 18px;
-    display: none;
+    top: 242px;
+    left: 16px;
+    width: 286px;
+    display: flex;
     flex-direction: column;
-    align-items: flex-end;
-    text-align: right;
-    background: #ffffff;
-    padding: 0 4px;
-    border-radius: 4px;
-    z-index: 5;
-    box-shadow: 0 0 6px rgba(255, 255, 255, 0.95);
+    align-items: center;
+    text-align: center;
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    z-index: 10;
+    box-shadow: none;
+    transform: none;
 }
 
 .id-name-custom-wrap .id-name-line {
-    font-size: 26px;
+    font-size: 24px;
     font-weight: 900;
     color: var(--id-text-navy);
-    line-height: 1.0;
+    line-height: 1.05;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: -0.3px;
     word-break: break-word;
     display: block;
-    text-align: right;
+    text-align: center;
+    font-family: 'Inter', -apple-system, sans-serif;
 }
 
-/* Custom Student Level Overlay */
+/* Student Level Category (Centered SENIOR HIGH / JUNIOR HIGH) */
 .id-level-custom-wrap {
     position: absolute;
-    top: 342px;
-    right: 18px;
-    display: none;
-    background: #ffffff;
-    padding: 0 4px;
-    border-radius: 4px;
-    font-size: 15px;
+    top: 296px;
+    left: 16px;
+    width: 286px;
+    display: block;
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    font-size: 13.5px;
     font-weight: 800;
     color: var(--id-text-navy);
     text-transform: uppercase;
-    letter-spacing: 1.5px;
-    text-align: right;
-    z-index: 5;
-    box-shadow: 0 0 6px rgba(255, 255, 255, 0.95);
+    letter-spacing: 2px;
+    text-align: center;
+    z-index: 10;
+    box-shadow: none;
+    font-family: 'Inter', sans-serif;
+    transform: none;
 }
 
-/* Custom ID No & LRN Values Overlay */
-.id-num-custom-wrap {
+/* Gold Horizontal Divider (Centered) */
+.id-front-gold-divider {
     position: absolute;
-    top: 391px;
-    left: 154px;
-    display: none;
-    background: #ffffff;
-    padding: 0 4px;
-    border-radius: 3px;
-    font-size: 13.5px;
-    font-weight: 800;
-    color: var(--id-text-navy);
-    font-family: 'Inter', monospace;
-    z-index: 5;
-    box-shadow: 0 0 4px rgba(255, 255, 255, 0.95);
+    top: 324px;
+    left: 36px;
+    right: 36px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent 0%, #b8861d 15%, #f5d77f 50%, #b8861d 85%, transparent 100%);
+    z-index: 10;
 }
 
-.id-lrn-custom-wrap {
+/* ID No & LRN Meta Grid (Centered & Perfectly Aligned Columns) */
+.id-meta-grid {
     position: absolute;
-    top: 415px;
-    left: 154px;
-    display: none;
-    background: #ffffff;
-    padding: 0 4px;
-    border-radius: 3px;
+    top: 338px;
+    left: 0;
+    width: 100%;
+    z-index: 10;
+    display: grid;
+    grid-template-columns: 56px 14px max-content;
+    justify-content: center;
+    row-gap: 8px;
+    align-items: center;
     font-size: 13.5px;
-    font-weight: 800;
     color: var(--id-text-navy);
-    font-family: 'Inter', monospace;
-    z-index: 5;
-    box-shadow: 0 0 4px rgba(255, 255, 255, 0.95);
+    font-family: 'Inter', -apple-system, sans-serif;
+    transform: none;
+}
+
+.id-meta-grid .meta-lbl {
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-align: left;
+}
+
+.id-meta-grid .meta-col {
+    font-weight: 800;
+    text-align: center;
+}
+
+.id-meta-grid .meta-val {
+    font-weight: 800;
+    font-family: 'Inter', monospace, sans-serif;
+    letter-spacing: 0.8px;
+    text-align: left;
 }
 
 /* =========================================================
-   DYNAMIC OVERLAYS FOR THE BACK CARD
+   DYNAMIC BACK CARD ELEMENTS (100% SEAMLESS, NO OVERLAPS)
    ========================================================= */
 
-/* Real-Time Scannable QR Code Box inside Gold Corner Brackets */
-.id-qr-custom-wrap {
+.id-back-emergency {
     position: absolute;
-    top: 209px;
-    left: 222px;
-    width: 63px;
-    height: 65px;
+    top: 20px;
+    left: 18px;
+    right: 65px;
+    z-index: 10;
+}
+
+.id-back-emergency .emergency-sub {
+    font-size: 7.5px;
+    font-weight: 800;
+    color: var(--id-text-navy);
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+}
+
+.id-back-emergency .emergency-title {
+    font-size: 12.5px;
+    font-weight: 900;
+    color: #b8861d;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 4px;
+    line-height: 1.15;
+}
+
+.id-back-emergency .emergency-guardian {
+    font-size: 9px;
+    color: var(--id-text-navy);
+    line-height: 1.35;
+}
+
+.id-back-emergency .guardian-lbl {
+    font-weight: 700;
+    color: #475569;
+    display: block;
+    margin-bottom: 1px;
+}
+
+.id-back-emergency .guardian-val {
+    font-weight: 800;
+    text-transform: uppercase;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    color: var(--id-text-navy);
+}
+
+/* Student Attendance QR Code Section (Centered & Clean) */
+.id-attendance-qr-section {
+    position: absolute;
+    top: 92px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+/* Enlarged QR Code Box inside Gold Corner Brackets */
+.id-qr-custom-wrap {
+    width: 124px;
+    height: 124px;
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
     background: #ffffff;
-    z-index: 5;
+    padding: 6px;
+    border-radius: 8px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
 }
 
-.id-qr-custom-wrap canvas,
-.id-qr-custom-wrap img {
+.qr-corner {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-color: #b8861d;
+    border-style: solid;
+    pointer-events: none;
+}
+.qr-tl { top: 0; left: 0; border-width: 3.5px 0 0 3.5px; }
+.qr-tr { top: 0; right: 0; border-width: 3.5px 3.5px 0 0; }
+.qr-bl { bottom: 0; left: 0; border-width: 0 0 3.5px 3.5px; }
+.qr-br { bottom: 0; right: 0; border-width: 0 3.5px 3.5px 0; }
+
+.id-qr-code-box {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.id-qr-code-box canvas,
+.id-qr-code-box img {
     width: 100% !important;
     height: 100% !important;
     display: block;
 }
 
-/* Custom Emergency Info Overlay */
-.id-emergency-custom-wrap {
-    position: absolute;
-    top: 130px;
-    left: 20px;
-    display: none;
-    background: #ffffff;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 11px;
+.qr-attendance-badge {
+    margin-top: 5px;
+    font-size: 8px;
     font-weight: 800;
+    color: #b8861d;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.qr-attendance-note {
+    margin-top: 2px;
+    font-size: 7.2px;
+    font-weight: 700;
     color: var(--id-text-navy);
-    line-height: 1.35;
-    z-index: 5;
-    box-shadow: 0 0 6px rgba(255, 255, 255, 0.95);
-}
-
-/* Custom Student Signature Printed Name */
-.id-sig-student-custom {
-    position: absolute;
-    bottom: 10px;
-    left: 20px;
-    width: 125px;
+    letter-spacing: 0.3px;
     text-align: center;
-    display: none;
-    background: #ffffff;
-    padding: 1px 4px;
-    border-radius: 3px;
-    z-index: 5;
+    max-width: 260px;
 }
 
-/* Custom Principal Printed Name */
-.id-sig-principal-custom {
+/* Subtle Official School Seal Watermark in Center Background */
+.id-watermark-logo {
     position: absolute;
-    bottom: 10px;
-    right: 20px;
-    width: 125px;
-    text-align: center;
-    display: none;
-    background: #ffffff;
-    padding: 1px 4px;
-    border-radius: 3px;
-    z-index: 5;
+    top: 235px;
+    left: 64px;
+    width: 190px;
+    height: 190px;
+    opacity: 0.10;
+    pointer-events: none;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: none;
 }
 
-.sig-script {
-    font-family: 'Caveat', cursive, sans-serif;
-    font-size: 15px;
-    color: #0b1a3d;
-    line-height: 1;
-    margin-bottom: 2px;
+.id-watermark-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    mix-blend-mode: multiply;
+    filter: contrast(1.08);
+}
+
+.back-watermark {
+    top: 175px;
+    opacity: 0.05;
+}
+
+.back-watermark img {
+    mix-blend-mode: normal;
+    filter: none;
+}
+
+/* Official Rules List */
+.id-back-rules {
+    position: absolute;
+    top: 248px;
+    left: 18px;
+    right: 18px;
+    z-index: 10;
+}
+
+.rules-header {
+    font-size: 8px;
+    font-weight: 900;
+    color: #b8861d;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    margin-bottom: 7px;
+}
+
+.rules-list {
+    padding-left: 14px;
+    margin: 0;
+    font-size: 8.5px;
+    color: var(--id-text-navy);
+    line-height: 1.45;
+}
+
+.rules-list li {
+    margin-bottom: 6px;
+    font-weight: 600;
+}
+
+.rules-contact-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 3px;
+    font-size: 7.8px;
+    color: #1e293b;
+    background: rgba(184, 134, 29, 0.08);
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+}
+
+/* Dual Signatures Grid */
+.id-signatures-grid {
+    position: absolute;
+    bottom: 22px;
+    left: 18px;
+    right: 18px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    z-index: 10;
+}
+
+.sig-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    justify-content: flex-end;
+}
+
+.sig-label-name {
+    font-size: 8.5px;
+    font-weight: 900;
+    color: var(--id-text-navy);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    line-height: 1.15;
+    word-break: break-word;
+    margin-bottom: 6px;
+    min-height: 11px;
 }
 
 .sig-line {
     width: 100%;
-    height: 1px;
+    height: 1.5px;
     background: #0b1a3d;
-    margin: 2px 0;
+    margin: 0 0 4px 0;
 }
 
-.sig-label-name {
-    font-size: 8px;
-    font-weight: 800;
-    color: var(--id-text-navy);
+.sig-role-label {
+    font-size: 7px;
+    font-weight: 700;
+    color: #475569;
     text-transform: uppercase;
-    letter-spacing: 0.3px;
+    letter-spacing: 0.5px;
     line-height: 1.1;
 }
 

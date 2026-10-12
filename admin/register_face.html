@@ -1,5 +1,6 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,6 +14,7 @@
     <link rel="stylesheet" href="css/register_face.css">
     <link rel="stylesheet" href="../css/chatbot.css">
 </head>
+
 <body>
     <!-- Mobile Menu Toggle -->
     <div class="menu-toggle" id="menuToggle">
@@ -25,7 +27,8 @@
             <div class="sidebar-header">
                 <div class="logo">
                     <div class="logo-icon">
-                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
+                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo"
+                            onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
                     </div>
                     <div class="logo-text">PLS<span>NSH</span></div>
                 </div>
@@ -47,6 +50,7 @@
                     <ul class="nav-items">
                         <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
                         <li><a href="student.html"><i class="fas fa-user-graduate"></i> Students</a></li>
+                        <li><a href="generate_id.html"><i class="fas fa-id-card"></i> ID Generator</a></li>
                         <li><a href="teachers.html"><i class="fas fa-chalkboard-user"></i> Teachers</a></li>
                         <li><a href="sections.html"><i class="fas fa-layer-group"></i> Sections</a></li>
                         <li><a href="subjects.html"><i class="fas fa-book"></i> Subjects</a></li>
@@ -60,7 +64,8 @@
                         <li><a href="announcements.html"><i class="fas fa-bullhorn"></i> Announcements</a></li>
                         <li><a href="manage_accounts.html"><i class="fas fa-users-cog"></i> Accounts</a></li>
                         <li><a href="attendance.html"><i class="fas fa-calendar-check"></i> Attendance</a></li>
-                        <li><a href="register_face.html" class="active"><i class="fas fa-camera"></i> Face Registration</a></li>
+                        <li><a href="register_face.html" class="active"><i class="fas fa-camera"></i> Face
+                                Registration</a></li>
                         <li><a href="activities.html"><i class="fas fa-history"></i> Activities</a></li>
                         <li><a href="reports.html"><i class="fas fa-chart-bar"></i> Reports</a></li>
                     </ul>
@@ -87,7 +92,8 @@
                     <button type="button" class="btn-header btn-refresh" id="btnRefreshData" title="Refresh records">
                         <i class="fas fa-sync-alt"></i> Refresh
                     </button>
-                    <button type="button" class="btn-header btn-settings" id="btnOpenSettings" title="Face++ API Configuration">
+                    <button type="button" class="btn-header btn-settings" id="btnOpenSettings"
+                        title="Face++ API Configuration">
                         <i class="fas fa-sliders-h"></i> API Settings
                     </button>
                 </div>
@@ -144,7 +150,8 @@
                     </div>
 
                     <!-- Teacher Selector Trigger -->
-                    <div class="teacher-selector-trigger" id="teacherSelectorTrigger" title="Click to change selected teacher">
+                    <div class="teacher-selector-trigger" id="teacherSelectorTrigger"
+                        title="Click to change selected teacher">
                         <div class="selector-left">
                             <div class="selector-avatar" id="selectorAvatar">T</div>
                             <div class="selector-info">
@@ -158,7 +165,8 @@
                     <!-- Status Banner -->
                     <div class="status-banner empty" id="statusBanner">
                         <i class="fas fa-info-circle" id="statusBannerIcon"></i>
-                        <span id="statusBannerText">Select a teacher to view or capture biometric face registration.</span>
+                        <span id="statusBannerText">Select a teacher to view or capture biometric face
+                            registration.</span>
                     </div>
 
                     <!-- Camera Viewfinder -->
@@ -195,10 +203,12 @@
                             <i class="fas fa-expand"></i>
                             <span id="btnCaptureText">Register Face Biometrics</span>
                         </button>
-                        <button type="button" class="btn-toggle-cam" id="btnToggleCam" title="Switch Camera (Front/Back)">
+                        <button type="button" class="btn-toggle-cam" id="btnToggleCam"
+                            title="Switch Camera (Front/Back)">
                             <i class="fas fa-sync-alt"></i>
                         </button>
-                        <button type="button" class="btn-remove-face" id="btnRemoveFace" style="display: none;" title="Remove registered face data">
+                        <button type="button" class="btn-remove-face" id="btnRemoveFace" style="display: none;"
+                            title="Remove registered face data">
                             <i class="fas fa-trash-alt"></i> Remove
                         </button>
                     </div>
@@ -236,7 +246,8 @@
         <div class="modal-box">
             <div class="modal-header">
                 <h3><i class="fas fa-chalkboard-user"></i> Select Faculty Member</h3>
-                <button type="button" class="btn-close-modal" id="closeTeacherModalBtn"><i class="fas fa-times"></i></button>
+                <button type="button" class="btn-close-modal" id="closeTeacherModalBtn"><i
+                        class="fas fa-times"></i></button>
             </div>
             <div class="modal-body">
                 <div class="search-input-wrap" style="margin-bottom: 14px;">
@@ -255,18 +266,22 @@
         <div class="modal-box" style="max-width: 440px;">
             <div class="modal-header">
                 <h3><i class="fas fa-check-circle" style="color: #22c55e;"></i> Face Registered</h3>
-                <button type="button" class="btn-close-modal" id="closeSuccessModalBtn"><i class="fas fa-times"></i></button>
+                <button type="button" class="btn-close-modal" id="closeSuccessModalBtn"><i
+                        class="fas fa-times"></i></button>
             </div>
             <div class="modal-body">
                 <div class="success-preview-wrap">
                     <img id="successPreviewImg" class="preview-snapshot-img" src="" alt="Captured Face">
-                    <h3 id="successTeacherName" style="margin: 8px 0 2px 0; color: #1B2A4A; font-size: 17px;">Teacher Name</h3>
-                    <p style="margin: 0; font-size: 13px; color: #64748b;">Employee ID: <strong id="successEmployeeId">N/A</strong></p>
-                    
+                    <h3 id="successTeacherName" style="margin: 8px 0 2px 0; color: #1B2A4A; font-size: 17px;">Teacher
+                        Name</h3>
+                    <p style="margin: 0; font-size: 13px; color: #64748b;">Employee ID: <strong
+                            id="successEmployeeId">N/A</strong></p>
+
                     <div class="preview-meta-box">
                         <div class="preview-meta-row">
                             <span class="preview-meta-label">Status:</span>
-                            <span style="color: #15803d; font-weight: 600;"><i class="fas fa-shield-alt"></i> Biometrics Active</span>
+                            <span style="color: #15803d; font-weight: 600;"><i class="fas fa-shield-alt"></i> Biometrics
+                                Active</span>
                         </div>
                         <div class="preview-meta-row">
                             <span class="preview-meta-label">Registered At:</span>
@@ -280,7 +295,9 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn-header btn-refresh" onclick="document.getElementById('successModal').classList.remove('active')" style="background:#1B2A4A; color:#fff; border:none; width:100%; justify-content:center;">
+                <button type="button" class="btn-header btn-refresh"
+                    onclick="document.getElementById('successModal').classList.remove('active')"
+                    style="background:#1B2A4A; color:#fff; border:none; width:100%; justify-content:center;">
                     <i class="fas fa-check"></i> Done
                 </button>
             </div>
@@ -292,7 +309,8 @@
         <div class="modal-box">
             <div class="modal-header">
                 <h3><i class="fas fa-sliders-h"></i> Face++ API Configuration</h3>
-                <button type="button" class="btn-close-modal" id="closeSettingsModalBtn"><i class="fas fa-times"></i></button>
+                <button type="button" class="btn-close-modal" id="closeSettingsModalBtn"><i
+                        class="fas fa-times"></i></button>
             </div>
             <form id="formFaceppSettings">
                 <div class="modal-body">
@@ -301,21 +319,32 @@
                     </p>
                     <div style="display: flex; flex-direction: column; gap: 14px;">
                         <div>
-                            <label style="font-size: 12px; font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">Face++ API Key</label>
-                            <input type="text" id="inputFaceppKey" placeholder="Enter Face++ API Key" style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 13px; font-family: monospace;">
+                            <label
+                                style="font-size: 12px; font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">Face++
+                                API Key</label>
+                            <input type="text" id="inputFaceppKey" placeholder="Enter Face++ API Key"
+                                style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 13px; font-family: monospace;">
                         </div>
                         <div>
-                            <label style="font-size: 12px; font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">Face++ API Secret</label>
-                            <input type="password" id="inputFaceppSecret" placeholder="Enter Face++ API Secret" style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 13px; font-family: monospace;">
+                            <label
+                                style="font-size: 12px; font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">Face++
+                                API Secret</label>
+                            <input type="password" id="inputFaceppSecret" placeholder="Enter Face++ API Secret"
+                                style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 13px; font-family: monospace;">
                         </div>
                         <div>
-                            <label style="font-size: 12px; font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">API Endpoint</label>
-                            <input type="text" id="inputFaceppEndpoint" placeholder="https://api-us.faceplusplus.com/facepp/v3/detect" style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 13px; font-family: monospace;">
+                            <label
+                                style="font-size: 12px; font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">API
+                                Endpoint</label>
+                            <input type="text" id="inputFaceppEndpoint"
+                                placeholder="https://api-us.faceplusplus.com/facepp/v3/detect"
+                                style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 13px; font-family: monospace;">
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn-header btn-settings" onclick="document.getElementById('settingsModal').classList.remove('active')">Cancel</button>
+                    <button type="button" class="btn-header btn-settings"
+                        onclick="document.getElementById('settingsModal').classList.remove('active')">Cancel</button>
                     <button type="submit" class="btn-header" style="background: #1B2A4A; color: #fff; border: none;">
                         <i class="fas fa-save"></i> Save Settings
                     </button>
@@ -329,11 +358,14 @@
         <div class="modal-box" style="max-width: 400px;">
             <div class="modal-header">
                 <h3><i class="fas fa-exclamation-triangle" style="color: #dc2626;"></i> Remove Face Data</h3>
-                <button type="button" class="btn-close-modal" onclick="document.getElementById('deleteModal').classList.remove('active')"><i class="fas fa-times"></i></button>
+                <button type="button" class="btn-close-modal"
+                    onclick="document.getElementById('deleteModal').classList.remove('active')"><i
+                        class="fas fa-times"></i></button>
             </div>
             <div class="modal-body">
                 <p style="font-size: 14px; color: #334155; margin: 0 0 10px 0;">
-                    Are you sure you want to remove the registered face data for <strong id="deleteTeacherName">this teacher</strong>?
+                    Are you sure you want to remove the registered face data for <strong id="deleteTeacherName">this
+                        teacher</strong>?
                 </p>
                 <p style="font-size: 12px; color: #94a3b8; margin: 0;">
                     The teacher will need to be re-scanned to use biometric face attendance.
@@ -341,7 +373,8 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn-header btn-settings" id="btnCancelDelete">Cancel</button>
-                <button type="button" class="btn-header" id="btnConfirmDelete" style="background: #dc2626; color: #fff; border: none;">
+                <button type="button" class="btn-header" id="btnConfirmDelete"
+                    style="background: #dc2626; color: #fff; border: none;">
                     <i class="fas fa-trash"></i> Remove Face
                 </button>
             </div>
@@ -352,4 +385,5 @@
     <script type="module" src="js/register_face.js"></script>
     <script src="../js/chatbot.js"></script>
 </body>
+
 </html>

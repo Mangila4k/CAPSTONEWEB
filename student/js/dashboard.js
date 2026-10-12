@@ -725,10 +725,14 @@ import { supabase } from '../../supabase/config.js';
             warning: 'fa-exclamation-triangle',
             message: 'fa-envelope',
             document_reminder: 'fa-file-alt',
-            attendance: 'fa-clipboard-check'
+            attendance: 'fa-clipboard-check',
+            good_moral_request: 'fa-award',
+            requirement_reminder: 'fa-clipboard-list'
         };
         
-        notifList.innerHTML = notifications.map(notif => `
+        notifList.innerHTML = notifications.map(notif => {
+            const isReqNotice = notif.type === 'good_moral_request' || notif.type === 'requirement_reminder' || (notif.title && notif.title.toLowerCase().includes('good moral'));
+            return `
             <div class="notif-item ${notif.read ? 'read' : 'unread'}" data-id="${notif.id}">
                 <div class="notif-icon notif-${notif.type}">
                     <i class="fas ${icons[notif.type] || 'fa-bell'}"></i>
@@ -736,11 +740,13 @@ import { supabase } from '../../supabase/config.js';
                 <div class="notif-content">
                     <div class="notif-title">${notif.title}</div>
                     <div class="notif-message">${notif.message}</div>
+                    ${isReqNotice ? `<div style="margin-top: 5px;"><a href="requirements.html" style="display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 700; color: #0284c7; text-decoration: none;"><i class="fas fa-cloud-arrow-up"></i> Upload Document &rarr;</a></div>` : ''}
                     <div class="notif-time">${notif.time}</div>
                 </div>
                 ${!notif.read ? `<button type="button" class="mark-read-btn" data-id="${notif.id}" title="Mark as read"><i class="fas fa-check"></i></button>` : ''}
             </div>
-        `).join('');
+            `;
+        }).join('');
         
         document.querySelectorAll('.mark-read-btn').forEach(btn => {
             btn.addEventListener('click', async function(e) {

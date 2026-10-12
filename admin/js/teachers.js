@@ -12,7 +12,38 @@ document.addEventListener('DOMContentLoaded', async function() {
     const statusFilter = document.getElementById('statusFilter');
     const searchInput = document.getElementById('searchInput');
 
+    // Attach Schedule Modal Elements
+    const attachScheduleModal = document.getElementById('attachScheduleModal');
+    const btnCloseScheduleModal = document.getElementById('btnCloseScheduleModal');
+    const btnCancelScheduleModal = document.getElementById('btnCancelScheduleModal');
+    const modalTeacherAvatar = document.getElementById('modalTeacherAvatar');
+    const modalTeacherName = document.getElementById('modalTeacherName');
+    const modalTeacherId = document.getElementById('modalTeacherId');
+    const modalTeacherEmail = document.getElementById('modalTeacherEmail');
+
+    const modalExistingDocBox = document.getElementById('modalExistingDocBox');
+    const modalExistingDocName = document.getElementById('modalExistingDocName');
+    const modalExistingDocMeta = document.getElementById('modalExistingDocMeta');
+    const btnPreviewExistingDoc = document.getElementById('btnPreviewExistingDoc');
+    const btnRemoveExistingDoc = document.getElementById('btnRemoveExistingDoc');
+
+    const scheduleDropZone = document.getElementById('scheduleDropZone');
+    const scheduleFileInput = document.getElementById('scheduleFileInput');
+    const selectedFileInfo = document.getElementById('selectedFileInfo');
+    const selectedFileName = document.getElementById('selectedFileName');
+    const selectedFileSize = document.getElementById('selectedFileSize');
+    const btnSubmitAttachSchedule = document.getElementById('btnSubmitAttachSchedule');
+
+    // Preview Modal Elements
+    const schedulePreviewModal = document.getElementById('schedulePreviewModal');
+    const btnClosePreviewModal = document.getElementById('btnClosePreviewModal');
+    const previewModalTitle = document.getElementById('previewModalTitle');
+    const previewModalContainer = document.getElementById('previewModalContainer');
+    const btnOpenScheduleExternal = document.getElementById('btnOpenScheduleExternal');
+
     let teachers = [];
+    let currentSelectedTeacher = null;
+    let currentSelectedFile = null;
 
     // Update statistics
     function updateStats() {
@@ -27,6 +58,43 @@ document.addEventListener('DOMContentLoaded', async function() {
         if (elTotal) elTotal.textContent = total;
         if (elWith) elWith.textContent = withSections;
         if (elWithout) elWithout.textContent = withoutSections;
+    }
+
+    // Check if teacher has an attached workload schedule
+    function getTeacherScheduleDoc(teacher) {
+        if (!teacher) return null;
+        if (teacher.teacher_load_url) {
+            return {
+                url: teacher.teacher_load_url,
+                fileName: teacher.teacher_load_name || 'Teacher_Workload.pdf',
+                fileType: teacher.teacher_load_file_type || 'application/pdf',
+                updatedAt: teacher.teacher_load_updated_at || new Date().toISOString()
+            };
+        }
+
+        // Check local storage specific to this teacher
+        const localKeys = [
+            `hes_teacher_load_doc_${teacher.id}`,
+            teacher.user_id ? `hes_teacher_load_doc_${teacher.user_id}` : null
+        ].filter(Boolean);
+
+        for (const k of localKeys) {
+            const raw = localStorage.getItem(k);
+            if (raw) {
+                try {
+                    const parsed = JSON.parse(raw);
+                    if (parsed && (parsed.url || parsed.fileData)) {
+                        return {
+                            url: parsed.url || parsed.fileData,
+                            fileName: parsed.fileName || 'Teacher_Workload.pdf',
+                            fileType: parsed.fileType || 'application/pdf',
+                            updatedAt: parsed.uploadDate || new Date().toISOString()
+                        };
+                    }
+                } catch (e) {}
+            }
+        }
+        return null;
     }
 
     // Render table
@@ -78,7 +146,9 @@ document.addEventListener('DOMContentLoaded', async function() {
             const joinedDate = new Date(teacher.created_at || Date.now());
             const formattedDate = joinedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
             const hasSections = teacher.section_count > 0;
-            
+            const scheduleDoc = getTeacherScheduleDoc(teacher);
+            const hasSchedule = !!scheduleDoc;
+
             // Sections tags
             let sectionsHtml = '';
             if (hasSections && teacher.sections) {
@@ -92,10 +162,14 @@ document.addEventListener('DOMContentLoaded', async function() {
                 sectionsHtml = `<span class="badge badge-warning" style="font-size: 11px;">No sections assigned</span>`;
             }
 
-            // Status badge
+            // Status badge & Schedule badge
             const statusBadge = hasSections
                 ? `<span class="badge badge-success"><i class="fas fa-check-circle"></i> Adviser</span>`
                 : `<span class="badge badge-secondary"><i class="fas fa-clock"></i> Available</span>`;
+
+            const scheduleBadge = hasSchedule
+                ? `<span class="badge-pdf-attached" title="Schedule Attached: ${scheduleDoc.fileName}"><i class="fas fa-file-pdf"></i> Schedule PDF</span>`
+                : '';
 
             html += `
                 <tr>
@@ -115,21 +189,41 @@ document.addEventListener('DOMContentLoaded', async function() {
                         </span>
                     </td>
                     <td>${sectionsHtml}</td>
-                    <td>${statusBadge}</td>
                     <td>
-                        <div class="action-btns">
-                            <a href="register_face.html?id=${teacher.id}" class="action-btn" title="Register / Re-scan Face Biometrics" style="color: #0f766e; background: #ccfbf1;">
-                                <i class="fas fa-camera"></i>
-                            </a>
-                            <a href="view_teacher.html?id=${teacher.id}" class="action-btn view" title="View Teacher">
-                                <i class="fas fa-eye"></i>
-                            </a>
-                            <a href="edit_teacher.html?id=${teacher.id}" class="action-btn edit" title="Edit Teacher">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <button type="button" class="action-btn delete" data-id="${teacher.id}" title="Delete Teacher">
-                                <i class="fas fa-trash"></i>
+                        <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
+                            ${statusBadge}
+                            ${scheduleBadge}
+                        </div>
+                    </td>
+                    <td class="cell-actions">
+                        <div class="manage-dropdown">
+                            <button type="button" class="btn-manage" aria-expanded="false" title="Manage Teacher">
+                                <span>Manage</span>
+                                <i class="fas fa-chevron-down"></i>
                             </button>
+                            <div class="manage-menu">
+                                <a href="view_teacher.html?id=${teacher.id}" class="manage-item view-item" title="View Teacher">
+                                    <i class="fas fa-eye"></i>
+                                    <span>View Teacher</span>
+                                </a>
+                                <a href="edit_teacher.html?id=${teacher.id}" class="manage-item edit-item" title="Edit Teacher">
+                                    <i class="fas fa-edit"></i>
+                                    <span>Edit Teacher</span>
+                                </a>
+                                <button type="button" class="manage-item schedule-item attach-schedule ${hasSchedule ? 'has-schedule' : ''}" data-id="${teacher.id}" title="${hasSchedule ? 'Manage / View Workload Schedule (PDF)' : 'Attach Workload Schedule (PDF)'}">
+                                    <i class="fas ${hasSchedule ? 'fa-file-circle-check' : 'fa-file-pdf'}"></i>
+                                    <span>${hasSchedule ? 'Workload (PDF)' : 'Attach Workload'}</span>
+                                </button>
+                                <a href="register_face.html?id=${teacher.id}" class="manage-item face-item" title="Register / Re-scan Face Biometrics">
+                                    <i class="fas fa-camera"></i>
+                                    <span>Face Biometrics</span>
+                                </a>
+                                <div class="manage-divider"></div>
+                                <button type="button" class="manage-item delete-item delete" data-id="${teacher.id}" title="Delete Teacher">
+                                    <i class="fas fa-trash"></i>
+                                    <span>Delete Teacher</span>
+                                </button>
+                            </div>
                         </div>
                     </td>
                 </tr>
@@ -138,9 +232,55 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         tableBody.innerHTML = html;
 
-        // Attach delete handlers
-        tableBody.querySelectorAll('.action-btn.delete').forEach(btn => {
-            btn.addEventListener('click', function() {
+        // Toggle Manage dropdown menu
+        tableBody.querySelectorAll('.btn-manage').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const dropdown = this.closest('.manage-dropdown');
+                const row = this.closest('tr');
+                const isOpen = dropdown.classList.contains('show');
+
+                // Close all other open dropdowns
+                document.querySelectorAll('.manage-dropdown.show').forEach(d => {
+                    d.classList.remove('show');
+                    d.classList.remove('dropup');
+                    const r = d.closest('tr');
+                    if (r) r.classList.remove('dropdown-open');
+                });
+
+                if (!isOpen) {
+                    const rect = this.getBoundingClientRect();
+                    const spaceBelow = window.innerHeight - rect.bottom;
+                    if (spaceBelow < 220) {
+                        dropdown.classList.add('dropup');
+                    } else {
+                        dropdown.classList.remove('dropup');
+                    }
+                    dropdown.classList.add('show');
+                    if (row) row.classList.add('dropdown-open');
+                }
+            });
+        });
+
+        // Attach action handlers
+        tableBody.querySelectorAll('.attach-schedule').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const dropdown = this.closest('.manage-dropdown');
+                if (dropdown) dropdown.classList.remove('show');
+                const id = this.dataset.id;
+                openAttachScheduleModal(id);
+            });
+        });
+
+        tableBody.querySelectorAll('.delete').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const dropdown = this.closest('.manage-dropdown');
+                if (dropdown) dropdown.classList.remove('show');
                 const id = this.dataset.id;
                 deleteTeacher(id);
             });
@@ -171,13 +311,12 @@ document.addEventListener('DOMContentLoaded', async function() {
                 supabase.from('sections').select('*')
             ]);
 
-            if (tErr) throw tErr;
+            if (tErr) console.warn('Teachers query warning:', tErr);
 
             const users = userRows || [];
             const sections = sectionRows || [];
             const teacherTableData = teacherRows || [];
 
-            // Map each user with role teacher or teacher table record
             const combinedTeachers = [];
             const processedUserIds = new Set();
 
@@ -201,7 +340,11 @@ document.addEventListener('DOMContentLoaded', async function() {
                     phone: t.phone || '',
                     created_at: t.created_at || (matchedUser ? matchedUser.created_at : new Date().toISOString()),
                     section_count: assignedSections.length,
-                    sections: assignedSections.map(s => s.name || `${s.grade_level || ''} - ${s.strand || ''}`).join(', ')
+                    sections: assignedSections.map(s => s.name || `${s.grade_level || ''} - ${s.strand || ''}`).join(', '),
+                    teacher_load_url: t.teacher_load_url || null,
+                    teacher_load_name: t.teacher_load_name || null,
+                    teacher_load_file_type: t.teacher_load_file_type || null,
+                    teacher_load_updated_at: t.teacher_load_updated_at || null
                 });
             });
 
@@ -221,7 +364,11 @@ document.addEventListener('DOMContentLoaded', async function() {
                         phone: '',
                         created_at: u.created_at || new Date().toISOString(),
                         section_count: assignedSections.length,
-                        sections: assignedSections.map(s => s.name).join(', ')
+                        sections: assignedSections.map(s => s.name).join(', '),
+                        teacher_load_url: null,
+                        teacher_load_name: null,
+                        teacher_load_file_type: null,
+                        teacher_load_updated_at: null
                     });
                 }
             });
@@ -234,6 +381,293 @@ document.addEventListener('DOMContentLoaded', async function() {
             showAlert('Failed to load teachers from database: ' + err.message, 'error');
         }
     }
+
+    // ============================================
+    // ATTACH SCHEDULE MODAL WORKFLOW
+    // ============================================
+
+    function openAttachScheduleModal(teacherId) {
+        const teacher = teachers.find(t => t.id === teacherId);
+        if (!teacher) return;
+
+        currentSelectedTeacher = teacher;
+        currentSelectedFile = null;
+
+        if (modalTeacherName) modalTeacherName.textContent = teacher.fullname;
+        if (modalTeacherAvatar) modalTeacherAvatar.textContent = (teacher.fullname || 'T').charAt(0).toUpperCase();
+        if (modalTeacherId) modalTeacherId.innerHTML = `<i class="fas fa-id-badge"></i> ${teacher.id_number || 'N/A'}`;
+        if (modalTeacherEmail) modalTeacherEmail.innerHTML = `<i class="fas fa-envelope"></i> ${teacher.email}`;
+
+        // Reset file selection
+        if (scheduleFileInput) scheduleFileInput.value = '';
+        if (selectedFileInfo) selectedFileInfo.style.display = 'none';
+
+        // Check existing schedule doc
+        const existingDoc = getTeacherScheduleDoc(teacher);
+        if (existingDoc && (existingDoc.url || existingDoc.fileData)) {
+            if (modalExistingDocBox) modalExistingDocBox.style.display = 'block';
+            if (modalExistingDocName) modalExistingDocName.textContent = existingDoc.fileName || 'Teacher_Workload.pdf';
+            if (modalExistingDocMeta) {
+                const dateStr = existingDoc.updatedAt ? new Date(existingDoc.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Recently';
+                modalExistingDocMeta.textContent = `Uploaded: ${dateStr} • Visible strictly to this teacher`;
+            }
+        } else {
+            if (modalExistingDocBox) modalExistingDocBox.style.display = 'none';
+        }
+
+        if (attachScheduleModal) attachScheduleModal.style.display = 'flex';
+    }
+
+    function closeAttachScheduleModal() {
+        if (attachScheduleModal) attachScheduleModal.style.display = 'none';
+        currentSelectedTeacher = null;
+        currentSelectedFile = null;
+        if (scheduleFileInput) scheduleFileInput.value = '';
+        if (selectedFileInfo) selectedFileInfo.style.display = 'none';
+    }
+
+    // Drag and drop & file selection handlers
+    if (scheduleDropZone && scheduleFileInput) {
+        scheduleDropZone.addEventListener('click', () => scheduleFileInput.click());
+
+        scheduleDropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            scheduleDropZone.classList.add('dragover');
+        });
+
+        scheduleDropZone.addEventListener('dragleave', () => {
+            scheduleDropZone.classList.remove('dragover');
+        });
+
+        scheduleDropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            scheduleDropZone.classList.remove('dragover');
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                handleFileSelection(e.dataTransfer.files[0]);
+            }
+        });
+
+        scheduleFileInput.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files.length > 0) {
+                handleFileSelection(e.target.files[0]);
+            }
+        });
+    }
+
+    function handleFileSelection(file) {
+        if (!file) return;
+
+        // Size check (max 20MB)
+        if (file.size > 20 * 1024 * 1024) {
+            alert('File exceeds 20MB size limit.');
+            return;
+        }
+
+        currentSelectedFile = file;
+        const sizeFormatted = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
+
+        if (selectedFileName) selectedFileName.textContent = file.name;
+        if (selectedFileSize) selectedFileSize.textContent = `(${sizeFormatted})`;
+        if (selectedFileInfo) selectedFileInfo.style.display = 'block';
+    }
+
+    // Submit Attach Schedule
+    if (btnSubmitAttachSchedule) {
+        btnSubmitAttachSchedule.addEventListener('click', async function() {
+            if (!currentSelectedTeacher) return;
+            if (!currentSelectedFile) {
+                alert('Please select a schedule document (PDF or Image) to attach.');
+                return;
+            }
+
+            const originalBtnHtml = btnSubmitAttachSchedule.innerHTML;
+            btnSubmitAttachSchedule.disabled = true;
+            btnSubmitAttachSchedule.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading & Attaching...';
+
+            try {
+                const file = currentSelectedFile;
+                const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+                const fileType = file.type || (isPdf ? 'application/pdf' : 'image/png');
+
+                // Read file as base64 DataURL (ensures 100% offline & fallback access)
+                const dataUrl = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+
+                let publicUrl = null;
+
+                // Try uploading to Supabase Storage bucket 'teacher-schedules'
+                try {
+                    const cleanFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+                    const storagePath = `${currentSelectedTeacher.id}/${Date.now()}_${cleanFileName}`;
+
+                    const { data: uploadData, error: upErr } = await supabase
+                        .storage
+                        .from('teacher-schedules')
+                        .upload(storagePath, file, {
+                            cacheControl: '3600',
+                            upsert: true
+                        });
+
+                    if (!upErr && uploadData) {
+                        const { data: pubData } = supabase
+                            .storage
+                            .from('teacher-schedules')
+                            .getPublicUrl(storagePath);
+                        if (pubData && pubData.publicUrl) {
+                            publicUrl = pubData.publicUrl;
+                        }
+                    }
+                } catch (stErr) {
+                    console.warn('Storage bucket upload notice (fallback to DataURL):', stErr);
+                }
+
+                const finalUrl = publicUrl || dataUrl;
+                const uploadIso = new Date().toISOString();
+
+                // 1. Update Supabase teachers table
+                try {
+                    await supabase
+                        .from('teachers')
+                        .update({
+                            teacher_load_url: finalUrl,
+                            teacher_load_name: file.name,
+                            teacher_load_file_type: fileType,
+                            teacher_load_updated_at: uploadIso
+                        })
+                        .eq('id', currentSelectedTeacher.id);
+                } catch (dbErr) {
+                    console.warn('Teachers table update error:', dbErr);
+                }
+
+                // 2. Cache in localStorage strictly for this specific teacher
+                const docPayload = {
+                    teacherId: currentSelectedTeacher.id,
+                    userId: currentSelectedTeacher.user_id,
+                    fileName: file.name,
+                    fileType: fileType,
+                    url: finalUrl,
+                    fileData: dataUrl,
+                    uploadDate: uploadIso,
+                    issuedBy: 'Administration'
+                };
+
+                localStorage.setItem(`hes_teacher_load_doc_${currentSelectedTeacher.id}`, JSON.stringify(docPayload));
+                if (currentSelectedTeacher.user_id) {
+                    localStorage.setItem(`hes_teacher_load_doc_${currentSelectedTeacher.user_id}`, JSON.stringify(docPayload));
+                }
+
+                // Update in-memory state
+                currentSelectedTeacher.teacher_load_url = finalUrl;
+                currentSelectedTeacher.teacher_load_name = file.name;
+                currentSelectedTeacher.teacher_load_file_type = fileType;
+                currentSelectedTeacher.teacher_load_updated_at = uploadIso;
+
+                showAlert(`✅ Official schedule document (${file.name}) attached successfully for ${currentSelectedTeacher.fullname}! Only this teacher can see it in their portal.`, 'success');
+                closeAttachScheduleModal();
+                renderTable();
+            } catch (err) {
+                console.error('Error attaching schedule:', err);
+                alert('Failed to attach schedule: ' + err.message);
+            } finally {
+                btnSubmitAttachSchedule.disabled = false;
+                btnSubmitAttachSchedule.innerHTML = originalBtnHtml;
+            }
+        });
+    }
+
+    // Remove Existing Schedule
+    if (btnRemoveExistingDoc) {
+        btnRemoveExistingDoc.addEventListener('click', async function() {
+            if (!currentSelectedTeacher) return;
+            if (!confirm(`Are you sure you want to remove the workload schedule for ${currentSelectedTeacher.fullname}?`)) {
+                return;
+            }
+
+            try {
+                // Update Supabase
+                await supabase
+                    .from('teachers')
+                    .update({
+                        teacher_load_url: null,
+                        teacher_load_name: null,
+                        teacher_load_file_type: null,
+                        teacher_load_updated_at: new Date().toISOString()
+                    })
+                    .eq('id', currentSelectedTeacher.id);
+
+                // Remove from local storage
+                localStorage.removeItem(`hes_teacher_load_doc_${currentSelectedTeacher.id}`);
+                if (currentSelectedTeacher.user_id) {
+                    localStorage.removeItem(`hes_teacher_load_doc_${currentSelectedTeacher.user_id}`);
+                }
+
+                currentSelectedTeacher.teacher_load_url = null;
+                currentSelectedTeacher.teacher_load_name = null;
+                currentSelectedTeacher.teacher_load_file_type = null;
+
+                if (modalExistingDocBox) modalExistingDocBox.style.display = 'none';
+
+                showAlert(`Schedule removed for ${currentSelectedTeacher.fullname}.`, 'success');
+                renderTable();
+            } catch (err) {
+                console.error('Error removing schedule:', err);
+                alert('Failed to remove schedule: ' + err.message);
+            }
+        });
+    }
+
+    // Preview Existing Schedule PDF / Image
+    if (btnPreviewExistingDoc) {
+        btnPreviewExistingDoc.addEventListener('click', function() {
+            if (!currentSelectedTeacher) return;
+            const doc = getTeacherScheduleDoc(currentSelectedTeacher);
+            if (!doc || !doc.url) return;
+
+            openSchedulePreview(doc.url, doc.fileName || 'Teacher_Workload.pdf');
+        });
+    }
+
+    function openSchedulePreview(url, title) {
+        if (!schedulePreviewModal || !previewModalContainer) return;
+
+        const isPdf = (title || '').toLowerCase().endsWith('.pdf') || (url || '').startsWith('data:application/pdf') || (url || '').includes('.pdf');
+
+        if (previewModalTitle) {
+            previewModalTitle.innerHTML = `<i class="fas ${isPdf ? 'fa-file-pdf' : 'fa-file-image'}" style="color: ${isPdf ? '#fca5a5' : '#86efac'};"></i> ${title}`;
+        }
+
+        if (btnOpenScheduleExternal) {
+            btnOpenScheduleExternal.href = url;
+        }
+
+        if (isPdf) {
+            previewModalContainer.innerHTML = `<iframe src="${url}" style="width: 100%; height: 100%; border: none;"></iframe>`;
+        } else {
+            previewModalContainer.innerHTML = `<img src="${url}" alt="Schedule Preview" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
+        }
+
+        schedulePreviewModal.style.display = 'flex';
+    }
+
+    // Modal close listeners
+    if (btnCloseScheduleModal) btnCloseScheduleModal.addEventListener('click', closeAttachScheduleModal);
+    if (btnCancelScheduleModal) btnCancelScheduleModal.addEventListener('click', closeAttachScheduleModal);
+
+    if (btnClosePreviewModal) {
+        btnClosePreviewModal.addEventListener('click', () => {
+            if (schedulePreviewModal) schedulePreviewModal.style.display = 'none';
+        });
+    }
+
+    // Close on overlay backdrop click
+    window.addEventListener('click', (e) => {
+        if (e.target === attachScheduleModal) closeAttachScheduleModal();
+        if (e.target === schedulePreviewModal && schedulePreviewModal) schedulePreviewModal.style.display = 'none';
+    });
 
     // Delete teacher
     async function deleteTeacher(id) {
@@ -250,7 +684,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
 
         try {
-            // Delete from teachers table
             const { error: tDelErr } = await supabase
                 .from('teachers')
                 .delete()
@@ -258,7 +691,6 @@ document.addEventListener('DOMContentLoaded', async function() {
 
             if (tDelErr) throw tDelErr;
 
-            // Also delete from users table if user_id exists
             if (teacher.user_id) {
                 await supabase.from('users').delete().eq('id', teacher.user_id);
             }
@@ -289,6 +721,17 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Event listeners
     if (statusFilter) statusFilter.addEventListener('change', renderTable);
     if (searchInput) searchInput.addEventListener('input', renderTable);
+
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.manage-dropdown')) {
+            document.querySelectorAll('.manage-dropdown.show').forEach(d => {
+                d.classList.remove('show');
+                d.classList.remove('dropup');
+                const r = d.closest('tr');
+                if (r) r.classList.remove('dropdown-open');
+            });
+        }
+    });
 
     // Initial load
     await loadTeachers();

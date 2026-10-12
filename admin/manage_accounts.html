@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,6 +14,7 @@
     <link rel="stylesheet" href=" css/manage_accounts.css">
     <link rel="stylesheet" href="../css/chatbot.css">
 </head>
+
 <body>
     <!-- Mobile Menu Toggle -->
     <div class="menu-toggle" id="menuToggle">
@@ -25,7 +27,8 @@
             <div class="sidebar-header">
                 <div class="logo">
                     <div class="logo-icon">
-                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
+                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo"
+                            onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
                     </div>
                     <div class="logo-text">PLS<span>NSH</span></div>
                 </div>
@@ -47,6 +50,7 @@
                     <ul class="nav-items">
                         <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
                         <li><a href="student.html"><i class="fas fa-user-graduate"></i> Students</a></li>
+                        <li><a href="generate_id.html"><i class="fas fa-id-card"></i> ID Generator</a></li>
                         <li><a href="teachers.html"><i class="fas fa-chalkboard-user"></i> Teachers</a></li>
                         <li><a href="sections.html"><i class="fas fa-layer-group"></i> Sections</a></li>
                         <li><a href="subjects.html"><i class="fas fa-book"></i> Subjects</a></li>
@@ -58,7 +62,8 @@
                     <div class="nav-section-title">COMMUNICATION & MANAGEMENT</div>
                     <ul class="nav-items">
                         <li><a href="announcements.html"><i class="fas fa-bullhorn"></i> Announcements</a></li>
-                        <li><a href="manage_accounts.html" class="active"><i class="fas fa-users-cog"></i> Accounts</a></li>
+                        <li><a href="manage_accounts.html" class="active"><i class="fas fa-users-cog"></i> Accounts</a>
+                        </li>
                         <li><a href="attendance.html"><i class="fas fa-calendar-check"></i> Attendance</a></li>
                         <li><a href="register_face.html"><i class="fas fa-camera"></i> Face Registration</a></li>
                         <li><a href="activities.html"><i class="fas fa-history"></i> Activities</a></li>
@@ -84,7 +89,8 @@
                     <p class="subtitle">Manage user accounts, approvals, and roles in the system</p>
                 </div>
                 <div class="header-actions">
-                    <a href="add_account.html" class="btn-add" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; padding: 10px 20px; border-radius: 8px; background: #0B4F2E; color: #fff; font-weight: 600; font-size: 14px; box-shadow: 0 2px 6px rgba(11,79,46,0.25);">
+                    <a href="add_account.html" class="btn-add"
+                        style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; padding: 10px 20px; border-radius: 8px; background: #0B4F2E; color: #fff; font-weight: 600; font-size: 14px; box-shadow: 0 2px 6px rgba(11,79,46,0.25);">
                         <i class="fas fa-plus-circle"></i> Add New Account
                     </a>
                 </div>
@@ -165,8 +171,9 @@
             <!-- Search and Filter -->
             <div class="search-bar">
                 <form id="filterForm" class="filter-form">
-                    <input type="text" name="search" id="searchInput" class="search-input" placeholder="Search by name, email, or ID...">
-                    
+                    <input type="text" name="search" id="searchInput" class="search-input"
+                        placeholder="Search by name, email, or ID...">
+
                     <select name="role" id="roleFilter" class="filter-select">
                         <option value="">All Roles</option>
                         <option value="Admin">Admin</option>
@@ -184,9 +191,10 @@
                         <option value="approved">Approved</option>
                         <option value="rejected">Rejected</option>
                     </select>
-                    
+
                     <button type="submit" class="btn-search"><i class="fas fa-search"></i> Filter</button>
-                    <button type="reset" class="btn-reset" onclick="resetFilters()"><i class="fas fa-redo-alt"></i> Reset</button>
+                    <button type="reset" class="btn-reset" onclick="resetFilters()"><i class="fas fa-redo-alt"></i>
+                        Reset</button>
                 </form>
             </div>
 
@@ -222,8 +230,10 @@
             <form id="rejectForm">
                 <input type="hidden" name="user_id" id="rejectUserId">
                 <div class="modal-body">
-                    <p>You are about to reject <strong id="rejectUserName"></strong>. Please provide a reason for rejection (optional):</p>
-                    <textarea name="rejection_reason" id="rejectionReason" placeholder="Enter rejection reason..." style="width: 100%; padding: 10px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-family: inherit; min-height: 80px; resize: vertical;"></textarea>
+                    <p>You are about to reject <strong id="rejectUserName"></strong>. Please provide a reason for
+                        rejection (optional):</p>
+                    <textarea name="rejection_reason" id="rejectionReason" placeholder="Enter rejection reason..."
+                        style="width: 100%; padding: 10px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-family: inherit; min-height: 80px; resize: vertical;"></textarea>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn-cancel" onclick="closeRejectModal()">Cancel</button>
@@ -237,4 +247,5 @@
     <script type="module" src="js/manage_accounts.js"></script>
     <script src="../js/chatbot.js"></script>
 </body>
+
 </html>

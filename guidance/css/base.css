@@ -88,7 +88,7 @@ body {
 }
 
 .sidebar-header {
-    margin-bottom: 24px;
+    margin-bottom: 14px;
 }
 
 .logo {
@@ -138,17 +138,17 @@ body {
 /* User Profile in Sidebar */
 .counselor-profile {
     text-align: center;
-    padding: 16px 0 20px;
+    padding: 10px 0 14px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    margin-bottom: 20px;
+    margin-bottom: 14px;
 }
 
 .counselor-avatar {
-    width: 64px;
-    height: 64px;
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
     background: #facc15;
-    margin: 0 auto 10px;
+    margin: 0 auto 8px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -199,7 +199,7 @@ body {
 }
 
 .nav-section {
-    margin-bottom: 20px;
+    margin-bottom: 14px;
 }
 
 .nav-section-title {
@@ -207,7 +207,7 @@ body {
     letter-spacing: 1px;
     opacity: 0.55;
     font-weight: 700;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     padding-left: 6px;
     color: #fff;
     text-transform: uppercase;
@@ -224,8 +224,8 @@ body {
 .nav-items a {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 10px 14px;
+    gap: 14px;
+    padding: 7px 12px;
     border-radius: 10px;
     color: rgba(255, 255, 255, 0.6);
     text-decoration: none;

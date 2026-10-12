@@ -40,7 +40,7 @@
                     <ul class="nav-items">
                         <li><a href="dashboard.html" class="active"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
                         <li><a href="attendance-face.html"><i class="fas fa-camera"></i> <span>Face Attendance</span></a></li>
-                        <li><a href="student-attendance.html"><i class="fas fa-user-check"></i> <span>Student Attendance</span></a></li>
+                        <li><a href="attendance-qr.html"><i class="fas fa-qrcode"></i> <span>Student QR Scanner</span></a></li>
                         <li><a href="classes.html"><i class="fas fa-users"></i> <span>My Classes</span></a></li>
                         <li><a href="class-program.html"><i class="fas fa-calendar-alt"></i> <span>Class Program</span></a></li>
                         <li><a href="teacher-load.html"><i class="fas fa-clock"></i> <span>Teacher Load</span></a></li>
@@ -206,11 +206,11 @@
                     <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
                 </div>
                 <div class="actions-grid">
-                    <a href="student-attendance.html" class="action-card">
-                        <div class="action-icon"><i class="fas fa-user-check"></i></div>
+                    <a href="attendance-qr.html" class="action-card">
+                        <div class="action-icon"><i class="fas fa-qrcode"></i></div>
                         <div class="action-info">
-                            <h4>Student Attendance</h4>
-                            <p>Record & manage student attendance</p>
+                            <h4>Student QR Scanner</h4>
+                            <p>Scan student ID QR codes for daily attendance</p>
                         </div>
                     </a>
 
@@ -233,7 +233,10 @@
                     <a href="teacher-load.html" class="action-card">
                         <div class="action-icon" style="background: #fef3c7; color: #d97706;"><i class="fas fa-clock"></i></div>
                         <div class="action-info">
-                            <h4>Teacher Load</h4>
+                            <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px;">
+                                <h4>Teacher Load</h4>
+                                <span id="dashScheduleBadge" style="display: none; background: #fef2f2; color: #dc2626; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; border: 1px solid #fecaca;"><i class="fas fa-file-pdf"></i> PDF Attached</span>
+                            </div>
                             <p>Check official load assigned by admin</p>
                         </div>
                     </a>
