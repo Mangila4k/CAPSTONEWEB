@@ -5,11 +5,10 @@
   "main": "final.js",
   "type": "module",
   "scripts": {
-    "start": "node final.js",
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
-  },
+  "dev": "vite",
+  "build": "chmod +x node_modules/.bin/vite && vite build",
+  "preview": "vite preview"
+},
   "dependencies": {
     "@supabase/supabase-js": "^2.115.0",
     "dotenv": "^16.4.5"
