@@ -5,7 +5,10 @@
   "main": "final.js",
   "type": "module",
   "scripts": {
-    "start": "node final.js"
+    "start": "node final.js",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.115.0",
