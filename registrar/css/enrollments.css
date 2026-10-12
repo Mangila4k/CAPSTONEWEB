@@ -42,7 +42,7 @@ body {
     width: 260px;
     background: var(--primary);
     color: white;
-    padding: 1.5rem 0;
+    padding: 14px 0;
     display: flex;
     flex-direction: column;
     position: fixed;
@@ -54,7 +54,7 @@ body {
 }
 
 .sidebar-header {
-    padding: 0 1.5rem 1.5rem;
+    padding: 0 1.25rem 14px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -103,7 +103,7 @@ body {
 }
 
 .admin-profile {
-    padding: 1.5rem;
+    padding: 10px 1.25rem 14px;
     text-align: center;
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
@@ -112,7 +112,7 @@ body {
     position: relative;
     width: 60px;
     height: 60px;
-    margin: 0 auto 0.5rem;
+    margin: 0 auto 8px;
 }
 
 .admin-avatar .avatar-initial {
@@ -155,7 +155,7 @@ body {
 
 .nav-menu {
     flex: 1;
-    padding: 1rem 1.5rem;
+    padding: 14px 1.25rem;
 }
 
 .nav-section-title {
@@ -163,7 +163,7 @@ body {
     text-transform: uppercase;
     letter-spacing: 1px;
     color: rgba(255, 255, 255, 0.3);
-    margin: 1rem 0 0.5rem;
+    margin: 14px 0 6px;
 }
 
 .nav-items {
@@ -177,8 +177,8 @@ body {
 .nav-items a {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 0.6rem 0.8rem;
+    gap: 14px;
+    padding: 7px 12px;
     border-radius: 10px;
     color: rgba(255, 255, 255, 0.6);
     text-decoration: none;
@@ -647,11 +647,210 @@ body {
     background: #059669;
 }
 
-/* ===== TABLE CARD ===== */
+/* ===== YEAR LEVEL SEPARATION & TABS ===== */
+.level-tabs-bar {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    padding: 12px 16px;
+    margin-bottom: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.level-tabs {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.level-tab-btn {
+    flex: 1;
+    min-width: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 16px;
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    color: #475569;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.level-tab-btn:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #0f172a;
+    transform: translateY(-1px);
+}
+
+.level-tab-btn.active {
+    background: #0b2b4a;
+    border-color: #0b2b4a;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(11, 43, 74, 0.25);
+}
+
+.level-tab-btn.active i {
+    color: #ffffff !important;
+}
+
+.level-tab-btn .tab-subtitle {
+    font-size: 11px;
+    font-weight: 500;
+    color: #64748b;
+}
+
+.level-tab-btn.active .tab-subtitle {
+    color: #cbd5e1;
+}
+
+.level-tab-btn .tab-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 12px;
+    background: #e2e8f0;
+    color: #334155;
+    transition: all 0.2s ease;
+}
+
+.level-tab-btn.active .tab-badge {
+    background: rgba(255, 255, 255, 0.22);
+    color: #ffffff;
+}
+
+.grade-pills-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding-top: 10px;
+    border-top: 1px dashed #e2e8f0;
+}
+
+.pills-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+    margin-right: 4px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.grade-pill-tag {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    color: #475569;
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+}
+
+.grade-pill-tag:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+    border-color: #cbd5e1;
+}
+
+.grade-pill-tag.active {
+    background: #0b2b4a;
+    color: #ffffff;
+    border-color: #0b2b4a;
+    box-shadow: 0 2px 6px rgba(11, 43, 74, 0.2);
+}
+
+/* Year Level Separator Row inside Table */
+.year-group-row td {
+    padding: 0 !important;
+    border-bottom: none !important;
+    background: transparent !important;
+}
+
+.year-group-header {
+    background: linear-gradient(90deg, #f8fafc 0%, #f1f5f9 100%);
+    border-top: 1.5px solid #e2e8f0;
+    border-bottom: 1.5px solid #e2e8f0;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.year-group-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.year-group-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.year-group-icon.jhs {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+.year-group-icon.shs {
+    background: #ede9fe;
+    color: #6d28d9;
+}
+
+.year-group-text {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.year-group-name {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: 0.2px;
+}
+
+.year-group-sub {
+    font-size: 11.5px;
+    font-weight: 500;
+    color: #64748b;
+}
+
+.year-group-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 12px;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    color: #334155;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+/* ===== TABLE CARD & PROFESSIONAL ENROLLMENT TABLE ===== */
 .table-card {
-    background: white;
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--gray-200);
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.05);
     overflow: hidden;
     margin-bottom: 2rem;
 }
@@ -660,71 +859,104 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1.2rem 1.5rem;
-    border-bottom: 1px solid var(--gray-100);
+    padding: 1rem 1.4rem;
+    border-bottom: 1px solid #f1f5f9;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: 0.75rem;
+    background: #ffffff;
 }
 
 .table-header h3 {
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--gray-800);
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
 }
 
 .table-header h3 i {
-    color: var(--primary);
-    margin-right: 0.5rem;
+    color: #0b2b4a;
 }
 
 .badge-count {
-    font-size: 0.8rem;
-    color: var(--gray-500);
-    background: var(--gray-100);
-    padding: 0.2rem 0.8rem;
-    border-radius: 40px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    padding: 4px 12px;
+    border-radius: 20px;
 }
 
 .table-container {
     overflow-x: auto;
+    width: 100%;
 }
 
 .data-table {
     width: 100%;
-    border-collapse: collapse;
-    font-size: 0.9rem;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 13px;
+    text-align: left;
 }
 
 .data-table thead {
-    background: var(--gray-50);
+    background: #f8fafc;
 }
 
 .data-table thead th {
-    padding: 0.8rem 1rem;
+    padding: 11px 16px;
     text-align: left;
-    font-weight: 600;
-    color: var(--gray-600);
-    font-size: 0.75rem;
+    font-weight: 700;
+    color: #475569;
+    font-size: 11px;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border-bottom: 1px solid var(--gray-200);
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid #e2e8f0;
+    white-space: nowrap;
+    background: #f8fafc;
+}
+
+.data-table thead th:nth-child(6),
+.data-table thead th:nth-child(7),
+.data-table thead th:last-child {
+    text-align: center;
 }
 
 .data-table tbody td {
-    padding: 0.8rem 1rem;
-    border-bottom: 1px solid var(--gray-100);
+    padding: 10px 16px;
+    border-bottom: 1px solid #f1f5f9;
     vertical-align: middle;
+    color: #1e293b;
+    background: #ffffff;
 }
 
-.data-table tbody tr:hover {
-    background: var(--gray-50);
+.data-table tbody td:nth-child(6),
+.data-table tbody td:nth-child(7),
+.data-table tbody td:last-child {
+    text-align: center;
+}
+
+.data-table tbody tr {
+    transition: background-color 0.15s ease;
+}
+
+.data-table tbody tr:hover td {
+    background-color: #f8fafc;
+}
+
+.data-table tbody tr:last-child td {
+    border-bottom: none;
 }
 
 /* Student Info */
 .student-info {
     display: flex;
     align-items: center;
-    gap: 0.8rem;
+    gap: 11px;
 }
 
 .student-avatar,
@@ -736,10 +968,9 @@ body {
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    font-size: 0.8rem;
+    font-size: 13px;
     flex-shrink: 0;
-    background: rgba(11, 43, 74, 0.08);
-    color: var(--primary);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 .student-avatar-img img {
@@ -751,125 +982,245 @@ body {
 
 .student-details h4 {
     font-weight: 600;
-    font-size: 0.9rem;
-    color: var(--gray-800);
+    font-size: 13.5px;
+    color: #0f172a;
+    margin: 0 0 2px 0;
+    line-height: 1.25;
 }
 
 .student-details span {
-    font-size: 0.75rem;
-    color: var(--gray-400);
+    font-size: 11.5px;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    line-height: 1.2;
 }
 
 .student-details span i {
-    margin-right: 0.2rem;
+    font-size: 10px;
+    color: #94a3b8;
 }
 
-/* Badges */
+/* ID Number Badge */
 .id-badge {
-    font-family: monospace;
-    font-size: 0.8rem;
-    background: var(--gray-100);
-    padding: 0.2rem 0.5rem;
-    border-radius: 4px;
-    color: var(--gray-600);
+    font-family: 'SF Mono', 'Segoe UI Mono', 'Roboto Mono', Menlo, Consolas, monospace;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    background: #f1f5f9;
+    padding: 3px 8px;
+    border-radius: 6px;
+    color: #334155;
+    border: 1px solid #e2e8f0;
+    display: inline-block;
+    white-space: nowrap;
 }
 
+.id-badge.pending {
+    background: #fffbeb;
+    color: #b45309;
+    border-color: #fde68a;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0;
+}
+
+/* Grade & Strand Cell */
+.grade-strand-cell {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+}
+
+.grade-strand-cell .grade-pill {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #0f172a;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    white-space: nowrap;
+    line-height: 1.3;
+}
+
+.grade-strand-cell .strand-pill {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #0369a1;
+    background: #e0f2fe;
+    border: 1px solid #bae6fd;
+    white-space: nowrap;
+    line-height: 1.3;
+}
+
+/* Legacy fallback tags */
 .grade-tag {
     display: inline-block;
-    padding: 0.15rem 0.5rem;
+    padding: 2px 7px;
     border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    background: rgba(11, 43, 74, 0.06);
-    color: var(--primary);
-    margin-right: 0.3rem;
+    font-size: 11.5px;
+    font-weight: 600;
+    background: #f1f5f9;
+    color: #0f172a;
+    border: 1px solid #e2e8f0;
+    white-space: nowrap;
 }
 
 .grade-tag.strand {
-    background: rgba(245, 158, 11, 0.1);
-    color: var(--warning);
+    background: #e0f2fe;
+    color: #0369a1;
+    border: 1px solid #bae6fd;
 }
 
+/* School Year */
 .school-year {
-    font-size: 0.85rem;
-    color: var(--gray-600);
+    font-size: 12.5px;
+    font-weight: 500;
+    color: #334155;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    display: inline-block;
 }
 
+/* Student Type Badge */
 .student-type-badge {
-    padding: 0.15rem 0.6rem;
-    border-radius: 40px;
-    font-size: 0.7rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3px 9px;
+    border-radius: 6px;
+    font-size: 11px;
     font-weight: 600;
+    white-space: nowrap;
+    line-height: 1.3;
 }
 
-.student-type-new {
-    background: rgba(59, 130, 246, 0.1);
-    color: #3b82f6;
+.student-type-new,
+.student-type-new-student {
+    background: #eff6ff;
+    color: #2563eb;
+    border: 1px solid #bfdbfe;
 }
 
 .student-type-continuing {
-    background: rgba(16, 185, 129, 0.1);
-    color: var(--success);
+    background: #ecfdf5;
+    color: #059669;
+    border: 1px solid #a7f3d0;
 }
 
 .student-type-transferee {
-    background: rgba(139, 92, 246, 0.1);
-    color: #8b5cf6;
+    background: #f5f3ff;
+    color: #7c3aed;
+    border: 1px solid #ddd6fe;
 }
 
-/* Status Badge */
+/* Status Badge with Dot Indicator */
 .status-badge {
-    padding: 0.2rem 0.7rem;
-    border-radius: 40px;
-    font-size: 0.7rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11.5px;
     font-weight: 600;
+    white-space: nowrap;
+    line-height: 1.3;
+}
+
+.status-badge::before {
+    content: "";
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.status-enrolled,
+.status-approved {
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+.status-enrolled::before,
+.status-approved::before {
+    background: #10b981;
 }
 
 .status-pending {
-    background: rgba(245, 158, 11, 0.1);
-    color: var(--warning);
+    background: #fffbeb;
+    color: #92400e;
+    border: 1px solid #fde68a;
 }
 
-.status-enrolled {
-    background: rgba(16, 185, 129, 0.1);
-    color: var(--success);
+.status-pending::before {
+    background: #f59e0b;
 }
 
 .status-rejected {
-    background: rgba(239, 68, 68, 0.1);
-    color: var(--danger);
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
 }
 
-/* Missing Requirements */
-.missing-reqs-warning {
-    display: flex;
+.status-rejected::before {
+    background: #ef4444;
+}
+
+/* Requirements Badges */
+.complete-badge-sm {
+    display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    flex-wrap: wrap;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    background: #f0fdf4;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+    white-space: nowrap;
+}
+
+.complete-badge-sm i {
+    font-size: 11px;
+    color: #16a34a;
 }
 
 .missing-badge-sm {
     display: inline-flex;
     align-items: center;
-    gap: 0.3rem;
-    padding: 0.15rem 0.5rem;
-    border-radius: 40px;
-    font-size: 0.65rem;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 6px;
+    font-size: 11px;
     font-weight: 600;
-    background: rgba(239, 68, 68, 0.1);
-    color: var(--danger);
+    background: #fff1f2;
+    color: #9f1239;
+    border: 1px solid #fecdd3;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
-.complete-badge-sm {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    padding: 0.15rem 0.5rem;
-    border-radius: 40px;
-    font-size: 0.65rem;
-    font-weight: 600;
-    background: rgba(16, 185, 129, 0.1);
-    color: var(--success);
+.missing-badge-sm i {
+    font-size: 11px;
+    color: #e11d48;
+}
+
+.missing-badge-sm:hover {
+    background: #ffe4e6;
+    border-color: #fda4af;
+    transform: translateY(-1px);
 }
 
 .btn-notify-missing {
@@ -891,70 +1242,105 @@ body {
     background: var(--primary-dark);
 }
 
-/* Action Buttons */
+/* Action Buttons (Horizontal Sleek Toolbar) */
 .action-btns {
-    display: flex;
-    gap: 0.3rem;
-    flex-wrap: wrap;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    flex-wrap: nowrap;
 }
 
 .action-btn {
-    width: 32px;
-    height: 32px;
-    border: none;
-    border-radius: 6px;
+    width: 30px;
+    height: 30px;
+    border-radius: 7px;
+    border: 1px solid transparent;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: var(--transition);
+    transition: all 0.2s ease;
     text-decoration: none;
-    font-size: 0.8rem;
+    font-size: 12px;
+    box-sizing: border-box;
 }
 
 .action-btn.view {
-    background: rgba(59, 130, 246, 0.1);
-    color: #3b82f6;
+    background: #f0f9ff;
+    color: #0284c7;
+    border-color: #bae6fd;
 }
 
 .action-btn.view:hover {
-    background: #3b82f6;
-    color: white;
+    background: #0284c7;
+    color: #ffffff;
+    border-color: #0284c7;
+    box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);
+    transform: translateY(-1px);
+}
+
+.action-btn.request-moral-enr-btn {
+    background: #f8fafc;
+    color: #0284c7;
+    border-color: #cbd5e1;
+}
+
+.action-btn.request-moral-enr-btn:hover {
+    background: #0b2b4a;
+    color: #ffffff;
+    border-color: #0b2b4a;
+    box-shadow: 0 2px 6px rgba(11, 43, 74, 0.25);
+    transform: translateY(-1px);
 }
 
 .action-btn.approve {
-    background: rgba(16, 185, 129, 0.1);
-    color: var(--success);
+    background: #ecfdf5;
+    color: #10b981;
+    border-color: #a7f3d0;
 }
 
 .action-btn.approve:hover {
-    background: var(--success);
-    color: white;
-}
-
-.action-btn.approve.disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
+    background: #10b981;
+    color: #ffffff;
+    border-color: #10b981;
+    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
+    transform: translateY(-1px);
 }
 
 .action-btn.reject {
-    background: rgba(239, 68, 68, 0.1);
-    color: var(--danger);
+    background: #fff1f2;
+    color: #f43f5e;
+    border-color: #fecdd3;
 }
 
 .action-btn.reject:hover {
-    background: var(--danger);
-    color: white;
+    background: #f43f5e;
+    color: #ffffff;
+    border-color: #f43f5e;
+    box-shadow: 0 2px 6px rgba(244, 63, 94, 0.25);
+    transform: translateY(-1px);
 }
 
 .action-btn.delete {
-    background: rgba(239, 68, 68, 0.08);
-    color: var(--danger);
+    background: #fef2f2;
+    color: #ef4444;
+    border-color: #fecaca;
 }
 
 .action-btn.delete:hover {
-    background: var(--danger);
-    color: white;
+    background: #ef4444;
+    color: #ffffff;
+    border-color: #ef4444;
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.25);
+    transform: translateY(-1px);
+}
+
+.data-table th:last-child,
+.data-table td:last-child {
+    text-align: center;
+    white-space: nowrap;
+    width: 1%;
 }
 
 /* ===== NO DATA ===== */

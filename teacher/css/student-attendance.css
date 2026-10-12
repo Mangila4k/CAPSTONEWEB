@@ -57,7 +57,7 @@ body {
     width: 260px;
     background: var(--primary);
     color: white;
-    padding: 1.5rem 0;
+    padding: 14px 0;
     display: flex;
     flex-direction: column;
     position: fixed;
@@ -69,7 +69,7 @@ body {
 }
 
 .sidebar-header {
-    padding: 0 1.5rem 1.5rem;
+    padding: 0 1.25rem 14px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -119,7 +119,7 @@ body {
 
 /* Teacher Profile */
 .teacher-profile {
-    padding: 1.5rem;
+    padding: 10px 1.25rem 14px;
     text-align: center;
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
@@ -128,7 +128,7 @@ body {
     position: relative;
     width: 60px;
     height: 60px;
-    margin: 0 auto 0.5rem;
+    margin: 0 auto 8px;
 }
 
 .teacher-avatar .avatar-initial {
@@ -172,7 +172,7 @@ body {
 /* Navigation */
 .nav-menu {
     flex: 1;
-    padding: 1rem 1.5rem;
+    padding: 14px 1.25rem;
 }
 
 .nav-section-title {
@@ -180,7 +180,7 @@ body {
     text-transform: uppercase;
     letter-spacing: 1px;
     color: rgba(255, 255, 255, 0.3);
-    margin: 1rem 0 0.5rem;
+    margin: 14px 0 6px;
 }
 
 .nav-items {
@@ -194,8 +194,8 @@ body {
 .nav-items a {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 0.6rem 0.8rem;
+    gap: 14px;
+    padding: 7px 12px;
     border-radius: 10px;
     color: rgba(255, 255, 255, 0.6);
     text-decoration: none;

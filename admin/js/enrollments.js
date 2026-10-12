@@ -413,7 +413,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
                     </td>
                     <td>
                         <span class="grade-tag" style="font-weight: 600;">${enrollment.grade_name}</span>
-                        ${enrollment.strand ? `<span class="strand-tag" style="display: inline-block; margin-left: 4px; padding: 2px 6px; border-radius: 4px; background: #e0f2fe; color: #0369a1; font-size: 11px; font-weight: 600;">${enrollment.strand}</span>` : ''}
+                        ${(parseInt((enrollment.grade_level || '').replace(/\D/g, ''), 10) >= 11 && enrollment.strand) ? `<span class="strand-tag" style="display: inline-block; margin-left: 4px; padding: 2px 6px; border-radius: 4px; background: #e0f2fe; color: #0369a1; font-size: 11px; font-weight: 600;">${enrollment.strand}</span>` : ''}
                     </td>
                     <td><span class="grade-tag">${enrollment.school_year}</span></td>
                     <td><span class="badge ${statusClass}">${enrollment.status}</span></td>

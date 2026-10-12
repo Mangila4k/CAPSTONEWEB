@@ -205,29 +205,59 @@ import { supabase } from '../../supabase/config.js';
                 return;
             }
 
+            const gradientPalette = [
+                'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
+                'linear-gradient(135deg, #0284c7 0%, #2563eb 100%)',
+                'linear-gradient(135deg, #059669 0%, #10b981 100%)',
+                'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)',
+                'linear-gradient(135deg, #e11d48 0%, #f43f5e 100%)',
+                'linear-gradient(135deg, #7c3aed 0%, #c026d3 100%)',
+                'linear-gradient(135deg, #0f766e 0%, #14b8a6 100%)'
+            ];
+
             container.innerHTML = `
-                <div class="enrollment-list">
-                    ${enrollments.map(e => {
+                <div class="enrollment-list" style="display: flex; flex-direction: column; gap: 8px;">
+                    ${enrollments.map((e, index) => {
                         const studentName = (e.first_name || e.firstName) ? `${e.first_name || e.firstName} ${e.last_name || e.lastName || ''}`.trim() : (e.student_name || e.studentName || e.email || 'Unknown Student');
                         const initials = studentName.charAt(0).toUpperCase();
-                        const status = e.status || 'Pending';
+                        const status = e.status || 'Enrolled';
                         const date = e.created_at ? new Date(e.created_at) : new Date();
+                        const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
                         const grade = e.grade_level || e.grade || 'N/A';
                         const strand = e.strand || '';
-                        
+                        const bgGradient = gradientPalette[index % gradientPalette.length];
+                        const isEnrolled = status.toLowerCase() === 'enrolled' || status.toLowerCase() === 'approved';
+                        const isPending = status.toLowerCase() === 'pending';
+                        const pulseClass = isEnrolled ? 'pulse-green' : (isPending ? 'pulse-amber' : 'pulse-red');
+                        const badgeClass = isEnrolled ? 'status-pill-enrolled' : (isPending ? 'status-pill-pending' : 'status-pill-rejected');
+
                         return `
-                            <div class="enrollment-item" data-id="${e.id}">
-                                <div class="enrollment-avatar">${initials}</div>
-                                <div class="enrollment-info">
-                                    <h4>${studentName}</h4>
-                                    <p>
-                                        <span>${grade}</span>
-                                        ${strand ? `<span> - ${strand}</span>` : ''}
-                                        <span class="status-badge status-${status.toLowerCase()}">${status}</span>
-                                    </p>
-                                    <div class="activity-time">
-                                        <i class="far fa-calendar"></i>
-                                        ${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                            <div class="enrollment-card-row" data-id="${e.id}" style="cursor: pointer;">
+                                <div class="enrollment-avatar-wrap">
+                                    <div class="enrollment-avatar-gradient" style="background: ${bgGradient};">
+                                        ${initials}
+                                    </div>
+                                </div>
+                                <div class="enrollment-main-col">
+                                    <div class="enrollment-title-row">
+                                        <h4 class="enrollment-student-name">${studentName}</h4>
+                                        <span class="status-pill ${badgeClass}">
+                                            <span class="status-dot ${pulseClass}"></span>
+                                            ${status}
+                                        </span>
+                                    </div>
+                                    <div class="enrollment-sub-row">
+                                        <span class="enrollment-grade-chip">
+                                            <i class="fas fa-graduation-cap"></i> ${grade}${strand ? ' · ' + strand : ''}
+                                        </span>
+                                        <span class="enrollment-date-chip">
+                                            <i class="far fa-calendar-alt"></i> ${dateStr}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="enrollment-arrow-col">
+                                    <div class="enrollment-action-btn" title="View Details">
+                                        <i class="fas fa-chevron-right"></i>
                                     </div>
                                 </div>
                             </div>
@@ -236,8 +266,7 @@ import { supabase } from '../../supabase/config.js';
                 </div>
             `;
 
-            container.querySelectorAll('.enrollment-item').forEach(item => {
-                item.style.cursor = 'pointer';
+            container.querySelectorAll('.enrollment-card-row').forEach(item => {
                 item.addEventListener('click', () => {
                     const id = item.dataset.id;
                     if (id) {
@@ -533,7 +562,7 @@ import { supabase } from '../../supabase/config.js';
             if (e.key === 'hes_latest_notification' && e.newValue) {
                 try {
                     const data = JSON.parse(e.newValue);
-                    if (!data.role || data.role === 'registrar') {
+                    if (!data.role || data.role === 'registrar' || data.role === 'all' || (data.roles && data.roles.includes('registrar'))) {
                         loadNotifications();
                         loadDashboardStats();
                         loadRecentEnrollments();
@@ -849,18 +878,165 @@ import { supabase } from '../../supabase/config.js';
     // RECENT ACTIVITIES
     // ============================================
 
+    // Helper to calculate relative time
+    function getRelativeTimeStr(dateStr) {
+        if (!dateStr) return 'Just now';
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return 'Recently';
+        const diffMs = Date.now() - d.getTime();
+        const diffSecs = Math.floor(diffMs / 1000);
+        const diffMins = Math.floor(diffSecs / 60);
+        const diffHours = Math.floor(diffMins / 60);
+        const diffDays = Math.floor(diffHours / 24);
+
+        if (diffSecs < 60) return 'Just now';
+        if (diffMins < 60) return `${diffMins}m ago`;
+        if (diffHours < 24) return `${diffHours}h ago`;
+        if (diffDays === 1) return 'Yesterday';
+        if (diffDays < 7) return `${diffDays}d ago`;
+        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
+
+    // Parse unstructured activity text into structured data
+    function parseActivityItem(activity) {
+        const text = activity.description || '';
+        const rawAction = activity.action || activity.type || '';
+        let actor = activity.actor || '';
+        let actionLabel = 'Activity';
+        let actionType = 'system';
+        let status = '';
+        let lateInfo = '';
+        let validation = '';
+        let schedule = '';
+        let summary = text;
+
+        const lower = text.toLowerCase();
+
+        // 1. Extract Actor
+        if (!actor) {
+            if (text.includes(' recorded ')) {
+                actor = text.split(' recorded ')[0].trim();
+            } else if (text.includes(' validated ')) {
+                actor = text.split(' validated ')[0].trim();
+            } else if (text.startsWith('Account registered: ')) {
+                actor = text.replace('Account registered: ', '').split('(')[0].trim();
+            } else if (text.startsWith('Enrollment application')) {
+                const parts = text.split(':');
+                actor = parts[1] ? parts[1].split('(')[0].trim() : 'Student';
+            } else {
+                actor = 'System User';
+            }
+        }
+
+        // 2. Classify action type & label
+        if (lower.includes('time in') || lower.includes('time-in')) {
+            actionLabel = 'Time In';
+            actionType = 'time_in';
+        } else if (lower.includes('time out') || lower.includes('time-out')) {
+            actionLabel = 'Time Out';
+            actionType = 'time_out';
+        } else if (lower.includes('enroll')) {
+            actionLabel = 'Admissions';
+            actionType = 'enrollment';
+        } else if (lower.includes('account') || lower.includes('user') || lower.includes('register')) {
+            actionLabel = 'Account';
+            actionType = 'account';
+        } else if (lower.includes('security') || lower.includes('password') || lower.includes('auth')) {
+            actionLabel = 'Security';
+            actionType = 'security';
+        } else {
+            actionLabel = rawAction ? rawAction.replace(/_/g, ' ') : 'System Log';
+            actionType = 'system';
+        }
+
+        // 3. Extract time recorded
+        let timeRecorded = "";
+        const timeMatch = text.match(/(?:recorded\s+(?:Time\s+In|Time\s+Out)\s+at\s+)(\d{1,2}:\d{2}\s*[AP]M)/i);
+        if (timeMatch) {
+            timeRecorded = timeMatch[1].trim();
+        } else {
+            const timeAtMatch = text.match(/(?:at\s+)(\d{1,2}:\d{2}\s*[AP]M)/i);
+            if (timeAtMatch) {
+                timeRecorded = timeAtMatch[1].trim();
+            } else {
+                const genericTime = text.match(/(\d{1,2}:\d{2}\s*[AP]M)/i);
+                if (genericTime) timeRecorded = genericTime[1].trim();
+            }
+        }
+
+        // 4. Status determination (attendance is purely Time In or Time Out, no late penalties)
+        if (actionType === "time_in") {
+            status = "Time In";
+        } else if (actionType === "time_out") {
+            status = "Time Out";
+        } else if (lower.includes("completed")) {
+            status = "Completed";
+        } else if (lower.includes("approved")) {
+            status = "Approved";
+        } else if (lower.includes("pending")) {
+            status = "Pending";
+        } else {
+            const statusMatch = text.match(/Status:\s*([A-Za-z]+)/i);
+            if (statusMatch) status = statusMatch[1];
+        }
+
+        // 5. Craft clean summary
+        if (actionType === "time_in") {
+            summary = timeRecorded ? `Recorded Time In at ${timeRecorded}` : "Recorded Time In";
+        } else if (actionType === "time_out") {
+            summary = timeRecorded ? `Recorded Time Out at ${timeRecorded}` : "Recorded Time Out";
+        } else {
+            summary = text;
+        }
+
+        return { actor, actionLabel, actionType, status, timeRecorded, summary };
+    }
+
     async function loadRecentActivities() {
         const container = document.getElementById('recentActivities');
         if (!container) return;
 
         try {
-            const { data: notifs, error } = await supabase
-                .from('notifications')
+            let activities = [];
+
+            // 1. Try fetching from activity_logs first
+            const { data: actLogs, error: actErr } = await supabase
+                .from('activity_logs')
                 .select('*')
-                .order('created_at', { ascending: false })
+                .order('timestamp', { ascending: false })
                 .limit(5);
 
-            if (error || !notifs || notifs.length === 0) {
+            if (!actErr && actLogs && actLogs.length > 0) {
+                activities = actLogs.map(l => ({
+                    description: l.details || l.action || 'System action logged',
+                    action: l.action || '',
+                    actor: l.user_name || l.fullname || '',
+                    date: l.timestamp || l.created_at || new Date().toISOString()
+                }));
+            } else {
+                // 2. Fallback to notifications table
+                const { data: notifs } = await supabase
+                    .from('notifications')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(5);
+
+                if (notifs && notifs.length > 0) {
+                    activities = notifs.map(n => ({
+                        description: n.message || n.title || 'Notification received',
+                        action: n.title || 'Notification',
+                        actor: n.sender || 'System',
+                        date: n.created_at || new Date().toISOString()
+                    }));
+                }
+            }
+
+            const countBadge = document.getElementById('recentActivitiesCount');
+            if (countBadge) {
+                countBadge.textContent = `${activities.length} Recorded`;
+            }
+
+            if (activities.length === 0) {
                 container.innerHTML = `
                     <div class="no-data">
                         <i class="fas fa-bell-slash"></i>
@@ -870,26 +1046,123 @@ import { supabase } from '../../supabase/config.js';
                 return;
             }
 
-            container.innerHTML = `
-                <div class="activity-list">
-                    ${notifs.map(a => {
-                        return `
-                            <div class="activity-item">
-                                <div class="activity-icon">
-                                    <i class="fas fa-bell"></i>
-                                </div>
-                                <div class="activity-content">
-                                    <div class="activity-text">${a.title || a.message || 'Notification'}</div>
-                                    <div class="activity-time">
-                                        <i class="far fa-clock"></i>
-                                        ${formatTime(a.created_at)}
-                                    </div>
-                                </div>
+            const typeConfig = {
+                time_in: {
+                    icon: 'fa-arrow-right-to-bracket',
+                    gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+                },
+                time_out: {
+                    icon: 'fa-arrow-right-from-bracket',
+                    gradient: 'linear-gradient(135deg, #0284c7 0%, #2563eb 100%)'
+                },
+                enrollment: {
+                    icon: 'fa-file-signature',
+                    gradient: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)'
+                },
+                account: {
+                    icon: 'fa-user-check',
+                    gradient: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)'
+                },
+                security: {
+                    icon: 'fa-shield-halved',
+                    gradient: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'
+                },
+                system: {
+                    icon: 'fa-clock-rotate-left',
+                    gradient: 'linear-gradient(135deg, #0b2b4a 0%, #1e3a5f 100%)'
+                }
+            };
+
+            let html = '<div class="enrollment-list" style="display: flex; flex-direction: column; gap: 8px;">';
+            activities.slice(0, 5).forEach(activity => {
+                const parsed = parseActivityItem(activity);
+                const cfg = typeConfig[parsed.actionType] || typeConfig.system;
+                const dObj = new Date(activity.date);
+                const dateStr = dObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+                // Determine badge and pulse dot
+                let statusLabel = 'Logged';
+                let badgeClass = 'status-pill-system';
+                let pulseClass = 'pulse-blue';
+
+                if (parsed.actionType === "time_in") {
+                    statusLabel = "Time In";
+                    badgeClass = "status-pill-timein";
+                    pulseClass = "pulse-green";
+                } else if (parsed.actionType === "time_out") {
+                    statusLabel = "Time Out";
+                    badgeClass = "status-pill-timeout";
+                    pulseClass = "pulse-blue";
+                } else if (parsed.status && (parsed.status.toLowerCase() === 'completed' || parsed.status.toLowerCase() === 'approved')) {
+                    statusLabel = parsed.status;
+                    badgeClass = 'status-pill-enrolled';
+                    pulseClass = 'pulse-green';
+                } else if (parsed.status && parsed.status.toLowerCase() === 'pending') {
+                    statusLabel = 'Pending';
+                    badgeClass = 'status-pill-pending';
+                    pulseClass = 'pulse-amber';
+                } else if (parsed.actionLabel) {
+                    statusLabel = parsed.actionLabel;
+                    badgeClass = 'status-pill-system';
+                    pulseClass = 'pulse-blue';
+                }
+
+                // Determine sub-row chip (Icon + concise detail)
+                let subIcon = 'fa-circle-info';
+                let subText = 'Activity record';
+                if (parsed.actionType === 'time_in' || parsed.actionType === 'time_out') {
+                    subIcon = 'fa-chalkboard-user';
+                    subIcon = 'fa-clock';
+                    subText = parsed.timeRecorded || dObj.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+                } else if (parsed.actionType === 'enrollment') {
+                    subIcon = 'fa-file-signature';
+                    subText = 'Admissions';
+                } else if (parsed.actionType === 'account') {
+                    subIcon = 'fa-user-check';
+                    subText = 'Account update';
+                } else if (parsed.actionType === 'security') {
+                    subIcon = 'fa-shield-halved';
+                    subText = 'Security audit';
+                } else {
+                    subIcon = 'fa-clock-rotate-left';
+                    subText = parsed.summary ? (parsed.summary.length > 28 ? parsed.summary.substring(0, 26) + '...' : parsed.summary) : 'System Log';
+                }
+
+                html += `
+                    <div class="enrollment-card-row activity-card-row" onclick="window.location.href='enrollments.html'" style="cursor: pointer;">
+                        <div class="enrollment-avatar-wrap">
+                            <div class="enrollment-avatar-gradient" style="background: ${cfg.gradient}; font-size: 16px;">
+                                <i class="fas ${cfg.icon}"></i>
                             </div>
-                        `;
-                    }).join('')}
-                </div>
-            `;
+                        </div>
+                        <div class="enrollment-main-col">
+                            <div class="enrollment-title-row">
+                                <h4 class="enrollment-student-name" title="${parsed.actor}">${parsed.actor}</h4>
+                                <span class="status-pill ${badgeClass}">
+                                    <span class="status-dot ${pulseClass}"></span>
+                                    ${statusLabel}
+                                </span>
+                            </div>
+                            <div class="enrollment-sub-row">
+                                <span class="enrollment-grade-chip" title="${subText}">
+                                    <i class="fas ${subIcon}"></i> ${subText}
+                                </span>
+                                <span class="enrollment-date-chip" title="${dObj.toLocaleString()}">
+                                    <i class="far fa-calendar-alt"></i> ${dateStr}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="enrollment-arrow-col">
+                            <div class="enrollment-action-btn" title="View Details">
+                                <i class="fas fa-chevron-right"></i>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+
+            container.innerHTML = html;
 
         } catch (error) {
             console.error('Error loading activities:', error);

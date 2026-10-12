@@ -255,12 +255,31 @@ document.addEventListener('DOMContentLoaded', async function() {
                             <span class="no-adviser" style="color:#94a3b8; font-style:italic;">Not Assigned</span>
                         `}
                     </td>
-                    <td>
-                        <div class="action-btns">
-                            <a href="view_section.html?id=${section.id}" class="action-btn view" title="View Section" style="display:inline-flex; align-items:center; justify-content:center; text-decoration:none;"><i class="fas fa-eye"></i></a>
-                            <a href="create_schedule.html?section_id=${section.id}" class="action-btn schedule" title="Manage Schedule" style="display:inline-flex; align-items:center; justify-content:center; text-decoration:none;"><i class="fas fa-calendar-alt"></i></a>
-                            <button class="action-btn edit" onclick="window.openEditModal('${section.id}')" title="Edit"><i class="fas fa-edit"></i></button>
-                            <button class="action-btn delete" onclick="window.deleteSection('${section.id}')" title="Delete"><i class="fas fa-trash"></i></button>
+                    <td class="cell-actions">
+                        <div class="manage-dropdown">
+                            <button type="button" class="btn-manage" aria-expanded="false" title="Manage Section">
+                                <span>Manage</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <div class="manage-menu">
+                                <a href="view_section.html?id=${section.id}" class="manage-item view-item" title="View Section">
+                                    <i class="fas fa-eye"></i>
+                                    <span>View Section</span>
+                                </a>
+                                <a href="create_schedule.html?section_id=${section.id}" class="manage-item schedule-item" title="Manage Schedule">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    <span>Manage Schedule</span>
+                                </a>
+                                <button type="button" class="manage-item edit-item" onclick="window.openEditModal('${section.id}')" title="Edit Section">
+                                    <i class="fas fa-edit"></i>
+                                    <span>Edit Section</span>
+                                </button>
+                                <div class="manage-divider"></div>
+                                <button type="button" class="manage-item delete-item delete" onclick="window.deleteSection('${section.id}')" title="Delete Section">
+                                    <i class="fas fa-trash"></i>
+                                    <span>Delete Section</span>
+                                </button>
+                            </div>
                         </div>
                     </td>
                 </tr>
@@ -268,6 +287,37 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
 
         tableBody.innerHTML = html;
+
+        // Toggle Manage dropdown menu
+        tableBody.querySelectorAll('.btn-manage').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const dropdown = this.closest('.manage-dropdown');
+                const row = this.closest('tr');
+                const isOpen = dropdown.classList.contains('show');
+
+                // Close all other open dropdowns
+                document.querySelectorAll('.manage-dropdown.show').forEach(d => {
+                    d.classList.remove('show');
+                    d.classList.remove('dropup');
+                    const r = d.closest('tr');
+                    if (r) r.classList.remove('dropdown-open');
+                });
+
+                if (!isOpen) {
+                    const rect = this.getBoundingClientRect();
+                    const spaceBelow = window.innerHeight - rect.bottom;
+                    if (spaceBelow < 200) {
+                        dropdown.classList.add('dropup');
+                    } else {
+                        dropdown.classList.remove('dropup');
+                    }
+                    dropdown.classList.add('show');
+                    if (row) row.classList.add('dropdown-open');
+                }
+            });
+        });
     }
 
     // ===== MODAL FUNCTIONS (EXPOSED GLOBALLY) =====
@@ -456,6 +506,14 @@ document.addEventListener('DOMContentLoaded', async function() {
         if (e.target === addModal) window.closeAddModal();
         if (e.target === editModal) window.closeEditModal();
         if (e.target === scheduleModal) window.closeScheduleModal();
+        if (!e.target.closest('.manage-dropdown')) {
+            document.querySelectorAll('.manage-dropdown.show').forEach(d => {
+                d.classList.remove('show');
+                d.classList.remove('dropup');
+                const r = d.closest('tr');
+                if (r) r.classList.remove('dropdown-open');
+            });
+        }
     });
 
     // ===== MOBILE MENU =====

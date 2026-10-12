@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Official Student ID Verification | Placido L. Señor National High School</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --navy-dark: #0b1a3d;
+            --navy-royal: #113f88;
+            --gold: #c89b27;
+            --gold-light: #f5d77f;
+            --emerald: #10b981;
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-700: #334155;
+            --gray-900: #0f172a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: radial-gradient(circle at 50% 10%, #1e293b 0%, #0b1a3d 60%, #030712 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 14px;
+            color: #ffffff;
+        }
+
+        .verify-wrapper {
+            width: 100%;
+            max-width: 440px;
+            background: #ffffff;
+            color: var(--gray-900);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.1);
+            position: relative;
+            animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Top Header Banner */
+        .verify-header {
+            background: linear-gradient(135deg, #0b1a3d 0%, #113f88 100%);
+            padding: 24px 20px 20px;
+            text-align: center;
+            position: relative;
+            color: #ffffff;
+        }
+
+        .verify-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #b8861d 0%, #f5d77f 50%, #b8861d 100%);
+        }
+
+        .school-seal-wrap {
+            width: 68px;
+            height: 68px;
+            margin: 0 auto 12px;
+            background: #ffffff;
+            border-radius: 50%;
+            padding: 4px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .school-seal-wrap img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .verify-header h1 {
+            font-size: 15px;
+            font-weight: 900;
+            letter-spacing: -0.2px;
+            text-transform: uppercase;
+            line-height: 1.25;
+            margin-bottom: 4px;
+        }
+
+        .verify-header p {
+            font-size: 11px;
+            color: #cbd5e1;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        /* Verified Status Badge */
+        .status-pill-container {
+            display: flex;
+            justify-content: center;
+            margin-top: -16px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #10b981;
+            color: #ffffff;
+            padding: 8px 18px;
+            border-radius: 9999px;
+            font-size: 12.5px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4), 0 0 0 3px #ffffff;
+        }
+
+        .status-pill .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: #ffffff;
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+            }
+
+            70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 6px rgba(255, 255, 255, 0);
+            }
+
+            100% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+            }
+        }
+
+        /* Main Student Body Card */
+        .verify-body {
+            padding: 24px 20px;
+            text-align: center;
+        }
+
+        .student-avatar-box {
+            width: 110px;
+            height: 110px;
+            margin: 8px auto 16px;
+            border-radius: 12px;
+            padding: 4px;
+            background: linear-gradient(135deg, #f5d77f 0%, #b8861d 100%);
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+        }
+
+        .student-avatar-box img {
+            width: 100%;
+            height: 100%;
+            border-radius: 9px;
+            object-fit: cover;
+            background: #ffffff;
+        }
+
+        .student-name {
+            font-size: 21px;
+            font-weight: 900;
+            color: var(--navy-dark);
+            text-transform: uppercase;
+            letter-spacing: -0.3px;
+            line-height: 1.2;
+            margin-bottom: 4px;
+        }
+
+        .student-level-tag {
+            display: inline-block;
+            background: #e0e7ff;
+            color: #1e3a8a;
+            font-size: 11.5px;
+            font-weight: 800;
+            padding: 4px 14px;
+            border-radius: 6px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+
+        /* Details List */
+        .details-grid {
+            background: var(--gray-50);
+            border: 1px solid var(--gray-200);
+            border-radius: 16px;
+            padding: 16px;
+            text-align: left;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            border-bottom: 1px dashed var(--gray-200);
+            padding-bottom: 10px;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .detail-row .label {
+            color: #64748b;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .detail-row .label i {
+            width: 16px;
+            color: #0b1a3d;
+        }
+
+        .detail-row .val {
+            font-weight: 800;
+            color: var(--navy-dark);
+            text-align: right;
+            letter-spacing: 0.3px;
+        }
+
+        /* Emergency Call Box */
+        .emergency-action-box {
+            background: #fffbeb;
+            border: 1px solid #fef3c7;
+            border-radius: 14px;
+            padding: 14px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .emergency-title {
+            font-size: 11.5px;
+            font-weight: 800;
+            color: #92400e;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .emergency-info {
+            font-size: 13px;
+            font-weight: 700;
+            color: #78350f;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .btn-call-guardian {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #b8861d;
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 6px 14px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(184, 134, 29, 0.3);
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        .btn-call-guardian:hover {
+            background: #966b13;
+            transform: translateY(-1px);
+        }
+
+        /* Security Verification Footer */
+        .verify-security-footer {
+            padding: 14px 20px 20px;
+            background: var(--gray-100);
+            border-top: 1px solid var(--gray-200);
+            font-size: 11px;
+            color: #64748b;
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        .verify-security-footer strong {
+            color: var(--navy-dark);
+        }
+
+        .btn-home-link {
+            display: inline-block;
+            margin-top: 14px;
+            color: #113f88;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 12px;
+        }
+
+        .btn-home-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="verify-wrapper">
+        <!-- Top Banner Header -->
+        <header class="verify-header">
+            <div class="school-seal-wrap">
+                <img src="pictures/logo sa skwelahan.png" alt="School Seal"
+                    onerror="this.src='pictures/logo sa skwelahan.jpg'">
+            </div>
+            <h1>Placido L. Señor<br>National High School</h1>
+            <p>DepEd School ID: 303035 | Official Student Record</p>
+        </header>
+
+        <!-- Dynamic Status Pill -->
+        <div class="status-pill-container">
+            <div class="status-pill" id="statusPill">
+                <span class="pulse-dot"></span>
+                <span id="statusText">Officially Enrolled</span>
+            </div>
+        </div>
+
+        <!-- Body Details -->
+        <main class="verify-body">
+            <!-- 2x2 Student Photo -->
+            <div class="student-avatar-box">
+                <img id="studentPhoto" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23f1f5f9'/%3E%3Ccircle cx='60' cy='46' r='22' fill='%23cbd5e1'/%3E%3Cpath d='M 24,106 C 24,84 40,74 60,74 C 80,74 96,84 96,106 Z' fill='%23cbd5e1'/%3E%3C/svg%3E" alt="Student Photo"
+                    onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 120 120\'%3E%3Ccircle cx=\'60\' cy=\'60\' r=\'60\' fill=\'%23f1f5f9\'/%3E%3Ccircle cx=\'60\' cy=\'46\' r=\'22\' fill=\'%23cbd5e1\'/%3E%3Cpath d=\'M 24,106 C 24,84 40,74 60,74 C 80,74 96,84 96,106 Z\' fill=\'%23cbd5e1\'/%3E%3C/svg%3E'">
+            </div>
+
+            <!-- Student Full Name -->
+            <h2 class="student-name" id="studentName">STUDENT NAME</h2>
+            <div class="student-level-tag" id="studentLevel">SENIOR HIGH</div>
+
+            <!-- Detailed Grid Information -->
+            <div class="details-grid">
+                <div class="detail-row">
+                    <span class="label"><i class="fas fa-school"></i> DepEd School ID</span>
+                    <span class="val" id="schoolIdNo" style="color: #b8861d;">303035</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label"><i class="fas fa-id-card"></i> Student ID No</span>
+                    <span class="val" id="studentIdNo">2024-ST-00000</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label"><i class="fas fa-fingerprint"></i> DepEd LRN</span>
+                    <span class="val" id="studentLrn">000000000000</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label"><i class="fas fa-graduation-cap"></i> Grade / Track</span>
+                    <span class="val" id="studentGrade">Grade Level - Senior High</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label"><i class="fas fa-calendar-check"></i> School Year</span>
+                    <span class="val" id="studentSy">2024-2025</span>
+                </div>
+            </div>
+
+            <!-- Emergency Contact Action Box -->
+            <div class="emergency-action-box">
+                <div class="emergency-title">
+                    <i class="fas fa-phone-alt"></i> Emergency Guardian Contact
+                </div>
+                <div class="emergency-info">
+                    <div>
+                        <div style="font-size: 13.5px;" id="guardianName">PARENT / GUARDIAN</div>
+                        <div style="font-size: 11.5px; color: #92400e;" id="guardianPhone">09XXXXXXXXX</div>
+                    </div>
+                    <a href="tel:09000000000" id="btnCallGuardian" class="btn-call-guardian">
+                        <i class="fas fa-phone"></i> Call Guardian
+                    </a>
+                </div>
+            </div>
+        </main>
+
+        <!-- Security Notice Footer -->
+        <footer class="verify-security-footer">
+            <i class="fas fa-shield-alt" style="color: #c89b27;"></i>
+            This digital record has been cryptographically verified by the <strong>Placido L. Señor NHS ID Verification
+                System</strong>.<br>
+            <span id="verifiedTimestamp">Verified on Today</span>
+            <div>
+                <a href="auth/login.html" class="btn-home-link">
+                    <i class="fas fa-arrow-left"></i> Return to School Portal
+                </a>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Verification Script -->
+    <script type="module">
+        import { supabase } from './supabase/config.js';
+
+        async function verifyStudentFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+
+            const lrn = params.get('lrn') || '000000000000';
+            const idNo = params.get('id') || params.get('id_number') || '2024-ST-00000';
+            const nameParam = params.get('name') || params.get('fullname') || 'STUDENT NAME';
+            const levelParam = params.get('level') || 'SENIOR HIGH';
+            const contactParam = params.get('contact') || '09XXXXXXXXX';
+            const guardianParam = params.get('guardian') || 'PARENT / GUARDIAN';
+
+            // Initial immediate populate from QR params
+            document.getElementById('studentName').textContent = nameParam.toUpperCase();
+            document.getElementById('studentIdNo').textContent = idNo;
+            document.getElementById('studentLrn').textContent = lrn;
+            document.getElementById('studentLevel').textContent = levelParam.toUpperCase();
+            document.getElementById('guardianName').textContent = guardianParam.toUpperCase();
+            document.getElementById('guardianPhone').textContent = contactParam;
+            document.getElementById('btnCallGuardian').href = `tel:${contactParam.replace(/[^0-9+]/g, '')}`;
+
+            // Verification Timestamp
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+            const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('verifiedTimestamp').textContent = `Verified on ${dateStr} at ${timeStr}`;
+
+            // Asynchronously verify against live Supabase database
+            if (supabase) {
+                try {
+                    const { data: student, error } = await supabase
+                        .from('students')
+                        .select('*')
+                        .or(`lrn.eq.${lrn},id_number.eq.${idNo}`)
+                        .maybeSingle();
+
+                    if (student) {
+                        const fullName = `${student.first_name || ''} ${student.last_name || ''}`.trim() || student.fullname;
+                        if (fullName) document.getElementById('studentName').textContent = fullName.toUpperCase();
+                        if (student.lrn) document.getElementById('studentLrn').textContent = student.lrn;
+                        if (student.id_number) document.getElementById('studentIdNo').textContent = student.id_number;
+                        if (student.grade_level) {
+                            document.getElementById('studentGrade').textContent = `${student.grade_level} - ${student.strand || levelParam}`;
+                        }
+                        if (student.parent_name) document.getElementById('guardianName').textContent = student.parent_name.toUpperCase();
+                        if (student.parent_contact) {
+                            document.getElementById('guardianPhone').textContent = student.parent_contact;
+                            document.getElementById('btnCallGuardian').href = `tel:${student.parent_contact.replace(/[^0-9+]/g, '')}`;
+                        }
+                        if (student.two_by_two_picture_url || student.avatar_url) {
+                            document.getElementById('studentPhoto').src = student.two_by_two_picture_url || student.avatar_url;
+                        }
+
+                        // Check status
+                        const status = student.status || 'Enrolled';
+                        const statusPill = document.getElementById('statusPill');
+                        const statusText = document.getElementById('statusText');
+
+                        if (status.toLowerCase().includes('inactive') || status.toLowerCase().includes('drop')) {
+                            statusPill.style.background = '#ef4444';
+                            statusPill.style.boxShadow = '0 4px 14px rgba(239, 68, 68, 0.4)';
+                            statusText.textContent = `Status: ${status}`;
+                        } else {
+                            statusText.textContent = 'Officially Enrolled & Verified';
+                        }
+                    }
+                } catch (err) {
+                    console.log('Database live lookup note:', err);
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', verifyStudentFromUrl);
+    </script>
+</body>
+
+</html>

@@ -58,6 +58,7 @@ import { supabase } from '../../supabase/config.js';
     const reportTypeSelect = document.getElementById('reportTypeSelect');
     const dateFrom = document.getElementById('dateFrom');
     const dateTo = document.getElementById('dateTo');
+    const levelFilter = document.getElementById('levelFilter');
     const gradeFilter = document.getElementById('gradeFilter');
     const strandFilter = document.getElementById('strandFilter');
     const sectionFilter = document.getElementById('sectionFilter');
@@ -396,6 +397,7 @@ import { supabase } from '../../supabase/config.js';
         const reportType = reportTypeSelect ? reportTypeSelect.value : 'enrollments_summary';
         const fromDateVal = dateFrom ? dateFrom.value : '';
         const toDateVal = dateTo ? dateTo.value : '';
+        const levelVal = levelFilter ? levelFilter.value : 'all';
         const gradeVal = gradeFilter ? gradeFilter.value : '';
         const strandVal = strandFilter ? strandFilter.value : '';
         const sectionVal = sectionFilter ? sectionFilter.value : '';
@@ -434,7 +436,7 @@ import { supabase } from '../../supabase/config.js';
         try {
             switch (reportType) {
                 case 'enrollments_summary':
-                    await generateEnrollmentsReport(fromDateVal, toDateVal, gradeVal, strandVal, statusVal);
+                    await generateEnrollmentsReport(fromDateVal, toDateVal, gradeVal, strandVal, statusVal, levelVal);
                     break;
                 case 'student_masterlist':
                     await generateStudentMasterlistReport(fromDateVal, toDateVal, gradeVal, strandVal, sectionVal, statusVal);
@@ -486,7 +488,7 @@ import { supabase } from '../../supabase/config.js';
     }
 
     // 1. ENROLLMENTS SUMMARY
-    async function generateEnrollmentsReport(fromDate, toDate, grade, strand, status) {
+    async function generateEnrollmentsReport(fromDate, toDate, grade, strand, status, levelVal = "all") {
         if (displayReportTitle) displayReportTitle.textContent = 'Enrollments Summary & Applications';
         if (displayReportSubtitle) displayReportSubtitle.textContent = 'Complete record of student admissions, applications, and enrollment statuses';
 
@@ -1054,9 +1056,26 @@ import { supabase } from '../../supabase/config.js';
     // ============================================
     // PRINT OFFICIAL REPORT
     // ============================================
+        // Suppress browser default title/header during print
+    window.addEventListener('beforeprint', () => {
+        window.__prevDocumentTitle = document.title;
+        document.title = ' ';
+    });
+
+    window.addEventListener('afterprint', () => {
+        if (window.__prevDocumentTitle) {
+            document.title = window.__prevDocumentTitle;
+        }
+    });
+
     if (printReportBtn) {
         printReportBtn.addEventListener('click', () => {
+            const oldTitle = document.title;
+            document.title = ' ';
             window.print();
+            setTimeout(() => {
+                document.title = oldTitle;
+            }, 800);
         });
     }
 

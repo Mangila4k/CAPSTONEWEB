@@ -384,15 +384,41 @@ document.addEventListener('DOMContentLoaded', async function() {
 
                     localStorage.setItem(localDocKey, JSON.stringify(activeDoc));
                     if (uId) localStorage.setItem(`hes_teacher_load_doc_${uId}`, JSON.stringify(activeDoc));
-                    localStorage.setItem('hes_teacher_load_admin_doc', JSON.stringify(activeDoc));
+                    // Global key removed to guarantee strict privacy for this teacher only
+
+                    let finalDocUrl = dataUrl;
+                    try {
+                        const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+                        const storagePath = `${tId}/${Date.now()}_${cleanName}`;
+                        const { data: uploadData, error: upErr } = await supabase
+                            .storage
+                            .from('teacher-schedules')
+                            .upload(storagePath, file, { upsert: true });
+
+                        if (!upErr && uploadData) {
+                            const { data: pubData } = supabase
+                                .storage
+                                .from('teacher-schedules')
+                                .getPublicUrl(storagePath);
+                            if (pubData && pubData.publicUrl) {
+                                finalDocUrl = pubData.publicUrl;
+                                activeDoc.url = finalDocUrl;
+                            }
+                        }
+                    } catch (stErr) {
+                        console.warn('Storage upload notice (using dataUrl fallback):', stErr);
+                    }
 
                     try {
                         await supabase.from('teachers').update({
-                            teacher_load_url: dataUrl,
+                            teacher_load_url: finalDocUrl,
                             teacher_load_name: file.name,
+                            teacher_load_file_type: fileType,
                             teacher_load_updated_at: new Date().toISOString()
                         }).eq('id', tId);
-                    } catch(err) {}
+                    } catch(err) {
+                        console.warn('Supabase update notice:', err);
+                    }
 
                     renderActiveDocUI();
                     showAlert('Official Teacher Load document/image uploaded and published to faculty!', 'success');

@@ -753,3 +753,22 @@
         border-radius: 0;
     }
 }
+
+/* ==========================================================================
+   PRINT MEDIA QUERY (HIDE CHATBOT ON ALL PRINTS)
+   ========================================================================== */
+@media print {
+    #hesChatbotContainer,
+    .hes-chatbot-launcher,
+    .hes-chatbot-teaser,
+    .hes-chatbot-window,
+    #hesChatbotTeaser,
+    #hesChatbotLauncher,
+    #hesChatbotWindow,
+    #hesChatbotToggleBtn {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
+}

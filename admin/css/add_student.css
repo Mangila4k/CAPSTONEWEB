@@ -1,0 +1,953 @@
+/* ========================================================
+   HES ADMIN - ADD / ENROLL STUDENT STYLES (NEW & TRANSFEREE)
+   Placido L. Señor National High School
+   ======================================================== */
+
+.app-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+.main-content {
+    flex: 1;
+    margin-left: 280px;
+    padding: 2rem;
+    background-color: #f8fafc;
+    min-height: 100vh;
+}
+
+@media (max-width: 992px) {
+    .main-content {
+        margin-left: 0;
+        padding: 1.25rem;
+    }
+}
+
+/* Page Header & Breadcrumbs */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.page-header h1 {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0 0 0.25rem 0;
+}
+
+.page-header h1 i {
+    color: #1B2A4A;
+}
+
+.page-header .subtitle {
+    font-size: 0.9rem;
+    color: #64748b;
+    margin: 0;
+}
+
+.header-actions {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.btn-back-header {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 1rem;
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    color: #475569;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.btn-back-header:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+    border-color: #cbd5e1;
+}
+
+/* Layout Grid */
+.enroll-layout-grid {
+    display: grid;
+    grid-template-columns: 2.1fr 0.9fr;
+    gap: 1.75rem;
+    align-items: start;
+}
+
+@media (max-width: 1200px) {
+    .enroll-layout-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Form Container Card */
+.enroll-card {
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Type Selector Segmented Options */
+.student-type-selector {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+@media (max-width: 640px) {
+    .student-type-selector {
+        grid-template-columns: 1fr;
+    }
+}
+
+.type-card {
+    position: relative;
+    border: 2px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 1.25rem 1.25rem 1.25rem 3.5rem;
+    cursor: pointer;
+    background: #ffffff;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+}
+
+.type-card input[type="radio"] {
+    position: absolute;
+    top: 1.25rem;
+    left: 1.25rem;
+    width: 20px;
+    height: 20px;
+    accent-color: #1B2A4A;
+    cursor: pointer;
+    margin: 0;
+}
+
+.type-card .type-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.type-card .type-desc {
+    font-size: 0.8rem;
+    color: #64748b;
+    line-height: 1.4;
+}
+
+.type-card:hover {
+    border-color: #94a3b8;
+    background: #f8fafc;
+    transform: translateY(-2px);
+}
+
+.type-card.active {
+    border-color: #1B2A4A;
+    background: #f0f4f9;
+    box-shadow: 0 4px 14px rgba(27, 42, 74, 0.12);
+}
+
+.type-card.active.transferee-active {
+    border-color: #0284c7;
+    background: #f0f9ff;
+    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.15);
+}
+
+.type-badge-pill {
+    display: inline-block;
+    padding: 0.15rem 0.55rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.pill-new {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.pill-transferee {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+/* Form Sections */
+.form-section-block {
+    margin-bottom: 2rem;
+    padding-bottom: 1.75rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.form-section-block:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.section-legend {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 1.25rem;
+}
+
+.section-legend i {
+    color: #1B2A4A;
+    font-size: 1.15rem;
+}
+
+.section-legend.transferee-legend i {
+    color: #0284c7;
+}
+
+/* Transferee Card Highlight */
+.transferee-container {
+    background: #f8fafc;
+    border: 2px dashed #38bdf8;
+    border-radius: 14px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    animation: fadeInSlide 0.3s ease;
+}
+
+.transferee-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    background: #e0f2fe;
+    color: #0369a1;
+    padding: 0.85rem 1.15rem;
+    border-radius: 10px;
+    margin-bottom: 1.25rem;
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+
+.transferee-banner i {
+    font-size: 1.1rem;
+    margin-top: 0.15rem;
+    flex-shrink: 0;
+}
+
+/* Grid Layouts for inputs */
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 1.25rem;
+}
+
+.form-row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+    margin-bottom: 1.25rem;
+}
+
+.form-row-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1.25rem;
+    margin-bottom: 1.25rem;
+}
+
+.form-row-4 {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 1.25rem;
+    margin-bottom: 1.25rem;
+}
+
+@media (max-width: 768px) {
+    .form-row-2, .form-row-3, .form-row-4 {
+        grid-template-columns: 1fr;
+    }
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 0.4rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.form-group label .req {
+    color: #ef4444;
+    margin-left: 3px;
+}
+
+.form-group label .hint-link {
+    font-size: 0.75rem;
+    color: #1B2A4A;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.input-with-button {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.input-with-button input {
+    flex: 1;
+}
+
+.btn-inline-gen {
+    padding: 0 0.85rem;
+    background: #f1f5f9;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #334155;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.btn-inline-gen:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+    border-color: #94a3b8;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.65rem 0.9rem;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    color: #0f172a;
+    background: #ffffff;
+    transition: all 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #1B2A4A;
+    box-shadow: 0 0 0 3px rgba(27, 42, 74, 0.12);
+}
+
+.form-group input[readonly] {
+    background: #f8fafc;
+    color: #475569;
+    cursor: not-allowed;
+}
+
+.form-group .form-subtext {
+    font-size: 0.75rem;
+    color: #64748b;
+    margin-top: 0.35rem;
+}
+
+/* Live Preview Card & Sticky Sidebar */
+.preview-sticky-card {
+    position: sticky;
+    top: 1.5rem;
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+    overflow: hidden;
+}
+
+.preview-header-bar {
+    background: linear-gradient(135deg, #0b2b4a, #1a3d5f);
+    color: #ffffff;
+    padding: 1.25rem 1.5rem;
+    text-align: center;
+    position: relative;
+}
+
+.preview-header-bar h4 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.preview-header-bar p {
+    margin: 0.25rem 0 0;
+    font-size: 0.75rem;
+    opacity: 0.85;
+}
+
+.preview-body-content {
+    padding: 1.5rem;
+}
+
+.preview-avatar-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 1.25rem;
+}
+
+.preview-photo {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    border: 3px solid #1B2A4A;
+    object-fit: cover;
+    background: #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #1B2A4A;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.preview-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.preview-name {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0.65rem 0 0.15rem;
+    text-align: center;
+}
+
+.preview-type-tag {
+    margin-top: 0.35rem;
+}
+
+.preview-meta-list {
+    background: #f8fafc;
+    border-radius: 10px;
+    padding: 1rem;
+    font-size: 0.825rem;
+    color: #334155;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-bottom: 1.25rem;
+    border: 1px solid #e2e8f0;
+}
+
+.preview-meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px dashed #e2e8f0;
+    padding-bottom: 0.4rem;
+}
+
+.preview-meta-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.preview-meta-label {
+    color: #64748b;
+    font-weight: 600;
+}
+
+.preview-meta-val {
+    font-weight: 700;
+    color: #0f172a;
+    text-align: right;
+}
+
+/* Credentials Box in Preview */
+.preview-creds-box {
+    background: #fffbeb;
+    border: 1px solid #fef3c7;
+    border-left: 4px solid #f59e0b;
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+    font-size: 0.8rem;
+    color: #92400e;
+    margin-bottom: 1rem;
+}
+
+.preview-creds-title {
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+}
+
+.preview-creds-item {
+    margin-bottom: 0.25rem;
+    word-break: break-all;
+}
+
+.preview-creds-hint {
+    font-size: 0.72rem;
+    margin-top: 0.5rem;
+    opacity: 0.9;
+    line-height: 1.35;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.35rem;
+}
+
+/* Gmail Notification Action Card (Right Panel) */
+.preview-gmail-card {
+    background: #ffffff;
+    border: 1.5px solid #fecaca;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 8px rgba(234, 67, 53, 0.08);
+    transition: all 0.2s ease;
+}
+
+.preview-gmail-card:hover {
+    box-shadow: 0 4px 14px rgba(234, 67, 53, 0.15);
+    border-color: #f87171;
+}
+
+.preview-gmail-top {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.65rem;
+}
+
+.gmail-badge-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: #fef2f2;
+    color: #ea4335;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.preview-gmail-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #1e293b;
+    line-height: 1.2;
+}
+
+.preview-gmail-subtitle {
+    font-size: 0.72rem;
+    color: #64748b;
+    margin-top: 0.1rem;
+}
+
+.preview-gmail-desc {
+    font-size: 0.74rem;
+    color: #475569;
+    margin: 0 0 0.6rem;
+    line-height: 1.4;
+}
+
+.preview-gmail-dest {
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    border-radius: 6px;
+    padding: 0.4rem 0.65rem;
+    font-size: 0.75rem;
+    color: #0b2b4a;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: monospace;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    word-break: break-all;
+}
+
+.preview-gmail-btns {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+}
+
+.btn-gmail-primary {
+    width: 100%;
+    padding: 0.6rem 0.85rem;
+    background: #ea4335;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    box-shadow: 0 2px 6px rgba(234, 67, 53, 0.25);
+    transition: all 0.2s ease;
+}
+
+.btn-gmail-primary:hover {
+    background: #d93025;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(234, 67, 53, 0.35);
+}
+
+.btn-gmail-primary:active {
+    transform: translateY(0);
+}
+
+.btn-gmail-subgroup {
+    display: flex;
+    gap: 0.45rem;
+}
+
+.btn-gmail-secondary {
+    flex: 1;
+    padding: 0.45rem 0.6rem;
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 0.73rem;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    transition: all 0.15s ease;
+}
+
+.btn-gmail-secondary:hover {
+    background: #f1f5f9;
+    color: #1e293b;
+    border-color: #94a3b8;
+}
+
+/* Already Enrolled Student Quick Notifier Card */
+.preview-enrolled-lookup-card {
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.2s ease;
+}
+
+.preview-enrolled-lookup-card:hover {
+    border-color: #cbd5e1;
+}
+
+.enrolled-lookup-header {
+    padding: 0.75rem 0.9rem;
+    background: #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+}
+
+.lookup-header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.lookup-header-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.lookup-header-sub {
+    font-size: 0.7rem;
+    color: #64748b;
+}
+
+.lookup-chevron {
+    font-size: 0.75rem;
+    color: #64748b;
+    transition: transform 0.2s ease;
+}
+
+.lookup-chevron.rotated {
+    transform: rotate(180deg);
+}
+
+.enrolled-lookup-content {
+    padding: 0.85rem;
+    background: #ffffff;
+    border-top: 1px solid #e2e8f0;
+}
+
+.lookup-select-label {
+    display: block;
+    font-size: 0.73rem;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 0.35rem;
+}
+
+.lookup-select-input {
+    width: 100%;
+    padding: 0.45rem 0.6rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    color: #1e293b;
+    background: #ffffff;
+    outline: none;
+    cursor: pointer;
+}
+
+.lookup-select-input:focus {
+    border-color: #0284c7;
+    box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.15);
+}
+
+.enrolled-student-details {
+    margin-top: 0.7rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 0.65rem;
+    font-size: 0.74rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.detail-row span {
+    color: #64748b;
+}
+
+.detail-row strong {
+    color: #0f172a;
+    text-align: right;
+    word-break: break-all;
+}
+
+.btn-gmail-lookup-send {
+    margin-top: 0.5rem;
+    width: 100%;
+    padding: 0.55rem;
+    background: #ea4335;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    transition: all 0.2s ease;
+}
+
+.btn-gmail-lookup-send:hover {
+    background: #d93025;
+}
+
+/* Submit Actions */
+.form-actions-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e2e8f0;
+    margin-top: 1rem;
+    align-items: center;
+}
+
+.btn-cancel {
+    padding: 0.75rem 1.5rem;
+    background: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    color: #475569;
+    font-weight: 600;
+    font-size: 0.95rem;
+    border-radius: 10px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-cancel:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.btn-submit-enroll {
+    padding: 0.75rem 2rem;
+    background: linear-gradient(135deg, #1B2A4A, #14223a);
+    color: #ffffff;
+    border: none;
+    font-weight: 700;
+    font-size: 0.95rem;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(27, 42, 74, 0.3);
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.btn-submit-enroll:hover {
+    background: linear-gradient(135deg, #14223a, #0b1526);
+    box-shadow: 0 6px 18px rgba(27, 42, 74, 0.4);
+    transform: translateY(-1px);
+}
+
+.btn-submit-enroll:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Photo Upload Box */
+.photo-upload-zone {
+    border: 2px dashed #cbd5e1;
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    background: #f8fafc;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.photo-upload-zone:hover {
+    border-color: #1B2A4A;
+    background: #f1f5f9;
+}
+
+.photo-upload-zone i {
+    font-size: 2rem;
+    color: #64748b;
+}
+
+.photo-upload-zone .upload-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.photo-upload-zone .upload-sub {
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+
+/* Success Modal */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(4px);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.25s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.success-modal-card {
+    background: #ffffff;
+    border-radius: 18px;
+    width: 100%;
+    max-width: 540px;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+    animation: zoomModal 0.25s ease-out;
+}
+
+@keyframes zoomModal {
+    from {
+        opacity: 0;
+        transform: scale(0.92);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes fadeInSlide {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

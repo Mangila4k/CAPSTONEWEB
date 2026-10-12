@@ -395,6 +395,18 @@ import {
             const { teacherRecord, teacherProfile, adjustedSchedule, todayAttendance } = currentScheduleContext;
             const teacher = teacherRecord || teacherProfile || {};
 
+            // Check if admin attached an official schedule document for this teacher
+            const dashScheduleBadge = document.getElementById('dashScheduleBadge');
+            if (dashScheduleBadge) {
+                const teacherId = teacher.id || sessionUser?.id;
+                const hasDoc = !!teacher.teacher_load_url ||
+                    !!localStorage.getItem(`hes_teacher_load_doc_${teacherId}`) ||
+                    (sessionUser?.id ? !!localStorage.getItem(`hes_teacher_load_doc_${sessionUser.id}`) : false);
+                if (hasDoc) {
+                    dashScheduleBadge.style.display = 'inline-flex';
+                }
+            }
+
             if (dayBadge) {
                 dayBadge.innerHTML = `<i class="far fa-calendar-day"></i> ${adjustedSchedule.day || adjustedSchedule.dayName || 'Today'}`;
             }

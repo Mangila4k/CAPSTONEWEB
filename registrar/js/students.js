@@ -4,6 +4,7 @@
  */
 
 import { supabase } from '../../supabase/config.js';
+import { EmailNotificationService } from '../../js/email_service.js';
 
 (async function() {
     'use strict';
@@ -406,10 +407,13 @@ import { supabase } from '../../supabase/config.js';
                 const prevSchool = (latestEnrollment ? latestEnrollment.previous_school : '') || '';
 
                 // Determine student type
+                const explicitType = String(st.student_type || (latestEnrollment ? latestEnrollment.student_type : '') || '').toLowerCase();
                 let studentType = 'New';
-                if (prevSchool && (prevSchool.toLowerCase().includes('hes') || prevSchool.toLowerCase().includes('hiraya'))) {
+                if (explicitType.includes('transfer') || explicitType.includes('different')) {
+                    studentType = 'Transferee';
+                } else if (explicitType.includes('continuing') || explicitType.includes('old') || (prevSchool && (prevSchool.toLowerCase().includes('hes') || prevSchool.toLowerCase().includes('hiraya') || prevSchool.toLowerCase().includes('plsnhs')))) {
                     studentType = 'Old';
-                } else if (prevSchool && !prevSchool.toLowerCase().includes('n/a')) {
+                } else if (prevSchool && !prevSchool.toLowerCase().includes('n/a') && !prevSchool.toLowerCase().includes('plsnhs')) {
                     studentType = 'Transferee';
                 } else {
                     studentType = 'New';
@@ -424,6 +428,7 @@ import { supabase } from '../../supabase/config.js';
                     first_name: fName,
                     last_name: lName,
                     email: st.email || (matchedUser ? matchedUser.email : 'N/A'),
+                    password: (matchedUser && matchedUser.password) ? matchedUser.password : lName,
                     contact_number: st.contact_number || 'N/A',
                     grade_level: gradeLevel,
                     strand: strand,
@@ -449,10 +454,13 @@ import { supabase } from '../../supabase/config.js';
                     const fullName = (fName || lName) ? `${fName} ${lName}`.trim() : (e.email || 'Applicant Student');
                     const rawStatus = (e.status || 'pending').toLowerCase();
                     const prevSchool = e.previous_school || '';
+                    const explicitEType = String(e.student_type || '').toLowerCase();
                     let studentType = 'New';
-                    if (prevSchool && (prevSchool.toLowerCase().includes('hes') || prevSchool.toLowerCase().includes('hiraya'))) {
+                    if (explicitEType.includes('transfer') || explicitEType.includes('different')) {
+                        studentType = 'Transferee';
+                    } else if (explicitEType.includes('continuing') || explicitEType.includes('old') || (prevSchool && (prevSchool.toLowerCase().includes('hes') || prevSchool.toLowerCase().includes('hiraya') || prevSchool.toLowerCase().includes('plsnhs')))) {
                         studentType = 'Old';
-                    } else if (prevSchool && !prevSchool.toLowerCase().includes('n/a')) {
+                    } else if (prevSchool && !prevSchool.toLowerCase().includes('n/a') && !prevSchool.toLowerCase().includes('plsnhs')) {
                         studentType = 'Transferee';
                     }
 
@@ -515,7 +523,8 @@ import { supabase } from '../../supabase/config.js';
         const noEnroll = allStudents.filter(s => s.status === 'none' || !s.enrollment_id).length;
 
         const oldSt = allStudents.filter(s => s.student_type === 'Old').length;
-        const newSt = allStudents.filter(s => s.student_type === 'New' || s.student_type === 'Transferee').length;
+        const newSt = allStudents.filter(s => s.student_type === 'New').length;
+        const transSt = allStudents.filter(s => s.student_type === 'Transferee').length;
 
         if (totalStudentsEl) totalStudentsEl.textContent = total;
         if (enrolledStudentsEl) enrolledStudentsEl.textContent = enrolled;
@@ -525,6 +534,8 @@ import { supabase } from '../../supabase/config.js';
 
         if (badgeOld) badgeOld.textContent = `Old: ${oldSt}`;
         if (badgeNew) badgeNew.textContent = `New: ${newSt}`;
+        const badgeTransferee = document.getElementById('badgeTransferee');
+        if (badgeTransferee) badgeTransferee.textContent = `Transferee: ${transSt}`;
 
         if (pendingEnrollmentsBadge) {
             if (pending > 0) {
@@ -567,6 +578,13 @@ import { supabase } from '../../supabase/config.js';
             filtered = filtered.filter(s => (s.grade_level || '').toLowerCase().includes(selectedGrade.toLowerCase()));
         }
 
+        // Student Type Filter (New, Transferee, Old)
+        const typeFilter = document.getElementById('typeFilter');
+        const selectedType = typeFilter ? typeFilter.value.trim() : '';
+        if (selectedType) {
+            filtered = filtered.filter(s => s.student_type === selectedType);
+        }
+
         // Search Keyword Filter
         if (searchVal) {
             filtered = filtered.filter(s => 
@@ -598,9 +616,20 @@ import { supabase } from '../../supabase/config.js';
             return;
         }
 
+        const avatarGradients = [
+            'linear-gradient(135deg, #4f46e5, #7c3aed)',
+            'linear-gradient(135deg, #0284c7, #2563eb)',
+            'linear-gradient(135deg, #059669, #10b981)',
+            'linear-gradient(135deg, #d97706, #f59e0b)',
+            'linear-gradient(135deg, #db2777, #f43f5e)',
+            'linear-gradient(135deg, #7c3aed, #9333ea)',
+            'linear-gradient(135deg, #0d9488, #06b6d4)'
+        ];
+
         let html = '';
-        filtered.forEach(s => {
+        filtered.forEach((s, index) => {
             const initial = (s.fullname || 'S').charAt(0).toUpperCase();
+            const grad = avatarGradients[index % avatarGradients.length];
             const rowClass = s.student_type === 'Old' ? 'old-student-row' : 'new-student-row';
 
             // Status Badge Formatting
@@ -628,7 +657,7 @@ import { supabase } from '../../supabase/config.js';
                 <tr class="${rowClass}">
                     <td class="student-cell" data-label="Student">
                         <div class="student-info">
-                            <div class="student-avatar">${initial}</div>
+                            <div class="student-avatar" style="background: ${grad}; color: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.12); border: 2px solid #fff;">${initial}</div>
                             <div class="student-details">
                                 <h4>${s.fullname}</h4>
                                 <span><i class="fas fa-envelope"></i> ${s.email}</span>
@@ -640,7 +669,7 @@ import { supabase } from '../../supabase/config.js';
                     </td>
                     <td data-label="Grade & Strand">
                         <span class="grade-tag">${s.grade_level}</span>
-                        ${s.strand ? `<span class="strand-tag">${s.strand}</span>` : ''}
+                        ${(parseInt((s.grade_level || '').replace(/\D/g, ''), 10) >= 11 && s.strand) ? `<span class="strand-tag">${s.strand}</span>` : ''}
                     </td>
                     <td data-label="Status">
                         ${statusBadgeHtml}
@@ -651,14 +680,30 @@ import { supabase } from '../../supabase/config.js';
                     <td data-label="School Year">
                         <span class="school-year">${s.school_year}</span>
                     </td>
-                    <td data-label="Actions">
-                        <div class="action-btns">
-                            <a href="${viewLink}" class="action-btn view" title="View Details">
-                                <i class="fas fa-eye"></i>
-                            </a>
-                            <a href="edit_student.html?id=${s.student_id}" class="action-btn edit" title="Edit Student">
-                                <i class="fas fa-edit"></i>
-                            </a>
+                    <td data-label="Actions" class="cell-actions">
+                        <div class="manage-dropdown">
+                            <button type="button" class="btn-manage" aria-expanded="false" title="Manage Student Record">
+                                <span>Manage</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <div class="manage-menu">
+                                <a href="${viewLink}" class="manage-item view-item" title="View Student Details">
+                                    <i class="fas fa-eye"></i>
+                                    <span>View Details</span>
+                                </a>
+                                <a href="edit_student.html?id=${s.student_id}" class="manage-item edit-item" title="Edit Student">
+                                    <i class="fas fa-edit"></i>
+                                    <span>Edit Student</span>
+                                </a>
+                                <button type="button" class="manage-item request-moral-student-btn" data-id="${s.student_id || s.id}" data-name="${s.fullname}" data-email="${s.email}" data-grade="${s.grade_level}" title="Request Good Moral Certificate or Remind Requirements">
+                                    <i class="fas fa-award" style="color: #0284c7;"></i>
+                                    <span>Request Good Moral</span>
+                                </button>
+                                <button type="button" class="manage-item gmail-item notify-gmail" data-id="${s.student_id}" title="Send Login Credentials to Student's Gmail">
+                                    <i class="fab fa-google"></i>
+                                    <span>Send to Gmail</span>
+                                </button>
+                            </div>
                         </div>
                     </td>
                 </tr>
@@ -666,6 +711,64 @@ import { supabase } from '../../supabase/config.js';
         });
 
         tableBody.innerHTML = html;
+
+        // Manage Dropdown Toggle
+        tableBody.querySelectorAll('.btn-manage').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const dropdown = this.closest('.manage-dropdown');
+                const row = this.closest('tr');
+                const isOpen = dropdown.classList.contains('show');
+
+                // Close all open dropdowns
+                document.querySelectorAll('.manage-dropdown.show').forEach(d => {
+                    d.classList.remove('show');
+                    d.classList.remove('dropup');
+                    const r = d.closest('tr');
+                    if (r) r.classList.remove('dropdown-open');
+                });
+
+                if (!isOpen) {
+                    const rect = this.getBoundingClientRect();
+                    const spaceBelow = window.innerHeight - rect.bottom;
+                    if (spaceBelow < 190) {
+                        dropdown.classList.add('dropup');
+                    } else {
+                        dropdown.classList.remove('dropup');
+                    }
+                    dropdown.classList.add('show');
+                    if (row) row.classList.add('dropdown-open');
+                }
+            });
+        });
+
+        // Gmail Notification
+        tableBody.querySelectorAll('.notify-gmail').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const dropdown = this.closest('.manage-dropdown');
+                if (dropdown) dropdown.classList.remove('show');
+
+                const st = allStudents.find(s => s.student_id === this.dataset.id || s.id === this.dataset.id);
+                if (!st || !st.email || st.email === 'N/A') {
+                    showNotificationToast('Notice', 'This student has no registered email address.', 'info');
+                    return;
+                }
+                const emailPayload = EmailNotificationService.buildCredentialsEmail({
+                    studentName: st.fullname,
+                    firstName: st.first_name,
+                    lastName: st.password || st.last_name,
+                    email: st.email,
+                    gradeLevel: st.grade_level,
+                    strand: st.strand,
+                    schoolYear: st.school_year
+                });
+                EmailNotificationService.sendViaGmailWeb(emailPayload);
+                showNotificationToast('Gmail Opened', `Credentials ready to send to ${st.email} (Password: ${st.password || st.last_name})`, 'success');
+            });
+        });
     }
 
     // ============================================
@@ -685,6 +788,11 @@ import { supabase } from '../../supabase/config.js';
 
     if (statusFilter) {
         statusFilter.addEventListener('change', renderStudentsTable);
+    }
+
+    const typeFilterEl = document.getElementById('typeFilter');
+    if (typeFilterEl) {
+        typeFilterEl.addEventListener('change', renderStudentsTable);
     }
 
     if (searchInput) {
@@ -832,6 +940,233 @@ import { supabase } from '../../supabase/config.js';
     await loadStudentsData();
     setupRealtimeStudentUpdates();
 
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.manage-dropdown')) {
+            document.querySelectorAll('.manage-dropdown.show').forEach(d => {
+                d.classList.remove('show');
+                d.classList.remove('dropup');
+                const r = d.closest('tr');
+                if (r) r.classList.remove('dropdown-open');
+            });
+        }
+    });
+
     console.log('✅ Student Management ready and actively listening for student updates in realtime.');
 
 })();
+    // ============================================
+    // REQUIREMENT REMINDER & GOOD MORAL REQUEST MODAL
+    // ============================================
+
+    const requestReqModal = document.getElementById('requestReqModal');
+    const closeReqModalBtn = document.getElementById('closeReqModalBtn');
+    const reqModalCancelBtn = document.getElementById('reqModalCancelBtn');
+    const reqModalDocSelect = document.getElementById('reqModalDocSelect');
+    const reqModalSubjectInput = document.getElementById('reqModalSubjectInput');
+    const reqModalMessageInput = document.getElementById('reqModalMessageInput');
+    const reqModalIncludeCreds = document.getElementById('reqModalIncludeCreds');
+    const reqModalSendGmailBtn = document.getElementById('reqModalSendGmailBtn');
+    const reqModalSaveInAppBtn = document.getElementById('reqModalSaveInAppBtn');
+    const reqModalAvatar = document.getElementById('reqModalAvatar');
+    const reqModalStudentName = document.getElementById('reqModalStudentName');
+    const reqModalStudentEmail = document.getElementById('reqModalStudentEmail');
+
+    let activeReqStudent = null;
+
+    const docPresets = {
+        good_moral: {
+            title: '🎖️ Missing Certificate of Good Moral Character',
+            body: 'We kindly remind you to submit your Certificate of Good Moral Character from your previous school to finalize your official enrollment credentials. You may upload a clear digital photo/scan via the Student Portal.'
+        },
+        report_card: {
+            title: '📄 Missing Form 138 / Report Card Requirement',
+            body: 'Our records indicate that your official Form 138 (Report Card) is still pending submission. Please upload a clear photo/scan or submit the original hard copy to the Registrar\'s Office.'
+        },
+        psa_birth: {
+            title: '📜 Missing PSA Birth Certificate Requirement',
+            body: 'Please be advised that your official PSA Birth Certificate is required to verify your enrollment record. Please upload a legible digital copy or present the document to the Registrar.'
+        },
+        general_reqs: {
+            title: '📋 Notice to Submit Incomplete Enrollment Requirements',
+            body: 'Please be reminded to submit all pending enrollment requirements to the Registrar\'s Office or upload them via the Student Portal to complete your official student admission.'
+        }
+    };
+
+    function openRequestReqModal(student) {
+        if (!requestReqModal) return;
+        activeReqStudent = student;
+
+        if (reqModalStudentName) reqModalStudentName.textContent = student.name || 'Student';
+        if (reqModalStudentEmail) reqModalStudentEmail.textContent = student.email || 'No email registered';
+        if (reqModalAvatar) reqModalAvatar.textContent = (student.name || 'S').charAt(0).toUpperCase();
+
+        if (reqModalDocSelect) reqModalDocSelect.value = 'good_moral';
+        if (reqModalSubjectInput) reqModalSubjectInput.value = docPresets.good_moral.title;
+        if (reqModalMessageInput) reqModalMessageInput.value = docPresets.good_moral.body;
+
+        requestReqModal.style.display = 'flex';
+    }
+
+    function closeRequestReqModal() {
+        if (requestReqModal) requestReqModal.style.display = 'none';
+        activeReqStudent = null;
+    }
+
+    if (closeReqModalBtn) closeReqModalBtn.addEventListener('click', closeRequestReqModal);
+    if (reqModalCancelBtn) reqModalCancelBtn.addEventListener('click', closeRequestReqModal);
+
+    if (reqModalDocSelect) {
+        reqModalDocSelect.addEventListener('change', function() {
+            const p = docPresets[this.value];
+            if (p) {
+                if (reqModalSubjectInput) reqModalSubjectInput.value = p.title;
+                if (reqModalMessageInput) reqModalMessageInput.value = p.body;
+            }
+        });
+    }
+
+    async function recordStudentReqNotice(student, title, message, docKey) {
+        const targetId = student.id;
+        const targetEmail = (student.email || '').trim().toLowerCase();
+        const isGoodMoral = docKey === 'good_moral' || title.toLowerCase().includes('good moral');
+
+        try {
+            await supabase
+                .from('notifications')
+                .insert([{
+                    user_id: targetId,
+                    student_id: targetId,
+                    recipient_email: targetEmail || null,
+                    role: 'student',
+                    title: title,
+                    message: message,
+                    type: isGoodMoral ? 'good_moral_request' : 'requirement_reminder',
+                    is_read: false,
+                    read: false,
+                    created_at: new Date().toISOString()
+                }]);
+        } catch(e) {
+            console.warn('Student notice insert warning:', e);
+        }
+
+        const nowIso = new Date().toISOString();
+        if (targetId) {
+            if (isGoodMoral) {
+                localStorage.setItem(`hes_req_requested_${targetId}_good_moral`, nowIso);
+            }
+            try {
+                const k = `hes_notifications_${targetId}`;
+                const raw = localStorage.getItem(k);
+                let list = raw ? JSON.parse(raw) : [];
+                list.unshift({
+                    id: 'notif_' + Date.now(),
+                    type: isGoodMoral ? 'good_moral_request' : 'message',
+                    title: title,
+                    message: message,
+                    time: 'Just now',
+                    read: false
+                });
+                localStorage.setItem(k, JSON.stringify(list.slice(0, 30)));
+            } catch(e) {}
+        }
+
+        if (targetEmail) {
+            if (isGoodMoral) {
+                localStorage.setItem(`hes_req_requested_${targetEmail}_good_moral`, nowIso);
+            }
+            try {
+                const kEm = `hes_notifications_${targetEmail}`;
+                const rawEm = localStorage.getItem(kEm);
+                let listEm = rawEm ? JSON.parse(rawEm) : [];
+                listEm.unshift({
+                    id: 'notif_em_' + Date.now(),
+                    type: isGoodMoral ? 'good_moral_request' : 'message',
+                    title: title,
+                    message: message,
+                    time: 'Just now',
+                    read: false
+                });
+                localStorage.setItem(kEm, JSON.stringify(listEm.slice(0, 30)));
+            } catch(e) {}
+        }
+
+        window.dispatchEvent(new Event('storage'));
+    }
+
+    if (reqModalSaveInAppBtn) {
+        reqModalSaveInAppBtn.addEventListener('click', async function() {
+            if (!activeReqStudent) return;
+            const title = reqModalSubjectInput?.value?.trim() || '📢 Requirement Notice';
+            const body = reqModalMessageInput?.value?.trim() || '';
+            const docKey = reqModalDocSelect?.value || 'good_moral';
+
+            try {
+                reqModalSaveInAppBtn.disabled = true;
+                reqModalSaveInAppBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Posting...';
+
+                await recordStudentReqNotice(activeReqStudent, title, body, docKey);
+                closeRequestReqModal();
+                showAlert(`✅ In-app notice sent to ${activeReqStudent.name}!`, 'success');
+            } catch(err) {
+                showAlert('❌ Error posting notice: ' + err.message, 'error');
+            } finally {
+                reqModalSaveInAppBtn.disabled = false;
+                reqModalSaveInAppBtn.innerHTML = '<i class="fas fa-bell"></i> Post In-App Notice';
+            }
+        });
+    }
+
+    if (reqModalSendGmailBtn) {
+        reqModalSendGmailBtn.addEventListener('click', async function() {
+            if (!activeReqStudent) return;
+            const title = reqModalSubjectInput?.value?.trim() || '📢 Requirement Notice';
+            const body = reqModalMessageInput?.value?.trim() || '';
+            const docKey = reqModalDocSelect?.value || 'good_moral';
+            const sEmail = (activeReqStudent.email || '').trim().toLowerCase();
+            const includeCreds = reqModalIncludeCreds?.checked !== false;
+
+            if (!sEmail) {
+                showAlert('⚠️ Student does not have a registered email.', 'error');
+                return;
+            }
+
+            try {
+                reqModalSendGmailBtn.disabled = true;
+                reqModalSendGmailBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparing Gmail...';
+
+                await recordStudentReqNotice(activeReqStudent, title, body, docKey);
+
+                const emailData = EmailNotificationService.buildRegistrarNoticeEmail({
+                    studentName: activeReqStudent.name,
+                    email: sEmail,
+                    messageTitle: title,
+                    messageBody: body,
+                    gradeLevel: activeReqStudent.grade || 'Junior/Senior High',
+                    includeCredentials: includeCreds
+                });
+
+                EmailNotificationService.sendViaGmailWeb(emailData);
+                closeRequestReqModal();
+                showAlert(`✅ Notice saved and Gmail compose opened for ${activeReqStudent.name}!`, 'success');
+            } catch(err) {
+                showAlert('❌ Failed: ' + err.message, 'error');
+            } finally {
+                reqModalSendGmailBtn.disabled = false;
+                reqModalSendGmailBtn.innerHTML = '<i class="fab fa-google"></i> Send via Student\'s Gmail';
+            }
+        });
+    }
+
+    // Bind click in table
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.request-moral-student-btn');
+        if (btn) {
+            e.preventDefault();
+            e.stopPropagation();
+            const sId = btn.dataset.id;
+            const sName = btn.dataset.name;
+            const sEmail = btn.dataset.email;
+            const sGrade = btn.dataset.grade;
+            openRequestReqModal({ id: sId, name: sName, email: sEmail, grade: sGrade });
+        }
+    });

@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Requirements Tracker - Registrar | PLS-NSHS</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="css/requirements.css">
+    <link rel="stylesheet" href="../css/chatbot.css">
+</head>
+
+<body>
+    <!-- Mobile Menu Toggle -->
+    <div class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <div class="app-container">
+        <!-- ===== SIDEBAR ===== -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <img src="../pictures/logo sa skwelahan.jpg" alt="PLS-NSHS Logo"
+                            onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
+                    </div>
+                    <div class="logo-text">PLS<span>NSH</span></div>
+                </div>
+                <div class="school-badge">Placido L. Señor National High School</div>
+            </div>
+
+            
+        <div class="admin-profile">
+            <div class="admin-avatar">
+                <div class="avatar-initial" id="adminInitial">JM</div>
+                <div class="online-dot"></div>
+            </div>
+            <div class="admin-name" id="adminName">Justine Mangila</div>
+            <div class="admin-role"><i class="fas fa-id-badge"></i> Registrar</div>
+        </div>
+
+        <nav class="nav-menu">
+                <div class="nav-section">
+                    <div class="nav-section-title">MAIN MENU</div>
+                    <ul class="nav-items">
+                        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                        <li><a href="enrollments.html"><i class="fas fa-file-signature"></i> Enrollments <span
+                                    class="nav-badge" id="pendingEnrollmentsBadge" style="display: none;">0</span></a></li>
+                        <li><a href="students.html"><i class="fas fa-user-graduate"></i> Students</a></li>
+                        <li><a href="requirements.html" class="active"><i class="fas fa-clipboard-check"></i> Requirements <span
+                                    class="nav-badge" id="pendingRequirementsBadge" style="display: none;">0</span></a></li>
+                        <li><a href="generate_id.html"><i class="fas fa-id-card"></i> Student ID</a></li>
+                        <li><a href="sections.html"><i class="fas fa-layer-group"></i> Sections</a></li>
+                        <li><a href="reports.html"><i class="fas fa-chart-bar"></i> Reports</a></li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">ACCOUNT</div>
+                    <ul class="nav-items">
+                        <li><a href="profile.html"><i class="fas fa-user"></i> Profile</a></li>
+                        <li><a href="../auth/login.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                    </ul>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- ===== MAIN CONTENT ===== -->
+        <main class="main-content">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="page-header-text">
+                    <h1><i class="fas fa-clipboard-list"></i> Student Requirements Tracker</h1>
+                    <p>Track student document submissions, verify credentials, and follow up on missing requirements</p>
+                </div>
+                <div class="header-actions">
+                    <button type="button" class="btn-header btn-header-outline" id="printReportBtn" title="Print Requirements Summary">
+                        <i class="fas fa-print"></i> Print Report
+                    </button>
+                    <button type="button" class="btn-header btn-header-primary" id="bulkRemindBtn" title="Send notice to all students with missing requirements">
+                        <i class="fas fa-paper-plane"></i> Bulk Remind Incomplete
+                    </button>
+                </div>
+            </div>
+
+            <!-- ===== KPI STATS CARDS ===== -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon total">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="statTotalStudents">0</div>
+                        <div class="stat-label">Total Students Tracked</div>
+                        <div class="stat-sub">Across all year levels</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon complete">
+                        <i class="fas fa-circle-check"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="statCompleteRequirements" style="color: #059669;">0</div>
+                        <div class="stat-label">Complete Submissions</div>
+                        <div class="stat-sub">100% requirements verified</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon incomplete">
+                        <i class="fas fa-circle-exclamation"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="statIncompleteRequirements" style="color: #dc2626;">0</div>
+                        <div class="stat-label">Incomplete Requirements</div>
+                        <div class="stat-sub">Action required / Missing documents</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon reminder">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="statRemindersSent" style="color: #d97706;">0</div>
+                        <div class="stat-label">Notices Dispatched</div>
+                        <div class="stat-sub">Reminders sent to student portals</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== MAIN SECTION CONTAINER ===== -->
+            <div class="section-card">
+                <!-- Print Header (Official letterhead visible only when printed) -->
+                <div class="print-header">
+                    <h2>PLACIDO L. SEÑOR NATIONAL HIGH SCHOOL</h2>
+                    <p>Office of the Registrar • Langtad, City of Naga, Cebu</p>
+                    <h3>OFFICIAL STUDENT ENROLLMENT REQUIREMENTS STATUS REPORT</h3>
+                    <p id="printGeneratedDate"></p>
+                </div>
+
+                <!-- Level & Status Tabs Bar (Unified Segmented Control) -->
+                <div class="level-tabs-bar">
+                    <div class="level-pills">
+                        <button type="button" class="level-pill active" data-level="all">
+                            <i class="fas fa-border-all"></i> All Levels <span class="level-badge" id="badgeCountAll">0</span>
+                        </button>
+                        <button type="button" class="level-pill" data-level="jhs">
+                            <i class="fas fa-school"></i> Junior High <span class="level-badge" id="badgeCountJhs">0</span>
+                        </button>
+                        <button type="button" class="level-pill" data-level="shs">
+                            <i class="fas fa-graduation-cap"></i> Senior High <span class="level-badge" id="badgeCountShs">0</span>
+                        </button>
+                    </div>
+
+                    <!-- Quick Status Segment Switcher -->
+                    <div class="quick-status-tabs">
+                        <span class="status-tab-label">Status:</span>
+                        <button type="button" class="quick-chip active" data-status="all">
+                            <i class="fas fa-list"></i> All
+                        </button>
+                        <button type="button" class="quick-chip missing-chip" data-status="incomplete">
+                            <i class="fas fa-circle-exclamation"></i> Incomplete Only
+                        </button>
+                        <button type="button" class="quick-chip complete-chip" data-status="complete">
+                            <i class="fas fa-circle-check"></i> Complete Only
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Toolbar & Filters -->
+                <div class="toolbar-container">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" class="search-input" id="reqSearchInput" placeholder="Search by student name, LRN, or email...">
+                    </div>
+
+                    <div class="filters-group">
+                        <!-- Hidden status filter for JS state syncing -->
+                        <select class="filter-select" id="reqStatusFilter" style="display: none;">
+                            <option value="all">All Submission Statuses</option>
+                            <option value="incomplete">Incomplete / Missing Only</option>
+                            <option value="complete">Complete (All Submitted)</option>
+                        </select>
+
+                        <select class="filter-select" id="reqGradeFilter" title="Filter by grade level">
+                            <option value="">All Grade Levels</option>
+                            <option value="Grade 7">Grade 7</option>
+                            <option value="Grade 8">Grade 8</option>
+                            <option value="Grade 9">Grade 9</option>
+                            <option value="Grade 10">Grade 10</option>
+                            <option value="Grade 11">Grade 11</option>
+                            <option value="Grade 12">Grade 12</option>
+                        </select>
+
+                        <select class="filter-select" id="reqDocFilter" title="Filter by specific missing document">
+                            <option value="all">Any Document Requirement</option>
+                            <option value="form_138">Missing Form 138 / Report Card</option>
+                            <option value="psa_birth_cert">Missing PSA Birth Certificate</option>
+                            <option value="good_moral">Missing Good Moral Certificate</option>
+                            <option value="two_by_two_picture">Missing 2x2 ID Photo</option>
+                            <option value="completion_cert">Missing Completion Cert / Diploma</option>
+                            <option value="form_137">Missing Form 137 (Transferees)</option>
+                        </select>
+
+                        <button type="button" class="btn-filter-reset" id="resetFiltersBtn" title="Reset all active filters">
+                            <i class="fas fa-undo"></i> Reset
+                        </button>
+
+                        <div class="header-summary-chip" id="tableCountBadge">
+                            Loading student records...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Requirements Table -->
+                <div class="table-responsive">
+                    <table class="requirements-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 28%;">Student Information</th>
+                                <th style="width: 14%;">Level & Grade</th>
+                                <th style="width: 10%;">Student Type</th>
+                                <th style="width: 24%;">Requirements Checklist</th>
+                                <th style="width: 13%;">Submission Status</th>
+                                <th style="width: 11%; text-align: right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="requirementsTableBody">
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 40px;">
+                                    <i class="fas fa-spinner fa-spin" style="font-size: 26px; color: #0b2b4a; margin-bottom: 10px;"></i>
+                                    <p style="color: #64748b; margin: 0;">Loading requirements tracking data...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ===== MODAL 1: STUDENT REQUIREMENTS DETAIL & OFFICE VERIFICATION ===== -->
+    <div class="modal-overlay" id="requirementDetailModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3><i class="fas fa-clipboard-check" style="color: #0284c7;"></i> Requirements Checklist</h3>
+                <button type="button" class="modal-close-btn" id="closeDetailModalBtn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-student-banner">
+                    <div class="modal-student-avatar" id="modalStudentAvatar">S</div>
+                    <div>
+                        <h4 style="font-size: 16px; font-weight: 800; color: #0b2b4a; margin-bottom: 2px;" id="modalStudentName">Student Name</h4>
+                        <p style="font-size: 12.5px; color: #64748b; margin-bottom: 8px;" id="modalStudentSub">Grade Level • LRN</p>
+                        <div id="modalOverallStatus"></div>
+                    </div>
+                </div>
+
+                <h4 style="font-size: 13.5px; font-weight: 700; color: #334155; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-list-check"></i> Document Submission Checklist
+                </h4>
+
+                <div class="checklist-group" id="modalChecklistItems">
+                    <!-- Populated dynamically via requirements.js -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-header btn-header-outline" id="closeDetailFooterBtn">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL 2: SEND REQUIREMENT REMINDER / NOTICE MODAL ===== -->
+    <div class="modal-overlay" id="requirementNoticeModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3><i class="fas fa-bell" style="color: #f59e0b;"></i> Dispatch Requirement Notice</h3>
+                <button type="button" class="modal-close-btn" id="closeNoticeModalBtn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div style="background: #fffbeb; border: 1px solid #fef3c7; border-radius: 12px; padding: 14px 16px; margin-bottom: 18px;">
+                    <div style="font-size: 13px; font-weight: 700; color: #92400e; margin-bottom: 4px;">Recipient Student:</div>
+                    <div style="font-size: 14px; font-weight: 800; color: #0b2b4a;" id="noticeStudentName">Student Name</div>
+                    <div style="font-size: 12px; color: #64748b; margin-top: 2px;" id="noticeStudentEmail">email@example.com</div>
+                </div>
+
+                <div style="margin-bottom: 14px;">
+                    <label style="display: block; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px;">Pending Requirement(s):</label>
+                    <ul id="noticeMissingList" style="list-style: none; display: flex; flex-direction: column; gap: 4px; font-size: 12.5px; font-weight: 600; color: #b91c1c;"></ul>
+                </div>
+
+                <div style="margin-bottom: 14px;">
+                    <label style="display: block; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px;">Notice Subject:</label>
+                    <input type="text" id="noticeSubjectInput" class="search-input" style="padding-left: 14px;" value="⚠️ Important: Incomplete Enrollment Requirements">
+                </div>
+
+                <div style="margin-bottom: 10px;">
+                    <label style="display: block; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px;">Notice Message:</label>
+                    <textarea id="noticeMessageInput" class="search-input" style="padding: 10px 14px; height: 110px; resize: vertical; line-height: 1.5; font-family: inherit; font-size: 12.5px;"></textarea>
+                    <p style="font-size: 11px; color: #64748b; margin-top: 6px;">
+                        <i class="fas fa-info-circle"></i> This notice will appear on the student's dashboard and can also be opened directly in Gmail compose.
+                    </p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-header btn-header-outline" id="cancelNoticeBtn">
+                    Cancel
+                </button>
+                <button type="button" class="btn-header btn-header-primary" id="sendNoticeConfirmBtn">
+                    <i class="fas fa-paper-plane"></i> Send Notice
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/registrar_avatar_sync.js"></script>
+    <script type="module" src="js/requirements.js"></script>
+</body>
+
+</html>

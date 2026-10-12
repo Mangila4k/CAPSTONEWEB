@@ -1,5 +1,6 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,6 +14,7 @@
     <link rel="stylesheet" href="css/profile.css">
     <link rel="stylesheet" href="../css/chatbot.css">
 </head>
+
 <body>
     <!-- Mobile Menu Toggle -->
     <div class="menu-toggle" id="menuToggle">
@@ -25,7 +27,8 @@
             <div class="sidebar-header">
                 <div class="logo">
                     <div class="logo-icon">
-                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
+                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo"
+                            onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
                     </div>
                     <div class="logo-text">PLS<span>NSH</span></div>
                 </div>
@@ -47,6 +50,7 @@
                     <ul class="nav-items">
                         <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
                         <li><a href="student.html"><i class="fas fa-user-graduate"></i> Students</a></li>
+                        <li><a href="generate_id.html"><i class="fas fa-id-card"></i> ID Generator</a></li>
                         <li><a href="teachers.html"><i class="fas fa-chalkboard-user"></i> Teachers</a></li>
                         <li><a href="sections.html"><i class="fas fa-layer-group"></i> Sections</a></li>
                         <li><a href="subjects.html"><i class="fas fa-book"></i> Subjects</a></li>
@@ -121,7 +125,8 @@
                                 <div class="info-label">Email Address</div>
                                 <div class="info-value" id="emailDisplay">
                                     <span id="emailValueText">admin@hiraya.edu.ph</span>
-                                    <span class="verified-badge" id="emailStatusBadge"><i class="fas fa-check-circle"></i> Verified</span>
+                                    <span class="verified-badge" id="emailStatusBadge"><i
+                                            class="fas fa-check-circle"></i> Verified</span>
                                 </div>
                             </div>
                         </div>
@@ -160,19 +165,26 @@
                             </div>
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <span class="doc-upload-count" id="adminDocCount">0 Files</span>
-                                <button type="button" id="adminUploadTriggerBtn" style="padding: 4px 10px; font-size: 11.5px; border-radius: 6px; background: var(--primary); color: #fff; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; font-weight: 500;">
+                                <button type="button" id="adminUploadTriggerBtn"
+                                    style="padding: 4px 10px; font-size: 11.5px; border-radius: 6px; background: var(--primary); color: #fff; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; font-weight: 500;">
                                     <i class="fas fa-plus"></i> Upload
                                 </button>
-                                <input type="file" id="adminDocFileInput" accept=".pdf,image/png,image/jpeg,image/webp" style="display: none;">
+                                <input type="file" id="adminDocFileInput" accept=".pdf,image/png,image/jpeg,image/webp"
+                                    style="display: none;">
                             </div>
                         </div>
 
-                        <div id="adminDocUploadForm" style="display: none; margin-bottom: 16px; background: #f8fafc; padding: 14px; border-radius: 10px; border: 1px solid #e2e8f0;">
-                            <div style="font-size: 13px; font-weight: 600; color: #0f172a; margin-bottom: 8px;">Selected: <span id="adminDocSelectedName" style="color: #1B2A4A;"></span></div>
+                        <div id="adminDocUploadForm"
+                            style="display: none; margin-bottom: 16px; background: #f8fafc; padding: 14px; border-radius: 10px; border: 1px solid #e2e8f0;">
+                            <div style="font-size: 13px; font-weight: 600; color: #0f172a; margin-bottom: 8px;">
+                                Selected: <span id="adminDocSelectedName" style="color: #1B2A4A;"></span></div>
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
                                 <div>
-                                    <label style="font-size: 11px; font-weight: 600; color: #64748b; display: block; margin-bottom: 4px;">Document Type</label>
-                                    <select id="adminDocTypeSelect" style="width: 100%; padding: 7px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12.5px;">
+                                    <label
+                                        style="font-size: 11px; font-weight: 600; color: #64748b; display: block; margin-bottom: 4px;">Document
+                                        Type</label>
+                                    <select id="adminDocTypeSelect"
+                                        style="width: 100%; padding: 7px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12.5px;">
                                         <option value="Appointment">Appointment Order</option>
                                         <option value="Valid ID">Government / DepEd ID</option>
                                         <option value="E-Signature">Digital Signature Specimen</option>
@@ -181,13 +193,19 @@
                                     </select>
                                 </div>
                                 <div>
-                                    <label style="font-size: 11px; font-weight: 600; color: #64748b; display: block; margin-bottom: 4px;">Document Label</label>
-                                    <input type="text" id="adminDocCustomTitle" placeholder="e.g. DepEd ID 2026" style="width: 100%; padding: 7px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12.5px;">
+                                    <label
+                                        style="font-size: 11px; font-weight: 600; color: #64748b; display: block; margin-bottom: 4px;">Document
+                                        Label</label>
+                                    <input type="text" id="adminDocCustomTitle" placeholder="e.g. DepEd ID 2026"
+                                        style="width: 100%; padding: 7px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12.5px;">
                                 </div>
                             </div>
                             <div style="display: flex; gap: 8px; justify-content: flex-end;">
-                                <button type="button" class="btn-secondary" id="adminDocCancelBtn" style="padding: 6px 14px; font-size: 12px; border-radius: 6px; cursor: pointer; background: #fff; border: 1px solid #cbd5e1;">Cancel</button>
-                                <button type="button" class="btn-primary" id="adminDocSaveBtn" style="padding: 6px 16px; font-size: 12px; border-radius: 6px; background: #1B2A4A; color: #fff; border: none; cursor: pointer;"><i class="fas fa-upload"></i> Upload</button>
+                                <button type="button" class="btn-secondary" id="adminDocCancelBtn"
+                                    style="padding: 6px 14px; font-size: 12px; border-radius: 6px; cursor: pointer; background: #fff; border: 1px solid #cbd5e1;">Cancel</button>
+                                <button type="button" class="btn-primary" id="adminDocSaveBtn"
+                                    style="padding: 6px 16px; font-size: 12px; border-radius: 6px; background: #1B2A4A; color: #fff; border: none; cursor: pointer;"><i
+                                        class="fas fa-upload"></i> Upload</button>
                             </div>
                         </div>
 
@@ -206,13 +224,14 @@
                             <i class="fas fa-envelope"></i>
                             <h3>Email Verification</h3>
                         </div>
-                        
+
                         <div id="verifyStatus">
                             <div class="verify-badge verified" id="verifyBadge">
                                 <i class="fas fa-check-circle"></i> Verified Email
                             </div>
                             <div class="verify-info" id="verifyInfo">
-                                <p><i class="fas fa-check-circle" style="color: #10b981;"></i> Your email address has been verified.</p>
+                                <p><i class="fas fa-check-circle" style="color: #10b981;"></i> Your email address has
+                                    been verified.</p>
                                 <p style="margin-top: 6px;">This adds an extra layer of security to your account.</p>
                             </div>
                         </div>
@@ -221,25 +240,29 @@
                         <div id="verifyFormContainer" style="display: none;">
                             <div class="verify-info">
                                 <p><i class="fas fa-info-circle"></i> Your email address has not been verified yet.</p>
-                                <p style="margin-top: 6px;">Verifying your email helps secure your account and ensures you receive important notifications.</p>
+                                <p style="margin-top: 6px;">Verifying your email helps secure your account and ensures
+                                    you receive important notifications.</p>
                             </div>
-                            
+
                             <div class="email-info-box">
-                                <i class="fas fa-envelope"></i> Code sent to: <strong id="verifyEmailDisplay">admin@plshs.edu.ph</strong>
+                                <i class="fas fa-envelope"></i> Code sent to: <strong
+                                    id="verifyEmailDisplay">admin@plshs.edu.ph</strong>
                             </div>
 
                             <div id="verifyAlertContainer"></div>
 
                             <form id="verifyForm">
                                 <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                                    <input type="text" name="code" id="verifyCodeInput" class="verify-code-input" placeholder="000000" maxlength="6" pattern="[0-9]{6}" autofocus>
+                                    <input type="text" name="code" id="verifyCodeInput" class="verify-code-input"
+                                        placeholder="000000" maxlength="6" pattern="[0-9]{6}" autofocus>
                                     <button type="submit" class="btn-verify-email" id="verifyBtn">
                                         <i class="fas fa-check-circle"></i> Verify
                                     </button>
                                 </div>
                             </form>
 
-                            <div style="margin-top: 12px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+                            <div
+                                style="margin-top: 12px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
                                 <a href="#" id="resendLink" class="resend-link-text">
                                     <i class="fas fa-redo"></i> Resend Verification Code
                                 </a>
@@ -264,13 +287,15 @@
                             <i class="fas fa-exchange-alt"></i>
                             <h3>Change Email Address</h3>
                         </div>
-                        
+
                         <form id="emailChangeForm">
                             <div class="form-group">
                                 <label class="form-label">New Email Address</label>
-                                <input type="email" name="new_email" id="newEmail" placeholder="Enter your new email address" required>
+                                <input type="email" name="new_email" id="newEmail"
+                                    placeholder="Enter your new email address" required>
                                 <small style="color: #64748b; display: block; margin-top: 5px;">
-                                    <i class="fas fa-info-circle"></i> A verification code will be sent to the new email address for confirmation.
+                                    <i class="fas fa-info-circle"></i> A verification code will be sent to the new email
+                                    address for confirmation.
                                 </small>
                             </div>
                             <button type="submit" class="btn-verify-email">
@@ -327,19 +352,27 @@
                             <form id="profileForm">
                                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
                                     <div class="form-group">
-                                        <label class="form-label">First Name <span class="required" style="color: #ef4444;">*</span></label>
-                                        <input type="text" name="first_name" id="editAdminFirstName" placeholder="First name" required style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem;">
+                                        <label class="form-label">First Name <span class="required"
+                                                style="color: #ef4444;">*</span></label>
+                                        <input type="text" name="first_name" id="editAdminFirstName"
+                                            placeholder="First name" required
+                                            style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem;">
                                     </div>
                                     <div class="form-group">
-                                        <label class="form-label">Last Name <span class="required" style="color: #ef4444;">*</span></label>
-                                        <input type="text" name="last_name" id="editAdminLastName" placeholder="Last name" required style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem;">
+                                        <label class="form-label">Last Name <span class="required"
+                                                style="color: #ef4444;">*</span></label>
+                                        <input type="text" name="last_name" id="editAdminLastName"
+                                            placeholder="Last name" required
+                                            style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem;">
                                     </div>
                                 </div>
 
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px;">
+                                <div
+                                    style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px;">
                                     <div class="form-group">
                                         <label class="form-label">Gender</label>
-                                        <select name="gender" id="editAdminGender" style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem; background: #fff;">
+                                        <select name="gender" id="editAdminGender"
+                                            style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem; background: #fff;">
                                             <option value="">Select Gender</option>
                                             <option value="Male">Male</option>
                                             <option value="Female">Female</option>
@@ -348,28 +381,36 @@
                                     </div>
                                     <div class="form-group">
                                         <label class="form-label">ID Number</label>
-                                        <input type="text" name="id_number" id="idNumber" placeholder="HES-ADM-00001" style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem;">
+                                        <input type="text" name="id_number" id="idNumber" placeholder="HES-ADM-00001"
+                                            style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem;">
                                     </div>
                                 </div>
 
                                 <div class="form-group" style="margin-top: 14px;">
                                     <label class="form-label">Contact Number</label>
-                                    <input type="tel" name="phone" id="phone" placeholder="09XXXXXXXXX" style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem;">
+                                    <input type="tel" name="phone" id="phone" placeholder="09XXXXXXXXX"
+                                        style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem;">
                                     <small style="color: #64748b; display: block; margin-top: 5px;">
-                                        <i class="fas fa-info-circle"></i> Philippine mobile number format: 09XXXXXXXXX (11 digits)
+                                        <i class="fas fa-info-circle"></i> Philippine mobile number format: 09XXXXXXXXX
+                                        (11 digits)
                                     </small>
                                 </div>
 
                                 <div class="form-group" style="margin-top: 14px;">
                                     <label class="form-label">Complete Home Address</label>
-                                    <textarea name="address" id="editAdminAddress" rows="2" placeholder="Barangay, City/Municipality, Province" style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem; resize: vertical;"></textarea>
+                                    <textarea name="address" id="editAdminAddress" rows="2"
+                                        placeholder="Barangay, City/Municipality, Province"
+                                        style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem; resize: vertical;"></textarea>
                                 </div>
 
                                 <div class="account-info-actions">
-                                    <button type="button" class="btn-secondary" id="cancelAdminEditBtn" style="padding: 9px 18px; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff; color: #475569; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                                    <button type="button" class="btn-secondary" id="cancelAdminEditBtn"
+                                        style="padding: 9px 18px; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff; color: #475569; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
                                         <i class="fas fa-times"></i> Cancel
                                     </button>
-                                    <button type="submit" name="update_profile" class="btn-submit" id="saveAdminProfileBtn" style="padding: 9px 22px; background: #0b2b4a; color: #fff; border: none; border-radius: 8px; font-weight: 600; font-size: 0.92rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
+                                    <button type="submit" name="update_profile" class="btn-submit"
+                                        id="saveAdminProfileBtn"
+                                        style="padding: 9px 22px; background: #0b2b4a; color: #fff; border: none; border-radius: 8px; font-weight: 600; font-size: 0.92rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
                                         <i class="fas fa-save"></i> Save Changes
                                     </button>
                                 </div>
@@ -383,7 +424,7 @@
                             <i class="fas fa-lock"></i>
                             <h3>Change Password</h3>
                         </div>
-                        
+
                         <div class="password-section">
                             <div class="password-header">
                                 <input type="checkbox" id="changePasswordCheckbox">
@@ -393,15 +434,17 @@
                             <form id="passwordForm">
                                 <div class="password-fields" id="passwordFields">
                                     <div class="form-group">
-                                        <label class="form-label">Current Password <span class="required">*</span></label>
+                                        <label class="form-label">Current Password <span
+                                                class="required">*</span></label>
                                         <input type="password" name="current_password" id="currentPassword" disabled>
                                     </div>
 
                                     <div class="form-row">
                                         <div class="form-group">
-                                            <label class="form-label">New Password <span class="required">*</span></label>
+                                            <label class="form-label">New Password <span
+                                                    class="required">*</span></label>
                                             <input type="password" name="new_password" id="newPassword" disabled>
-                                            
+
                                             <div class="password-strength">
                                                 <div class="password-strength-bar">
                                                     <div class="password-strength-fill" id="passwordStrengthFill"></div>
@@ -411,29 +454,37 @@
                                                     <span>Enter new password</span>
                                                 </div>
                                             </div>
-                                            
+
                                             <div class="password-requirements" id="passwordRequirements">
                                                 <small><i class="fas fa-shield-alt"></i> Password must contain:</small>
                                                 <ul>
-                                                    <li id="req-length"><i class="fas fa-circle"></i> At least 8 characters</li>
-                                                    <li id="req-upper"><i class="fas fa-circle"></i> At least 1 uppercase letter (A-Z)</li>
-                                                    <li id="req-lower"><i class="fas fa-circle"></i> At least 1 lowercase letter (a-z)</li>
-                                                    <li id="req-number"><i class="fas fa-circle"></i> At least 1 number (0-9)</li>
-                                                    <li id="req-special"><i class="fas fa-circle"></i> At least 1 special character (!@#$%^&*)</li>
+                                                    <li id="req-length"><i class="fas fa-circle"></i> At least 8
+                                                        characters</li>
+                                                    <li id="req-upper"><i class="fas fa-circle"></i> At least 1
+                                                        uppercase letter (A-Z)</li>
+                                                    <li id="req-lower"><i class="fas fa-circle"></i> At least 1
+                                                        lowercase letter (a-z)</li>
+                                                    <li id="req-number"><i class="fas fa-circle"></i> At least 1 number
+                                                        (0-9)</li>
+                                                    <li id="req-special"><i class="fas fa-circle"></i> At least 1
+                                                        special character (!@#$%^&*)</li>
                                                 </ul>
                                             </div>
                                         </div>
 
                                         <div class="form-group">
-                                            <label class="form-label">Confirm Password <span class="required">*</span></label>
-                                            <input type="password" name="confirm_password" id="confirmPassword" disabled>
+                                            <label class="form-label">Confirm Password <span
+                                                    class="required">*</span></label>
+                                            <input type="password" name="confirm_password" id="confirmPassword"
+                                                disabled>
                                             <div class="password-strength-text" id="passwordMatchText">
                                                 <i class="fas fa-info-circle"></i> Re-enter new password
                                             </div>
                                         </div>
                                     </div>
 
-                                    <button type="submit" name="change_password" class="btn-submit" id="changePasswordBtn" disabled>
+                                    <button type="submit" name="change_password" class="btn-submit"
+                                        id="changePasswordBtn" disabled>
                                         <i class="fas fa-key"></i> Change Password
                                     </button>
                                 </div>
@@ -455,12 +506,14 @@
             <form id="uploadForm" enctype="multipart/form-data">
                 <div class="modal-body">
                     <div class="image-preview" id="imagePreview">
-                        <div style="width: 150px; height: 150px; background: #1B2A4A; display: flex; align-items: center; justify-content: center; color: white; font-size: 56px; font-weight: bold; border-radius: 50%;">
+                        <div
+                            style="width: 150px; height: 150px; background: #1B2A4A; display: flex; align-items: center; justify-content: center; color: white; font-size: 56px; font-weight: bold; border-radius: 50%;">
                             A
                         </div>
                     </div>
                     <div class="file-input-wrapper">
-                        <input type="file" name="profile_picture" id="profilePicture" accept="image/jpeg,image/png,image/gif,image/webp" onchange="previewImage(this)">
+                        <input type="file" name="profile_picture" id="profilePicture"
+                            accept="image/jpeg,image/png,image/gif,image/webp" onchange="previewImage(this)">
                         <label for="profilePicture" class="file-input-label">
                             <i class="fas fa-upload"></i> Choose Image
                         </label>
@@ -470,11 +523,14 @@
                     </p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn-danger" onclick="removeProfilePic()" style="background: #ef4444; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-family: inherit; font-weight: 500;">
+                    <button type="button" class="btn-danger" onclick="removeProfilePic()"
+                        style="background: #ef4444; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-family: inherit; font-weight: 500;">
                         <i class="fas fa-trash"></i> Remove
                     </button>
-                    <button type="button" class="btn-secondary" onclick="closeImageModal()" style="background: #fff; color: #475569; border: 1.5px solid #e2e8f0; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-family: inherit; font-weight: 500;">Cancel</button>
-                    <button type="submit" name="upload_profile_pic" class="btn-primary" style="background: #1B2A4A; color: #fff; border: none; padding: 10px 24px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-family: inherit; font-weight: 600;">Upload</button>
+                    <button type="button" class="btn-secondary" onclick="closeImageModal()"
+                        style="background: #fff; color: #475569; border: 1.5px solid #e2e8f0; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-family: inherit; font-weight: 500;">Cancel</button>
+                    <button type="submit" name="upload_profile_pic" class="btn-primary"
+                        style="background: #1B2A4A; color: #fff; border: none; padding: 10px 24px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-family: inherit; font-weight: 600;">Upload</button>
                 </div>
             </form>
         </div>
@@ -492,7 +548,8 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn-secondary" id="dismissDocPreviewBtn">Close</button>
-                <a href="#" id="docDownloadBtn" class="btn-primary" download style="background: #1B2A4A; color: #fff; text-decoration: none; padding: 10px 20px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px;">
+                <a href="#" id="docDownloadBtn" class="btn-primary" download
+                    style="background: #1B2A4A; color: #fff; text-decoration: none; padding: 10px 20px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px;">
                     <i class="fas fa-download"></i> Download
                 </a>
             </div>
@@ -503,4 +560,5 @@
     <script type="module" src="js/profile.js"></script>
     <script src="../js/chatbot.js"></script>
 </body>
+
 </html>

@@ -341,7 +341,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                                 id: `t-att-in-${ta.id}`,
                                 type: 'attendance',
                                 title: `Teacher Time-In: ${teacherName}`,
-                                description: `Faculty member <strong>${teacherName}</strong> recorded <strong>Time-In</strong> at <strong>${ta.time_in}</strong> on <strong>${ta.date}</strong> (Status: <strong>${attStatus}</strong>).`,
+                                description: `Faculty member <strong>${teacherName}</strong> recorded <strong>Time-In</strong> at <strong>${ta.time_in}</strong> on <strong>${ta.date}</strong>.`,
                                 actorName: teacherName,
                                 actorRole: 'teacher',
                                 actorEmail: tUser?.email || '',

@@ -25,6 +25,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
     const recordCount = document.getElementById('recordCount');
     const searchInput = document.getElementById('searchInput');
     const statusFilter = document.getElementById('statusFilter');
+    const gradeFilter = document.getElementById('gradeFilter');
     const filterForm = document.getElementById('filterForm');
 
     // Notification elements
@@ -58,6 +59,8 @@ import { EmailNotificationService } from '../../js/email_service.js';
     let students = [];
     let notifications = [];
     let unreadCount = 0;
+    let selectedLevel = 'all'; // 'all', 'jhs', 'shs'
+    let selectedGrade = 'all'; // 'all', 'Grade 7', etc.
 
     // Check URL parameters for status filter (e.g. enrollments.html?status=Pending)
     const urlParams = new URLSearchParams(window.location.search);
@@ -125,17 +128,38 @@ import { EmailNotificationService } from '../../js/email_service.js';
 
             // Map and normalize enrollments
             enrollments = enrData.map(enr => {
-                const std = stdData.find(s => s.id === enr.student_id || (s.email && enr.email && s.email.toLowerCase() === enr.email.toLowerCase())) || {};
-                const fName = (std.first_name || enr.first_name || '').trim();
-                const lName = (std.last_name || enr.last_name || '').trim();
-                const fullName = `${fName} ${lName}`.trim() || 'Student Applicant';
-                const email = enr.email || std.email || '—';
-                const idNumber = std.lrn || std.student_id_number || enr.lrn || 'Pending LRN';
-                const gradeLevel = enr.grade_level || std.grade_level || 'Grade 7';
-                const strand = enr.strand || std.strand || '';
-                const schoolYear = enr.last_school_year || enr.school_year || '2026-2027';
-                const studentType = enr.student_type || (gradeLevel.includes('7') ? 'New' : 'Continuing');
-                const rawStatus = (enr.status || 'Pending').trim();
+                let std = null;
+                // 1. Prioritize explicit relational student_id
+                if (enr.student_id) {
+                    std = stdData.find(s => s.id === enr.student_id);
+                }
+                // 2. Disambiguate email fallback only if student_id was missing
+                if (!std && enr.email) {
+                    const emailMatches = stdData.filter(s => s.email && s.email.toLowerCase() === enr.email.toLowerCase());
+                    if (emailMatches.length === 1) {
+                        std = emailMatches[0];
+                    } else if (emailMatches.length > 1) {
+                        std = emailMatches.find(s => (s.first_name || "").toLowerCase() === (enr.first_name || "").toLowerCase()) || null;
+                    }
+                }
+                std = std || {};
+
+                // Prefer the enrollment's own record details
+                const fName = (enr.first_name || std.first_name || "").trim();
+                const lName = (enr.last_name || std.last_name || "").trim();
+                const fullName = `${fName} ${lName}`.trim() || "Student Applicant";
+                const email = enr.email || std.email || "—";
+                const idNumber = enr.lrn || std.lrn || std.student_id_number || "Pending LRN";
+                const gradeLevel = enr.grade_level || std.grade_level || "Grade 7";
+
+                // JUNIOR HIGH SCHOOL (Grades 7, 8, 9, 10) NEVER HAS A STRAND!
+                // Strands exist exclusively in Senior High School (Grades 11, 12).
+                const gradeNum = parseInt(gradeLevel.replace(/\D/g, ""), 10);
+                const isShs = gradeNum >= 11;
+                const strand = isShs ? (enr.strand || std.strand || "") : "";
+                const schoolYear = enr.last_school_year || enr.school_year || "2026-2027";
+                const studentType = enr.student_type || (gradeLevel.includes("7") ? "New" : "Continuing");
+                const rawStatus = (enr.status || "Pending").trim();
                 const status = rawStatus.charAt(0).toUpperCase() + rawStatus.slice(1).toLowerCase();
 
                 return {
@@ -151,6 +175,8 @@ import { EmailNotificationService } from '../../js/email_service.js';
                     school_year: schoolYear,
                     student_type: studentType,
                     status: status,
+                    has_good_moral: !!(std.good_moral_url || enr.good_moral_url),
+                    good_moral_url: std.good_moral_url || enr.good_moral_url || null,
                     created_at: enr.created_at
                 };
             });
@@ -209,6 +235,32 @@ import { EmailNotificationService } from '../../js/email_service.js';
     // RENDER TABLE
     // ============================================
 
+    function getSchoolLevel(gradeName) {
+        if (!gradeName) return "jhs";
+        const num = parseInt(gradeName.replace(/\D/g, ""), 10);
+        return num >= 11 ? "shs" : "jhs";
+    }
+
+    function getGradeNumber(gradeName) {
+        if (!gradeName) return 999;
+        const num = parseInt(gradeName.replace(/\D/g, ""), 10);
+        return isNaN(num) ? 999 : num;
+    }
+
+    function updateLevelBadges() {
+        const allCount = enrollments.length;
+        const jhsCount = enrollments.filter(e => getSchoolLevel(e.grade_name) === "jhs").length;
+        const shsCount = enrollments.filter(e => getSchoolLevel(e.grade_name) === "shs").length;
+
+        const badgeAll = document.getElementById("badgeAllCount");
+        const badgeJhs = document.getElementById("badgeJhsCount");
+        const badgeShs = document.getElementById("badgeShsCount");
+
+        if (badgeAll) badgeAll.textContent = allCount;
+        if (badgeJhs) badgeJhs.textContent = jhsCount;
+        if (badgeShs) badgeShs.textContent = shsCount;
+    }
+
     function renderTable(data) {
         const rows = data || enrollments;
 
@@ -221,101 +273,194 @@ import { EmailNotificationService } from '../../js/email_service.js';
                         <div class="no-data">
                             <i class="fas fa-file-signature"></i>
                             <h3>No Enrollment Records Found</h3>
-                            <p>Try adjusting your filters or add a new enrollment.</p>
+                            <p>Try adjusting your year level, status, or search filters.</p>
                         </div>
                     </td>
                 </tr>
             `;
-            if (recordCount) recordCount.textContent = 'Total: 0 records';
+            if (recordCount) recordCount.textContent = "Total: 0 records";
             return;
         }
 
-        let html = '';
-        rows.forEach(row => {
-            const avatarInitial = (row.fullname || 'S').charAt(0).toUpperCase();
+        // Sort rows by natural academic grade order (Grade 7 -> 8 -> 9 -> 10 -> 11 -> 12), then by student name
+        const sortedRows = [...rows].sort((a, b) => {
+            const gA = getGradeNumber(a.grade_name);
+            const gB = getGradeNumber(b.grade_name);
+            if (gA !== gB) return gA - gB;
+            return (a.fullname || "").localeCompare(b.fullname || "");
+        });
 
+        // Group rows by Year Level / Grade
+        const groups = {};
+        sortedRows.forEach(row => {
+            const gName = (row.grade_name || "Other").trim();
+            if (!groups[gName]) groups[gName] = [];
+            groups[gName].push(row);
+        });
+
+        const avatarPalettes = [
+            { bg: "#eff6ff", color: "#1d4ed8", border: "#bfdbfe" },
+            { bg: "#f0fdf4", color: "#15803d", border: "#bbf7d0" },
+            { bg: "#f5f3ff", color: "#6d28d9", border: "#ddd6fe" },
+            { bg: "#fff7ed", color: "#c2410c", border: "#fed7aa" },
+            { bg: "#ecfeff", color: "#0e7490", border: "#a5f3fc" },
+            { bg: "#fdf2f8", color: "#be185d", border: "#fbcfe8" }
+        ];
+
+        let html = "";
+        const groupKeys = Object.keys(groups);
+
+        groupKeys.forEach(gradeKey => {
+            const gradeRows = groups[gradeKey];
+            const isShs = getSchoolLevel(gradeKey) === "shs";
+            const subLabel = isShs ? "Senior High School" : "Junior High School";
+            const iconClass = isShs ? "shs" : "jhs";
+            const iconFa = isShs ? "fa-graduation-cap" : "fa-school";
+
+            // Visual Year Level Section Header
             html += `
-                <tr>
-                    <td data-label="Student">
-                        <div class="student-info">
-                            <div class="student-avatar">${avatarInitial}</div>
-                            <div class="student-details">
-                                <h4>${row.fullname}</h4>
-                                <span><i class="fas fa-envelope"></i> ${row.email}</span>
+                <tr class="year-group-row">
+                    <td colspan="8">
+                        <div class="year-group-header">
+                            <div class="year-group-title">
+                                <span class="year-group-icon ${iconClass}"><i class="fas ${iconFa}"></i></span>
+                                <div class="year-group-text">
+                                    <span class="year-group-name">${gradeKey}</span>
+                                    <span class="year-group-sub">• ${subLabel}</span>
+                                </div>
                             </div>
-                        </div>
-                    </td>
-                    <td data-label="ID Number">
-                        <span class="id-badge">${row.id_number}</span>
-                    </td>
-                    <td data-label="Grade & Strand">
-                        <span class="grade-tag">${row.grade_name}</span>
-                        ${row.strand ? `<span class="grade-tag strand" style="background:#e0f2fe; color:#0369a1;">${row.strand}</span>` : ''}
-                    </td>
-                    <td data-label="School Year">
-                        <span class="school-year">${row.school_year}</span>
-                    </td>
-                    <td data-label="Student Type">
-                        <span class="student-type-badge student-type-${(row.student_type || 'new').toLowerCase()}">
-                            ${row.student_type || 'New'}
-                        </span>
-                    </td>
-                    <td data-label="Status">
-                        <span class="status-badge status-${(row.status || 'pending').toLowerCase() === 'enrolled' || (row.status || '').toLowerCase() === 'approved' ? 'enrolled' : ((row.status || '').toLowerCase() === 'rejected' ? 'rejected' : 'pending')}">
-                            ${(row.status || 'pending').toLowerCase() === 'enrolled' || (row.status || '').toLowerCase() === 'approved' ? 'Enrolled' : ((row.status || '').toLowerCase() === 'rejected' ? 'Rejected' : 'Pending')}
-                        </span>
-                    </td>
-                    <td data-label="Requirements">
-                        <span class="complete-badge-sm"><i class="fas fa-check-circle"></i> Complete</span>
-                    </td>
-                    <td data-label="Actions">
-                        <div class="action-btns">
-                            <a href="view_enrollment.html?id=${row.id}" class="action-btn view" title="View Application Details">
-                                <i class="fas fa-eye"></i>
-                            </a>
-                            ${(row.status || 'pending').toLowerCase() === 'pending' ? `
-                                <button type="button" class="action-btn approve" data-id="${row.id}" data-name="${row.fullname}" title="Approve Application">
-                                    <i class="fas fa-check-circle"></i>
-                                </button>
-                                <button type="button" class="action-btn reject" data-id="${row.id}" data-name="${row.fullname}" title="Reject Application">
-                                    <i class="fas fa-times-circle"></i>
-                                </button>
-                            ` : ''}
-                            <button type="button" class="action-btn delete" data-id="${row.id}" data-name="${row.fullname}" title="Delete Record">
-                                <i class="fas fa-trash"></i>
-                            </button>
+                            <span class="year-group-badge">${gradeRows.length} ${gradeRows.length === 1 ? "Record" : "Records"}</span>
                         </div>
                     </td>
                 </tr>
             `;
+
+            gradeRows.forEach(row => {
+                const fullname = row.fullname || "Student";
+                const avatarInitial = fullname.charAt(0).toUpperCase();
+                const colorIdx = fullname.charCodeAt(0) % avatarPalettes.length;
+                const avColor = avatarPalettes[colorIdx];
+
+                const rawId = (row.id_number || "").trim();
+                const isPendingId = !rawId || rawId.toLowerCase().includes("pending");
+                const displayId = isPendingId ? "Pending LRN" : rawId;
+
+                const gradeName = row.grade_name || "N/A";
+                const isRowShs = getSchoolLevel(gradeName) === "shs";
+                const strandName = isRowShs ? (row.strand || "").trim() : "";
+
+                const rawType = (row.student_type || "New").trim();
+                const typeSlug = rawType.toLowerCase().replace(/\s+/g, "-");
+                const displayType = rawType.toLowerCase() === "new" ? "New Student" : rawType;
+
+                const rawStatus = (row.status || "Pending").trim().toLowerCase();
+                const statusClass = rawStatus === "enrolled" || rawStatus === "approved" ? "enrolled" : (rawStatus === "rejected" ? "rejected" : "pending");
+                const displayStatus = statusClass === "enrolled" ? "Enrolled" : (statusClass === "rejected" ? "Rejected" : "Pending");
+
+                html += `
+                    <tr>
+                        <td data-label="Student">
+                            <div class="student-info">
+                                <div class="student-avatar" style="background:${avColor.bg}; color:${avColor.color}; border:1.5px solid ${avColor.border};">${avatarInitial}</div>
+                                <div class="student-details">
+                                    <h4 title="${fullname}">${fullname}</h4>
+                                    <span><i class="fas fa-envelope"></i> ${row.email || "No email"}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td data-label="ID Number">
+                            <span class="id-badge ${isPendingId ? "pending" : ""}">${displayId}</span>
+                        </td>
+                        <td data-label="Grade & Strand">
+                            <div class="grade-strand-cell">
+                                <span class="grade-pill">${gradeName}</span>
+                                ${strandName ? `<span class="strand-pill">${strandName}</span>` : ""}
+                            </div>
+                        </td>
+                        <td data-label="School Year">
+                            <span class="school-year">${row.school_year || "N/A"}</span>
+                        </td>
+                        <td data-label="Student Type">
+                            <span class="student-type-badge student-type-${typeSlug}">
+                                ${displayType}
+                            </span>
+                        </td>
+                        <td data-label="Status">
+                            <span class="status-badge status-${statusClass}">
+                                ${displayStatus}
+                            </span>
+                        </td>
+                        <td data-label="Requirements">
+                            ${row.has_good_moral ? 
+                                `<span class="complete-badge-sm"><i class="fas fa-check-circle"></i> Complete</span>` : 
+                                `<span class="missing-badge-sm request-moral-enr-btn" data-id="${row.id}" data-studentid="${row.student_id}" data-name="${fullname}" data-email="${row.email}" data-grade="${gradeName}" title="Request Good Moral Certificate"><i class="fas fa-exclamation-circle"></i> No Good Moral</span>`}
+                        </td>
+                        <td data-label="Actions">
+                            <div class="action-btns">
+                                <a href="view_enrollment.html?id=${row.id}" class="action-btn view" title="View Application Details">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <button type="button" class="action-btn request-moral-enr-btn" data-id="${row.id}" data-studentid="${row.student_id}" data-name="${fullname}" data-email="${row.email}" data-grade="${gradeName}" title="Request Good Moral Certificate">
+                                    <i class="fas fa-award"></i>
+                                </button>
+                                ${statusClass === "pending" ? `
+                                    <button type="button" class="action-btn approve" data-id="${row.id}" data-name="${fullname}" title="Approve Application">
+                                        <i class="fas fa-check-circle"></i>
+                                    </button>
+                                    <button type="button" class="action-btn reject" data-id="${row.id}" data-name="${fullname}" title="Reject Application">
+                                        <i class="fas fa-times-circle"></i>
+                                    </button>
+                                ` : ""}
+                                <button type="button" class="action-btn delete" data-id="${row.id}" data-name="${fullname}" title="Delete Record">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
         });
 
         tableBody.innerHTML = html;
         if (recordCount) recordCount.textContent = `Total: ${rows.length} records`;
 
         // Bind action buttons
-        tableBody.querySelectorAll('.action-btn.approve').forEach(btn => {
-            btn.addEventListener('click', () => approveEnrollment(btn.dataset.id, btn.dataset.name));
+        tableBody.querySelectorAll(".action-btn.approve").forEach(btn => {
+            btn.addEventListener("click", () => approveEnrollment(btn.dataset.id, btn.dataset.name));
         });
 
-        tableBody.querySelectorAll('.action-btn.reject').forEach(btn => {
-            btn.addEventListener('click', () => rejectEnrollment(btn.dataset.id, btn.dataset.name));
+        tableBody.querySelectorAll(".action-btn.reject").forEach(btn => {
+            btn.addEventListener("click", () => rejectEnrollment(btn.dataset.id, btn.dataset.name));
         });
 
-        tableBody.querySelectorAll('.action-btn.delete').forEach(btn => {
-            btn.addEventListener('click', () => deleteEnrollment(btn.dataset.id, btn.dataset.name));
+        tableBody.querySelectorAll(".action-btn.delete").forEach(btn => {
+            btn.addEventListener("click", () => deleteEnrollment(btn.dataset.id, btn.dataset.name));
         });
     }
 
     // ============================================
-    // FILTER FUNCTION
+    // FILTER FUNCTION (WITH YEAR LEVEL SEPARATION)
     // ============================================
 
     function filterEnrollments() {
-        const search = (searchInput?.value || '').toLowerCase().trim();
-        const status = (statusFilter?.value || '').toLowerCase().trim();
+        const search = (searchInput?.value || "").toLowerCase().trim();
+        const status = (statusFilter?.value || "").toLowerCase().trim();
+        const gradeSelectVal = (gradeFilter?.value || "").trim();
 
         let filtered = [...enrollments];
+
+        // School Level Filter (All vs Junior High vs Senior High)
+        if (selectedLevel === "jhs") {
+            filtered = filtered.filter(e => getSchoolLevel(e.grade_name) === "jhs");
+        } else if (selectedLevel === "shs") {
+            filtered = filtered.filter(e => getSchoolLevel(e.grade_name) === "shs");
+        }
+
+        // Specific Grade Level Filter
+        const activeGrade = gradeSelectVal || (selectedGrade !== "all" ? selectedGrade : "");
+        if (activeGrade) {
+            filtered = filtered.filter(e => e.grade_name && e.grade_name.toLowerCase() === activeGrade.toLowerCase());
+        }
 
         if (search) {
             filtered = filtered.filter(e =>
@@ -323,15 +468,83 @@ import { EmailNotificationService } from '../../js/email_service.js';
                 (e.email && e.email.toLowerCase().includes(search)) ||
                 (e.id_number && e.id_number.toLowerCase().includes(search)) ||
                 (e.school_year && e.school_year.toLowerCase().includes(search)) ||
-                (e.grade_name && e.grade_name.toLowerCase().includes(search))
+                (e.grade_name && e.grade_name.toLowerCase().includes(search)) ||
+                (e.strand && e.strand.toLowerCase().includes(search))
             );
         }
 
-        if (status && status !== 'all') {
+        if (status && status !== "all") {
             filtered = filtered.filter(e => e.status.toLowerCase() === status);
         }
 
         renderTable(filtered);
+        updateLevelBadges();
+    }
+
+    // Level Navigation Tabs (All, Junior High, Senior High)
+    document.querySelectorAll(".level-tab-btn").forEach(btn => {
+        btn.addEventListener("click", function() {
+            document.querySelectorAll(".level-tab-btn").forEach(b => b.classList.remove("active"));
+            this.classList.add("active");
+            selectedLevel = this.dataset.level || "all";
+
+            // Reset grade pill
+            document.querySelectorAll(".grade-pill-tag").forEach(p => p.classList.remove("active"));
+            const allPill = document.querySelector('.grade-pill-tag[data-grade="all"]');
+            if (allPill) allPill.classList.add("active");
+            selectedGrade = "all";
+            if (gradeFilter) gradeFilter.value = "";
+
+            filterEnrollments();
+        });
+    });
+
+    // Fast Grade Pills (All, Grade 7, Grade 8, etc.)
+    document.querySelectorAll(".grade-pill-tag").forEach(pill => {
+        pill.addEventListener("click", function() {
+            document.querySelectorAll(".grade-pill-tag").forEach(p => p.classList.remove("active"));
+            this.classList.add("active");
+            selectedGrade = this.dataset.grade || "all";
+
+            if (selectedGrade === "all") {
+                if (gradeFilter) gradeFilter.value = "";
+            } else {
+                if (gradeFilter) gradeFilter.value = selectedGrade;
+                const targetLvl = getSchoolLevel(selectedGrade);
+                document.querySelectorAll(".level-tab-btn").forEach(b => {
+                    b.classList.toggle("active", b.dataset.level === targetLvl);
+                });
+                selectedLevel = targetLvl;
+            }
+
+            filterEnrollments();
+        });
+    });
+
+    if (gradeFilter) {
+        gradeFilter.addEventListener("change", function() {
+            const val = this.value;
+            selectedGrade = val || "all";
+
+            document.querySelectorAll(".grade-pill-tag").forEach(p => {
+                p.classList.toggle("active", (val ? p.dataset.grade === val : p.dataset.grade === "all"));
+            });
+
+            if (val) {
+                const targetLvl = getSchoolLevel(val);
+                document.querySelectorAll(".level-tab-btn").forEach(b => {
+                    b.classList.toggle("active", b.dataset.level === targetLvl);
+                });
+                selectedLevel = targetLvl;
+            } else {
+                document.querySelectorAll(".level-tab-btn").forEach(b => {
+                    b.classList.toggle("active", b.dataset.level === "all");
+                });
+                selectedLevel = "all";
+            }
+
+            filterEnrollments();
+        });
     }
 
     if (filterForm) {
@@ -1150,7 +1363,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
             if (e.key === 'hes_latest_notification' && e.newValue) {
                 try {
                     const data = JSON.parse(e.newValue);
-                    if (!data.role || data.role === 'registrar') {
+                    if (!data.role || data.role === 'registrar' || data.role === 'all' || (data.roles && data.roles.includes('registrar'))) {
                         loadNotifications();
                         fetchEnrollments();
                         showNotificationToast(data);
@@ -1237,3 +1450,219 @@ import { EmailNotificationService } from '../../js/email_service.js';
     setupRealtimeNotifications();
 
 })();
+    // ============================================
+    // REQUIREMENT REMINDER & GOOD MORAL REQUEST MODAL
+    // ============================================
+
+    const requestReqModal = document.getElementById('requestReqModal');
+    const closeReqModalBtn = document.getElementById('closeReqModalBtn');
+    const reqModalCancelBtn = document.getElementById('reqModalCancelBtn');
+    const reqModalDocSelect = document.getElementById('reqModalDocSelect');
+    const reqModalSubjectInput = document.getElementById('reqModalSubjectInput');
+    const reqModalMessageInput = document.getElementById('reqModalMessageInput');
+    const reqModalIncludeCreds = document.getElementById('reqModalIncludeCreds');
+    const reqModalSendGmailBtn = document.getElementById('reqModalSendGmailBtn');
+    const reqModalSaveInAppBtn = document.getElementById('reqModalSaveInAppBtn');
+    const reqModalAvatar = document.getElementById('reqModalAvatar');
+    const reqModalStudentName = document.getElementById('reqModalStudentName');
+    const reqModalStudentEmail = document.getElementById('reqModalStudentEmail');
+
+    let activeReqStudent = null;
+
+    const docPresets = {
+        good_moral: {
+            title: '🎖️ Missing Certificate of Good Moral Character',
+            body: 'We kindly remind you to submit your Certificate of Good Moral Character from your previous school to finalize your official enrollment credentials. You may upload a clear digital photo/scan via the Student Portal.'
+        },
+        report_card: {
+            title: '📄 Missing Form 138 / Report Card Requirement',
+            body: 'Our records indicate that your official Form 138 (Report Card) is still pending submission. Please upload a clear photo/scan or submit the original hard copy to the Registrar\'s Office.'
+        },
+        psa_birth: {
+            title: '📜 Missing PSA Birth Certificate Requirement',
+            body: 'Please be advised that your official PSA Birth Certificate is required to verify your enrollment record. Please upload a legible digital copy or present the document to the Registrar.'
+        },
+        general_reqs: {
+            title: '📋 Notice to Submit Incomplete Enrollment Requirements',
+            body: 'Please be reminded to submit all pending enrollment requirements to the Registrar\'s Office or upload them via the Student Portal to complete your official student admission.'
+        }
+    };
+
+    function openRequestReqModal(student) {
+        if (!requestReqModal) return;
+        activeReqStudent = student;
+
+        if (reqModalStudentName) reqModalStudentName.textContent = student.name || 'Student';
+        if (reqModalStudentEmail) reqModalStudentEmail.textContent = student.email || 'No email registered';
+        if (reqModalAvatar) reqModalAvatar.textContent = (student.name || 'S').charAt(0).toUpperCase();
+
+        if (reqModalDocSelect) reqModalDocSelect.value = 'good_moral';
+        if (reqModalSubjectInput) reqModalSubjectInput.value = docPresets.good_moral.title;
+        if (reqModalMessageInput) reqModalMessageInput.value = docPresets.good_moral.body;
+
+        requestReqModal.style.display = 'flex';
+    }
+
+    function closeRequestReqModal() {
+        if (requestReqModal) requestReqModal.style.display = 'none';
+        activeReqStudent = null;
+    }
+
+    if (closeReqModalBtn) closeReqModalBtn.addEventListener('click', closeRequestReqModal);
+    if (reqModalCancelBtn) reqModalCancelBtn.addEventListener('click', closeRequestReqModal);
+
+    if (reqModalDocSelect) {
+        reqModalDocSelect.addEventListener('change', function() {
+            const p = docPresets[this.value];
+            if (p) {
+                if (reqModalSubjectInput) reqModalSubjectInput.value = p.title;
+                if (reqModalMessageInput) reqModalMessageInput.value = p.body;
+            }
+        });
+    }
+
+    async function recordStudentReqNotice(student, title, message, docKey) {
+        const targetId = student.id;
+        const targetEmail = (student.email || '').trim().toLowerCase();
+        const isGoodMoral = docKey === 'good_moral' || title.toLowerCase().includes('good moral');
+
+        try {
+            await supabase
+                .from('notifications')
+                .insert([{
+                    user_id: targetId,
+                    student_id: targetId,
+                    recipient_email: targetEmail || null,
+                    role: 'student',
+                    title: title,
+                    message: message,
+                    type: isGoodMoral ? 'good_moral_request' : 'requirement_reminder',
+                    is_read: false,
+                    read: false,
+                    created_at: new Date().toISOString()
+                }]);
+        } catch(e) {
+            console.warn('Student notice insert warning:', e);
+        }
+
+        const nowIso = new Date().toISOString();
+        if (targetId) {
+            if (isGoodMoral) {
+                localStorage.setItem(`hes_req_requested_${targetId}_good_moral`, nowIso);
+            }
+            try {
+                const k = `hes_notifications_${targetId}`;
+                const raw = localStorage.getItem(k);
+                let list = raw ? JSON.parse(raw) : [];
+                list.unshift({
+                    id: 'notif_' + Date.now(),
+                    type: isGoodMoral ? 'good_moral_request' : 'message',
+                    title: title,
+                    message: message,
+                    time: 'Just now',
+                    read: false
+                });
+                localStorage.setItem(k, JSON.stringify(list.slice(0, 30)));
+            } catch(e) {}
+        }
+
+        if (targetEmail) {
+            if (isGoodMoral) {
+                localStorage.setItem(`hes_req_requested_${targetEmail}_good_moral`, nowIso);
+            }
+            try {
+                const kEm = `hes_notifications_${targetEmail}`;
+                const rawEm = localStorage.getItem(kEm);
+                let listEm = rawEm ? JSON.parse(rawEm) : [];
+                listEm.unshift({
+                    id: 'notif_em_' + Date.now(),
+                    type: isGoodMoral ? 'good_moral_request' : 'message',
+                    title: title,
+                    message: message,
+                    time: 'Just now',
+                    read: false
+                });
+                localStorage.setItem(kEm, JSON.stringify(listEm.slice(0, 30)));
+            } catch(e) {}
+        }
+
+        window.dispatchEvent(new Event('storage'));
+    }
+
+    if (reqModalSaveInAppBtn) {
+        reqModalSaveInAppBtn.addEventListener('click', async function() {
+            if (!activeReqStudent) return;
+            const title = reqModalSubjectInput?.value?.trim() || '📢 Requirement Notice';
+            const body = reqModalMessageInput?.value?.trim() || '';
+            const docKey = reqModalDocSelect?.value || 'good_moral';
+
+            try {
+                reqModalSaveInAppBtn.disabled = true;
+                reqModalSaveInAppBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Posting...';
+
+                await recordStudentReqNotice(activeReqStudent, title, body, docKey);
+                closeRequestReqModal();
+                showAlert(`✅ In-app notice sent to ${activeReqStudent.name}!`, 'success');
+            } catch(err) {
+                showAlert('❌ Error posting notice: ' + err.message, 'error');
+            } finally {
+                reqModalSaveInAppBtn.disabled = false;
+                reqModalSaveInAppBtn.innerHTML = '<i class="fas fa-bell"></i> Post In-App Notice';
+            }
+        });
+    }
+
+    if (reqModalSendGmailBtn) {
+        reqModalSendGmailBtn.addEventListener('click', async function() {
+            if (!activeReqStudent) return;
+            const title = reqModalSubjectInput?.value?.trim() || '📢 Requirement Notice';
+            const body = reqModalMessageInput?.value?.trim() || '';
+            const docKey = reqModalDocSelect?.value || 'good_moral';
+            const sEmail = (activeReqStudent.email || '').trim().toLowerCase();
+            const includeCreds = reqModalIncludeCreds?.checked !== false;
+
+            if (!sEmail) {
+                showAlert('⚠️ Student does not have a registered email.', 'error');
+                return;
+            }
+
+            try {
+                reqModalSendGmailBtn.disabled = true;
+                reqModalSendGmailBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparing Gmail...';
+
+                await recordStudentReqNotice(activeReqStudent, title, body, docKey);
+
+                const emailData = EmailNotificationService.buildRegistrarNoticeEmail({
+                    studentName: activeReqStudent.name,
+                    email: sEmail,
+                    messageTitle: title,
+                    messageBody: body,
+                    gradeLevel: activeReqStudent.grade || 'Junior/Senior High',
+                    includeCredentials: includeCreds
+                });
+
+                EmailNotificationService.sendViaGmailWeb(emailData);
+                closeRequestReqModal();
+                showAlert(`✅ Notice saved and Gmail compose opened for ${activeReqStudent.name}!`, 'success');
+            } catch(err) {
+                showAlert('❌ Failed: ' + err.message, 'error');
+            } finally {
+                reqModalSendGmailBtn.disabled = false;
+                reqModalSendGmailBtn.innerHTML = '<i class="fab fa-google"></i> Send via Student\'s Gmail';
+            }
+        });
+    }
+
+    // Bind click in table
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.request-moral-enr-btn');
+        if (btn) {
+            e.preventDefault();
+            e.stopPropagation();
+            const sId = btn.dataset.id;
+            const sName = btn.dataset.name;
+            const sEmail = btn.dataset.email;
+            const sGrade = btn.dataset.grade;
+            openRequestReqModal({ id: sId, name: sName, email: sEmail, grade: sGrade });
+        }
+    });

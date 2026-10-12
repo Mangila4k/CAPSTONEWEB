@@ -42,7 +42,7 @@ body {
     width: 260px;
     background: var(--primary);
     color: white;
-    padding: 1.5rem 0;
+    padding: 14px 0;
     display: flex;
     flex-direction: column;
     position: fixed;
@@ -54,7 +54,7 @@ body {
 }
 
 .sidebar-header {
-    padding: 0 1.5rem 1.5rem;
+    padding: 0 1.25rem 14px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -103,7 +103,7 @@ body {
 }
 
 .admin-profile {
-    padding: 1.5rem;
+    padding: 10px 1.25rem 14px;
     text-align: center;
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
@@ -112,7 +112,7 @@ body {
     position: relative;
     width: 60px;
     height: 60px;
-    margin: 0 auto 0.5rem;
+    margin: 0 auto 8px;
 }
 
 .admin-avatar .avatar-initial {
@@ -155,7 +155,7 @@ body {
 
 .nav-menu {
     flex: 1;
-    padding: 1rem 1.5rem;
+    padding: 14px 1.25rem;
 }
 
 .nav-section-title {
@@ -163,7 +163,7 @@ body {
     text-transform: uppercase;
     letter-spacing: 1px;
     color: rgba(255, 255, 255, 0.3);
-    margin: 1rem 0 0.5rem;
+    margin: 14px 0 6px;
 }
 
 .nav-items {
@@ -177,8 +177,8 @@ body {
 .nav-items a {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 0.6rem 0.8rem;
+    gap: 14px;
+    padding: 7px 12px;
     border-radius: 10px;
     color: rgba(255, 255, 255, 0.6);
     text-decoration: none;
@@ -685,5 +685,909 @@ body {
 
     .report-controls {
         padding: 1rem;
+    }
+}
+
+/* ===== PROFESSIONAL TABLE ALIGNMENT & STYLING ===== */
+.table-container {
+    overflow-x: auto;
+    padding: 0;
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    background: #ffffff;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    white-space: normal;
+}
+
+.data-table thead {
+    background: #f8fafc;
+}
+
+.data-table thead th {
+    padding: 13px 16px;
+    font-weight: 700;
+    color: #475569;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    border-bottom: 2px solid #e2e8f0;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.data-table tbody tr {
+    transition: background 0.15s ease;
+}
+
+.data-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+.data-table tbody td {
+    padding: 13px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+}
+
+/* Explicit Column Alignments & Sizing */
+.data-table th.col-num,
+.data-table td.col-num {
+    text-align: center;
+    width: 48px;
+    color: #94a3b8;
+    font-weight: 600;
+    font-size: 12.5px;
+}
+
+.data-table th.col-id,
+.data-table td.col-id {
+    text-align: left;
+    white-space: nowrap;
+    min-width: 125px;
+}
+
+.data-table th.col-name,
+.data-table td.col-name {
+    text-align: left;
+    white-space: nowrap;
+    min-width: 160px;
+}
+
+.data-table th.col-grade,
+.data-table td.col-grade {
+    text-align: left;
+    white-space: nowrap;
+    min-width: 115px;
+}
+
+.data-table th.col-strand,
+.data-table td.col-strand {
+    text-align: left;
+    white-space: nowrap;
+    min-width: 105px;
+}
+
+.data-table th.col-school,
+.data-table td.col-school {
+    text-align: left;
+    min-width: 200px;
+    max-width: 290px;
+}
+
+.data-table th.col-status,
+.data-table td.col-status {
+    text-align: center;
+    white-space: nowrap;
+    min-width: 130px;
+}
+
+.data-table th.col-date,
+.data-table td.col-date {
+    text-align: right;
+    white-space: nowrap;
+    min-width: 130px;
+}
+
+/* Formatted Components */
+.report-id-chip {
+    font-family: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #0b2b4a;
+    background: #f1f5f9;
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    letter-spacing: 0.5px;
+    display: inline-block;
+}
+
+.report-student-name {
+    font-weight: 600;
+    color: #0f172a;
+    font-size: 13.5px;
+}
+
+.report-grade-cell {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #334155;
+    font-weight: 500;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.report-grade-cell i {
+    color: #0284c7;
+    font-size: 12px;
+}
+
+.report-strand-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 9px;
+    border-radius: 6px;
+    font-size: 11.5px;
+    font-weight: 700;
+    background: #eff6ff;
+    color: #2563eb;
+    border: 1px solid #bfdbfe;
+    white-space: nowrap;
+}
+
+.report-empty-cell {
+    color: #94a3b8;
+    font-style: italic;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.report-school-cell {
+    color: #475569;
+    font-size: 13px;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.report-date-cell {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #64748b;
+    font-size: 12.5px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.report-date-cell i {
+    color: #94a3b8;
+}
+
+/* Status Pills */
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 11px;
+    border-radius: 20px;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+}
+
+.status-pill-enrolled {
+    background: #ecfdf5;
+    color: #059669;
+    border: 1px solid #a7f3d0;
+}
+
+.status-pill-pending {
+    background: #fffbeb;
+    color: #d97706;
+    border: 1px solid #fde68a;
+}
+
+.status-pill-rejected {
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+}
+
+.status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.pulse-green {
+    background: #10b981;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
+    animation: dotPulse 2s infinite ease-in-out;
+}
+
+.pulse-amber {
+    background: #f59e0b;
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.25);
+    animation: dotPulse 2s infinite ease-in-out;
+}
+
+.pulse-red {
+    background: #ef4444;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.25);
+}
+
+@keyframes dotPulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.3);
+        opacity: 0.7;
+    }
+}
+
+/* Footer Row */
+.report-footer-row td {
+    padding: 14px 18px !important;
+    background: #f8fafc !important;
+    border-top: 2px solid #e2e8f0 !important;
+}
+
+.report-footer-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.report-total-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #334155;
+    font-weight: 500;
+}
+
+.report-total-badge strong {
+    color: #0b2b4a;
+    font-weight: 800;
+    font-size: 14px;
+}
+
+.report-status-summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.summary-pill {
+    padding: 3px 9px;
+    border-radius: 6px;
+    font-size: 11.5px;
+    font-weight: 600;
+}
+
+.summary-pill.green {
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+.summary-pill.amber {
+    background: #fffbeb;
+    color: #92400e;
+    border: 1px solid #fde68a;
+}
+
+.summary-pill.red {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+/* ===== DEPARTMENT / LEVEL TABS ===== */
+.report-level-tabs {
+    display: flex;
+    gap: 8px;
+    padding: 12px 20px 0;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f8fafc;
+    flex-wrap: wrap;
+}
+
+.level-tab-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 18px;
+    border: none;
+    background: transparent;
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border-bottom: 2.5px solid transparent;
+    transition: all 0.2s ease;
+    border-radius: 8px 8px 0 0;
+}
+
+.level-tab-btn:hover {
+    color: #0b2b4a;
+    background: rgba(11, 43, 74, 0.04);
+}
+
+.level-tab-btn.active {
+    color: #0b2b4a;
+    font-weight: 700;
+    border-bottom-color: #0b2b4a;
+    background: #ffffff;
+}
+
+.level-tab-btn .tab-badge {
+    padding: 2px 7px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    background: #e2e8f0;
+    color: #475569;
+}
+
+.level-tab-btn.active .tab-badge {
+    background: #0b2b4a;
+    color: #ffffff;
+}
+
+/* Department Section Divider in Table */
+.dept-section-row td {
+    background: #0b2b4a !important;
+    color: #ffffff !important;
+    padding: 10px 16px !important;
+    font-size: 12px !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.5px !important;
+    text-transform: uppercase !important;
+}
+
+.dept-section-banner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.dept-section-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #ffffff;
+}
+
+.dept-badge-pill {
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+}
+
+.report-jhs-chip {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+}
+
+.print-doc-dept {
+    font-size: 8pt;
+    font-weight: 600;
+    color: #475569;
+    margin-top: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+/* Button Styling for Separate Print Controls */
+.btn-print-jhs {
+    background: #0b2b4a;
+    color: #ffffff;
+    border: 1px solid #0b2b4a;
+}
+
+.btn-print-jhs:hover {
+    background: #143d66;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(11, 43, 74, 0.2);
+}
+
+.btn-print-shs {
+    background: #0284c7;
+    color: #ffffff;
+    border: 1px solid #0284c7;
+}
+
+.btn-print-shs:hover {
+    background: #0369a1;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
+}
+
+.btn-print-all {
+    background: #475569;
+    color: #ffffff;
+    border: 1px solid #475569;
+}
+
+.btn-print-all:hover {
+    background: #334155;
+    transform: translateY(-1px);
+}
+
+/* ===== PRINT STYLES FOR REPORTS ===== */
+.print-document-header,
+.print-signatories-block {
+    display: none;
+}
+
+@media print {
+    @page {
+        size: 13in 8.5in; /* Standard Philippine Long / Folio Paper in Landscape (8.5 x 13 inches) */
+        margin: 0 !important; /* Strips browser default header (date, title) and footer (URL, page number) */
+    }
+
+    *, *::before, *::after {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+
+    html {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-family: 'Inter', Arial, sans-serif !important;
+        font-size: 8.5pt !important;
+        margin: 0 !important;
+        padding: 10mm 15mm 10mm 15mm !important; /* Re-applies clean margins on 13-inch long paper */
+        width: 100% !important;
+        min-height: auto !important;
+        box-sizing: border-box !important;
+    }
+
+    /* HIDE ALL DESIGN / WEB APPLICATION CHROME */
+    .sidebar,
+    #sidebar,
+    .menu-toggle,
+    #menuToggle,
+    .page-header,
+    #dateBadge,
+    .stats-grid,
+    .stat-card,
+    .report-controls,
+    #reportForm,
+    .report-header,
+    .report-actions,
+    #exportExcelBtn,
+    #printBtn,
+    .date-range,
+    .report-level-tabs,
+    #alertContainer,
+    .alert,
+    .chatbot-widget,
+    .chatbot-toggler,
+    .chatbot-bubble,
+    .chatbot-window,
+    #hirayaChatbot,
+    .need-help-bubble,
+    #chatBubble,
+    #chatWindow,
+    #hesChatbotContainer,
+    .hes-chatbot-launcher,
+    .hes-chatbot-teaser,
+    .hes-chatbot-window,
+    #hesChatbotTeaser,
+    #hesChatbotLauncher,
+    #hesChatbotWindow,
+    #hesChatbotToggleBtn,
+    .non-printable,
+    button,
+    nav {
+        display: none !important;
+    }
+
+    .main-content {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    .report-card {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        width: 100% !important;
+    }
+
+    /* SHOW PRINT-ONLY DOCUMENT HEADER */
+    .print-document-header {
+        display: block !important;
+        width: 100% !important;
+        margin-bottom: 12px !important;
+        page-break-inside: avoid !important;
+        page-break-after: avoid !important;
+    }
+
+    .print-header-top {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 16px !important;
+        padding-bottom: 6px !important;
+    }
+
+    .print-logo {
+        width: 60px !important;
+        height: 60px !important;
+        flex-shrink: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    .print-logo img {
+        width: 60px !important;
+        height: 60px !important;
+        object-fit: contain !important;
+        border-radius: 50% !important;
+    }
+
+    .print-header-center {
+        flex: 1 !important;
+        text-align: center !important;
+    }
+
+    .print-header-center .deped-text {
+        font-size: 7.5pt !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+        color: #334155 !important;
+        margin-bottom: 1px !important;
+    }
+
+    .print-header-center .deped-dept {
+        font-size: 9pt !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        color: #0b2b4a !important;
+        letter-spacing: 0.5px !important;
+        margin-bottom: 1px !important;
+    }
+
+    .print-header-center .deped-reg {
+        font-size: 7.5pt !important;
+        color: #475569 !important;
+        margin-bottom: 2px !important;
+    }
+
+    .print-header-center .school-name {
+        font-size: 13pt !important;
+        font-weight: 800 !important;
+        color: #000000 !important;
+        letter-spacing: 0.5px !important;
+        margin: 2px 0 !important;
+    }
+
+    .print-header-center .school-loc {
+        font-size: 7.5pt !important;
+        color: #334155 !important;
+        margin-bottom: 2px !important;
+    }
+
+    .print-header-center .office-name {
+        font-size: 8pt !important;
+        font-weight: 700 !important;
+        letter-spacing: 1px !important;
+        text-transform: uppercase !important;
+        color: #0b2b4a !important;
+        padding-top: 1px !important;
+    }
+
+    .print-header-divider {
+        height: 2px !important;
+        background: #000000 !important;
+        margin: 5px 0 7px !important;
+        width: 100% !important;
+        border-bottom: 1px solid #000000 !important;
+    }
+
+    .print-doc-meta {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: flex-end !important;
+        margin-bottom: 8px !important;
+        padding: 0 2px !important;
+    }
+
+    .print-doc-title h2 {
+        font-size: 11pt !important;
+        font-weight: 800 !important;
+        color: #000000 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+        margin: 0 !important;
+    }
+
+    .print-doc-details {
+        display: flex !important;
+        gap: 16px !important;
+        font-size: 8pt !important;
+        color: #334155 !important;
+    }
+
+    .print-meta-item .meta-label {
+        font-weight: 600 !important;
+        color: #0f172a !important;
+    }
+
+    .print-meta-item .meta-value {
+        font-weight: 700 !important;
+        color: #000000 !important;
+    }
+
+    /* TABLE LAYOUT FOR PRINT */
+    .table-container {
+        overflow: visible !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+    }
+
+    .data-table {
+        width: 100% !important;
+        max-width: 100% !important;
+        table-layout: fixed !important;
+        border-collapse: collapse !important;
+        border: 1.5px solid #000000 !important;
+        font-size: 8pt !important;
+    }
+
+    .data-table thead {
+        display: table-header-group !important;
+    }
+
+    .data-table th {
+        background: #f1f5f9 !important;
+        color: #000000 !important;
+        font-weight: 800 !important;
+        font-size: 7.5pt !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.3px !important;
+        border: 1px solid #475569 !important;
+        padding: 4px 5px !important;
+        text-align: left !important;
+        vertical-align: middle !important;
+    }
+
+    .data-table td {
+        border: 1px solid #94a3b8 !important;
+        padding: 4px 5px !important;
+        font-size: 8pt !important;
+        color: #000000 !important;
+        background: #ffffff !important;
+        vertical-align: middle !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+    }
+
+    .data-table tr {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+
+    /* Column Widths (total 100%) for landscape */
+    .col-num { width: 4% !important; text-align: center !important; }
+    .col-id { width: 11% !important; }
+    .col-name { width: 22% !important; }
+    .col-grade { width: 10% !important; }
+    .col-strand { width: 10% !important; }
+    .col-school { width: 24% !important; }
+    .col-status { width: 9% !important; }
+    .col-date { width: 10% !important; }
+
+    /* Print Data Cells Clean Appearance */
+    .report-id-chip {
+        font-family: 'Courier New', monospace !important;
+        font-weight: 700 !important;
+        background: transparent !important;
+        border: none !important;
+        color: #000000 !important;
+        padding: 0 !important;
+        font-size: 8pt !important;
+    }
+
+    .report-student-name {
+        font-weight: 700 !important;
+        color: #000000 !important;
+    }
+
+    .report-grade-cell {
+        font-weight: 600 !important;
+        color: #000000 !important;
+    }
+    .report-grade-cell i {
+        display: none !important;
+    }
+
+    .report-strand-chip {
+        background: transparent !important;
+        border: 1px solid #64748b !important;
+        color: #000000 !important;
+        padding: 1px 4px !important;
+        border-radius: 2px !important;
+        font-size: 7.5pt !important;
+        font-weight: 700 !important;
+    }
+
+    .report-empty-cell {
+        color: #64748b !important;
+        font-style: italic !important;
+    }
+
+    .report-school-cell {
+        color: #000000 !important;
+        font-size: 7.5pt !important;
+        line-height: 1.25 !important;
+        display: block !important;
+        -webkit-line-clamp: unset !important;
+        overflow: visible !important;
+        white-space: normal !important;
+    }
+
+    .report-date-cell {
+        color: #000000 !important;
+        font-size: 7.5pt !important;
+        white-space: nowrap !important;
+    }
+    .report-date-cell i {
+        display: none !important;
+    }
+
+    .status-pill {
+        display: inline-block !important;
+        padding: 2px 5px !important;
+        border-radius: 2px !important;
+        font-size: 7.5pt !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        border: 1px solid #334155 !important;
+        background: transparent !important;
+        color: #000000 !important;
+    }
+
+    .status-dot {
+        display: none !important;
+    }
+
+    /* Print Footer Row */
+    .report-footer-row td {
+        background: #f8fafc !important;
+        border: 1.5px solid #000000 !important;
+        padding: 5px 8px !important;
+    }
+
+    .report-footer-bar {
+        font-size: 8pt !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+    }
+
+    .report-total-badge {
+        font-size: 8pt !important;
+        color: #000000 !important;
+    }
+    .report-total-badge i {
+        display: none !important;
+    }
+
+    .summary-pill {
+        background: transparent !important;
+        border: 1px solid #64748b !important;
+        color: #000000 !important;
+        padding: 1px 5px !important;
+        font-size: 7.5pt !important;
+    }
+
+    /* PRINT SIGNATORIES BLOCK */
+    .print-signatories-block {
+        display: block !important;
+        width: 100% !important;
+        margin-top: 24px !important;
+        page-break-inside: avoid !important;
+    }
+
+    .signatories-grid {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 20px !important;
+        text-align: center !important;
+    }
+
+    .signatory-col {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+    }
+
+    .sign-label {
+        font-size: 8pt !important;
+        color: #475569 !important;
+        margin-bottom: 25px !important;
+        text-align: center !important;
+    }
+
+    .sign-space {
+        display: none !important;
+    }
+
+    .sign-line {
+        width: 80% !important;
+        border-bottom: 1.5px solid #000000 !important;
+        margin-bottom: 5px !important;
+    }
+
+    .sign-name {
+        font-size: 9pt !important;
+        font-weight: 800 !important;
+        color: #000000 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+        margin: 0 !important;
+    }
+
+    .sign-title {
+        font-size: 7.5pt !important;
+        color: #334155 !important;
+        margin-top: 2px !important;
+    }
+
+    .print-footer-tag {
+        margin-top: 18px !important;
+        padding-top: 6px !important;
+        border-top: 1px solid #cbd5e1 !important;
+        text-align: center !important;
+        font-size: 7pt !important;
+        color: #64748b !important;
+        letter-spacing: 0.3px !important;
     }
 }

@@ -1,5 +1,6 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,6 +14,7 @@
     <link rel="stylesheet" href="css/activities.css">
     <link rel="stylesheet" href="../css/chatbot.css">
 </head>
+
 <body>
     <!-- Mobile Menu Toggle -->
     <div class="menu-toggle" id="menuToggle">
@@ -25,7 +27,8 @@
             <div class="sidebar-header">
                 <div class="logo">
                     <div class="logo-icon">
-                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
+                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo"
+                            onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
                     </div>
                     <div class="logo-text">PLS<span>NSH</span></div>
                 </div>
@@ -47,6 +50,7 @@
                     <ul class="nav-items">
                         <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
                         <li><a href="student.html"><i class="fas fa-user-graduate"></i> Students</a></li>
+                        <li><a href="generate_id.html"><i class="fas fa-id-card"></i> ID Generator</a></li>
                         <li><a href="teachers.html"><i class="fas fa-chalkboard-user"></i> Teachers</a></li>
                         <li><a href="sections.html"><i class="fas fa-layer-group"></i> Sections</a></li>
                         <li><a href="subjects.html"><i class="fas fa-book"></i> Subjects</a></li>
@@ -81,7 +85,8 @@
             <div class="page-header">
                 <div>
                     <h1>System Activities & Audit Logs</h1>
-                    <p class="subtitle">Real-time chronological timeline of all student enrollments, account updates, and system operations</p>
+                    <p class="subtitle">Real-time chronological timeline of all student enrollments, account updates,
+                        and system operations</p>
                 </div>
                 <div class="header-actions">
                     <button type="button" id="refreshActivitiesBtn" class="btn-primary">
@@ -140,7 +145,9 @@
                 <div class="filter-row-top">
                     <div class="search-input-wrap">
                         <i class="fas fa-search search-icon"></i>
-                        <input type="text" id="activitySearchInput" placeholder="Search activities by user name, email, action description, or ID..." class="search-input">
+                        <input type="text" id="activitySearchInput"
+                            placeholder="Search activities by user name, email, action description, or ID..."
+                            class="search-input">
                         <button type="button" id="clearSearchBtn" class="clear-search-btn" style="display: none;">
                             <i class="fas fa-times"></i>
                         </button>
@@ -168,22 +175,28 @@
                 <!-- Category Filter Chips -->
                 <div class="category-chips-row">
                     <button type="button" class="category-chip active" data-category="all">
-                        <i class="fas fa-layer-group"></i> All Activities <span class="chip-count" id="chipAllCount">0</span>
+                        <i class="fas fa-layer-group"></i> All Activities <span class="chip-count"
+                            id="chipAllCount">0</span>
                     </button>
                     <button type="button" class="category-chip" data-category="enrollment">
-                        <i class="fas fa-file-signature"></i> Enrollments <span class="chip-count" id="chipEnrollCount">0</span>
+                        <i class="fas fa-file-signature"></i> Enrollments <span class="chip-count"
+                            id="chipEnrollCount">0</span>
                     </button>
                     <button type="button" class="category-chip" data-category="account">
-                        <i class="fas fa-user-plus"></i> User Accounts <span class="chip-count" id="chipAccountCount">0</span>
+                        <i class="fas fa-user-plus"></i> User Accounts <span class="chip-count"
+                            id="chipAccountCount">0</span>
                     </button>
                     <button type="button" class="category-chip" data-category="attendance">
-                        <i class="fas fa-calendar-check"></i> Attendance <span class="chip-count" id="chipAttendanceCount">0</span>
+                        <i class="fas fa-calendar-check"></i> Attendance <span class="chip-count"
+                            id="chipAttendanceCount">0</span>
                     </button>
                     <button type="button" class="category-chip" data-category="admin_action">
-                        <i class="fas fa-shield-alt"></i> Admin Actions <span class="chip-count" id="chipAdminCount">0</span>
+                        <i class="fas fa-shield-alt"></i> Admin Actions <span class="chip-count"
+                            id="chipAdminCount">0</span>
                     </button>
                     <button type="button" class="category-chip" data-category="security">
-                        <i class="fas fa-lock"></i> Security & Auth <span class="chip-count" id="chipSecurityCount">0</span>
+                        <i class="fas fa-lock"></i> Security & Auth <span class="chip-count"
+                            id="chipSecurityCount">0</span>
                     </button>
                 </div>
             </div>
@@ -219,11 +232,14 @@
     <!-- Activity Detail Modal -->
     <div class="modal" id="activityDetailModal" style="display: none;">
         <div class="modal-content" style="max-width: 540px; background: #fff; border-radius: 16px; padding: 24px;">
-            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #e9edf4; padding-bottom: 14px;">
-                <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: #1B2A4A; display: flex; align-items: center; gap: 8px;">
+            <div class="modal-header"
+                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #e9edf4; padding-bottom: 14px;">
+                <h3
+                    style="margin: 0; font-size: 18px; font-weight: 700; color: #1B2A4A; display: flex; align-items: center; gap: 8px;">
                     <i class="fas fa-info-circle"></i> Activity Log Details
                 </h3>
-                <button type="button" class="close-modal" id="closeDetailModalBtn" style="background: none; border: none; font-size: 24px; color: #94a3b8; cursor: pointer;">&times;</button>
+                <button type="button" class="close-modal" id="closeDetailModalBtn"
+                    style="background: none; border: none; font-size: 24px; color: #94a3b8; cursor: pointer;">&times;</button>
             </div>
             <div class="modal-body" id="activityModalBody">
                 <!-- Loaded by JS -->
@@ -238,4 +254,5 @@
     <script type="module" src="js/activities.js"></script>
     <script src="../js/chatbot.js"></script>
 </body>
+
 </html>

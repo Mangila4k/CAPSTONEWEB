@@ -51,6 +51,7 @@
                 <ul class="nav-items">
                     <li><a href="dashboard.html" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
                     <li><a href="student.html"><i class="fas fa-user-graduate"></i> Students</a></li>
+                    <li><a href="generate_id.html"><i class="fas fa-id-card"></i> ID Generator</a></li>
                     <li><a href="teachers.html"><i class="fas fa-chalkboard-user"></i> Teachers</a></li>
                     <li><a href="sections.html"><i class="fas fa-layer-group"></i> Sections</a></li>
                     <li><a href="subjects.html"><i class="fas fa-book"></i> Subjects</a></li>
@@ -61,7 +62,8 @@
                 <div class="nav-section-title">COMMUNICATION & MANAGEMENT</div>
                 <ul class="nav-items">
                     <li><a href="announcements.html"><i class="fas fa-bullhorn"></i> Announcements</a></li>
-                    <li><a href="guidance_violations.html"><i class="fas fa-scale-balanced"></i> Guidance & Violations</a></li>
+                    <li><a href="guidance_violations.html"><i class="fas fa-scale-balanced"></i> Guidance &
+                            Violations</a></li>
                     <li><a href="manage_accounts.html"><i class="fas fa-users-cog"></i> Accounts</a></li>
                     <li><a href="attendance.html"><i class="fas fa-calendar-check"></i> Attendance</a></li>
                     <li><a href="register_face.html"><i class="fas fa-camera"></i> Face Registration</a></li>
@@ -238,8 +240,10 @@
                 <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
             </div>
             <div class="actions-grid">
-                <a href="announcements.html" class="action-card" style="background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border: 1.5px solid #fde68a;">
-                    <div class="action-icon" style="background: #1B2A4A; color: #facc15;"><i class="fas fa-bullhorn"></i></div>
+                <a href="announcements.html" class="action-card"
+                    style="background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border: 1.5px solid #fde68a;">
+                    <div class="action-icon" style="background: #1B2A4A; color: #facc15;"><i
+                            class="fas fa-bullhorn"></i></div>
                     <div class="action-info">
                         <h4 style="color: #1B2A4A;">Post Announcement</h4>
                         <p>Parent & Teacher Meetings</p>
@@ -252,8 +256,10 @@
                         <p>Register faculty</p>
                     </div>
                 </a>
-                <a href="add_account.html" class="action-card" style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border: 1.5px solid #a7f3d0;">
-                    <div class="action-icon" style="background: #0B4F2E; color: #fff;"><i class="fas fa-user-plus"></i></div>
+                <a href="add_account.html" class="action-card"
+                    style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border: 1.5px solid #a7f3d0;">
+                    <div class="action-icon" style="background: #0B4F2E; color: #fff;"><i class="fas fa-user-plus"></i>
+                    </div>
                     <div class="action-info">
                         <h4 style="color: #064e3b;">Add Account</h4>
                         <p>Create user account</p>
@@ -280,8 +286,10 @@
                         <p>Set class schedule</p>
                     </div>
                 </a>
-                <a href="reports.html" class="action-card" style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 1px solid #bfdbfe;">
-                    <div class="action-icon" style="background: #1B2A4A; color: #facc15;"><i class="fas fa-chart-pie"></i></div>
+                <a href="reports.html" class="action-card"
+                    style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 1px solid #bfdbfe;">
+                    <div class="action-icon" style="background: #1B2A4A; color: #facc15;"><i
+                            class="fas fa-chart-pie"></i></div>
                     <div class="action-info">
                         <h4 style="color: #1B2A4A;">Generate Reports</h4>
                         <p>Analytics & Exports</p>
@@ -298,21 +306,49 @@
         </div>
 
         <!-- Recent Activities -->
-        <div class="card">
+        <div class="card recent-activities-card">
             <div class="card-header">
-                <h3><i class="fas fa-history"></i> Recent Activities</h3>
-                <a href="activities.html" class="view-link">View All <i class="fas fa-arrow-right"></i></a>
+                <div class="card-header-left">
+                    <div class="header-icon-box activity-header-icon">
+                        <i class="fas fa-clock-rotate-left"></i>
+                    </div>
+                    <div>
+                        <h3>Recent Activities</h3>
+                        <span class="card-header-sub">Real-time attendance, verifications & system audit events</span>
+                    </div>
+                </div>
+                <div class="card-header-right">
+                    <span class="badge-count badge-live" id="recentActivitiesCount">Live Feed</span>
+                    <a href="activities.html" class="view-link-pill">
+                        <span>View All</span> <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
             </div>
-            <ul class="activity-list" id="activityList">
-                <!-- Loaded by JS -->
-            </ul>
+            <div class="recent-activities-body">
+                <ul class="activity-list" id="activityList">
+                    <!-- Loaded by JS -->
+                </ul>
+            </div>
         </div>
 
         <!-- Recent Enrollments -->
-        <div class="card">
+        <div class="card recent-enrollments-card">
             <div class="card-header">
-                <h3><i class="fas fa-file-signature"></i> Recent Enrollments</h3>
-                <a href="enrollments.html" class="view-link">View All <i class="fas fa-arrow-right"></i></a>
+                <div class="card-header-left">
+                    <div class="header-icon-box">
+                        <i class="fas fa-file-signature"></i>
+                    </div>
+                    <div>
+                        <h3>Recent Enrollments</h3>
+                        <span class="card-header-sub">Latest student admission applications</span>
+                    </div>
+                </div>
+                <div class="card-header-right">
+                    <span class="badge-count" id="recentEnrollmentsCount">Active</span>
+                    <a href="enrollments.html" class="view-link-pill">
+                        <span>View All</span> <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
             </div>
             <ul class="enrollment-list" id="enrollmentList">
                 <!-- Loaded by JS -->

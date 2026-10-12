@@ -314,52 +314,70 @@ import { supabase } from '../../supabase/config.js';
         if (scheduleCountBadge) scheduleCountBadge.textContent = `${totalClasses} classes assigned`;
     }
 
-    // ===== CHECK ADMIN LOAD DOCUMENT =====
+    // ===== CHECK ADMIN LOAD DOCUMENT (STRICT PRIVACY: ONLY THIS TEACHER) =====
     function checkAdminLoadDocument(teacherRecord, sessionUser) {
         let docData = null;
-        const teacherId = teacherRecord?.id || sessionUser?.id;
-        const userId = sessionUser?.id;
+        const teacherId = teacherRecord?.id;
+        const userId = sessionUser?.id || teacherRecord?.user_id;
+        const employeeId = teacherRecord?.employee_id;
 
-        // Check local storage for admin issued document
-        const keys = [
-            `hes_teacher_load_doc_${teacherId}`,
-            `hes_teacher_load_doc_${userId}`,
-            'hes_teacher_load_admin_doc'
-        ];
+        // Purge any old global key to prevent leakage across different teachers
+        try { localStorage.removeItem('hes_teacher_load_admin_doc'); } catch(e) {}
 
-        for (const k of keys) {
-            const raw = localStorage.getItem(k);
-            if (raw) {
-                try {
-                    const parsed = JSON.parse(raw);
-                    if (parsed && (parsed.fileData || parsed.url)) {
-                        docData = parsed;
-                        break;
-                    }
-                } catch(e) {}
-            }
-        }
-
-        // If teacher record has teacher_load_url
-        if (!docData && teacherRecord?.teacher_load_url) {
+        // Priority 1: Check database column teacher_load_url from Supabase for THIS specific teacher
+        if (teacherRecord && teacherRecord.teacher_load_url) {
             const isGDoc = (teacherRecord.teacher_load_url || '').includes('docs.google.com');
             const isImg = /\.(png|jpe?g|webp|gif)$/i.test(teacherRecord.teacher_load_name || '') || (teacherRecord.teacher_load_url || '').startsWith('data:image/');
             docData = {
+                teacherId: teacherId,
+                userId: userId,
                 fileName: teacherRecord.teacher_load_name || (isGDoc ? 'Official Teacher Load (Google Docs)' : isImg ? 'Official_Teacher_Load_Schedule.png' : 'Official_Teacher_Load.pdf'),
                 url: teacherRecord.teacher_load_url,
                 fileData: teacherRecord.teacher_load_url,
+                fileType: teacherRecord.teacher_load_file_type || (isImg ? 'image/png' : 'application/pdf'),
                 isGoogleDocs: isGDoc,
                 isImage: isImg,
                 uploadDate: teacherRecord.teacher_load_updated_at || new Date().toISOString()
             };
         }
 
+        // Priority 2: Check strictly scoped local storage keys for THIS teacher
+        if (!docData) {
+            const keys = [
+                teacherId ? `hes_teacher_load_doc_${teacherId}` : null,
+                userId ? `hes_teacher_load_doc_${userId}` : null,
+                employeeId ? `hes_teacher_load_doc_${employeeId}` : null
+            ].filter(Boolean);
+
+            for (const k of keys) {
+                const raw = localStorage.getItem(k);
+                if (raw) {
+                    try {
+                        const parsed = JSON.parse(raw);
+                        // Strict validation: Must belong to this teacher!
+                        if (parsed && (parsed.fileData || parsed.url)) {
+                            const isMatch = (!parsed.teacherId || parsed.teacherId === teacherId) &&
+                                            (!parsed.userId || parsed.userId === userId);
+                            if (isMatch) {
+                                docData = parsed;
+                                break;
+                            }
+                        }
+                    } catch(e) {}
+                }
+            }
+        }
+
+        const noDocNotice = document.getElementById('noAdminDocNotice');
+
         if (!docData) {
             if (adminDocCard) adminDocCard.style.display = 'none';
+            if (noDocNotice) noDocNotice.style.display = 'flex';
             currentAdminDoc = null;
             return;
         }
 
+        if (noDocNotice) noDocNotice.style.display = 'none';
         currentAdminDoc = docData;
         const isGDocs = docData.isGoogleDocs || (docData.url && docData.url.includes('docs.google.com'));
         const isPdf = (docData.fileType || '').includes('pdf') || (docData.fileName || '').toLowerCase().endsWith('.pdf');

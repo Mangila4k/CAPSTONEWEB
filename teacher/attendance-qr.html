@@ -1,18 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Attendance - Teacher Dashboard | HES</title>
+    <title>Student ID QR Attendance Scanner - Teacher Dashboard | HES</title>
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Face Attendance CSS -->
-    <link rel="stylesheet" href="css/attendance-face.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/attendance-qr.css">
     <link rel="stylesheet" href="../css/chatbot.css">
-    <script>window.location.replace('attendance-face.html');</script>
 </head>
+
 <body>
     <div class="app-container">
         <!-- ===== SIDEBAR ===== -->
@@ -20,9 +22,10 @@
             <div class="sidebar-header">
                 <div class="logo">
                     <div class="logo-icon">
-                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
+                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo"
+                            onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
                     </div>
-                    <div class="logo-text">PLS<span>NSH</span></div>
+                    <div class="logo-text">PLS<span>NHS</span></div>
                 </div>
                 <div class="school-badge">Placido L. Señor National High School</div>
             </div>
@@ -33,21 +36,25 @@
                     <div class="online-dot"></div>
                 </div>
                 <div class="teacher-name" id="teacherName">Teacher</div>
-                <div class="teacher-role"><i class="fas fa-chalkboard-user"></i> Teacher</div>
+                <div class="teacher-role"><i class="fas fa-chalkboard-user"></i> Faculty Member</div>
             </div>
 
             <nav class="nav-menu">
                 <div class="nav-section">
                     <div class="nav-section-title">MAIN MENU</div>
                     <ul class="nav-items">
-                        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
-                        <li><a href="attendance-face.html"><i class="fas fa-camera"></i> <span>Face Attendance</span></a></li>
-                        <li><a href="attendance-qr.html" class="active"><i class="fas fa-qrcode"></i> <span>QR Attendance</span></a></li>
-                        <li><a href="student-attendance.html"><i class="fas fa-user-check"></i> <span>Student Attendance</span></a></li>
+                        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a>
+                        </li>
+                        <li><a href="attendance-face.html"><i class="fas fa-camera"></i> <span>Face
+                                    Attendance</span></a></li>
+                        <li><a href="attendance-qr.html" class="active"><i class="fas fa-qrcode"></i> <span>Student QR
+                                    Scanner</span></a></li>
                         <li><a href="classes.html"><i class="fas fa-users"></i> <span>My Classes</span></a></li>
-                        <li><a href="class-program.html"><i class="fas fa-calendar-alt"></i> <span>Class Program</span></a></li>
+                        <li><a href="class-program.html"><i class="fas fa-calendar-alt"></i> <span>Clas
+                                    Program</span></a></li>
                         <li><a href="teacher-load.html"><i class="fas fa-clock"></i> <span>Teacher Load</span></a></li>
-                        <li><a href="assessments.html"><i class="fas fa-clipboard-list"></i> <span>Assessments</span></a></li>
+                        <li><a href="assessments.html"><i class="fas fa-clipboard-list"></i><span>Assessments</span></a>
+                        </li>
                         <li><a href="grades.html"><i class="fas fa-star"></i> <span>Grades</span></a></li>
                     </ul>
                 </div>
@@ -56,7 +63,8 @@
                     <div class="nav-section-title">ACCOUNT</div>
                     <ul class="nav-items">
                         <li><a href="profile.html"><i class="fas fa-user"></i> <span>Profile</span></a></li>
-                        <li><a href="../auth/login.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+                        <li><a href="../auth/login.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i>
+                                <span>Logout</span></a></li>
                     </ul>
                 </div>
             </nav>
@@ -67,173 +75,292 @@
             <!-- Page Header -->
             <div class="page-header">
                 <div>
-                    <h1>QR Code Attendance System</h1>
-                    <p>Generate QR code to record your Time In and Time Out</p>
+                    <h1><i class="fas fa-qrcode" style="color: #0b2b4a;"></i> Student ID QR Attendance Scanner</h1>
+                    <p>Live camera and barcode scanner to record student daily attendance, gate check-in, and dismissal
+                        logs</p>
                 </div>
-                <div class="date-badge">
-                    <i class="fas fa-calendar-alt"></i> Loading...
+                <div class="header-right-badges">
+                    <div class="date-badge" id="currentDateBadge">
+                        <i class="fas fa-calendar-alt"></i> Loading date...
+                    </div>
+                    <div class="pst-time-badge" id="pstTimeBadge">
+                        <i class="fas fa-clock"></i> <span id="phTimeDisplay">00:00:00 AM PST</span>
+                    </div>
                 </div>
             </div>
 
-            <!-- Philippine Time & Adjusted Schedule Banner -->
-            <div class="schedule-banner-card" id="scheduleBannerCard">
-                <div class="schedule-banner-header">
-                    <div class="schedule-banner-main">
-                        <div class="schedule-day-badge" id="scheduleDayBadge">
-                            <i class="fas fa-calendar-day"></i> <span id="currentDayText">Today</span>
-                        </div>
-                        <div class="schedule-title-wrap">
-                            <h3 id="scheduleTitleText"><i class="fas fa-clock"></i> Today's Adjusted Faculty Schedule</h3>
-                            <p id="scheduleSummaryText">Loading assigned teaching classes and shift hours...</p>
-                        </div>
-                    </div>
-                    <div class="schedule-cutoff-badge" id="scheduleCutoffBadge">
-                        <i class="fas fa-calendar-check"></i>
-                        <span>Faculty Attendance: <strong id="cutoffTimeDisplay">Active Duty</strong></span>
-                        <span id="scheduleStatusPill" class="schedule-pill on-time">Active Window</span>
-                    </div>
-                </div>
-                <div class="schedule-classes-chips" id="scheduleClassesChips" style="display:none;"></div>
-            </div>
-
-            <!-- Alert Container -->
+            <!-- Alerts Container -->
             <div id="alertContainer"></div>
 
-            <!-- Statistics -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon"><i class="fas fa-calendar-day"></i></div>
-                    <div class="stat-number" id="totalDays">0</div>
-                    <div class="stat-label">Total Days</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon success"><i class="fas fa-check-circle"></i></div>
-                    <div class="stat-number" id="presentDays">0</div>
-                    <div class="stat-label">Present</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon warning"><i class="fas fa-clock"></i></div>
-                    <div class="stat-number" id="lateDays">0</div>
-                    <div class="stat-label">Late</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon danger"><i class="fas fa-times-circle"></i></div>
-                    <div class="stat-number" id="absentDays">0</div>
-                    <div class="stat-label">Absent</div>
-                </div>
-            </div>
+            <!-- Control & Configuration Banner -->
+            <div class="scanner-config-card">
+                <div class="config-grid">
+                    <!-- Session Mode -->
+                    <div class="config-item">
+                        <label for="sessionModeSelect"><i class="fas fa-stopwatch"></i> Attendance Session</label>
+                        <select id="sessionModeSelect" class="config-select">
+                            <option value="time_in" selected>☀️ Morning Class Time-In (Entry)</option>
+                            <option value="time_out">🌙 Afternoon Dismissal (Time-Out)</option>
+                        </select>
+                    </div>
 
-            <!-- Today's Attendance Info -->
-            <div class="attendance-info" id="attendanceInfo" style="display: none;">
-                <h3><i class="fas fa-calendar-day"></i> Today's Attendance</h3>
-                <div class="info-row">
-                    <span class="info-label">⏰ Time In:</span>
-                    <span class="info-value" id="timeInDisplay">Not yet recorded</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">⏰ Time Out:</span>
-                    <span class="info-value" id="timeOutDisplay">Not yet recorded</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">📊 Status:</span>
-                    <span class="info-value" id="statusDisplay">
-                        <span class="status-badge status-Pending">Pending</span>
-                    </span>
-                </div>
-            </div>
+                    <!-- Target Section Filter -->
+                    <div class="config-item">
+                        <label for="sectionFilterSelect"><i class="fas fa-users-rectangle"></i> Filter Section</label>
+                        <select id="sectionFilterSelect" class="config-select">
+                            <option value="">All Students (Campus-wide / All Sections)</option>
+                        </select>
+                    </div>
 
-            <!-- QR Code Scanner Section -->
-            <div class="scanner-container">
-                <div class="scanner-header">
-                    <h3><i class="fas fa-camera"></i> Scan QR Code to Record Attendance</h3>
-                    <div class="tab-buttons">
-                        <button class="tab-btn active" onclick="window.switchTab('camera')">📷 Camera</button>
-                        <button class="tab-btn" onclick="window.switchTab('upload')">📁 Upload Photo</button>
+                    <!-- Cutoff Late Threshold -->
+                    <div class="config-item">
+                        <label for="lateCutoffTime"><i class="fas fa-business-time"></i> On-Time Cutoff</label>
+                        <input type="time" id="lateCutoffTime" value="07:30" class="config-input">
                     </div>
-                </div>
-                
-                <!-- Camera Tab -->
-                <div id="cameraScannerTab" class="scanner-tab active-tab">
-                    <div class="video-container">
-                        <video id="video" playsinline autoplay></video>
-                        <canvas id="canvas"></canvas>
-                        <div class="scan-line" id="scanLine"></div>
-                    </div>
-                    <div class="scanner-controls">
-                        <button class="btn-scanner" id="startCameraBtn" onclick="window.startCamera()">
-                            <i class="fas fa-camera"></i> Start Camera
-                        </button>
-                        <button class="btn-scanner danger" id="stopCameraBtn" onclick="window.stopCamera()" style="display: none;">
-                            <i class="fas fa-stop"></i> Stop Camera
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Upload Tab -->
-                <div id="uploadScannerTab" class="scanner-tab">
-                    <div class="upload-area" onclick="document.getElementById('fileInput').click()">
-                        <i class="fas fa-cloud-upload-alt"></i>
-                        <p>Click to upload QR code image</p>
-                        <p class="upload-hint">Supports: JPG, PNG, GIF</p>
-                    </div>
-                    <input type="file" id="fileInput" accept="image/*" onchange="window.uploadImage(this)">
-                    <div class="preview-image" id="previewImage" style="display: none;">
-                        <img id="previewImg" src="" alt="Preview">
-                    </div>
-                </div>
-                
-                <div class="scan-result" id="scanResult"></div>
-            </div>
 
-            <!-- QR Code Section -->
-            <div class="qr-card" id="qrContainer">
-                <div class="qr-container">
-                    <h3><i class="fas fa-qrcode"></i> Time In QR Code</h3>
-                    <p>Generate a QR code to record your Time In</p>
-                    <div class="qr-actions" style="text-align: center; padding: 30px;">
-                        <button onclick="window.generateQR('time_in')" class="btn-generate-timein">
-                            <i class="fas fa-qrcode"></i> Generate Time In QR Code
-                        </button>
-                        <p class="info-text" style="margin-top: 15px;">
-                            <i class="fas fa-info-circle"></i> Generate a QR code to record your Time In. This will expire in 30 minutes.
-                        </p>
+                    <!-- Sound & Audio Controls -->
+                    <div class="config-item toggles-group">
+                        <label><i class="fas fa-volume-high"></i> Audio Feedback</label>
+                        <div class="toggles-row">
+                            <label class="toggle-pill" title="Play chime when student is scanned">
+                                <input type="checkbox" id="soundToggle" checked>
+                                <span><i class="fas fa-bell"></i> Chime</span>
+                            </label>
+                            <label class="toggle-pill" title="Read student's name aloud">
+                                <input type="checkbox" id="ttsToggle" checked>
+                                <span><i class="fas fa-microphone"></i> Voice</span>
+                            </label>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Attendance History -->
-            <div class="history-section">
-                <h3><i class="fas fa-history"></i> Attendance History (Last 10 Records)</h3>
-                <div id="historyList">
-                    <div class="no-data">
-                        <i class="fas fa-calendar-alt"></i>
-                        <p>No attendance records found</p>
-                        <p class="info-text">Generate a QR code to start recording your attendance</p>
-                    </div>
-                </div>
-            </div>
+            <!-- Main Scanner Studio Grid -->
+            <div class="scanner-studio-grid">
 
-            <!-- Real-Time Activity Log Feed -->
-            <div class="activity-feed-card" id="activityFeedCard">
-                <div class="activity-feed-header">
-                    <h3><i class="fas fa-stream"></i> Today's Attendance Activities & Audit Trail</h3>
-                    <span style="font-size: 12.5px; color: #64748b;"><i class="fas fa-circle" style="color: #10b981; font-size: 8px;"></i> Live Recorded</span>
-                </div>
-                <div class="activity-timeline" id="activityTimelineList">
-                    <div style="text-align: center; padding: 20px; color: #94a3b8;">
-                        <i class="fas fa-circle-notch fa-spin"></i> Loading attendance activities...
+                <!-- LEFT COLUMN: LIVE SCANNER VIEWFINDER & HUD -->
+                <div class="scanner-column-left">
+                    <div class="scanner-card">
+                        <div class="scanner-card-header">
+                            <div class="scanner-status-indicator" id="scannerStatusIndicator">
+                                <span class="pulse-dot"></span>
+                                <span id="scannerStatusText">Camera Ready</span>
+                            </div>
+                            <div class="camera-actions-quick">
+                                <select id="cameraDeviceSelect" class="camera-device-dropdown"
+                                    title="Select Video Device">
+                                    <option value="">Default Camera</option>
+                                </select>
+                                <button type="button" class="btn-icon-action" id="btnToggleTorch" style="display:none;"
+                                    title="Toggle Flashlight">
+                                    <i class="fas fa-bolt"></i>
+                                </button>
+                                <button type="button" class="btn-icon-action" id="btnFlipCamera"
+                                    title="Switch Front/Rear Camera">
+                                    <i class="fas fa-camera-rotate"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Video Viewfinder -->
+                        <div class="viewfinder-wrap" id="viewfinderWrap">
+                            <video id="scannerVideo" playsinline autoplay muted></video>
+                            <canvas id="scannerCanvas" style="display:none;"></canvas>
+
+                            <!-- Optical Overlay HUD -->
+                            <div class="hud-overlay" id="hudOverlay">
+                                <div class="hud-frame">
+                                    <div class="corner-guide c-tl"></div>
+                                    <div class="corner-guide c-tr"></div>
+                                    <div class="corner-guide c-bl"></div>
+                                    <div class="corner-guide c-br"></div>
+                                    <div class="laser-scanner-line" id="laserLine"></div>
+                                </div>
+                                <div class="hud-instruction">
+                                    <i class="fas fa-qrcode"></i> Align Student ID QR inside box
+                                </div>
+                            </div>
+
+                            <!-- Camera Standby / Offline State -->
+                            <div class="camera-standby-state" id="cameraStandbyState">
+                                <div class="standby-icon-wrap">
+                                    <i class="fas fa-camera-viewfinder"></i>
+                                </div>
+                                <h3>Student ID Scanner Ready</h3>
+                                <p>Click <strong>Start Scanner</strong> or connect a USB barcode scanner to record
+                                    attendance</p>
+                                <button type="button" class="btn-start-scanner" id="btnStartCamera">
+                                    <i class="fas fa-play"></i> Start Camera Scanner
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Scanner Bottom Toolbar -->
+                        <div class="scanner-bottom-toolbar">
+                            <div class="scanner-action-buttons">
+                                <button type="button" class="btn-scanner-ctrl btn-primary-scanner"
+                                    id="btnToggleScanner">
+                                    <i class="fas fa-video"></i> <span>Start Camera</span>
+                                </button>
+                                <button type="button" class="btn-scanner-ctrl btn-secondary-scanner"
+                                    id="btnUploadQrImage" onclick="document.getElementById('qrFileInput').click()">
+                                    <i class="fas fa-file-image"></i> <span>Upload Image</span>
+                                </button>
+                                <input type="file" id="qrFileInput" accept="image/*" style="display:none;">
+                            </div>
+
+                            <!-- USB Barcode & Manual LRN Input -->
+                            <div class="hardware-input-wrap">
+                                <div class="input-with-icon">
+                                    <i class="fas fa-barcode"></i>
+                                    <input type="text" id="hardwareScanInput"
+                                        placeholder="Hardware Barcode / Manual LRN scan..." autocomplete="off">
+                                    <button type="button" id="btnSubmitManualLrn" class="btn-manual-submit">
+                                        <i class="fas fa-arrow-right"></i>
+                                    </button>
+                                </div>
+                                <small class="hardware-hint"><i class="fas fa-keyboard"></i> USB Barcode Guns
+                                    automatically log attendance when scanned</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Scanned Student Result Pop-Up HUD Card -->
+                    <div class="student-hud-card" id="studentHudCard" style="display:none;">
+                        <div class="hud-card-header">
+                            <span class="hud-badge-result" id="hudResultBadge">
+                                <i class="fas fa-check-circle"></i> PRESENT RECORDED
+                            </span>
+                            <span class="hud-timestamp" id="hudTimestamp">07:45:12 AM</span>
+                        </div>
+                        <div class="hud-card-body">
+                            <div class="hud-student-avatar-wrap">
+                                <img src="" alt="Student Photo" id="hudStudentPhoto" class="hud-photo"
+                                    style="display:none;">
+                                <div class="hud-avatar-initial" id="hudAvatarInitial">S</div>
+                            </div>
+                            <div class="hud-student-info">
+                                <h3 class="hud-student-name" id="hudStudentName">STUDENT FULL NAME</h3>
+                                <div class="hud-meta-row">
+                                    <span class="meta-tag lrn-tag"><i class="fas fa-id-card"></i> <span
+                                            id="hudStudentLrn">LRN: 109283746501</span></span>
+                                    <span class="meta-tag id-tag"><i class="fas fa-hashtag"></i> <span
+                                            id="hudStudentIdNo">2024-ST-00001</span></span>
+                                </div>
+                                <div class="hud-meta-row">
+                                    <span class="meta-tag grade-tag"><i class="fas fa-graduation-cap"></i> <span
+                                            id="hudStudentGrade">Grade 11 - STEM A</span></span>
+                                    <span class="meta-tag strand-tag" id="hudStudentStrand">STEM</span>
+                                </div>
+                                <div class="hud-guardian-info" id="hudGuardianInfo">
+                                    <i class="fas fa-phone-alt"></i> Parent / Guardian: <strong
+                                        id="hudGuardianText">MARIANNE SANTOS (09076726568)</strong>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
+
+                <!-- RIGHT COLUMN: LIVE STATS & REAL-TIME SCAN AUDIT LOG -->
+                <div class="scanner-column-right">
+
+                    <!-- KPI Analytics Cards -->
+                    <div class="kpi-mini-grid">
+                        <div class="kpi-mini-card kpi-total">
+                            <div class="kpi-mini-icon"><i class="fas fa-user-group"></i></div>
+                            <div class="kpi-mini-content">
+                                <span class="kpi-mini-val" id="statTotalScanned">0</span>
+                                <span class="kpi-mini-lbl">Scanned Today</span>
+                            </div>
+                        </div>
+                        <div class="kpi-mini-card kpi-present">
+                            <div class="kpi-mini-icon"><i class="fas fa-user-check"></i></div>
+                            <div class="kpi-mini-content">
+                                <span class="kpi-mini-val" id="statPresentCount">0</span>
+                                <span class="kpi-mini-lbl">On Time</span>
+                            </div>
+                        </div>
+                        <div class="kpi-mini-card kpi-late">
+                            <div class="kpi-mini-icon"><i class="fas fa-user-clock"></i></div>
+                            <div class="kpi-mini-content">
+                                <span class="kpi-mini-val" id="statLateCount">0</span>
+                                <span class="kpi-mini-lbl">Late Arrivals</span>
+                            </div>
+                        </div>
+                        <div class="kpi-mini-card kpi-duplicate">
+                            <div class="kpi-mini-icon"><i class="fas fa-shield-halved"></i></div>
+                            <div class="kpi-mini-content">
+                                <span class="kpi-mini-val" id="statDuplicates">0</span>
+                                <span class="kpi-mini-lbl">Duplicates Prevented</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Live Scanned Roster Feed Table -->
+                    <div class="feed-table-card">
+                        <div class="feed-table-header">
+                            <div>
+                                <h3><i class="fas fa-list-check"></i> Today's Scanned Students Feed</h3>
+                                <p id="feedSubText">Live records captured during current session</p>
+                            </div>
+                            <div class="feed-actions">
+                                <button type="button" class="btn-feed-action" id="btnExportCsv"
+                                    title="Export scanned attendance to CSV">
+                                    <i class="fas fa-file-csv"></i> Export CSV
+                                </button>
+                                <button type="button" class="btn-feed-action btn-feed-manage" id="btnSyncDatabase"
+                                    title="Sync all attendance records to cloud database">
+                                    <i class="fas fa-cloud-arrow-up"></i> Sync Cloud
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Quick Search in Feed -->
+                        <div class="feed-search-wrap">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="feedSearchInput"
+                                placeholder="Filter scanned students by name or LRN...">
+                        </div>
+
+                        <!-- Table Container -->
+                        <div class="feed-table-container">
+                            <table class="feed-table" id="feedTable">
+                                <thead>
+                                    <tr>
+                                        <th>Student</th>
+                                        <th>Grade & Section</th>
+                                        <th>Time Recorded</th>
+                                        <th>Status</th>
+                                        <th style="text-align:center;">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="feedTableBody">
+                                    <tr id="emptyFeedRow">
+                                        <td colspan="5" class="empty-feed-cell">
+                                            <i class="fas fa-qrcode"></i>
+                                            <p>No student QR codes scanned yet today.</p>
+                                            <small>Start the camera or scan a student's ID card to log
+                                                attendance</small>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+
             </div>
         </main>
     </div>
 
-    <!-- jsQR Library for QR code scanning -->
+    <!-- jsQR Library for QR decoding -->
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
-    
-    <!-- JavaScript -->
+
+    <!-- JavaScript Module -->
     <script src="js/teacher_avatar_sync.js"></script>
     <script type="module" src="js/attendance-qr.js"></script>
     <script src="../js/chatbot.js"></script>
 </body>
+
 </html>

@@ -1,5 +1,6 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,6 +16,7 @@
     <link rel="stylesheet" href="css/reports.css">
     <link rel="stylesheet" href="../css/chatbot.css">
 </head>
+
 <body>
     <!-- Mobile Menu Toggle -->
     <div class="menu-toggle" id="menuToggle">
@@ -27,7 +29,8 @@
             <div class="sidebar-header">
                 <div class="logo">
                     <div class="logo-icon">
-                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
+                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo"
+                            onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
                     </div>
                     <div class="logo-text">PLS<span>NSH</span></div>
                 </div>
@@ -49,6 +52,7 @@
                     <ul class="nav-items">
                         <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
                         <li><a href="student.html"><i class="fas fa-user-graduate"></i> Students</a></li>
+                        <li><a href="generate_id.html"><i class="fas fa-id-card"></i> ID Generator</a></li>
                         <li><a href="teachers.html"><i class="fas fa-chalkboard-user"></i> Teachers</a></li>
                         <li><a href="sections.html"><i class="fas fa-layer-group"></i> Sections</a></li>
                         <li><a href="subjects.html"><i class="fas fa-book"></i> Subjects</a></li>
@@ -110,7 +114,8 @@
                         <div class="stat-icon"><i class="fas fa-user-graduate"></i></div>
                     </div>
                     <div class="stat-number" id="statTotalStudents">0</div>
-                    <div class="stat-label"><i class="fas fa-check-circle" style="color: var(--success);"></i> Active in system</div>
+                    <div class="stat-label"><i class="fas fa-check-circle" style="color: var(--success);"></i> Active in
+                        system</div>
                 </div>
 
                 <div class="stat-card teachers">
@@ -137,7 +142,8 @@
                         <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
                     </div>
                     <div class="stat-number" id="statAttendanceRate">0%</div>
-                    <div class="stat-label" id="statAttendanceSub"><i class="fas fa-user-check"></i> Student present rate</div>
+                    <div class="stat-label" id="statAttendanceSub"><i class="fas fa-user-check"></i> Student present
+                        rate</div>
                 </div>
 
                 <div class="stat-card sections">
@@ -213,6 +219,15 @@
                     </div>
 
                     <div class="control-group">
+                        <label for="levelFilter"><i class="fas fa-layer-group"></i> School Level</label>
+                        <select id="levelFilter" name="school_level">
+                            <option value="all">All Levels (JHS & SHS)</option>
+                            <option value="jhs">Junior High School (Grades 7–10)</option>
+                            <option value="shs">Senior High School (Grades 11–12)</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
                         <label for="gradeFilter"><i class="fas fa-graduation-cap"></i> Grade Level</label>
                         <select id="gradeFilter" name="grade_level">
                             <option value="">All Grade Levels</option>
@@ -276,7 +291,8 @@
                 <div class="report-header-banner">
                     <div class="report-brand">
                         <div class="report-brand-logo">
-                            <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
+                            <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo"
+                                onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
                         </div>
                         <div class="report-brand-text">
                             <h2 id="displayReportTitle">Enrollments Summary Report</h2>
@@ -361,4 +377,5 @@
     <script type="module" src="js/reports.js"></script>
     <script src="../js/chatbot.js"></script>
 </body>
+
 </html>

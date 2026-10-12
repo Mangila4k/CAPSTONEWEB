@@ -267,14 +267,16 @@
 
 .table-container {
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
 }
 
 .students-table,
 .data-table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
     font-size: 13px;
-    min-width: 860px;
 }
 
 .students-table thead,
@@ -285,18 +287,20 @@
 
 .students-table th,
 .data-table th {
-    text-align: left;
-    padding: 12px 16px;
-    font-size: 12px;
-    font-weight: 600;
+    padding: 10px 10px;
+    font-size: 11.5px;
+    font-weight: 700;
     color: #64748b;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    border-bottom: 1px solid #e9edf4;
+    white-space: nowrap;
+    vertical-align: middle;
 }
 
 .students-table td,
 .data-table td {
-    padding: 14px 16px;
+    padding: 9px 10px;
     border-bottom: 1px solid #f1f5f9;
     vertical-align: middle;
     color: #334155;
@@ -317,162 +321,682 @@
     border-bottom: none;
 }
 
-/* ===== STUDENT CELL ===== */
-.student-cell {
+/* ===== PRECISE COLUMN WIDTHS & ALIGNMENTS ===== */
+.students-table th.th-index,
+.students-table td.cell-index,
+.students-table th.th-lrn,
+.students-table td.cell-lrn,
+.students-table th.th-grade,
+.students-table td.cell-grade,
+.students-table th.th-section,
+.students-table td.cell-section,
+.students-table th.th-strand,
+.students-table td.cell-strand,
+.students-table th.th-status,
+.students-table td.cell-status,
+.students-table th.th-actions,
+.students-table td.cell-actions,
+.cell-center {
+    text-align: center !important;
+}
+
+.students-table th.th-student,
+.students-table td.cell-student,
+.students-table th.th-email,
+.students-table td.cell-email {
+    text-align: left !important;
+}
+
+/* # Index */
+.th-index,
+.cell-index {
+    width: 44px;
+    max-width: 48px;
+    text-align: center !important;
+    padding-left: 14px !important;
+    padding-right: 6px !important;
+    color: #94a3b8;
+    font-weight: 600;
+    font-size: 12px;
+}
+
+/* Student Profile & Name */
+.th-student,
+.cell-student {
+    min-width: 220px;
+    text-align: left !important;
+    padding-left: 8px !important;
+}
+
+/* LRN Monospace Pill */
+.th-lrn,
+.cell-lrn {
+    width: 130px;
+    text-align: center !important;
+    white-space: nowrap;
+}
+
+/* Year Level Pill */
+.th-grade,
+.cell-grade {
+    width: 105px;
+    text-align: center !important;
+    white-space: nowrap;
+}
+
+/* Section Pill */
+.th-section,
+.cell-section {
+    width: 85px;
+    text-align: center !important;
+    white-space: nowrap;
+}
+
+/* Strand / Track Badge */
+.th-strand,
+.cell-strand {
+    width: 120px;
+    text-align: center !important;
+    white-space: nowrap;
+}
+
+/* Email Column */
+.th-email,
+.cell-email {
+    min-width: 190px;
+    text-align: left !important;
+}
+
+/* Status Pill */
+.th-status,
+.cell-status {
+    width: 100px;
+    text-align: center !important;
+    white-space: nowrap;
+}
+
+/* Actions Column */
+.th-actions,
+.cell-actions {
+    width: 110px;
+    text-align: center !important;
+    white-space: nowrap;
+    position: relative;
+    overflow: visible !important;
+    padding-right: 14px !important;
+}
+
+/* ===== STUDENT HEADER ICON & SUBTITLE ===== */
+.table-header-left {
     display: flex;
     align-items: center;
     gap: 12px;
 }
 
+.student-header-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #1b2a4a, #2563eb);
+    color: #fbbf24;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    box-shadow: 0 4px 12px rgba(27, 42, 74, 0.2);
+}
+
+.table-header-sub {
+    display: block;
+    font-size: 12px;
+    color: #64748b;
+    font-weight: 400;
+    margin-top: 1px;
+}
+
+/* ===== STUDENT CELL ===== */
+.student-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 .student-avatar {
-    width: 36px;
-    height: 36px;
+    width: 34px;
+    height: 34px;
     border-radius: 50%;
-    background: #1B2A4A;
     color: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 700;
     flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12);
+    border: 2px solid #ffffff;
+    transition: transform 0.2s ease;
 }
 
-.student-info-cell .name {
+.student-row:hover .student-avatar {
+    transform: scale(1.06);
+}
+
+.student-info-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.student-name-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.student-full-name {
     font-size: 13.5px;
-    font-weight: 600;
+    font-weight: 700;
     color: #0f172a;
     line-height: 1.3;
 }
 
-.student-info-cell .sub {
-    font-size: 11.5px;
-    color: #94a3b8;
-    margin-top: 2px;
-}
-
-.name {
-    font-size: 13.5px;
-    font-weight: 600;
-    color: #0f172a;
-}
-
-.sub {
-    font-size: 11.5px;
-    color: #94a3b8;
-    margin-top: 2px;
-}
-
-.grade-badge-cell {
-    display: inline-flex;
+.student-sub-row {
+    display: flex;
     align-items: center;
-    padding: 3px 10px;
-    background: #f1f5f9;
-    border-radius: 6px;
-    font-size: 12.5px;
-    font-weight: 600;
-    color: #1e293b;
-    border: 1px solid #e2e8f0;
+    gap: 6px;
 }
 
-.section-badge-cell {
-    font-weight: 600;
-    color: #1B2A4A;
-}
-
-/* ===== BADGES ===== */
-.badge {
+.student-gender-chip {
+    font-size: 11px;
+    color: #64748b;
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    padding: 4px 10px;
+    font-weight: 500;
+}
+
+.student-gender-chip.gender-male i {
+    color: #0284c7;
+}
+
+.student-gender-chip.gender-female i {
+    color: #ec4899;
+}
+
+/* Student Type Pills */
+.student-type-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
     border-radius: 20px;
+    letter-spacing: 0.2px;
+    text-transform: uppercase;
+}
+
+.student-type-pill.pill-new {
+    background: #ecfdf5;
+    color: #059669;
+    border: 1px solid #a7f3d0;
+}
+
+.student-type-pill.pill-transferee {
+    background: #e0f2fe;
+    color: #0284c7;
+    border: 1px solid #bae6fd;
+}
+
+/* LRN Monospace Pill */
+.lrn-code-pill {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     font-size: 11.5px;
     font-weight: 600;
-    line-height: 1;
+    background: #f8fafc;
+    color: #334155;
+    border: 1px solid #e2e8f0;
+    padding: 3px 8px;
+    border-radius: 6px;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    display: inline-block;
 }
 
-.badge-active {
-    background: #d1fae5;
-    color: #065f46;
-}
-
-.badge-inactive {
-    background: #fee2e2;
-    color: #991b1b;
-}
-
-.badge-strand {
-    background: #e8edf5;
-    color: #1B2A4A;
-}
-
-.badge-jhs {
+/* Year Level Pill */
+.grade-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3px 9px;
+    border-radius: 6px;
+    font-size: 11.5px;
+    font-weight: 700;
     background: #f1f5f9;
+    color: #1e293b;
+    border: 1px solid #e2e8f0;
+    white-space: nowrap;
+}
+
+.grade-pill.grade-grade-11,
+.grade-pill.grade-grade-12 {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border-color: #bfdbfe;
+}
+
+/* Section Pill */
+.section-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-weight: 600;
+    font-size: 11.5px;
+    color: #1e293b;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 3px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+}
+
+.section-pill.unassigned {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    font-style: normal;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 0;
+}
+
+/* Strand Chips (No Wrap) */
+.strand-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+}
+
+.strand-chip.strand-ict {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+}
+
+.strand-chip.strand-stem {
+    background: #f5f3ff;
+    color: #6d28d9;
+    border: 1px solid #ddd6fe;
+}
+
+.strand-chip.strand-humss {
+    background: #fffbeb;
+    color: #b45309;
+    border: 1px solid #fde68a;
+}
+
+.strand-chip.strand-gas {
+    background: #ecfdf5;
+    color: #047857;
+    border: 1px solid #a7f3d0;
+}
+
+.strand-chip.strand-abm {
+    background: #fff1f2;
+    color: #be123c;
+    border: 1px solid #fecdd3;
+}
+
+.strand-chip.strand-general {
+    background: #f8fafc;
     color: #475569;
     border: 1px solid #e2e8f0;
 }
 
-/* ===== ACTION BUTTONS ===== */
-.actions,
-.action-btns {
-    display: flex;
+/* Student Email Link */
+.student-email-link {
+    color: #3b82f6;
+    text-decoration: none;
+    font-size: 12.5px;
+    display: inline-flex;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
+    font-weight: 500;
+    transition: color 0.15s;
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-.action-btn {
-    width: 32px;
-    height: 32px;
-    border-radius: 6px;
+.student-email-link:hover {
+    color: #1d4ed8;
+    text-decoration: underline;
+}
+
+/* Status Pill with Pulsing Dot */
+.student-status-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+}
+
+.student-status-pill .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+.student-status-pill.status-active {
+    background: #ecfdf5;
+    color: #059669;
+    border: 1px solid #a7f3d0;
+}
+
+.student-status-pill.status-active .status-dot {
+    background: #10b981;
+    box-shadow: 0 0 6px #10b981;
+    animation: dotPulse 1.8s infinite;
+}
+
+.student-status-pill.status-inactive {
+    background: #fff1f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+}
+
+.student-status-pill.status-inactive .status-dot {
+    background: #ef4444;
+}
+
+/* ===== MANAGE DROPDOWN BUTTON & MENU ===== */
+.cell-actions {
+    position: relative;
+    overflow: visible !important;
+}
+
+.manage-dropdown {
+    position: relative;
+    display: inline-block;
+    text-align: center;
+}
+
+.btn-manage {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: #ffffff;
+    color: #1e293b;
+    border: 1px solid #cbd5e1;
+    padding: 5px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    white-space: nowrap;
+    user-select: none;
+}
+
+.btn-manage:hover {
+    background: #f8fafc;
+    border-color: #94a3b8;
+    color: #0f172a;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    transform: translateY(-1px);
+}
+
+.btn-manage i.fa-chevron-down {
+    font-size: 9px;
+    color: #64748b;
+    transition: transform 0.2s ease;
+}
+
+.manage-dropdown.show .btn-manage {
+    background: #1B2A4A;
+    color: #ffffff;
+    border-color: #1B2A4A;
+    box-shadow: 0 4px 10px rgba(27, 42, 74, 0.25);
+}
+
+.manage-dropdown.show .btn-manage i.fa-chevron-down {
+    color: #ffffff;
+    transform: rotate(180deg);
+}
+
+.manage-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 5px);
+    right: 0;
+    min-width: 175px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.18), 0 8px 10px -6px rgba(15, 23, 42, 0.1);
+    padding: 6px;
+    z-index: 1050;
+    text-align: left;
+}
+
+.manage-dropdown.dropup .manage-menu {
+    top: auto;
+    bottom: calc(100% + 5px);
+}
+
+.manage-dropdown.show .manage-menu {
+    display: block;
+    animation: manageMenuFadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes manageMenuFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.manage-dropdown.dropup.show .manage-menu {
+    animation: manageMenuFadeInDropup 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes manageMenuFadeInDropup {
+    from {
+        opacity: 0;
+        transform: translateY(5px) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.manage-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 10px;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: #334155;
+    background: transparent;
     border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.15s ease;
+    box-sizing: border-box;
+    white-space: nowrap;
+}
+
+.manage-item i {
+    width: 16px;
+    font-size: 13px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.manage-item:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.manage-item.view-item i {
+    color: #2563eb;
+}
+
+.manage-item.edit-item i {
+    color: #d97706;
+}
+
+.manage-item.gmail-item i {
+    color: #ea4335;
+}
+
+.manage-item.delete-item {
+    color: #dc2626;
+}
+
+.manage-item.delete-item i {
+    color: #dc2626;
+}
+
+.manage-item.delete-item:hover {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.manage-divider {
+    height: 1px;
+    background: #e2e8f0;
+    margin: 5px 0;
+}
+
+tr.dropdown-open,
+tr:has(.manage-dropdown.show) {
+    position: relative;
+    z-index: 100 !important;
+}
+
+/* Modern Action Toolbar (Legacy Fallback) */
+.action-btns-group {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    margin: 0 auto;
+    white-space: nowrap;
+}
+
+.action-btn-pill {
+    width: 30px;
+    height: 30px;
+    border-radius: 7px;
+    border: 1px solid transparent;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     text-decoration: none;
-    color: #fff !important;
-    font-size: 13px;
-    box-sizing: border-box;
+    font-size: 12px;
+    background: transparent;
+    flex-shrink: 0;
 }
 
-.action-btn i {
-    color: #fff !important;
-    font-size: 13px;
+.action-btn-pill.btn-gmail {
+    background: #fef2f2;
+    color: #ea4335 !important;
+    border-color: #fecaca;
 }
 
-.action-btn.view {
-    background: #3b82f6;
-    color: #fff !important;
+.action-btn-pill.btn-gmail:hover {
+    background: #ea4335;
+    color: #ffffff !important;
+    border-color: #ea4335;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(234, 67, 53, 0.3);
 }
 
-.action-btn.view:hover {
+.action-btn-pill.btn-view {
+    background: #eff6ff;
+    color: #2563eb !important;
+    border-color: #bfdbfe;
+}
+
+.action-btn-pill.btn-view:hover {
     background: #2563eb;
-    color: #fff !important;
-    transform: scale(1.05);
+    color: #ffffff !important;
+    border-color: #2563eb;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
 }
 
-.action-btn.edit {
-    background: #f59e0b;
-    color: #fff !important;
+.action-btn-pill.btn-edit {
+    background: #fffbeb;
+    color: #d97706 !important;
+    border-color: #fde68a;
 }
 
-.action-btn.edit:hover {
+.action-btn-pill.btn-edit:hover {
     background: #d97706;
-    color: #fff !important;
-    transform: scale(1.05);
+    color: #ffffff !important;
+    border-color: #d97706;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(217, 119, 6, 0.3);
 }
 
-.action-btn.delete {
-    background: #ef4444;
-    color: #fff !important;
+.action-btn-pill.btn-delete {
+    background: #fff1f2;
+    color: #dc2626 !important;
+    border-color: #fecdd3;
 }
 
-.action-btn.delete:hover {
+.action-btn-pill.btn-delete:hover {
     background: #dc2626;
-    color: #fff !important;
-    transform: scale(1.05);
+    color: #ffffff !important;
+    border-color: #dc2626;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(220, 38, 38, 0.3);
+}
+
+.action-btn-pill:hover i {
+    color: #ffffff !important;
+}
+
+.cell-index {
+    color: #94a3b8;
+    font-weight: 600;
+    font-size: 12px;
+}
+
+@keyframes dotPulse {
+    0% { transform: scale(0.95); opacity: 0.8; }
+    50% { transform: scale(1.3); opacity: 1; }
+    100% { transform: scale(0.95); opacity: 0.8; }
 }
 
 /* ===== EMPTY / LOADING STATE ===== */
@@ -736,4 +1260,45 @@
     background: #f59e0b;
     color: #070526;
     transform: translateY(-2px);
+}
+
+/* Enroll Student Button & Badges */
+.btn-add-student {
+    padding: 8px 18px;
+    background: linear-gradient(135deg, #1B2A4A, #14223a);
+    color: #fff !important;
+    border: none;
+    border-radius: 8px;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    font-family: inherit;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(27, 42, 74, 0.2);
+    white-space: nowrap;
+}
+
+.btn-add-student:hover {
+    background: linear-gradient(135deg, #14223a, #0b1526);
+    box-shadow: 0 4px 14px rgba(27, 42, 74, 0.35);
+    transform: translateY(-1px);
+    color: #fff !important;
+}
+
+.badge-transferee {
+    background: #e0f2fe;
+    color: #0369a1;
+    border: 1px solid #bae6fd;
+    font-weight: 700;
+}
+
+.badge-new {
+    background: #dcfce7;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+    font-weight: 700;
 }

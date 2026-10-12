@@ -42,7 +42,7 @@ body {
     width: 260px;
     background: var(--primary);
     color: white;
-    padding: 1.5rem 0;
+    padding: 14px 0;
     display: flex;
     flex-direction: column;
     position: fixed;
@@ -54,7 +54,7 @@ body {
 }
 
 .sidebar-header {
-    padding: 0 1.5rem 1.5rem;
+    padding: 0 1.25rem 14px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -103,7 +103,7 @@ body {
 }
 
 .admin-profile {
-    padding: 1.5rem;
+    padding: 10px 1.25rem 14px;
     text-align: center;
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
@@ -112,7 +112,7 @@ body {
     position: relative;
     width: 60px;
     height: 60px;
-    margin: 0 auto 0.5rem;
+    margin: 0 auto 8px;
 }
 
 .admin-avatar .avatar-initial {
@@ -155,7 +155,7 @@ body {
 
 .nav-menu {
     flex: 1;
-    padding: 1rem 1.5rem;
+    padding: 14px 1.25rem;
 }
 
 .nav-section-title {
@@ -163,7 +163,7 @@ body {
     text-transform: uppercase;
     letter-spacing: 1px;
     color: rgba(255, 255, 255, 0.3);
-    margin: 1rem 0 0.5rem;
+    margin: 14px 0 6px;
 }
 
 .nav-items {
@@ -177,8 +177,8 @@ body {
 .nav-items a {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 0.6rem 0.8rem;
+    gap: 14px;
+    padding: 7px 12px;
     border-radius: 10px;
     color: rgba(255, 255, 255, 0.6);
     text-decoration: none;
@@ -1011,6 +1011,181 @@ body {
 }
 
 /* Actions Cell */
+.cell-actions {
+    position: relative;
+    overflow: visible !important;
+}
+
+.manage-dropdown {
+    position: relative;
+    display: inline-block;
+    text-align: center;
+}
+
+.btn-manage {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: #ffffff;
+    color: #1e293b;
+    border: 1px solid #cbd5e1;
+    padding: 5px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    white-space: nowrap;
+    user-select: none;
+}
+
+.btn-manage:hover {
+    background: #f8fafc;
+    border-color: #94a3b8;
+    color: #0f172a;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    transform: translateY(-1px);
+}
+
+.btn-manage i.fa-chevron-down {
+    font-size: 9px;
+    color: #64748b;
+    transition: transform 0.2s ease;
+}
+
+.manage-dropdown.show .btn-manage {
+    background: #1B2A4A;
+    color: #ffffff;
+    border-color: #1B2A4A;
+    box-shadow: 0 4px 10px rgba(27, 42, 74, 0.25);
+}
+
+.manage-dropdown.show .btn-manage i.fa-chevron-down {
+    color: #ffffff;
+    transform: rotate(180deg);
+}
+
+.manage-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 5px);
+    right: 0;
+    min-width: 175px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.18), 0 8px 10px -6px rgba(15, 23, 42, 0.1);
+    padding: 6px;
+    z-index: 1050;
+    text-align: left;
+}
+
+.manage-dropdown.dropup .manage-menu {
+    top: auto;
+    bottom: calc(100% + 5px);
+}
+
+.manage-dropdown.show .manage-menu {
+    display: block;
+    animation: manageMenuFadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes manageMenuFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.manage-dropdown.dropup.show .manage-menu {
+    animation: manageMenuFadeInDropup 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes manageMenuFadeInDropup {
+    from {
+        opacity: 0;
+        transform: translateY(5px) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.manage-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 10px;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: #334155;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.15s ease;
+    box-sizing: border-box;
+    white-space: nowrap;
+}
+
+.manage-item i {
+    width: 16px;
+    font-size: 13px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.manage-item:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.manage-item.view-item i {
+    color: #2563eb;
+}
+
+.manage-item.edit-item i {
+    color: #d97706;
+}
+
+.manage-item.gmail-item i {
+    color: #ea4335;
+}
+
+.manage-item.delete-item {
+    color: #dc2626;
+}
+
+.manage-item.delete-item i {
+    color: #dc2626;
+}
+
+.manage-item.delete-item:hover {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.manage-divider {
+    height: 1px;
+    background: #e2e8f0;
+    margin: 5px 0;
+}
+
+tr.dropdown-open,
+tr:has(.manage-dropdown.show) {
+    position: relative;
+    z-index: 100 !important;
+}
+
 .action-btns {
     display: flex;
     gap: 0.3rem;
@@ -1020,37 +1195,54 @@ body {
 .action-btn {
     width: 32px;
     height: 32px;
-    border: none;
-    border-radius: 6px;
+    border: 1px solid transparent;
+    border-radius: 8px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: var(--transition);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     text-decoration: none;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
+}
+
+.action-btn.notify-gmail {
+    background: #fef2f2 !important;
+    color: #ea4335 !important;
+    border-color: #fecaca !important;
+}
+
+.action-btn.notify-gmail:hover {
+    background: #ea4335 !important;
+    color: #ffffff !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(234, 67, 53, 0.3);
 }
 
 .action-btn.view {
-    background: #3b82f6;
-    color: #fff !important;
+    background: #eff6ff !important;
+    color: #2563eb !important;
+    border-color: #bfdbfe !important;
 }
 
 .action-btn.view:hover {
-    background: #2563eb;
-    color: #fff !important;
-    transform: scale(1.05);
+    background: #2563eb !important;
+    color: #ffffff !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
 }
 
 .action-btn.edit {
-    background: #f59e0b;
-    color: #fff !important;
+    background: #fffbeb !important;
+    color: #d97706 !important;
+    border-color: #fde68a !important;
 }
 
 .action-btn.edit:hover {
-    background: #d97706;
-    color: #fff !important;
-    transform: scale(1.05);
+    background: #d97706 !important;
+    color: #ffffff !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(217, 119, 6, 0.3);
 }
 
 .action-btn.delete {

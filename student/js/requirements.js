@@ -244,6 +244,59 @@ import { supabase } from '../../supabase/config.js';
                 }
             } catch(e) {}
 
+            
+            // Check if Good Moral has been requested by Registrar
+            const userEmailLower = (userEmail || '').toLowerCase();
+            const studentIdVal = studentRow?.id || sessionUser?.uid || '';
+            let isGoodMoralRequested = false;
+            let gmNoticeMessage = "The Registrar's Office has requested your Certificate of Good Moral Character from your previous school to finalize your official enrollment credentials. Please upload a clear photo or scanned copy below.";
+
+            if (
+                localStorage.getItem(`hes_req_requested_${studentIdVal}_good_moral`) ||
+                localStorage.getItem(`hes_req_requested_${userEmailLower}_good_moral`) ||
+                localStorage.getItem(`hes_req_requested_${studentIdVal}_missing_goodmoral`) ||
+                localStorage.getItem(`hes_req_requested_${userEmailLower}_missing_goodmoral`)
+            ) {
+                isGoodMoralRequested = true;
+            }
+
+            // Check Supabase notifications
+            try {
+                let nQuery = supabase.from('notifications').select('*');
+                if (studentIdVal && userEmailLower) {
+                    nQuery = nQuery.or(`user_id.eq.${studentIdVal},student_id.eq.${studentIdVal},recipient_email.ilike.${userEmailLower}`);
+                } else if (studentIdVal) {
+                    nQuery = nQuery.or(`user_id.eq.${studentIdVal},student_id.eq.${studentIdVal}`);
+                } else if (userEmailLower) {
+                    nQuery = nQuery.ilike('recipient_email', userEmailLower);
+                }
+                const { data: nList } = await nQuery.order('created_at', { ascending: false }).limit(20);
+                if (nList) {
+                    const gmNotif = nList.find(n => 
+                        n.type === 'good_moral_request' || 
+                        (n.title && n.title.toLowerCase().includes('good moral')) ||
+                        (n.message && n.message.toLowerCase().includes('good moral'))
+                    );
+                    if (gmNotif) {
+                        isGoodMoralRequested = true;
+                        if (gmNotif.message) gmNoticeMessage = gmNotif.message;
+                    }
+                }
+            } catch(e) {}
+
+            // Check local notifications list
+            try {
+                const localNotifs = JSON.parse(localStorage.getItem(`hes_notifications_${studentIdVal}`) || '[]');
+                const gmItem = localNotifs.find(n => 
+                    n.type === 'good_moral_request' || 
+                    (n.title && n.title.toLowerCase().includes('good moral'))
+                );
+                if (gmItem) {
+                    isGoodMoralRequested = true;
+                    if (gmItem.message) gmNoticeMessage = gmItem.message;
+                }
+            } catch(e) {}
+
             // 4. Assemble requirements status
             requirementsData = requirementDefs.map(def => {
                 let currentTitle = def.title;
@@ -322,6 +375,7 @@ import { supabase } from '../../supabase/config.js';
                     <div class="req-header">
                         <h4 class="req-title">${item.title}</h4>
                         <span class="req-badge ${statusClass}">${statusIcon} <span>${item.status}</span></span>
+                        ${item.isRequested ? `<span class="req-badge badge-gm-urgent"><i class="fas fa-bell"></i> Requested by Registrar</span>` : ''}
                     </div>
                     <p class="req-desc">${item.description}</p>
                     ${item.fileUrl ? `
@@ -444,6 +498,16 @@ import { supabase } from '../../supabase/config.js';
                         }
                     }
 
+                    if (key === 'good_moral') {
+                        const studentIdVal = studentRow?.id || sessionUser?.uid || '';
+                        const userEmailLower = (sessionUser?.email || '').toLowerCase();
+                        localStorage.removeItem(`hes_req_requested_${studentIdVal}_good_moral`);
+                        localStorage.removeItem(`hes_req_requested_${userEmailLower}_good_moral`);
+                        localStorage.removeItem(`hes_req_requested_${studentIdVal}_missing_goodmoral`);
+                        localStorage.removeItem(`hes_req_requested_${userEmailLower}_missing_goodmoral`);
+                        const statusAlert = document.getElementById('statusAlert');
+                        if (statusAlert) { statusAlert.style.display = 'none'; statusAlert.innerHTML = ''; }
+                    }
                     showAlert(`✅ ${targetReq ? targetReq.title : 'Document'} uploaded successfully!`, 'success');
                     renderRequirements();
                     updateProgress();
@@ -480,3 +544,10 @@ import { supabase } from '../../supabase/config.js';
     loadRequirementsData();
 
 })();
+
+    // React immediately to registrar requests in other tabs
+    window.addEventListener('storage', function(e) {
+        if (!e.key || e.key.includes('hes_req_requested') || e.key.includes('hes_notifications')) {
+            loadRequirementsData();
+        }
+    });
