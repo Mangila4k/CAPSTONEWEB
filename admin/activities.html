@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PLSNSH, Placido L. Señor National High School</title>
+    <title>PLSNSH - Activities & Audit Logs</title>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- Google Fonts -->
@@ -17,7 +17,6 @@
 </head>
 
 <body>
-    <!-- Mobile Menu Toggle -->
     <div class="menu-toggle" id="menuToggle">
         <i class="fas fa-bars"></i>
     </div>
@@ -66,13 +65,11 @@
                     <div class="nav-section-title">ACCOUNT</div>
                     <ul class="nav-items">
                         <li><a href="profile.html"><i class="fas fa-user"></i> Profile</a></li>
-                        <li><a href="../auth/logout.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a>
-                        </li>
-
+                        <li><a href="../auth/logout.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
                     </ul>
                 </div>
             </div>
-            <!-- Pinned Sidebar Footer -->
+            
             <div class="sidebar-footer">
                 <div class="admin-profile">
                     <div class="admin-avatar">
@@ -92,74 +89,70 @@
             <div class="page-header">
                 <div>
                     <h1>System Activities & Audit Logs</h1>
-                    <p class="subtitle">Real-time chronological timeline of all student enrollments, account updates,
-                        and system operations</p>
+                    <p class="subtitle">Manage posted school activities and view real-time system audit logs.</p>
                 </div>
                 <div class="header-actions">
+                    <button type="button" id="btnOpenAddActivity" class="btn-primary" style="background: #10b981;">
+                        <i class="fas fa-plus-circle"></i> Add Activity
+                    </button>
                     <button type="button" id="refreshActivitiesBtn" class="btn-primary">
-                        <i class="fas fa-sync-alt"></i> Refresh
+                        <i class="fas fa-sync-alt"></i> Refresh Logs
                     </button>
                     <button type="button" id="exportActivitiesBtn" class="btn-secondary">
-                        <i class="fas fa-download"></i> Export CSV
+                        <i class="fas fa-download"></i> Export Logs
                     </button>
                 </div>
             </div>
 
-            <!-- Alert Container -->
             <div id="alertContainer"></div>
 
-            <!-- KPI Stats Row -->
+            <!-- ===== POSTED SCHOOL ACTIVITIES GALLERY ===== -->
+            <div class="activities-gallery-card" style="background: #fff; border-radius: 16px; padding: 24px; margin-bottom: 24px; border: 1px solid #e9edf4; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #f1f5f9; padding-bottom: 14px;">
+                    <h2 style="font-size: 16px; font-weight: 700; color: #0f172a; margin: 0; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-images" style="color: #10b981;"></i> Posted School Activities
+                    </h2>
+                    <span style="font-size: 12px; font-weight: 600; color: #64748b; background: #f1f5f9; padding: 3px 10px; border-radius: 12px;" id="postedActivitiesCount">0 Activities</span>
+                </div>
+                
+                <div id="postedActivitiesGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
+                    <!-- Activities will be loaded here dynamically -->
+                </div>
+            </div>
+            <!-- ================================================== -->
+
+            <!-- KPI Stats -->
             <div class="stats-grid">
                 <div class="stat-card total">
-                    <div class="stat-header">
-                        <h3>Total Logs</h3>
-                        <div class="stat-icon"><i class="fas fa-history"></i></div>
-                    </div>
+                    <div class="stat-header"><h3>Total Logs</h3><div class="stat-icon"><i class="fas fa-history"></i></div></div>
                     <div class="stat-number" id="statTotalActivities">0</div>
                     <div class="stat-label">All recorded activities</div>
                 </div>
-
                 <div class="stat-card enrollment">
-                    <div class="stat-header">
-                        <h3>Enrollments</h3>
-                        <div class="stat-icon"><i class="fas fa-user-graduate"></i></div>
-                    </div>
+                    <div class="stat-header"><h3>Enrollments</h3><div class="stat-icon"><i class="fas fa-user-graduate"></i></div></div>
                     <div class="stat-number" id="statEnrollmentActivities">0</div>
                     <div class="stat-label">Applications & approvals</div>
                 </div>
-
                 <div class="stat-card accounts">
-                    <div class="stat-header">
-                        <h3>Accounts & Users</h3>
-                        <div class="stat-icon"><i class="fas fa-users-cog"></i></div>
-                    </div>
+                    <div class="stat-header"><h3>Accounts & Users</h3><div class="stat-icon"><i class="fas fa-users-cog"></i></div></div>
                     <div class="stat-number" id="statAccountActivities">0</div>
                     <div class="stat-label">Registrations & status changes</div>
                 </div>
-
                 <div class="stat-card security">
-                    <div class="stat-header">
-                        <h3>System & Security</h3>
-                        <div class="stat-icon"><i class="fas fa-shield-alt"></i></div>
-                    </div>
+                    <div class="stat-header"><h3>System & Security</h3><div class="stat-icon"><i class="fas fa-shield-alt"></i></div></div>
                     <div class="stat-number" id="statSecurityActivities">0</div>
                     <div class="stat-label">Attendance & admin audits</div>
                 </div>
             </div>
 
-            <!-- Control & Filter Toolbar -->
+            <!-- Filter Toolbar -->
             <div class="filter-card">
                 <div class="filter-row-top">
                     <div class="search-input-wrap">
                         <i class="fas fa-search search-icon"></i>
-                        <input type="text" id="activitySearchInput"
-                            placeholder="Search activities by user name, email, action description, or ID..."
-                            class="search-input">
-                        <button type="button" id="clearSearchBtn" class="clear-search-btn" style="display: none;">
-                            <i class="fas fa-times"></i>
-                        </button>
+                        <input type="text" id="activitySearchInput" placeholder="Search activities by user name, email, action description, or ID..." class="search-input">
+                        <button type="button" id="clearSearchBtn" class="clear-search-btn" style="display: none;"><i class="fas fa-times"></i></button>
                     </div>
-
                     <select id="roleFilterSelect" class="filter-select">
                         <option value="">All Roles</option>
                         <option value="admin">Administrator</option>
@@ -169,7 +162,6 @@
                         <option value="parent">Parent</option>
                         <option value="system">System</option>
                     </select>
-
                     <select id="dateFilterSelect" class="filter-select">
                         <option value="all">All Dates</option>
                         <option value="today">Today</option>
@@ -179,81 +171,85 @@
                     </select>
                 </div>
 
-                <!-- Category Filter Chips -->
                 <div class="category-chips-row">
-                    <button type="button" class="category-chip active" data-category="all">
-                        <i class="fas fa-layer-group"></i> All Activities <span class="chip-count"
-                            id="chipAllCount">0</span>
-                    </button>
-                    <button type="button" class="category-chip" data-category="enrollment">
-                        <i class="fas fa-file-signature"></i> Enrollments <span class="chip-count"
-                            id="chipEnrollCount">0</span>
-                    </button>
-                    <button type="button" class="category-chip" data-category="account">
-                        <i class="fas fa-user-plus"></i> User Accounts <span class="chip-count"
-                            id="chipAccountCount">0</span>
-                    </button>
-                    <button type="button" class="category-chip" data-category="attendance">
-                        <i class="fas fa-calendar-check"></i> Attendance <span class="chip-count"
-                            id="chipAttendanceCount">0</span>
-                    </button>
-                    <button type="button" class="category-chip" data-category="admin_action">
-                        <i class="fas fa-shield-alt"></i> Admin Actions <span class="chip-count"
-                            id="chipAdminCount">0</span>
-                    </button>
-                    <button type="button" class="category-chip" data-category="security">
-                        <i class="fas fa-lock"></i> Security & Auth <span class="chip-count"
-                            id="chipSecurityCount">0</span>
-                    </button>
+                    <button type="button" class="category-chip active" data-category="all"><i class="fas fa-layer-group"></i> All Activities <span class="chip-count" id="chipAllCount">0</span></button>
+                    <button type="button" class="category-chip" data-category="enrollment"><i class="fas fa-file-signature"></i> Enrollments <span class="chip-count" id="chipEnrollCount">0</span></button>
+                    <button type="button" class="category-chip" data-category="account"><i class="fas fa-user-plus"></i> User Accounts <span class="chip-count" id="chipAccountCount">0</span></button>
+                    <button type="button" class="category-chip" data-category="attendance"><i class="fas fa-calendar-check"></i> Attendance <span class="chip-count" id="chipAttendanceCount">0</span></button>
+                    <button type="button" class="category-chip" data-category="admin_action"><i class="fas fa-shield-alt"></i> Admin Actions <span class="chip-count" id="chipAdminCount">0</span></button>
+                    <button type="button" class="category-chip" data-category="security"><i class="fas fa-lock"></i> Security & Auth <span class="chip-count" id="chipSecurityCount">0</span></button>
                 </div>
             </div>
 
-            <!-- Activity Stream Timeline -->
+            <!-- Activity Stream -->
             <div class="timeline-card">
                 <div class="timeline-header">
-                    <div class="timeline-title">
-                        <i class="fas fa-stream"></i> Activity Stream
-                    </div>
+                    <div class="timeline-title"><i class="fas fa-stream"></i> Activity Stream</div>
                     <span class="timeline-count-badge" id="visibleCountBadge">Showing 0 activities</span>
                 </div>
-
                 <div class="activity-stream" id="activityStreamContainer">
-                    <!-- Loading Placeholder -->
                     <div class="empty-state" id="loadingPlaceholder">
                         <i class="fas fa-circle-notch fa-spin"></i>
                         <h4>Loading Activities...</h4>
                         <p>Fetching real-time audit logs from the database.</p>
                     </div>
                 </div>
-
-                <!-- Load More Button -->
                 <div class="load-more-wrap" id="loadMoreWrap" style="display: none;">
-                    <button type="button" id="loadMoreBtn" class="btn-load-more">
-                        <i class="fas fa-chevron-down"></i> Load More Activities
-                    </button>
+                    <button type="button" id="loadMoreBtn" class="btn-load-more"><i class="fas fa-chevron-down"></i> Load More Activities</button>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- Activity Detail Modal -->
+    <!-- Activity Detail Modal (Audit Logs) -->
     <div class="modal" id="activityDetailModal" style="display: none;">
         <div class="modal-content" style="max-width: 540px; background: #fff; border-radius: 16px; padding: 24px;">
-            <div class="modal-header"
-                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #e9edf4; padding-bottom: 14px;">
-                <h3
-                    style="margin: 0; font-size: 18px; font-weight: 700; color: #1B2A4A; display: flex; align-items: center; gap: 8px;">
-                    <i class="fas fa-info-circle"></i> Activity Log Details
-                </h3>
-                <button type="button" class="close-modal" id="closeDetailModalBtn"
-                    style="background: none; border: none; font-size: 24px; color: #94a3b8; cursor: pointer;">&times;</button>
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #e9edf4; padding-bottom: 14px;">
+                <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: #1B2A4A; display: flex; align-items: center; gap: 8px;"><i class="fas fa-info-circle"></i> Activity Log Details</h3>
+                <button type="button" class="close-modal" id="closeDetailModalBtn" style="background: none; border: none; font-size: 24px; color: #94a3b8; cursor: pointer;">&times;</button>
             </div>
-            <div class="modal-body" id="activityModalBody">
-                <!-- Loaded by JS -->
-            </div>
+            <div class="modal-body" id="activityModalBody"></div>
             <div class="modal-footer" style="display: flex; justify-content: flex-end; margin-top: 20px;">
                 <button type="button" class="btn-secondary" id="closeDetailModalBtn2">Close</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Add / Edit Activity Modal -->
+    <div class="add-activity-modal" id="addActivityModal">
+        <div class="add-modal-content">
+            <div class="add-modal-header">
+                <h3 id="activityModalTitle"><i class="fas fa-plus-circle"></i> Post New Activity</h3>
+                <button type="button" class="add-modal-close" id="btnCloseAddModal">&times;</button>
+            </div>
+            <div class="add-modal-body">
+                <input type="hidden" id="editActivityId">
+                <div class="form-group">
+                    <label>Title *</label>
+                    <input type="text" id="actTitle" placeholder="e.g., Science Fair 2024">
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="actDesc" rows="3" placeholder="Short description of the event..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Photo * (Leave empty to keep current if editing)</label>
+                    <input type="file" id="actImage" accept="image/*">
+                </div>
+            </div>
+            <div class="add-modal-footer">
+                <button type="button" class="btn-cancel" id="btnCancelAddModal">Cancel</button>
+                <button type="button" class="btn-submit" id="btnSubmitActivity"><i class="fas fa-paper-plane"></i> Save Activity</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fullscreen Image Viewer Modal -->
+    <div id="imageViewerModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px);">
+        <div style="position: relative; max-width: 90vw; max-height: 90vh; display: flex; flex-direction: column; align-items: center;">
+            <button type="button" onclick="window.closeImageViewer()" style="position: absolute; top: -40px; right: -10px; background: transparent; border: none; color: #fff; font-size: 36px; cursor: pointer; line-height: 1; padding: 10px; transition: color 0.2s;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#fff'">&times;</button>
+            <img id="fullImageDisplay" src="" style="max-width: 100%; max-height: 80vh; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); object-fit: contain;">
+            <h3 id="fullImageTitle" style="color: #fff; text-align: center; margin-top: 20px; font-size: 18px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.5);"></h3>
         </div>
     </div>
 
@@ -261,5 +257,4 @@
     <script type="module" src="js/activities.js"></script>
     <script src="../js/chatbot.js"></script>
 </body>
-
 </html>

@@ -36,6 +36,7 @@
                 <a href="../auth/login.html" class="btn-outline-sm"><i class="fas fa-sign-in-alt"></i> Login</a>
             </div>
         </nav>
+        
         <main id="pageContent">
             <section id="page-home" class="page-section active">
                 <div class="hero-section">
@@ -52,6 +53,25 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- ===== SCHOOL ACTIVITIES SECTION ===== -->
+                <section class="activities-section" style="padding: 5rem 0; background: rgba(26, 34, 90, 0.75); border-bottom: 1px solid rgba(255, 255, 255, 0.18);">
+                    <div class="container">
+                        <div class="features-header-box">
+                            <span class="features-eyebrow"><i class="fas fa-images"></i> School Highlights</span>
+                            <h2 class="section-title">Latest <span class="highlight-gold">Activities</span></h2>
+                            <p class="section-subtitle">Explore the recent events, programs, and achievements at Placido L. Señor National High School.</p>
+                        </div>
+                        
+                        <div id="homeActivitiesGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem;">
+                            <!-- Activities will be loaded here via JS -->
+                            <div style="text-align: center; padding: 40px; color: #cbd5e1; grid-column: 1/-1;">
+                                <i class="fas fa-spinner fa-spin" style="font-size: 24px; margin-bottom: 10px;"></i>
+                                <p>Loading recent activities...</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
 
                 <!-- FEATURES -->
                 <section class="features-section" id="features">
@@ -303,6 +323,10 @@
         </footer>
     </div>
 
+    <!-- 1. Add Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- 2. Load your script (NO type="module") -->
     <script src="js/homepage.js"></script>
 </body>
 
