@@ -211,9 +211,10 @@
                         <img src="${act.image_url}" alt="${act.title}" style="width: 100%; height: 100%; object-fit: contain; transition: transform 0.4s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
                         
                         <!-- Top-Right Text Overlay with dark gradient for readability -->
-                        <div style="position: absolute; top: 0; right: 0; padding: 1.5rem; background: linear-gradient(to bottom left, rgba(13, 17, 50, 0.85) 0%, rgba(13, 17, 50, 0.2) 60%, transparent 100%); border-bottom-left-radius: 30px; pointer-events: none; z-index: 2;">
-                            <h3 style="margin: 0; font-size: 1.8rem; font-weight: 900; color: #ffffff; line-height: 1.1; text-shadow: 0 2px 10px rgba(0,0,0,0.8); letter-spacing: -0.5px;">
-                                SportsFest 2026
+                        <div style="position: absolute; top: 0; right: 0; padding: 1.5rem; background: linear-gradient(to bottom left, rgba(13, 17, 50, 0.85) 0%, rgba(13, 17, 50, 0.2) 60%, transparent 100%); border-bottom-left-radius: 30px; pointer-events: none; z-index: 2; max-width: 80%;">
+                            <!-- THIS IS WHERE THE TITLE FROM THE DASHBOARD GOES -->
+                            <h3 style="margin: 0; font-size: 1.6rem; font-weight: 900; color: #ffffff; line-height: 1.2; text-shadow: 0 2px 10px rgba(0,0,0,0.8); text-align: right; word-wrap: break-word;">
+                                ${act.title}
                             </h3>
                         </div>
 
