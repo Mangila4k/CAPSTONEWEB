@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Announcements & Notices - Registrar Portal | PLSNSH, Placido L. Señor National High School</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="../admin/css/announcements.css">
+    <link rel="stylesheet" href="../css/chatbot.css">
+    <link rel="stylesheet" href="../css/sidebar.css">
+    <link rel="stylesheet" href="../css/dashboard_announcements.css">
+    <style>
+        :root {
+            --primary: #0b2b4a !important;
+            --primary-dark: #061a2e !important;
+            --primary-light: #1a3d5f !important;
+        }
+        .sidebar {
+            width: 260px !important;
+            background: #0b2b4a !important;
+        }
+        .main-content {
+            margin-left: 260px !important;
+            max-width: calc(100% - 260px) !important;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Mobile Menu Toggle -->
+    <div class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo"
+                            onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
+                    </div>
+                    <div class="logo-text">PLS<span>NSH</span></div>
+                </div>
+                <div class="school-badge">Placido L. Señor National High School</div>
+            </div>
+
+            <nav class="nav-menu">
+                <div class="nav-section">
+                    <div class="nav-section-title">MAIN MENU</div>
+                    <ul class="nav-items">
+                        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                        <li><a href="announcements.html" class="active"><i class="fas fa-bullhorn"></i>
+                                Announcements</a></li>
+                        <li><a href="enrollments.html"><i class="fas fa-file-signature"></i> Enrollments <span class="nav-badge hidden" id="pendingEnrollmentsBadge" data-count="0" style="display: none !important;"></span></a>
+                        </li>
+                        <li><a href="students.html"><i class="fas fa-user-graduate"></i> Students</a></li>
+                        <li><a href="requirements.html"><i class="fas fa-clipboard-check"></i> Requirements <span class="nav-badge hidden" id="pendingRequirementsBadge" data-count="0" style="display: none !important;"></span></a>
+                        </li>
+                        <li><a href="generate_id.html"><i class="fas fa-user-graduate"></i> Student ID</a></li>
+                        <li><a href="sections.html"><i class="fas fa-layer-group"></i> Sections</a></li>
+                        <li><a href="reports.html"><i class="fas fa-chart-bar"></i> Reports</a></li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">ACCOUNT</div>
+                    <ul class="nav-items">
+                        <li><a href="profile.html"><i class="fas fa-user"></i> Profile</a></li>
+                        <li><a href="../auth/login.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Pinned Sidebar Footer -->
+            <div class="sidebar-footer">
+                <div class="admin-profile">
+                    <div class="admin-avatar">
+                        <div class="avatar-initial" id="adminInitial">JM</div>
+                        <div class="online-dot"></div>
+                    </div>
+                    <div class="admin-info">
+                        <div class="admin-name" id="adminName">Justine Mangila</div>
+                        <div class="admin-role"><i class="fas fa-id-badge"></i> Registrar</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <div class="page-header">
+                <div>
+                    <h1><i class="fas fa-bullhorn" style="color: #059669;"></i> Registrar Announcements & Notices</h1>
+                    <p class="subtitle">Broadcast official registrar notices, enrollment schedules, requirement
+                        deadlines, and notify all user dashboards</p>
+                </div>
+                <div class="header-actions">
+                    <button type="button" class="btn-post-main" id="openCreateModalBtn"
+                        style="background: linear-gradient(135deg, #065f46 0%, #10b981 100%);">
+                        <i class="fas fa-plus-circle"></i> Create Registrar Announcement
+                    </button>
+                    <div class="date-badge" id="currentDateBadge">
+                        <i class="fas fa-calendar-alt"></i> Loading date...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alert Container -->
+            <div id="alertContainer"></div>
+
+            <!-- Stats KPI Grid -->
+            <div class="anc-stats-grid">
+                <div class="anc-stat-card">
+                    <div class="stat-icon-wrapper bg-blue">
+                        <i class="fas fa-bullhorn"></i>
+                    </div>
+                    <div class="stat-meta">
+                        <span class="stat-count" id="statTotalNotices">0</span>
+                        <span class="stat-title">Total Active Notices</span>
+                    </div>
+                </div>
+
+                <div class="anc-stat-card" id="cardPtaFilter" style="cursor: pointer;" title="Filter Parent Notices">
+                    <div class="stat-icon-wrapper bg-purple">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-meta">
+                        <span class="stat-count" id="statPtaMeetings">0</span>
+                        <span class="stat-title">Parent Notices</span>
+                    </div>
+                </div>
+
+                <div class="anc-stat-card" id="cardFacultyFilter" style="cursor: pointer;"
+                    title="Filter Faculty Notices">
+                    <div class="stat-icon-wrapper bg-emerald">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                    </div>
+                    <div class="stat-meta">
+                        <span class="stat-count" id="statFacultyMeetings">0</span>
+                        <span class="stat-title">Teacher Notices</span>
+                    </div>
+                </div>
+
+                <div class="anc-stat-card">
+                    <div class="stat-icon-wrapper bg-amber">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <div class="stat-meta">
+                        <span class="stat-count" id="statTotalRsvps">0</span>
+                        <span class="stat-title">Student Notices</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter & Selection Toolbar -->
+            <div class="filter-toolbar">
+                <div class="category-tabs" id="categoryTabs">
+                    <button class="tab-btn active" data-filter="all">
+                        <i class="fas fa-border-all"></i> All Notices
+                    </button>
+                    <button class="tab-btn" data-filter="parent_meetings">
+                        <i class="fas fa-people-arrows"></i> Parents & Guardians
+                    </button>
+                    <button class="tab-btn" data-filter="teacher_meetings">
+                        <i class="fas fa-chalkboard-teacher"></i> Faculty & Staff
+                    </button>
+                    <button class="tab-btn" data-filter="general">
+                        <i class="fas fa-info-circle"></i> General School Updates
+                    </button>
+                    <button class="tab-btn" data-filter="urgent">
+                        <i class="fas fa-exclamation-triangle"></i> Urgent Alerts
+                    </button>
+                </div>
+
+                <div class="filter-controls">
+                    <div class="search-input-wrap">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="announcementSearch" placeholder="Search title, details, venue...">
+                    </div>
+
+                    <select id="targetAudienceFilter" class="custom-select" title="Filter by audience">
+                        <option value="all">All Audiences</option>
+                        <option value="parents">Parents / Guardians</option>
+                        <option value="teachers">Teachers / Faculty</option>
+                        <option value="students">Students</option>
+                        <option value="parent_teacher_meeting">Joint Parent-Teacher</option>
+                    </select>
+
+                    <select id="priorityFilter" class="custom-select" title="Filter by priority">
+                        <option value="all">All Priorities</option>
+                        <option value="urgent">Urgent</option>
+                        <option value="important">Important</option>
+                        <option value="normal">Normal</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Feed Container -->
+            <div class="announcements-feed" id="announcementsFeed">
+                <div class="anc-loading">
+                    <i class="fas fa-circle-notch fa-spin"></i>
+                    <p>Loading school announcements...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- CREATE MODAL -->
+    <div class="modal-backdrop" id="createModal" style="display: none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3><i class="fas fa-bullhorn" style="color: #059669;"></i> Create Registrar Announcement</h3>
+                <button type="button" class="modal-close" id="closeCreateModalBtn"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="createAnnouncementForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="createTitle">Announcement Title <span class="required">*</span></label>
+                        <input type="text" id="createTitle" class="form-input"
+                            placeholder="e.g. Schedule of Early Registration for SY 2026-2027" required>
+                    </div>
+
+                    <div class="form-row-2">
+                        <div class="form-group">
+                            <label for="createTargetAudience">Target Audience <span class="required">*</span></label>
+                            <select id="createTargetAudience" class="form-input" required>
+                                <option value="all">Entire School (Everyone)</option>
+                                <option value="students">Students Only</option>
+                                <option value="parents">Parents / Guardians Only</option>
+                                <option value="teachers">Teachers / Faculty Only</option>
+                                <option value="parent_teacher_meeting">Parents & Teachers</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="createPriority">Priority Level</label>
+                            <select id="createPriority" class="form-input">
+                                <option value="normal">Normal</option>
+                                <option value="important">Important</option>
+                                <option value="urgent">Urgent Alert</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row-2">
+                        <div class="form-group">
+                            <label for="createCategory">Category</label>
+                            <select id="createCategory" class="form-input">
+                                <option value="general">Official Registrar Notice</option>
+                                <option value="enrollment">Enrollment & Clearance</option>
+                                <option value="academic">Academic & Schedule</option>
+                                <option value="meeting">Meeting / Assembly</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="createMeetingType">Meeting / Event Type (Optional)</label>
+                            <select id="createMeetingType" class="form-input">
+                                <option value="none">None (Standard Announcement)</option>
+                                <option value="pta_assembly">PTA General Assembly</option>
+                                <option value="faculty_meeting">Faculty & Staff Meeting</option>
+                                <option value="homeroom_meeting">Homeroom Conference</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Meeting Fields (Toggleable) -->
+                    <div id="createMeetingFields"
+                        style="display: none; background: #f8fafc; padding: 14px 16px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 16px;">
+                        <h4 style="margin: 0 0 10px 0; font-size: 0.9rem; color: #1e293b;"><i
+                                class="fas fa-calendar-alt" style="color: #059669;"></i> Schedule & Location Details
+                        </h4>
+                        <div class="form-row-2">
+                            <div class="form-group">
+                                <label for="createMeetingDate">Date</label>
+                                <input type="date" id="createMeetingDate" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <label for="createMeetingTime">Time</label>
+                                <input type="text" id="createMeetingTime" class="form-input"
+                                    placeholder="e.g. 09:00 AM - 11:30 AM">
+                            </div>
+                        </div>
+                        <div class="form-row-2">
+                            <div class="form-group">
+                                <label for="createVenue">Venue / Room</label>
+                                <input type="text" id="createVenue" class="form-input"
+                                    placeholder="e.g. Registrar Office, 1st Floor / Gymnasium">
+                            </div>
+                            <div class="form-group">
+                                <label for="createMeetingLink">Online Meeting Link (Optional)</label>
+                                <input type="url" id="createMeetingLink" class="form-input"
+                                    placeholder="https://meet.google.com/xyz">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="createContent">Announcement Content & Details <span
+                                class="required">*</span></label>
+                        <textarea id="createContent" class="form-textarea" rows="4"
+                            placeholder="Enter the complete announcement details, instructions, or deadlines..."
+                            required></textarea>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="createRequiresRsvp" style="width: 16px; height: 16px;">
+                            <span style="font-size: 0.88rem; font-weight: 600; color: #334155;">Require attendance
+                                confirmation (RSVP)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" id="cancelCreateBtn">Cancel</button>
+                    <button type="submit" class="btn-primary"
+                        style="background: linear-gradient(135deg, #065f46 0%, #10b981 100%);">
+                        <i class="fas fa-paper-plane"></i> Publish & Notify Dashboards
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/registrar_avatar_sync.js"></script>
+    <script type="module" src="js/announcements.js"></script>
+    <script src="../js/chatbot.js"></script>
+</body>
+
+</html>

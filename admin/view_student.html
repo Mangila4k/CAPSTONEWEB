@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>View Student - HES, Hiraya Enrollment System</title>
+    <title>View Student - PLSNSH, Placido L. Señor National High School</title>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- Google Fonts -->
@@ -12,7 +13,9 @@
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/view_student.css">
     <link rel="stylesheet" href="../css/chatbot.css">
+    <link rel="stylesheet" href="../css/sidebar.css">
 </head>
+
 <body>
     <!-- Mobile Menu Toggle -->
     <div class="menu-toggle" id="menuToggle">
@@ -25,20 +28,12 @@
             <div class="sidebar-header">
                 <div class="logo">
                     <div class="logo-icon">
-                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
+                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo"
+                            onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
                     </div>
                     <div class="logo-text">PLS<span>NSH</span></div>
                 </div>
                 <div class="school-badge">Placido L. Señor National High School</div>
-            </div>
-
-            <div class="admin-profile">
-                <div class="admin-avatar">
-                    <div class="avatar-initial" id="adminAvatar">A</div>
-                    <div class="online-dot"></div>
-                </div>
-                <div class="admin-name" id="adminName">Admin</div>
-                <div class="admin-role"><i class="fas fa-shield-alt"></i> Administrator</div>
             </div>
 
             <div class="nav-menu">
@@ -58,7 +53,8 @@
                     <div class="nav-section-title">COMMUNICATION & MANAGEMENT</div>
                     <ul class="nav-items">
                         <li><a href="announcements.html"><i class="fas fa-bullhorn"></i> Announcements</a></li>
-                        <li><a href="guidance_violations.html"><i class="fas fa-scale-balanced"></i> Guidance & Violations</a></li>
+                        <li><a href="guidance_violations.html"><i class="fas fa-scale-balanced"></i> Guidance &
+                                Violations</a></li>
                         <li><a href="manage_accounts.html"><i class="fas fa-users-cog"></i> Accounts</a></li>
                         <li><a href="attendance.html"><i class="fas fa-calendar-check"></i> Attendance</a></li>
                         <li><a href="register_face.html"><i class="fas fa-camera"></i> Face Registration</a></li>
@@ -71,8 +67,23 @@
                     <div class="nav-section-title">ACCOUNT</div>
                     <ul class="nav-items">
                         <li><a href="profile.html"><i class="fas fa-user"></i> Profile</a></li>
-                        <li><a href="../auth/logout.html"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                        <li><a href="../auth/logout.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                        </li>
+
                     </ul>
+                </div>
+            </div>
+            <!-- Pinned Sidebar Footer -->
+            <div class="sidebar-footer">
+                <div class="admin-profile">
+                    <div class="admin-avatar">
+                        <div class="avatar-initial" id="adminAvatar">A</div>
+                        <div class="online-dot"></div>
+                    </div>
+                    <div class="admin-info">
+                        <div class="admin-name" id="adminName">Admin</div>
+                        <div class="admin-role"><i class="fas fa-shield-alt"></i> Administrator</div>
+                    </div>
                 </div>
             </div>
         </aside>
@@ -92,41 +103,51 @@
             <!-- Student Profile Card -->
             <div class="profile-card">
                 <div class="profile-avatar-large">
-                    <div class="avatar-initial" id="avatarInitial">J</div>
+                    <div class="avatar-initial" id="avatarInitial"><i class="fas fa-user"></i></div>
                 </div>
                 <div class="profile-info">
-                    <h2 id="studentName">Juan Dela Cruz</h2>
-                    
+                    <h2 id="studentName">Loading student profile...</h2>
+
                     <div class="profile-meta">
                         <span class="profile-meta-item">
-                            <i class="fas fa-envelope"></i> <span id="studentEmail">juan.dela@plshs.edu.ph</span>
+                            <i class="fas fa-envelope"></i> <span id="studentEmail">—</span>
                         </span>
                         <span class="profile-meta-item">
-                            <i class="fas fa-id-card"></i> ID: <span id="studentIdNumber">HES-STU-000001</span>
+                            <i class="fas fa-id-card"></i> ID: <span id="studentIdNumber">—</span>
                         </span>
                         <span class="profile-meta-item">
-                            <i class="fas fa-calendar-alt"></i> Registered: <span id="studentRegistered">June 15, 2026</span>
+                            <i class="fas fa-users-rectangle"></i> Section: <span id="studentSectionPill">—</span>
                         </span>
                         <span class="profile-meta-item">
-                            <i class="fas fa-clock"></i> Active: <span id="studentDaysActive">0</span> days
+                            <i class="fas fa-calendar-alt"></i> Registered: <span id="studentRegistered">—</span>
+                        </span>
+                        <span class="profile-meta-item">
+                            <i class="fas fa-clock"></i> Active: <span id="studentDaysActive">—</span>
                         </span>
                     </div>
 
                     <div style="margin-bottom: 15px;">
                         <span class="profile-badge badge-enrolled" id="statusBadge">
                             <i class="fas fa-check-circle"></i>
-                            Current Status: Enrolled
+                            Current Status: —
                         </span>
                     </div>
 
                     <div class="action-buttons" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                        <a href="student.html" class="btn-secondary" style="background: #fff; border: 1.5px solid #cbd5e1; color: #1B2A4A; padding: 9px 18px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 13.5px; display: inline-flex; align-items: center; gap: 8px;">
+                        <a href="student.html" class="btn-secondary"
+                            style="background: #fff; border: 1.5px solid #cbd5e1; color: #1B2A4A; padding: 9px 18px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 13.5px; display: inline-flex; align-items: center; gap: 8px;">
                             <i class="fas fa-arrow-left"></i> Back to Student List
                         </a>
-                        <a id="editStudentHeaderBtn" href="edit_student.html" class="btn-primary" style="background: #2563eb; color: #fff; padding: 9px 18px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 13.5px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);">
+                        <button type="button" onclick="window.openAssignSectionModal()" class="btn-secondary"
+                            style="background: #eff6ff; border: 1.5px solid #bfdbfe; color: #1d4ed8; padding: 9px 18px; border-radius: 8px; font-weight: 600; font-size: 13.5px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-layer-group"></i> Assign / Change Section
+                        </button>
+                        <a id="editStudentHeaderBtn" href="edit_student.html" class="btn-primary"
+                            style="background: #2563eb; color: #fff; padding: 9px 18px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 13.5px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);">
                             <i class="fas fa-edit"></i> Edit Student
                         </a>
-                        <button type="button" onclick="window.openDeleteStudentModal()" class="btn-danger" style="background: #dc2626; color: #fff; border: none; padding: 9px 18px; border-radius: 8px; font-weight: 600; font-size: 13.5px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 2px 6px rgba(220, 38, 38, 0.25);">
+                        <button type="button" onclick="window.openDeleteStudentModal()" class="btn-danger"
+                            style="background: #dc2626; color: #fff; border: none; padding: 9px 18px; border-radius: 8px; font-weight: 600; font-size: 13.5px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 2px 6px rgba(220, 38, 38, 0.25);">
                             <i class="fas fa-trash-alt"></i> Delete / Transfer Record
                         </button>
                     </div>
@@ -147,7 +168,7 @@
             <div class="detail-card" id="currentEnrollmentCard">
                 <div class="card-header">
                     <h3><i class="fas fa-graduation-cap"></i> Current Enrollment</h3>
-                    <a href="view_enrollment.html?id=1" class="view-link">
+                    <a href="enrollments.html" class="view-link" style="display: none;">
                         View Details <i class="fas fa-arrow-right"></i>
                     </a>
                 </div>
@@ -166,11 +187,12 @@
                 </div>
             </div>
 
-            <!-- Guidance & Conduct Records Section (Handwritten Note: Add Action Guidance) -->
             <div class="detail-card">
                 <div class="card-header" style="display: flex; align-items: center; justify-content: space-between;">
-                    <h3><i class="fas fa-scale-balanced" style="color: #f59e0b;"></i> Guidance & Disciplinary Records</h3>
-                    <a href="guidance_violations.html" class="view-link" style="color: #1B2A4A; font-weight: 600; text-decoration: none; font-size: 13px;">
+                    <h3><i class="fas fa-scale-balanced" style="color: #f59e0b;"></i> Guidance & Disciplinary Records
+                    </h3>
+                    <a href="guidance_violations.html" class="view-link"
+                        style="color: #1B2A4A; font-weight: 600; text-decoration: none; font-size: 13px;">
                         Manage in Guidance Hub <i class="fas fa-arrow-right"></i>
                     </a>
                 </div>
@@ -179,13 +201,16 @@
                 </div>
             </div>
 
-            <!-- Danger Zone: Remove Student (Handwritten Note: Reason if you delete or remove a student) -->
-            <div style="margin-top: 24px; padding: 18px 24px; background: #fff5f5; border: 1.5px solid #fed7d7; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+            <div
+                style="margin-top: 24px; padding: 18px 24px; background: #fff5f5; border: 1.5px solid #fed7d7; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
                 <div>
-                    <h4 style="margin: 0; color: #c53030; font-size: 15px;"><i class="fas fa-triangle-exclamation"></i> Danger Zone: Remove Student Record</h4>
-                    <p style="margin: 2px 0 0; color: #742a2a; font-size: 12.5px;">Removing a student requires a mandatory reason and is logged to audit trail.</p>
+                    <h4 style="margin: 0; color: #c53030; font-size: 15px;"><i class="fas fa-triangle-exclamation"></i>
+                        Danger Zone: Remove Student Record</h4>
+                    <p style="margin: 2px 0 0; color: #742a2a; font-size: 12.5px;">Removing a student requires a
+                        mandatory reason and is logged to audit trail.</p>
                 </div>
-                <button type="button" onclick="window.openDeleteStudentModal()" style="padding: 9px 18px; border-radius: 8px; background: #e53e3e; color: #fff; border: none; font-weight: 700; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                <button type="button" onclick="window.openDeleteStudentModal()"
+                    style="padding: 9px 18px; border-radius: 8px; background: #e53e3e; color: #fff; border: none; font-weight: 700; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
                     <i class="fas fa-trash-alt"></i> Remove Student
                 </button>
             </div>
@@ -193,89 +218,185 @@
     </div>
 
     <!-- Delete Student Modal with Mandatory Reason Prompt -->
-    <div id="modalDeleteStudent" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15,23,42,0.6); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center; padding: 20px;">
-        <div style="background: #fff; border-radius: 16px; max-width: 500px; width: 100%; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); overflow: hidden;">
-            <div style="padding: 18px 24px; border-bottom: 1px solid #fed7d7; background: #fff5f5; display: flex; align-items: center; justify-content: space-between;">
+    <div id="modalDeleteStudent"
+        style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15,23,42,0.6); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center; padding: 20px;">
+        <div
+            style="background: #fff; border-radius: 16px; max-width: 500px; width: 100%; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); overflow: hidden;">
+            <div
+                style="padding: 18px 24px; border-bottom: 1px solid #fed7d7; background: #fff5f5; display: flex; align-items: center; justify-content: space-between;">
                 <h3 style="margin: 0; color: #c53030; font-size: 16px; display: flex; align-items: center; gap: 8px;">
                     <i class="fas fa-exclamation-triangle"></i> Remove Student Record
                 </h3>
-                <button type="button" onclick="window.closeDeleteStudentModal()" style="background: none; border: none; font-size: 20px; color: #742a2a; cursor: pointer;">&times;</button>
+                <button type="button" onclick="window.closeDeleteStudentModal()"
+                    style="background: none; border: none; font-size: 20px; color: #742a2a; cursor: pointer;">&times;</button>
             </div>
             <div style="padding: 20px 24px;">
                 <p style="font-size: 13.5px; color: #4a5568; margin-bottom: 14px;">
-                    Please provide an official reason for removing <strong id="deleteTargetStudentName">this student</strong>. This justification is permanently logged to the system audit records.
+                    Please provide an official reason for removing <strong id="deleteTargetStudentName">this
+                        student</strong>. This justification is permanently logged to the system audit records.
                 </p>
                 <div style="margin-bottom: 14px;">
-                    <label style="display: block; font-size: 11.5px; font-weight: 700; text-transform: uppercase; color: #4a5568; margin-bottom: 6px;">
+                    <label
+                        style="display: block; font-size: 11.5px; font-weight: 700; text-transform: uppercase; color: #4a5568; margin-bottom: 6px;">
                         Primary Reason <span style="color: #e53e3e;">*</span>
                     </label>
-                    <select id="deleteReasonCategory" style="width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 13.5px; background: #fff; font-weight: 600;" required>
-                        <option value="Transferred to Another School">🏫 Transferred to Another School (Transferred Out)</option>
-                        <option value="Dropped Out / Discontinued Studies">🚪 Dropped Out / Discontinued Studies</option>
+                    <select id="deleteReasonCategory"
+                        style="width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 13.5px; background: #fff; font-weight: 600;"
+                        required>
+                        <option value="Transferred to Another School">🏫 Transferred to Another School (Transferred Out)
+                        </option>
+                        <option value="Dropped Out / Discontinued Studies">🚪 Dropped Out / Discontinued Studies
+                        </option>
                         <option value="Withdrawn by Parent / Guardian">📝 Withdrawn by Parent / Guardian</option>
                         <option value="Disciplinary Dismissal / Expelled">⚖️ Disciplinary Dismissal / Expelled</option>
-                        <option value="Graduated / Completed Academic Level">🎓 Graduated / Completed Academic Level</option>
+                        <option value="Graduated / Completed Academic Level">🎓 Graduated / Completed Academic Level
+                        </option>
                         <option value="Duplicate or Erroneous Entry">⚠️ Duplicate / Erroneous Record</option>
                         <option value="Other Reason">❓ Other Reason</option>
                     </select>
                 </div>
 
-                <!-- Destination School Field (Shown for Transferred) -->
                 <div id="transferDetailsGroupView" style="margin-bottom: 14px;">
-                    <label style="display: block; font-size: 11.5px; font-weight: 700; text-transform: uppercase; color: #4a5568; margin-bottom: 6px;">
+                    <label
+                        style="display: block; font-size: 11.5px; font-weight: 700; text-transform: uppercase; color: #4a5568; margin-bottom: 6px;">
                         Destination School / Institution <span style="color: #e53e3e;">*</span>
                     </label>
-                    <input type="text" id="destinationSchoolView" placeholder="e.g. Cebu City National Science High School, Cebu" style="width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 13.5px;">
-                    <div style="font-size: 11.5px; color: #64748b; margin-top: 4px;">Will be formally recorded in the Transferees registry for DepEd Form 137 / SF10 forwarding.</div>
+                    <input type="text" id="destinationSchoolView"
+                        placeholder="e.g. Cebu City National Science High School, Cebu"
+                        style="width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 13.5px;">
+                    <div style="font-size: 11.5px; color: #64748b; margin-top: 4px;">Will be formally recorded in the
+                        Transferees registry for DepEd Form 137 / SF10 forwarding.</div>
                 </div>
 
                 <div style="margin-bottom: 14px;">
-                    <label style="display: block; font-size: 11.5px; font-weight: 700; text-transform: uppercase; color: #4a5568; margin-bottom: 6px;">
+                    <label
+                        style="display: block; font-size: 11.5px; font-weight: 700; text-transform: uppercase; color: #4a5568; margin-bottom: 6px;">
                         Effective Date <span style="color: #e53e3e;">*</span>
                     </label>
-                    <input type="date" id="effectiveDateView" style="width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 13.5px; background: #fff;" required>
+                    <input type="date" id="effectiveDateView"
+                        style="width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 13.5px; background: #fff;"
+                        required>
                 </div>
 
                 <div style="margin-bottom: 14px;">
-                    <label style="display: block; font-size: 11.5px; font-weight: 700; text-transform: uppercase; color: #4a5568; margin-bottom: 6px;">
+                    <label
+                        style="display: block; font-size: 11.5px; font-weight: 700; text-transform: uppercase; color: #4a5568; margin-bottom: 6px;">
                         Detailed Justification / Notes
                     </label>
-                    <textarea id="deleteReasonNotes" rows="3" style="width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 13.5px;" placeholder="Provide details (e.g. Form 137 requested by new school, parent request, or counselor remarks)..."></textarea>
+                    <textarea id="deleteReasonNotes" rows="3"
+                        style="width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 13.5px;"
+                        placeholder="Provide details (e.g. Form 137 requested by new school, parent request, or counselor remarks)..."></textarea>
                 </div>
 
                 <div style="margin-bottom: 16px;">
-                    <label style="display: block; font-size: 11.5px; font-weight: 700; text-transform: uppercase; color: #4a5568; margin-bottom: 6px;">
+                    <label
+                        style="display: block; font-size: 11.5px; font-weight: 700; text-transform: uppercase; color: #4a5568; margin-bottom: 6px;">
                         Action Mode
                     </label>
-                    <div style="display: flex; flex-direction: column; gap: 8px; background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px; border-radius: 8px;">
-                        <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; font-size: 13px; color: #1e293b;">
+                    <div
+                        style="display: flex; flex-direction: column; gap: 8px; background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px; border-radius: 8px;">
+                        <label
+                            style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; font-size: 13px; color: #1e293b;">
                             <input type="radio" name="removalModeView" value="archive" checked style="margin-top: 2px;">
                             <div>
                                 <strong>Mark as Inactive / Transferred Out (Recommended)</strong>
-                                <div style="font-size: 11.5px; color: #64748b;">Preserves academic history and grades while removing student from active class rosters.</div>
+                                <div style="font-size: 11.5px; color: #64748b;">Preserves academic history and grades
+                                    while removing student from active class rosters.</div>
                             </div>
                         </label>
-                        <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; font-size: 13px; color: #dc2626;">
+                        <label
+                            style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; font-size: 13px; color: #dc2626;">
                             <input type="radio" name="removalModeView" value="permanent" style="margin-top: 2px;">
                             <div>
                                 <strong>Permanently Delete Record</strong>
-                                <div style="font-size: 11.5px; color: #ef4444;">Completely purges the student and user account from the database. Cannot be undone.</div>
+                                <div style="font-size: 11.5px; color: #ef4444;">Completely purges the student and user
+                                    account from the database. Cannot be undone.</div>
                             </div>
                         </label>
                     </div>
                 </div>
 
-                <div style="background: #fffbeb; border: 1px solid #fef3c7; border-left: 4px solid #f59e0b; padding: 10px 14px; border-radius: 6px; font-size: 12px; color: #92400e; display: flex; align-items: flex-start; gap: 8px;">
+                <div
+                    style="background: #fffbeb; border: 1px solid #fef3c7; border-left: 4px solid #f59e0b; padding: 10px 14px; border-radius: 6px; font-size: 12px; color: #92400e; display: flex; align-items: flex-start; gap: 8px;">
                     <i class="fas fa-shield-alt" style="margin-top: 2px; color: #d97706;"></i>
-                    <span>Recorded in the <strong>Audit & Transferee Registry</strong> with timestamp and administrator ID.</span>
+                    <span>Recorded in the <strong>Audit & Transferee Registry</strong> with timestamp and administrator
+                        ID.</span>
                 </div>
             </div>
-            <div style="padding: 16px 24px; border-top: 1px solid #e2e8f0; background: #f8fafc; display: flex; justify-content: flex-end; gap: 10px;">
-                <button type="button" onclick="window.closeDeleteStudentModal()" style="padding: 9px 18px; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff; color: #475569; font-weight: 600; cursor: pointer;">Cancel</button>
-                <button type="button" id="btnConfirmDeleteWithReason" onclick="window.confirmDeleteWithReason()" style="padding: 9px 20px; border-radius: 8px; background: #dc2626; color: #fff; border: none; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 2px 6px rgba(220, 38, 38, 0.3);">
+            <div
+                style="padding: 16px 24px; border-top: 1px solid #e2e8f0; background: #f8fafc; display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" onclick="window.closeDeleteStudentModal()"
+                    style="padding: 9px 18px; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff; color: #475569; font-weight: 600; cursor: pointer;">Cancel</button>
+                <button type="button" id="btnConfirmDeleteWithReason" onclick="window.confirmDeleteWithReason()"
+                    style="padding: 9px 20px; border-radius: 8px; background: #dc2626; color: #fff; border: none; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 2px 6px rgba(220, 38, 38, 0.3);">
                     <i class="fas fa-trash-alt"></i> Confirm Removal
                 </button>
             </div>
+        </div>
+    </div>
+
+    <div id="modalAssignSection"
+        style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15,23,42,0.6); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center; padding: 20px;">
+        <div
+            style="background: #fff; border-radius: 16px; max-width: 480px; width: 100%; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); overflow: hidden;">
+            <div
+                style="padding: 18px 24px; border-bottom: 1px solid #e2e8f0; background: #f8fafc; display: flex; align-items: center; justify-content: space-between;">
+                <h3 style="margin: 0; color: #1e293b; font-size: 16px; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-users-rectangle" style="color: #2563eb;"></i> Assign Section & Adviser
+                </h3>
+                <button type="button" onclick="window.closeAssignSectionModal()"
+                    style="background: none; border: none; font-size: 20px; color: #64748b; cursor: pointer;">&times;</button>
+            </div>
+            <form id="assignSectionModalForm" style="padding: 20px 24px;">
+                <p style="font-size: 13.5px; color: #4a5568; margin-bottom: 16px;">
+                    Assign or transfer <strong id="assignTargetStudentName">this student</strong> to an official
+                    year level and section.
+                </p>
+
+                <div style="margin-bottom: 14px;">
+                    <label
+                        style="display: block; font-size: 11.5px; font-weight: 700; text-transform: uppercase; color: #4a5568; margin-bottom: 6px;">
+                        Year Level <span style="color: #e53e3e;">*</span>
+                    </label>
+                    <select id="modalAssignGradeLevel"
+                        style="width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 13.5px; background: #fff;"
+                        required>
+                        <option value="">-- Select Year Level --</option>
+                        <option value="Grade 7">Grade 7 (Junior High)</option>
+                        <option value="Grade 8">Grade 8 (Junior High)</option>
+                        <option value="Grade 9">Grade 9 (Junior High)</option>
+                        <option value="Grade 10">Grade 10 (Junior High)</option>
+                        <option value="Grade 11">Grade 11 (Senior High)</option>
+                        <option value="Grade 12">Grade 12 (Senior High)</option>
+                    </select>
+                </div>
+
+                <div style="margin-bottom: 18px;">
+                    <label
+                        style="display: block; font-size: 11.5px; font-weight: 700; text-transform: uppercase; color: #4a5568; margin-bottom: 6px;">
+                        Section <span style="color: #e53e3e;">*</span>
+                    </label>
+                    <select id="modalAssignSectionSelect"
+                        style="width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 13.5px; background: #fff;"
+                        required disabled>
+                        <option value="">-- Select Year Level First --</option>
+                    </select>
+                    <div id="modalAssignSectionHint" style="font-size: 11.5px; color: #64748b; margin-top: 4px;">
+                        Select a year level to load available sections and their class advisers.
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <button type="button" onclick="window.closeAssignSectionModal()"
+                        style="padding: 9px 18px; border-radius: 8px; background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; font-weight: 600; font-size: 13.5px; cursor: pointer;">
+                        Cancel
+                    </button>
+                    <button type="submit" id="btnSaveSectionAssignment"
+                        style="padding: 9px 20px; border-radius: 8px; background: #2563eb; color: #fff; border: none; font-weight: 700; font-size: 13.5px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                        <i class="fas fa-check"></i> Save Section
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -283,4 +404,5 @@
     <script type="module" src="js/view_student.js"></script>
     <script src="../js/chatbot.js"></script>
 </body>
+
 </html>

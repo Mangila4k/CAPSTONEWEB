@@ -1,9 +1,10 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add New Subject - HES, Hiraya Enrollment System</title>
+    <title>Add New Subject - PLSNSH, Placido L. Señor National High School</title>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- Google Fonts -->
@@ -12,7 +13,9 @@
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/add_subject.css">
     <link rel="stylesheet" href="../css/chatbot.css">
+    <link rel="stylesheet" href="../css/sidebar.css">
 </head>
+
 <body>
     <div class="app-container">
         <!-- Sidebar -->
@@ -20,20 +23,12 @@
             <div class="sidebar-header">
                 <div class="logo">
                     <div class="logo-icon">
-                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
+                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo"
+                            onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
                     </div>
                     <div class="logo-text">PLS<span>NSH</span></div>
                 </div>
                 <div class="school-badge">Placido L. Señor National High School</div>
-            </div>
-
-            <div class="admin-profile">
-                <div class="admin-avatar">
-                    <div class="avatar-initial" id="adminAvatar">A</div>
-                    <div class="online-dot"></div>
-                </div>
-                <div class="admin-name" id="adminName">Admin</div>
-                <div class="admin-role"><i class="fas fa-shield-alt"></i> Administrator</div>
             </div>
 
             <div class="nav-menu">
@@ -65,8 +60,23 @@
                     <div class="nav-section-title">ACCOUNT</div>
                     <ul class="nav-items">
                         <li><a href="profile.html"><i class="fas fa-user"></i> Profile</a></li>
-                        <li><a href="../auth/logout.html"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                        <li><a href="../auth/logout.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                        </li>
+
                     </ul>
+                </div>
+            </div>
+            <!-- Pinned Sidebar Footer -->
+            <div class="sidebar-footer">
+                <div class="admin-profile">
+                    <div class="admin-avatar">
+                        <div class="avatar-initial" id="adminAvatar">A</div>
+                        <div class="online-dot"></div>
+                    </div>
+                    <div class="admin-info">
+                        <div class="admin-name" id="adminName">Admin</div>
+                        <div class="admin-role"><i class="fas fa-shield-alt"></i> Administrator</div>
+                    </div>
                 </div>
             </div>
         </aside>
@@ -96,10 +106,12 @@
                         <div class="category-section">
                             <label class="form-label">Category</label>
                             <div class="category-tags" id="categoryTags">
-                                <button type="button" class="category-tag core" data-category="Core" onclick="selectCategory('Core')">
+                                <button type="button" class="category-tag core" data-category="Core"
+                                    onclick="selectCategory('Core')">
                                     <i class="fas fa-book-open"></i> Core Subject
                                 </button>
-                                <button type="button" class="category-tag elective" data-category="Elective" onclick="selectCategory('Elective')">
+                                <button type="button" class="category-tag elective" data-category="Elective"
+                                    onclick="selectCategory('Elective')">
                                     <i class="fas fa-star"></i> Elective
                                 </button>
                             </div>
@@ -113,10 +125,8 @@
                         <div class="form-group">
                             <label class="form-label">Subject Name <span class="required">*</span></label>
                             <div class="input-wrapper">
-                                <input type="text" 
-                                       id="subject_name" 
-                                       name="subject_name" 
-                                       placeholder="e.g. General Mathematics, Earth and Life Science">
+                                <input type="text" id="subject_name" name="subject_name"
+                                    placeholder="e.g. General Mathematics, Earth and Life Science">
                             </div>
                         </div>
 
@@ -181,4 +191,5 @@
     <script type="module" src="js/add_subject.js"></script>
     <script src="../js/chatbot.js"></script>
 </body>
+
 </html>

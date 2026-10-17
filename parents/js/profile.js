@@ -140,10 +140,10 @@ import { supabase } from '../../supabase/config.js';
         if (!data) return;
         const firstName = data.first_name || data.firstName || 'Parent';
         const lastName = data.last_name || data.lastName || '';
-        const email = data.email || 'parent@hiraya.edu.ph';
-        const phone = data.phone || data.contact_number || '09123456789';
-        const address = data.address || 'Langtad, City of Naga, Cebu';
-        const createdAt = data.created_at || '2026-01-01';
+        const email = data.email || '—';
+        const phone = data.phone || data.contact_number || '—';
+        const address = data.address || '—';
+        const createdAt = data.created_at || new Date().toISOString();
 
         const fullName = `${firstName} ${lastName}`.trim() || 'Parent Guardian';
         const initial = firstName.charAt(0).toUpperCase() || 'P';

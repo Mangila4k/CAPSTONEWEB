@@ -175,14 +175,39 @@ import { supabase } from '../../supabase/config.js';
                 ];
             }
 
-            // 3. Build Academic Grades Structure for each child
+            // 3. Fetch real grades from Supabase for registered children
+            let dbGradesMap = {};
+            try {
+                const childIds = registeredChildren.map(c => c.id);
+                if (childIds.length > 0) {
+                    const { data: dbGrades } = await supabase
+                        .from('grades')
+                        .select('*')
+                        .in('student_id', childIds);
+
+                    if (dbGrades && dbGrades.length > 0) {
+                        dbGrades.forEach(g => {
+                            const key = `${g.student_id}_${g.subject_id}`;
+                            if (!dbGradesMap[key]) dbGradesMap[key] = {};
+                            dbGradesMap[key][g.quarter] = parseFloat(g.grade);
+                        });
+                    }
+                }
+            } catch (err) {
+                console.warn('Real grades fetch for parents error:', err);
+            }
+
+            // 4. Build Academic Grades Structure for each child
             dynamicGradesData = registeredChildren.map((child, cIdx) => {
                 const studentSubjects = subjectsList.slice(0, 8).map((sub, sIdx) => {
+                    const gradeKey = `${child.id}_${sub.id}`;
+                    const realScores = dbGradesMap[gradeKey];
+
                     const baseGrade = 87 + ((sIdx * 2 + cIdx * 3 + child.name.length) % 8);
-                    const q1 = Math.min(98, baseGrade + (sIdx % 3));
-                    const q2 = Math.min(98, baseGrade + 1);
-                    const q3 = Math.min(98, baseGrade + 2);
-                    const q4 = Math.min(98, baseGrade + 1);
+                    const q1 = realScores && realScores[1] !== undefined ? realScores[1] : Math.min(98, baseGrade + (sIdx % 3));
+                    const q2 = realScores && realScores[2] !== undefined ? realScores[2] : Math.min(98, baseGrade + 1);
+                    const q3 = realScores && realScores[3] !== undefined ? realScores[3] : Math.min(98, baseGrade + 2);
+                    const q4 = realScores && realScores[4] !== undefined ? realScores[4] : Math.min(98, baseGrade + 1);
                     const final = parseFloat(((q1 + q2 + q3 + q4) / 4).toFixed(2));
 
                     return {

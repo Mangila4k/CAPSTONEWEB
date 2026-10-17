@@ -77,6 +77,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     const modalNotifActionLink = document.getElementById('modalNotifActionLink');
 
     let currentNotifFilter = 'all';
+    let currentViewingNotifId = null;
 
     // Format relative time helper
     function getRelativeTimeString(dateString) {
@@ -133,8 +134,17 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         // Update badge counters
         if (notifCount) {
-            notifCount.textContent = unreadCount;
-            notifCount.classList.toggle('empty', unreadCount === 0);
+            if (unreadCount > 0) {
+                notifCount.textContent = unreadCount > 99 ? '99+' : String(unreadCount);
+                notifCount.classList.remove('empty');
+                notifCount.style.display = 'flex';
+                if (notificationBtn) notificationBtn.classList.add('has-unread');
+            } else {
+                notifCount.textContent = '';
+                notifCount.classList.add('empty');
+                notifCount.style.display = 'none';
+                if (notificationBtn) notificationBtn.classList.remove('has-unread');
+            }
         }
         if (unreadPill) {
             unreadPill.textContent = `${unreadCount} New`;
@@ -176,8 +186,10 @@ document.addEventListener('DOMContentLoaded', async function() {
             const icon = icons[notif.type] || 'fa-bell';
             const timeAgo = getRelativeTimeString(notif.created_at);
             
+            const isClosed = Boolean(notif.is_read);
+            const enrollmentLink = (notif.enrollment_id || notif.enrollmentId) ? `view_enrollment.html?id=${notif.enrollment_id || notif.enrollmentId}` : null;
             html += `
-                <div class="notif-item ${notif.is_read ? 'read' : 'unread'}" data-id="${notif.id}">
+                <div class="notif-item ${isClosed ? 'read closed' : 'unread'}" data-id="${notif.id}">
                     <div class="notif-icon notif-${notif.type || 'message'}">
                         <i class="fas ${icon}"></i>
                     </div>
@@ -187,13 +199,25 @@ document.addEventListener('DOMContentLoaded', async function() {
                             <span class="notif-time">${timeAgo}</span>
                         </div>
                         <div class="notif-message">${notif.message || ''}</div>
+                        <div class="notif-meta-status" style="margin-top: 6px; display: flex; align-items: center; gap: 8px;">
+                            <span class="notif-status-pill" style="font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 10px; background: ${isClosed ? '#dcfce7' : '#fee2e2'}; color: ${isClosed ? '#15803d' : '#b91c1c'}; display: inline-flex; align-items: center; gap: 4px;">
+                                <i class="fas ${isClosed ? 'fa-check-circle' : 'fa-bell'}"></i> ${isClosed ? 'Closed' : 'Unread'}
+                            </span>
+                            ${enrollmentLink ? `
+                                <a href="${enrollmentLink}" class="notif-view-student-link" style="display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; color: #1B2A4A; background: #e0e7ff; padding: 2px 8px; border-radius: 6px; text-decoration: none;">
+                                    <i class="fas fa-eye"></i> View Student
+                                </a>
+                            ` : ''}
+                        </div>
                     </div>
                     <div class="notif-item-actions">
-                        ${!notif.is_read ? `
-                            <button type="button" class="mark-read-btn" data-id="${notif.id}" title="Mark as read">
+                        ${!isClosed ? `
+                            <button type="button" class="mark-read-btn" data-id="${notif.id}" title="Mark as closed">
                                 <i class="fas fa-check"></i>
                             </button>
-                        ` : ''}
+                        ` : `
+                            <span title="Notification is closed" style="color: #10b981; font-size: 13px; padding: 6px;"><i class="fas fa-check-double"></i></span>
+                        `}
                     </div>
                 </div>
             `;
@@ -225,11 +249,13 @@ document.addEventListener('DOMContentLoaded', async function() {
         const notif = dashboardData.notifications.find(n => String(n.id) === String(id));
         if (!notif) return;
 
-        // Mark as read in state and database
+        currentViewingNotifId = id;
+
+        // Mark as read/closed in state and database
         if (!notif.is_read) {
             notif.is_read = true;
             try {
-                await supabase.from('notifications').update({ read: true }).eq('id', notif.id);
+                await supabase.from('notifications').update({ read: true, is_read: true }).eq('id', notif.id);
             } catch(e) {
                 console.warn('Could not update notification read status:', e);
             }
@@ -265,12 +291,18 @@ document.addEventListener('DOMContentLoaded', async function() {
         if (modalNotifTime) modalNotifTime.textContent = fullDate;
         
         if (modalNotifStatusBadge) {
-            modalNotifStatusBadge.textContent = 'Read';
-            modalNotifStatusBadge.className = 'notif-read-status';
+            modalNotifStatusBadge.innerHTML = '<i class="fas fa-check-circle"></i> Closed';
+            modalNotifStatusBadge.className = 'notif-read-status closed';
         }
 
         if (modalNotifMessage) modalNotifMessage.textContent = notif.message || 'No description provided.';
-        if (modalNotifSender) modalNotifSender.textContent = notif.sender || 'Hiraya Enrollment System';
+        
+        const rawSender = (notif.sender || '').trim();
+        const displaySender = (!rawSender || rawSender === 'Hiraya Enrollment System')
+            ? 'Placido L. Señor National High School'
+            : rawSender;
+        if (modalNotifSender) modalNotifSender.textContent = displaySender;
+
         if (modalNotifActionType) modalNotifActionType.textContent = notif.actionType || notif.type || 'System Notification';
         if (modalNotifPriority) modalNotifPriority.textContent = notif.priority || 'Normal';
         if (modalNotifSystemId) modalNotifSystemId.textContent = `NOTIF-${String(notif.id).substring(0, 8)}`;
@@ -280,7 +312,10 @@ document.addEventListener('DOMContentLoaded', async function() {
             let url = notif.actionUrl;
             let label = notif.actionLabel;
             if (!url) {
-                if (notif.type === 'enrollment' || notif.type === 'new_enrollment') { url = (notif.enrollment_id || notif.enrollmentId) ? `view_enrollment.html?id=${notif.enrollment_id || notif.enrollmentId}` : 'enrollments.html'; label = 'Go to Enrollments'; }
+                if (notif.type === 'enrollment' || notif.type === 'new_enrollment') {
+                    url = (notif.enrollment_id || notif.enrollmentId) ? `view_enrollment.html?id=${notif.enrollment_id || notif.enrollmentId}` : 'enrollments.html';
+                    label = (notif.enrollment_id || notif.enrollmentId) ? 'View Full Student Information' : 'Go to Enrollments';
+                }
                 else if (notif.type === 'account') { url = 'manage_accounts.html'; label = 'Go to Accounts'; }
                 else if (notif.type === 'action') { url = 'sections.html'; label = 'Go to Sections'; }
                 else if (notif.type === 'profile') { url = 'student.html'; label = 'Go to Students'; }
@@ -293,21 +328,22 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         // Show modal
         if (notificationDetailModal) {
+            notificationDetailModal.style.display = 'flex';
             notificationDetailModal.classList.add('active');
         }
     }
 
-    // Mark single notification as read
+    // Mark single notification as read/closed
     async function markNotificationRead(id) {
         const notif = dashboardData.notifications.find(n => String(n.id) === String(id));
         if (notif) {
             notif.is_read = true;
+            renderNotifications();
             try {
-                await supabase.from('notifications').update({ read: true }).eq('id', notif.id);
+                await supabase.from('notifications').update({ read: true, is_read: true }).eq('id', notif.id);
             } catch (e) {
                 console.warn('Error marking notification read in DB:', e);
             }
-            renderNotifications();
         }
     }
 
@@ -426,7 +462,12 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Modal close handlers
     function closeDetailModal() {
         if (notificationDetailModal) {
-            notificationDetailModal.classList.remove('active');
+            notificationDetailModal.classList.remove('active', 'show');
+            notificationDetailModal.style.display = 'none';
+        }
+        if (currentViewingNotifId) {
+            markNotificationRead(currentViewingNotifId);
+            currentViewingNotifId = null;
         }
     }
 
@@ -1221,9 +1262,11 @@ document.addEventListener('DOMContentLoaded', async function() {
                     message: n.message || '',
                     created_at: n.created_at || new Date().toISOString(),
                     is_read: n.read === true || n.is_read === true,
-                    sender: n.sender || 'Hiraya Enrollment System',
+                    sender: (!n.sender || n.sender === 'Hiraya Enrollment System') ? 'Placido L. Señor National High School' : n.sender,
                     actionType: n.action_type || n.type || 'System Advisory',
-                    priority: n.priority || 'Normal'
+                    priority: n.priority || 'Normal',
+                    enrollment_id: n.enrollment_id,
+                    enrollmentId: n.enrollment_id
                 }));
             } else {
                 dashboardData.notifications = [];
@@ -1465,7 +1508,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 }, (payload) => {
                     if (!payload || !payload.new) return;
                     const newNotif = payload.new;
-                    if (!newNotif.role || newNotif.role === 'admin') {
+                    if (!newNotif.role || newNotif.role === 'admin' || newNotif.role === 'all') {
                         syncLiveDashboardData();
                         showNotificationToast(newNotif);
                         playNotificationChime();
@@ -1485,13 +1528,15 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         // Cross-tab immediate sync
         window.addEventListener('storage', (e) => {
-            if ((e.key === 'hes_latest_notification' || e.key === 'hes_admin_latest_notification') && e.newValue) {
+            if ((e.key === 'hes_latest_notification' || e.key === 'hes_admin_latest_notification' || e.key === 'hes_enrollment_updated') && e.newValue) {
                 try {
-                    const data = JSON.parse(e.newValue);
-                    if (!data.role || data.role === 'admin' || data.role === 'all' || (data.roles && data.roles.includes('admin'))) {
-                        syncLiveDashboardData();
-                        showNotificationToast(data);
-                        playNotificationChime();
+                    syncLiveDashboardData();
+                    if (e.key !== 'hes_enrollment_updated') {
+                        const data = JSON.parse(e.newValue);
+                        if (!data.role || data.role === 'admin' || data.role === 'all' || (data.roles && data.roles.includes('admin'))) {
+                            showNotificationToast(data);
+                            playNotificationChime();
+                        }
                     }
                 } catch(err) {}
             }
@@ -1510,4 +1555,5 @@ document.addEventListener('DOMContentLoaded', async function() {
     renderUsers();
     initChart();
     await syncLiveDashboardData();
+    setupRealtimeNotifications();
 });

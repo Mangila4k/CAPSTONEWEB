@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student ID QR Attendance Scanner - Teacher Dashboard | HES</title>
+    <title>Student ID QR Attendance Scanner - Teacher Dashboard | PLSNSH, Placido L. Señor National High School</title>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!-- Google Fonts -->
@@ -12,6 +12,7 @@
         rel="stylesheet">
     <!-- CSS -->
     <link rel="stylesheet" href="css/attendance-qr.css">
+    <link rel="stylesheet" href="../css/sidebar.css">
     <link rel="stylesheet" href="../css/chatbot.css">
 </head>
 
@@ -30,27 +31,20 @@
                 <div class="school-badge">Placido L. Señor National High School</div>
             </div>
 
-            <div class="teacher-profile">
-                <div class="teacher-avatar">
-                    <div class="avatar-initial" id="teacherInitial">T</div>
-                    <div class="online-dot"></div>
-                </div>
-                <div class="teacher-name" id="teacherName">Teacher</div>
-                <div class="teacher-role"><i class="fas fa-chalkboard-user"></i> Faculty Member</div>
-            </div>
-
             <nav class="nav-menu">
                 <div class="nav-section">
                     <div class="nav-section-title">MAIN MENU</div>
                     <ul class="nav-items">
                         <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a>
                         </li>
+                        <li><a href="announcements.html"><i class="fas fa-bullhorn"></i> <span>Announcements</span></a>
+                        </li>
                         <li><a href="attendance-face.html"><i class="fas fa-camera"></i> <span>Face
                                     Attendance</span></a></li>
                         <li><a href="attendance-qr.html" class="active"><i class="fas fa-qrcode"></i> <span>Student QR
                                     Scanner</span></a></li>
                         <li><a href="classes.html"><i class="fas fa-users"></i> <span>My Classes</span></a></li>
-                        <li><a href="class-program.html"><i class="fas fa-calendar-alt"></i> <span>Clas
+                        <li><a href="class-program.html"><i class="fas fa-calendar-alt"></i> <span>Class
                                     Program</span></a></li>
                         <li><a href="teacher-load.html"><i class="fas fa-clock"></i> <span>Teacher Load</span></a></li>
                         <li><a href="assessments.html"><i class="fas fa-clipboard-list"></i><span>Assessments</span></a>
@@ -68,6 +62,20 @@
                     </ul>
                 </div>
             </nav>
+
+            <!-- Pinned Sidebar Footer -->
+            <div class="sidebar-footer">
+                <div class="teacher-profile">
+                    <div class="teacher-avatar">
+                        <div class="avatar-initial" id="teacherInitial">RQ</div>
+                        <div class="online-dot"></div>
+                    </div>
+                    <div class="teacher-info">
+                        <div class="teacher-name" id="teacherName">Ryan Quiroga</div>
+                        <div class="teacher-role"><i class="fas fa-chalkboard-user"></i> Teacher</div>
+                    </div>
+                </div>
+            </div>
         </aside>
 
         <!-- ===== MAIN CONTENT ===== -->

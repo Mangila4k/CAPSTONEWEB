@@ -164,17 +164,6 @@ import { supabase } from '../../supabase/config.js';
             if (pendingEl) pendingEl.textContent = finalPending;
             if (enrolledEl) enrolledEl.textContent = finalEnrolled;
             if (rejectedEl) rejectedEl.textContent = finalRejected;
-
-            // Update live sidebar pending badge
-            const pendingBadge = document.getElementById('pendingEnrollmentsBadge');
-            if (pendingBadge) {
-                if (finalPending > 0) {
-                    pendingBadge.textContent = finalPending;
-                    pendingBadge.style.display = 'inline-flex';
-                } else {
-                    pendingBadge.style.display = 'none';
-                }
-            }
         } catch (error) {
             console.error('Error loading stats:', error);
         }
@@ -361,7 +350,7 @@ import { supabase } from '../../supabase/config.js';
             const { data, error } = await supabase
                 .from('notifications')
                 .select('*')
-                .or('role.eq.registrar,role.is.null')
+                .or('role.eq.registrar,role.eq.all,role.is.null')
                 .order('created_at', { ascending: false })
                 .limit(30);
 
@@ -425,18 +414,35 @@ import { supabase } from '../../supabase/config.js';
             const title = notif.title || 'New Notification';
             const message = notif.message || '';
             const notifId = notif.id;
+            const enrollmentLink = (notif.enrollment_id || notif.enrollmentId) ? `view_enrollment.html?id=${notif.enrollment_id || notif.enrollmentId}` : null;
+            const cat = window.RegistrarNotificationSync
+                ? window.RegistrarNotificationSync.getNotificationCategory(notif)
+                : { id: (notifType.includes('enroll') ? 'enrollment' : 'general'), label: (notifType.includes('enroll') ? 'Enrollments' : 'Notice'), icon: icon };
+            const categoryHtml = window.RegistrarNotificationSync
+                ? window.RegistrarNotificationSync.renderCategoryTag(cat)
+                : `<span class="notif-category-tag tag-${cat.id}"><i class="fas ${cat.icon}"></i> ${cat.label}</span>`;
             
             return `
-                <div class="notif-item ${isRead ? 'read' : 'unread'}" data-id="${notifId}">
+                <div class="notif-item ${isRead ? 'read' : 'unread'}" data-id="${notifId}" data-category="${cat.id}">
                     <div class="notif-icon notif-${notifType}">
                         <i class="fas ${icon}"></i>
                     </div>
                     <div class="notif-content">
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 3px;">
+                            ${categoryHtml}
+                            <div class="notif-time" style="margin-top: 0;">
+                                <i class="far fa-clock" style="margin-right: 4px;"></i>${formatTime(notif.created_at || notif.createdAt)}
+                            </div>
+                        </div>
                         <div class="notif-title">${title}</div>
                         <div class="notif-message">${message}</div>
-                        <div class="notif-time">
-                            <i class="far fa-clock" style="margin-right: 4px;"></i>${formatTime(notif.created_at || notif.createdAt)}
-                        </div>
+                        ${enrollmentLink ? `
+                            <div style="margin-top: 6px;">
+                                <a href="${enrollmentLink}" class="notif-view-student-btn" style="display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 700; color: #1B2A4A; background: #e0e7ff; padding: 3px 10px; border-radius: 6px; text-decoration: none;">
+                                    <i class="fas fa-eye"></i> View Student Information
+                                </a>
+                            </div>
+                        ` : ''}
                     </div>
                     ${!isRead ? `
                         <button class="mark-read-btn" data-id="${notifId}" title="Mark as read">
@@ -458,15 +464,19 @@ import { supabase } from '../../supabase/config.js';
 
         // Add click event to notification items
         notificationList.querySelectorAll('.notif-item').forEach(item => {
-            item.addEventListener('click', function() {
+            item.addEventListener('click', function(e) {
+                if (e.target.closest('.notif-view-student-btn')) return;
                 const id = this.dataset.id;
                 const notif = notifications.find(n => String(n.id) === String(id));
                 if (notif && !(notif.is_read === true || notif.read === true || notif.isRead === true)) {
                     markAsRead(id);
                 }
-                if (notif && (notif.enrollment_id || notif.enrollmentId)) {
+                const cat = window.RegistrarNotificationSync ? window.RegistrarNotificationSync.getNotificationCategory(notif) : null;
+                if (cat && cat.id === 'requirement') {
+                    window.location.href = 'requirements.html';
+                } else if (notif && (notif.enrollment_id || notif.enrollmentId)) {
                     window.location.href = `view_enrollment.html?id=${notif.enrollment_id || notif.enrollmentId}`;
-                } else if (notif && notif.type === 'new_enrollment') {
+                } else if (notif && (notif.type === 'new_enrollment' || notif.type === 'enrollment')) {
                     window.location.href = 'enrollments.html';
                 }
             });
@@ -485,6 +495,26 @@ import { supabase } from '../../supabase/config.js';
                 notif.is_read = true;
                 notif.read = true;
                 notif.isRead = true;
+
+                // "if you see that it is their notification then the red number should disappear"
+                const cat = window.RegistrarNotificationSync ? window.RegistrarNotificationSync.getNotificationCategory(notif) : null;
+                if (cat && cat.sidebarBadgeId) {
+                    const remainingForCat = notifications.filter(n => {
+                        const isUnread = !(n.is_read === true || n.read === true || n.isRead === true);
+                        if (!isUnread) return false;
+                        const c = window.RegistrarNotificationSync.getNotificationCategory(n);
+                        return c.sidebarBadgeId === cat.sidebarBadgeId;
+                    }).length;
+
+                    document.querySelectorAll(`#${cat.sidebarBadgeId}`).forEach(b => {
+                        if (remainingForCat <= 0) {
+                            b.style.display = 'none';
+                            b.textContent = '0';
+                        } else {
+                            b.textContent = remainingForCat;
+                        }
+                    });
+                }
             }
             updateUnreadCount();
             renderNotifications();
@@ -499,7 +529,7 @@ import { supabase } from '../../supabase/config.js';
             await supabase
                 .from('notifications')
                 .update({ is_read: true, read: true })
-                .or('role.eq.registrar,role.is.null');
+                .or('role.eq.registrar,role.eq.all,role.is.null');
 
             notifications.forEach(n => {
                 n.is_read = true;
@@ -509,6 +539,18 @@ import { supabase } from '../../supabase/config.js';
             updateUnreadCount();
             renderNotifications();
             updateBadge();
+
+            // All notifications seen: hide sidebar red numbers immediately
+            document.querySelectorAll('#pendingEnrollmentsBadge, #pendingRequirementsBadge').forEach(b => {
+                b.style.setProperty('display', 'none', 'important');
+                b.classList.add('hidden');
+                b.setAttribute('data-count', '0');
+                b.textContent = '';
+            });
+            localStorage.setItem('hes_seen_requirements_at', String(Date.now()));
+            localStorage.setItem('hes_seen_enrollments_at', String(Date.now()));
+            localStorage.removeItem('hes_pending_requirements_count');
+            localStorage.removeItem('hes_pending_enrollments_count');
             showAlert('✅ All notifications marked as read', 'success');
         } catch (error) {
             console.error('Error marking all as read:', error);
@@ -527,7 +569,7 @@ import { supabase } from '../../supabase/config.js';
                 }, (payload) => {
                     if (!payload || !payload.new) return;
                     const newNotif = payload.new;
-                    if (!newNotif.role || newNotif.role === 'registrar') {
+                    if (!newNotif.role || newNotif.role === 'registrar' || newNotif.role === 'all') {
                         if (!notifications.some(n => String(n.id) === String(newNotif.id))) {
                             notifications.unshift(newNotif);
                             updateUnreadCount();
@@ -559,17 +601,19 @@ import { supabase } from '../../supabase/config.js';
 
         // Cross-tab / same browser immediate synchronization
         window.addEventListener('storage', (e) => {
-            if (e.key === 'hes_latest_notification' && e.newValue) {
+            if ((e.key === 'hes_latest_notification' || e.key === 'hes_enrollment_updated') && e.newValue) {
                 try {
-                    const data = JSON.parse(e.newValue);
-                    if (!data.role || data.role === 'registrar' || data.role === 'all' || (data.roles && data.roles.includes('registrar'))) {
-                        loadNotifications();
-                        loadDashboardStats();
-                        loadRecentEnrollments();
-                        loadEnrollmentTrends();
-                        loadGradeDistribution();
-                        showNotificationToast(data);
-                        playNotificationChime();
+                    loadNotifications();
+                    loadDashboardStats();
+                    loadRecentEnrollments();
+                    loadEnrollmentTrends();
+                    loadGradeDistribution();
+                    if (e.key !== 'hes_enrollment_updated') {
+                        const data = JSON.parse(e.newValue);
+                        if (!data.role || data.role === 'registrar' || data.role === 'all' || (data.roles && data.roles.includes('registrar'))) {
+                            showNotificationToast(data);
+                            playNotificationChime();
+                        }
                     }
                 } catch(err) {}
             }

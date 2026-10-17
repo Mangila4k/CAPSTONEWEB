@@ -18,10 +18,15 @@ document.addEventListener('DOMContentLoaded', async function() {
     const birthdate = document.getElementById('birthdate');
     const gender = document.getElementById('gender');
     const idNumber = document.getElementById('id_number');
+    const editStudentGradeLevel = document.getElementById('editStudentGradeLevel');
+    const editStudentSection = document.getElementById('editStudentSection');
+    const editStudentSectionHint = document.getElementById('editStudentSectionHint');
 
     const previewName = document.getElementById('previewName');
     const previewInitial = document.getElementById('previewInitial');
     const previewEmail = document.getElementById('previewEmail');
+    const previewGrade = document.getElementById('previewGrade');
+    const previewSection = document.getElementById('previewSection');
     const alertContainer = document.getElementById('alertContainer');
     const form = document.getElementById('editStudentForm');
     const saveBtn = document.getElementById('saveBtn');
@@ -37,6 +42,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     let currentStudent = null;
     let currentUserId = null;
+    let allSections = [];
 
     // Set Registrar name
     try {
@@ -88,6 +94,61 @@ document.addEventListener('DOMContentLoaded', async function() {
         }, 5000);
     }
 
+    async function loadSections() {
+        try {
+            const { data, error } = await supabase
+                .from('sections')
+                .select('id, name, grade_level, strand, adviser_name')
+                .order('grade_level', { ascending: true })
+                .order('name', { ascending: true });
+            if (!error && data) allSections = data;
+        } catch(e) {
+            console.warn('Error loading sections in edit_student:', e);
+        }
+    }
+
+    function updateSectionDropdown(selectedGrade, preselectedSectionId = null) {
+        if (!editStudentSection) return;
+
+        if (!selectedGrade) {
+            editStudentSection.innerHTML = '<option value="">-- Select Grade Level First --</option>';
+            editStudentSection.disabled = true;
+            if (editStudentSectionHint) {
+                editStudentSectionHint.innerHTML = '<i class="fas fa-info-circle"></i> Assign student class section';
+            }
+            updatePreview();
+            return;
+        }
+
+        const filtered = allSections.filter(sec => {
+            const secGrade = (sec.grade_level || '').trim();
+            return secGrade.toLowerCase() === selectedGrade.toLowerCase() ||
+                   secGrade.replace(/\D/g, '') === selectedGrade.replace(/\D/g, '');
+        });
+
+        if (filtered.length === 0) {
+            editStudentSection.innerHTML = `<option value="">-- No sections found in ${selectedGrade} --</option>`;
+            editStudentSection.disabled = true;
+            if (editStudentSectionHint) {
+                editStudentSectionHint.innerHTML = `<i class="fas fa-exclamation-circle" style="color: #f59e0b;"></i> No active sections found under ${selectedGrade}`;
+            }
+        } else {
+            let optionsHtml = '<option value="">-- No Section (Unassigned) --</option>';
+            filtered.forEach(sec => {
+                const adviserText = sec.adviser_name ? ` (Adviser: ${sec.adviser_name})` : '';
+                const isSelected = preselectedSectionId && preselectedSectionId === sec.id ? 'selected' : '';
+                optionsHtml += `<option value="${sec.id}" ${isSelected}>${sec.name}${adviserText}</option>`;
+            });
+            editStudentSection.innerHTML = optionsHtml;
+            editStudentSection.disabled = false;
+            if (editStudentSectionHint) {
+                editStudentSectionHint.innerHTML = `<i class="fas fa-check-circle" style="color: #10b981;"></i> ${filtered.length} section${filtered.length > 1 ? 's' : ''} available in ${selectedGrade}`;
+            }
+        }
+
+        updatePreview();
+    }
+
     // Live preview update
     function updatePreview() {
         const first = firstname ? firstname.value.trim() : '';
@@ -102,12 +163,27 @@ document.addEventListener('DOMContentLoaded', async function() {
         if (previewName) previewName.textContent = fullName || 'Student Name';
         if (previewInitial) previewInitial.textContent = (first || fullName) ? (first || fullName).charAt(0).toUpperCase() : 'S';
         if (previewEmail) previewEmail.innerHTML = `<i class="fas fa-envelope"></i> ${emailVal || 'email@example.com'}`;
+
+        const gradeVal = editStudentGradeLevel ? editStudentGradeLevel.value : '';
+        const secOption = editStudentSection && editStudentSection.selectedIndex >= 0 ? editStudentSection.options[editStudentSection.selectedIndex] : null;
+        const secText = secOption && secOption.value ? secOption.text.split('(')[0].trim() : 'Unassigned';
+
+        if (previewGrade) previewGrade.textContent = gradeVal || '—';
+        if (previewSection) previewSection.textContent = secText || '—';
     }
 
     if (firstname) firstname.addEventListener('input', updatePreview);
     if (middlename) middlename.addEventListener('input', updatePreview);
     if (lastname) lastname.addEventListener('input', updatePreview);
     if (email) email.addEventListener('input', updatePreview);
+    if (editStudentGradeLevel) {
+        editStudentGradeLevel.addEventListener('change', () => {
+            updateSectionDropdown(editStudentGradeLevel.value);
+        });
+    }
+    if (editStudentSection) {
+        editStudentSection.addEventListener('change', updatePreview);
+    }
 
     // Load Student Data from Supabase
     async function loadStudentData() {
@@ -163,6 +239,14 @@ document.addEventListener('DOMContentLoaded', async function() {
             if (birthdate && bDate) birthdate.value = bDate.split('T')[0];
             if (gender && gndr) gender.value = gndr;
 
+            await loadSections();
+            const gradeVal = sRow?.grade_level || '';
+            const secIdVal = sRow?.section_id || null;
+            if (editStudentGradeLevel && gradeVal) {
+                editStudentGradeLevel.value = gradeVal;
+            }
+            updateSectionDropdown(gradeVal, secIdVal);
+
             updatePreview();
 
         } catch (err) {
@@ -182,6 +266,10 @@ document.addEventListener('DOMContentLoaded', async function() {
             const emailVal = email?.value.trim().toLowerCase();
             const bDate = birthdate?.value || null;
             const gndr = gender?.value || null;
+            const selectedGrade = editStudentGradeLevel?.value || null;
+            const selectedSectionId = editStudentSection?.value || null;
+            const chosenSec = allSections.find(s => s.id === selectedSectionId);
+            const resolvedStrand = chosenSec?.strand || null;
 
             if (!fName || !lName) {
                 showAlert('First name and last name are required.', 'error');
@@ -201,17 +289,22 @@ document.addEventListener('DOMContentLoaded', async function() {
             try {
                 // Update students table
                 if (currentStudent && currentStudent.id) {
+                    const studentPayload = {
+                        first_name: fName,
+                        middle_name: mName || null,
+                        last_name: lName,
+                        email: emailVal,
+                        date_of_birth: bDate,
+                        gender: gndr,
+                        updated_at: new Date().toISOString()
+                    };
+                    if (selectedGrade) studentPayload.grade_level = selectedGrade;
+                    studentPayload.section_id = selectedSectionId;
+                    if (resolvedStrand) studentPayload.strand = resolvedStrand;
+
                     const { error: sErr } = await supabase
                         .from('students')
-                        .update({
-                            first_name: fName,
-                            middle_name: mName || null,
-                            last_name: lName,
-                            email: emailVal,
-                            date_of_birth: bDate,
-                            gender: gndr,
-                            updated_at: new Date().toISOString()
-                        })
+                        .update(studentPayload)
                         .eq('id', currentStudent.id);
 
                     if (sErr) throw sErr;
@@ -228,15 +321,20 @@ document.addEventListener('DOMContentLoaded', async function() {
                     })
                     .or(`email.eq.${emailVal},id.eq.${currentUserId || studentId}`);
 
-                // Also update corresponding enrollment first_name & last_name
+                // Also update corresponding enrollment
+                const enrollmentPayload = {
+                    first_name: fName,
+                    last_name: lName,
+                    email: emailVal,
+                    updated_at: new Date().toISOString()
+                };
+                if (selectedGrade) enrollmentPayload.grade_level = selectedGrade;
+                if (selectedSectionId) enrollmentPayload.section_id = selectedSectionId;
+                if (resolvedStrand) enrollmentPayload.strand = resolvedStrand;
+
                 await supabase
                     .from('enrollments')
-                    .update({
-                        first_name: fName,
-                        last_name: lName,
-                        email: emailVal,
-                        updated_at: new Date().toISOString()
-                    })
+                    .update(enrollmentPayload)
                     .or(`student_id.eq.${studentId},email.eq.${emailVal}`);
 
                 // Notify other tabs in real-time

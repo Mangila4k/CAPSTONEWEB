@@ -126,8 +126,19 @@ import { EmailNotificationService } from '../../js/email_service.js';
             const stdData = stdRes.data || [];
             students = stdData;
 
+            // Deduplicate enrollments to guarantee only one record per student
+            const seenRegistrarKeys = new Set();
+            const uniqueEnrData = [];
+            for (const enr of enrData) {
+                const em = (enr.email || '').trim().toLowerCase();
+                const dedupeKey = em || (enr.student_id ? `sid_${enr.student_id}` : enr.id);
+                if (dedupeKey && seenRegistrarKeys.has(dedupeKey)) continue;
+                if (dedupeKey) seenRegistrarKeys.add(dedupeKey);
+                uniqueEnrData.push(enr);
+            }
+
             // Map and normalize enrollments
-            enrollments = enrData.map(enr => {
+            enrollments = uniqueEnrData.map(enr => {
                 let std = null;
                 // 1. Prioritize explicit relational student_id
                 if (enr.student_id) {
@@ -219,16 +230,17 @@ import { EmailNotificationService } from '../../js/email_service.js';
         if (rejectedCount) rejectedCount.textContent = rejected;
         if (pendingActionCount) pendingActionCount.textContent = pending;
 
-        // Update live sidebar pending badge
-        const pendingBadge = document.getElementById('pendingEnrollmentsBadge');
-        if (pendingBadge) {
-            if (pending > 0) {
-                pendingBadge.textContent = pending;
-                pendingBadge.style.display = 'inline-flex';
-            } else {
-                pendingBadge.style.display = 'none';
-            }
-        }
+        // Enrollments page is active: registrar has seen their enrollment notification, so the red number disappears
+        document.querySelectorAll('#pendingEnrollmentsBadge').forEach(pendingBadge => {
+            pendingBadge.style.setProperty('display', 'none', 'important');
+            pendingBadge.classList.add('hidden');
+            pendingBadge.setAttribute('data-count', '0');
+            pendingBadge.textContent = '';
+        });
+        try {
+            localStorage.setItem('hes_seen_enrollments_at', String(Date.now()));
+            localStorage.removeItem('hes_pending_enrollments_count');
+        } catch(e) {}
     }
 
     // ============================================
@@ -361,7 +373,14 @@ import { EmailNotificationService } from '../../js/email_service.js';
                     <tr>
                         <td data-label="Student">
                             <div class="student-info">
-                                <div class="student-avatar" style="background:${avColor.bg}; color:${avColor.color}; border:1.5px solid ${avColor.border};">${avatarInitial}</div>
+                                <div class="student-avatar" style="background:${avColor.bg}; color:${avColor.color}; border:1.5px solid ${avColor.border};" title="${fullname}">
+                                    ${(row.two_by_two_picture_url || row.avatar_url) ? `
+                                        <img src="${row.two_by_two_picture_url || row.avatar_url}" alt="${fullname}" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
+                                        <span style="display:none;">${avatarInitial}</span>
+                                    ` : `
+                                        <span>${avatarInitial}</span>
+                                    `}
+                                </div>
                                 <div class="student-details">
                                     <h4 title="${fullname}">${fullname}</h4>
                                     <span><i class="fas fa-envelope"></i> ${row.email || "No email"}</span>
@@ -395,29 +414,42 @@ import { EmailNotificationService } from '../../js/email_service.js';
                                 `<span class="complete-badge-sm"><i class="fas fa-check-circle"></i> Complete</span>` : 
                                 `<span class="missing-badge-sm request-moral-enr-btn" data-id="${row.id}" data-studentid="${row.student_id}" data-name="${fullname}" data-email="${row.email}" data-grade="${gradeName}" title="Request Good Moral Certificate"><i class="fas fa-exclamation-circle"></i> No Good Moral</span>`}
                         </td>
-                        <td data-label="Actions">
-                            <div class="action-btns">
-                                <a href="view_enrollment.html?id=${row.id}" class="action-btn view" title="View Application Details">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                                <button type="button" class="action-btn request-moral-enr-btn" data-id="${row.id}" data-studentid="${row.student_id}" data-name="${fullname}" data-email="${row.email}" data-grade="${gradeName}" title="Request Good Moral Certificate">
-                                    <i class="fas fa-award"></i>
+                        <td data-label="Actions" class="cell-actions">
+                            <div class="manage-dropdown">
+                                <button type="button" class="btn-manage" aria-expanded="false" title="Manage Enrollment">
+                                    <span>Manage</span>
+                                    <i class="fas fa-chevron-down"></i>
                                 </button>
-                                ${statusClass === "pending" ? `
-                                    <button type="button" class="action-btn approve" data-id="${row.id}" data-name="${fullname}" title="Approve Application">
-                                        <i class="fas fa-check-circle"></i>
-                                    </button>
-                                    <button type="button" class="action-btn reject" data-id="${row.id}" data-name="${fullname}" title="Reject Application">
-                                        <i class="fas fa-times-circle"></i>
-                                    </button>
-                                ` : `
-                                    <a href="generate_id.html?enrollment_id=${row.id}${row.student_id ? '&id=' + row.student_id : ''}" class="action-btn generate-id" title="Generate Student ID" style="background: #c89b27; color: #070526; display: inline-flex; align-items: center; justify-content: center; text-decoration: none;">
-                                        <i class="fas fa-id-card"></i>
+                                <div class="manage-menu">
+                                    <a href="view_enrollment.html?id=${row.id}" class="manage-item view-item" title="View Application Details">
+                                        <i class="fas fa-eye"></i>
+                                        <span>View Details</span>
                                     </a>
-                                `}
-                                <button type="button" class="action-btn delete" data-id="${row.id}" data-name="${fullname}" title="Delete Record">
-                                    <i class="fas fa-trash-alt"></i>
-                                </button>
+                                    <button type="button" class="manage-item moral-item request-moral-enr-btn" data-id="${row.id}" data-studentid="${row.student_id}" data-name="${fullname}" data-email="${row.email}" data-grade="${gradeName}" title="Request Good Moral Certificate">
+                                        <i class="fas fa-award"></i>
+                                        <span>Request Good Moral</span>
+                                    </button>
+                                    ${statusClass === "pending" ? `
+                                        <button type="button" class="manage-item approve-item approve" data-id="${row.id}" data-name="${fullname}" title="Approve Application">
+                                            <i class="fas fa-check-circle"></i>
+                                            <span>Approve Application</span>
+                                        </button>
+                                        <button type="button" class="manage-item reject-item reject" data-id="${row.id}" data-name="${fullname}" title="Reject Application">
+                                            <i class="fas fa-times-circle"></i>
+                                            <span>Reject Application</span>
+                                        </button>
+                                    ` : `
+                                        <a href="generate_id.html?enrollment_id=${row.id}${row.student_id ? '&id=' + row.student_id : ''}" class="manage-item id-item" title="Generate Student ID">
+                                            <i class="fas fa-id-card"></i>
+                                            <span>Generate Student ID</span>
+                                        </a>
+                                    `}
+                                    <div class="manage-divider"></div>
+                                    <button type="button" class="manage-item delete-item delete" data-id="${row.id}" data-name="${fullname}" title="Delete Record">
+                                        <i class="fas fa-trash-alt"></i>
+                                        <span>Delete Record</span>
+                                    </button>
+                                </div>
                             </div>
                         </td>
                     </tr>
@@ -428,19 +460,61 @@ import { EmailNotificationService } from '../../js/email_service.js';
         tableBody.innerHTML = html;
         if (recordCount) recordCount.textContent = `Total: ${rows.length} records`;
 
+        // Manage Dropdown Toggles and Hover / Dropup Detection
+        tableBody.querySelectorAll('.btn-manage').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const dropdown = this.closest('.manage-dropdown');
+                const row = this.closest('tr');
+                const isOpen = dropdown.classList.contains('show');
+
+                document.querySelectorAll('.manage-dropdown.show').forEach(d => {
+                    d.classList.remove('show');
+                    d.classList.remove('dropup');
+                    const r = d.closest('tr');
+                    if (r) r.classList.remove('dropdown-open');
+                });
+
+                if (!isOpen) {
+                    const rect = this.getBoundingClientRect();
+                    const spaceBelow = window.innerHeight - rect.bottom;
+                    if (spaceBelow < 200) {
+                        dropdown.classList.add('dropup');
+                    } else {
+                        dropdown.classList.remove('dropup');
+                    }
+                    dropdown.classList.add('show');
+                    if (row) row.classList.add('dropdown-open');
+                }
+            });
+        });
+
         // Bind action buttons
-        tableBody.querySelectorAll(".action-btn.approve").forEach(btn => {
+        tableBody.querySelectorAll(".approve").forEach(btn => {
             btn.addEventListener("click", () => approveEnrollment(btn.dataset.id, btn.dataset.name));
         });
 
-        tableBody.querySelectorAll(".action-btn.reject").forEach(btn => {
+        tableBody.querySelectorAll(".reject").forEach(btn => {
             btn.addEventListener("click", () => rejectEnrollment(btn.dataset.id, btn.dataset.name));
         });
 
-        tableBody.querySelectorAll(".action-btn.delete").forEach(btn => {
+        tableBody.querySelectorAll(".delete").forEach(btn => {
             btn.addEventListener("click", () => deleteEnrollment(btn.dataset.id, btn.dataset.name));
         });
     }
+
+    // Close any open dropdowns when clicking anywhere outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.manage-dropdown')) {
+            document.querySelectorAll('.manage-dropdown.show').forEach(d => {
+                d.classList.remove('show');
+                d.classList.remove('dropup');
+                const r = d.closest('tr');
+                if (r) r.classList.remove('dropdown-open');
+            });
+        }
+    });
 
     // ============================================
     // FILTER FUNCTION (WITH YEAR LEVEL SEPARATION)
@@ -756,7 +830,6 @@ import { EmailNotificationService } from '../../js/email_service.js';
             two_by_two_picture_url: enr.two_by_two_picture_url || studentData?.two_by_two_picture_url || null,
             avatar_url: enr.two_by_two_picture_url || studentData?.avatar_url || null,
             date_of_birth: enr.date_of_birth || enr.dob || studentData?.date_of_birth || '2008-01-01',
-            birth_date: enr.dob || studentData?.birth_date || '2008-01-01',
             age: enr.age || studentData?.age || null,
             gender: enr.gender || studentData?.gender || null,
             nationality: enr.nationality || studentData?.nationality || 'Filipino',
@@ -825,15 +898,13 @@ import { EmailNotificationService } from '../../js/email_service.js';
         }
 
         // 5. Send Approval Notification with credentials
-        const credentialsMessage = `Congratulations ${firstName}! Your enrollment for ${gradeLevel}${strand ? ' (' + strand + ')' : ''} has been approved by the Registrar.\n\nYour Student Portal Login Credentials:\n• Username (Email): ${email}\n• Password: ${lastName}\n\nYou can now log in to the HES Student Portal.`;
+        const credentialsMessage = `Congratulations ${firstName}! Your enrollment for ${gradeLevel}${strand ? ' (' + strand + ')' : ''} has been reviewed and approved by the Registrar.\n\nYour Student Portal Login Credentials:\n• Username (Gmail): ${email}\n• Initial Password: ${lastName}\n\nYou can now log in to the HES Student Portal. Upon your first login, please visit "My Profile" to update your password.`;
 
         const targetStudentId = studentUserId || studentTableId || null;
         await supabase
             .from('notifications')
             .insert([{
                 user_id: targetStudentId,
-                student_id: studentTableId || null,
-                recipient_email: email,
                 role: 'student',
                 title: '🎉 Enrollment Approved!',
                 message: credentialsMessage,
@@ -901,7 +972,10 @@ import { EmailNotificationService } from '../../js/email_service.js';
             showAlert('Processing enrollment approval & account creation...', 'info');
             const creds = await provisionAndApproveStudentById(id);
             try {
-                await EmailNotificationService.sendCredentialsEmail(creds);
+                await EmailNotificationService.sendCredentialsEmail({
+                    ...creds,
+                    autoLaunchGmail: true
+                });
             } catch (mailErr) {
                 console.warn('Email dispatch notice:', mailErr);
             }
@@ -938,8 +1012,6 @@ import { EmailNotificationService } from '../../js/email_service.js';
                     .from('notifications')
                     .insert([{
                         user_id: targetId,
-                        student_id: enrItem?.student_id || enrItem?.id || null,
-                        recipient_email: enrItem?.email || null,
                         role: 'student',
                         title: '⚠️ Enrollment Update',
                         message: rejMsg,
@@ -1191,7 +1263,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
             const { data, error } = await supabase
                 .from('notifications')
                 .select('*')
-                .or('role.eq.registrar,role.is.null')
+                .or('role.eq.registrar,role.eq.all,role.is.null')
                 .order('created_at', { ascending: false })
                 .limit(30);
 
@@ -1255,18 +1327,35 @@ import { EmailNotificationService } from '../../js/email_service.js';
             const title = notif.title || 'New Notification';
             const message = notif.message || '';
             const notifId = notif.id;
+            const enrollmentLink = (notif.enrollment_id || notif.enrollmentId) ? `view_enrollment.html?id=${notif.enrollment_id || notif.enrollmentId}` : null;
+            const cat = window.RegistrarNotificationSync
+                ? window.RegistrarNotificationSync.getNotificationCategory(notif)
+                : { id: (notifType.includes('enroll') ? 'enrollment' : 'general'), label: (notifType.includes('enroll') ? 'Enrollments' : 'Notice'), icon: icon };
+            const categoryHtml = window.RegistrarNotificationSync
+                ? window.RegistrarNotificationSync.renderCategoryTag(cat)
+                : `<span class="notif-category-tag tag-${cat.id}"><i class="fas ${cat.icon}"></i> ${cat.label}</span>`;
             
             return `
-                <div class="notif-item ${isRead ? 'read' : 'unread'}" data-id="${notifId}">
+                <div class="notif-item ${isRead ? 'read' : 'unread'}" data-id="${notifId}" data-category="${cat.id}">
                     <div class="notif-icon notif-${notifType}">
                         <i class="fas ${icon}"></i>
                     </div>
                     <div class="notif-content">
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 3px;">
+                            ${categoryHtml}
+                            <div class="notif-time" style="margin-top: 0;">
+                                <i class="far fa-clock" style="margin-right: 4px;"></i>${formatTime(notif.created_at || notif.createdAt)}
+                            </div>
+                        </div>
                         <div class="notif-title">${title}</div>
                         <div class="notif-message">${message}</div>
-                        <div class="notif-time">
-                            <i class="far fa-clock" style="margin-right: 4px;"></i>${formatTime(notif.created_at || notif.createdAt)}
-                        </div>
+                        ${enrollmentLink ? `
+                            <div style="margin-top: 6px;">
+                                <a href="${enrollmentLink}" class="notif-view-student-btn" style="display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 700; color: #1B2A4A; background: #e0e7ff; padding: 3px 10px; border-radius: 6px; text-decoration: none;">
+                                    <i class="fas fa-eye"></i> View Student Information
+                                </a>
+                            </div>
+                        ` : ''}
                     </div>
                     ${!isRead ? `
                         <button class="mark-read-btn" data-id="${notifId}" title="Mark as read">
@@ -1286,7 +1375,8 @@ import { EmailNotificationService } from '../../js/email_service.js';
         });
 
         notificationList.querySelectorAll('.notif-item').forEach(item => {
-            item.addEventListener('click', function() {
+            item.addEventListener('click', function(e) {
+                if (e.target.closest('.notif-view-student-btn')) return;
                 const id = this.dataset.id;
                 const notif = notifications.find(n => String(n.id) === String(id));
                 if (notif && !(notif.is_read === true || notif.read === true || notif.isRead === true)) {
@@ -1311,6 +1401,26 @@ import { EmailNotificationService } from '../../js/email_service.js';
                 notif.is_read = true;
                 notif.read = true;
                 notif.isRead = true;
+
+                // If you see that it is their notification, update/hide that sidebar badge
+                const cat = window.RegistrarNotificationSync ? window.RegistrarNotificationSync.getNotificationCategory(notif) : null;
+                if (cat && cat.sidebarBadgeId) {
+                    const remainingForCat = notifications.filter(n => {
+                        const isUnread = !(n.is_read === true || n.read === true || n.isRead === true);
+                        if (!isUnread) return false;
+                        const c = window.RegistrarNotificationSync.getNotificationCategory(n);
+                        return c.sidebarBadgeId === cat.sidebarBadgeId;
+                    }).length;
+
+                    document.querySelectorAll(`#${cat.sidebarBadgeId}`).forEach(b => {
+                        if (remainingForCat <= 0) {
+                            b.style.display = 'none';
+                            b.textContent = '0';
+                        } else {
+                            b.textContent = remainingForCat;
+                        }
+                    });
+                }
             }
             updateUnreadCount();
             renderNotifications();
@@ -1325,7 +1435,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
             await supabase
                 .from('notifications')
                 .update({ is_read: true, read: true })
-                .or('role.eq.registrar,role.is.null');
+                .or('role.eq.registrar,role.eq.all,role.is.null');
 
             notifications.forEach(n => {
                 n.is_read = true;
@@ -1335,6 +1445,19 @@ import { EmailNotificationService } from '../../js/email_service.js';
             updateUnreadCount();
             renderNotifications();
             updateBadge();
+
+            // All notifications seen: hide sidebar red numbers immediately
+            document.querySelectorAll('#pendingEnrollmentsBadge, #pendingRequirementsBadge').forEach(b => {
+                b.style.setProperty('display', 'none', 'important');
+                b.classList.add('hidden');
+                b.setAttribute('data-count', '0');
+                b.textContent = '';
+            });
+            localStorage.setItem('hes_seen_requirements_at', String(Date.now()));
+            localStorage.setItem('hes_seen_enrollments_at', String(Date.now()));
+            localStorage.removeItem('hes_pending_requirements_count');
+            localStorage.removeItem('hes_pending_enrollments_count');
+
             showAlert('✅ All notifications marked as read', 'success');
         } catch (error) {
             console.error('Error marking all as read:', error);
@@ -1353,7 +1476,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
                 }, (payload) => {
                     if (!payload || !payload.new) return;
                     const newNotif = payload.new;
-                    if (!newNotif.role || newNotif.role === 'registrar') {
+                    if (!newNotif.role || newNotif.role === 'registrar' || newNotif.role === 'all') {
                         if (!notifications.some(n => String(n.id) === String(newNotif.id))) {
                             notifications.unshift(newNotif);
                             updateUnreadCount();
@@ -1379,14 +1502,16 @@ import { EmailNotificationService } from '../../js/email_service.js';
 
         // Cross-tab synchronization
         window.addEventListener('storage', (e) => {
-            if (e.key === 'hes_latest_notification' && e.newValue) {
+            if ((e.key === 'hes_latest_notification' || e.key === 'hes_enrollment_updated') && e.newValue) {
                 try {
-                    const data = JSON.parse(e.newValue);
-                    if (!data.role || data.role === 'registrar' || data.role === 'all' || (data.roles && data.roles.includes('registrar'))) {
-                        loadNotifications();
-                        fetchEnrollments();
-                        showNotificationToast(data);
-                        playNotificationChime();
+                    loadNotifications();
+                    fetchEnrollments();
+                    if (e.key !== 'hes_enrollment_updated') {
+                        const data = JSON.parse(e.newValue);
+                        if (!data.role || data.role === 'registrar' || data.role === 'all' || (data.roles && data.roles.includes('registrar'))) {
+                            showNotificationToast(data);
+                            playNotificationChime();
+                        }
                     }
                 } catch(err) {}
             }
@@ -1685,6 +1810,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
         }
     });
 
+    loadNotifications();
     setupRealtimeNotifications();
 
 })();

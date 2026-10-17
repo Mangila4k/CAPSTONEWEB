@@ -75,7 +75,7 @@ body {
     width: var(--sidebar-width);
     background: var(--primary);
     color: #fff;
-    padding: 24px 20px;
+    padding: 24px 0 0 0;
     display: flex;
     flex-direction: column;
     position: fixed;
@@ -88,7 +88,11 @@ body {
 }
 
 .sidebar-header {
-    margin-bottom: 14px;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0 20px 14px 20px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 .logo {
@@ -135,67 +139,16 @@ body {
     color: rgba(255, 255, 255, 0.8);
 }
 
-/* User Profile in Sidebar */
+/* User Profile in Sidebar Footer is styled by css/sidebar.css */
 .counselor-profile {
-    text-align: center;
-    padding: 10px 0 14px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    margin-bottom: 14px;
-}
-
-.counselor-avatar {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background: #facc15;
-    margin: 0 auto 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-}
-
-.avatar-initial {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #facc15;
-    color: #1B2A4A;
-    font-size: 26px;
-    font-weight: 700;
-}
-
-.online-dot {
-    width: 14px;
-    height: 14px;
-    background: #10b981;
-    border-radius: 50%;
-    border: 2px solid var(--primary);
-    position: absolute;
-    bottom: 0;
-    right: 0;
-}
-
-.counselor-name {
-    font-weight: 700;
-    font-size: 15px;
-    color: #fff;
-}
-
-.counselor-role {
-    font-size: 11.5px;
-    color: rgba(255, 255, 255, 0.55);
-    margin-top: 2px;
-    font-weight: 500;
+    margin: 0;
+    padding: 0;
 }
 
 /* Navigation */
 .nav-menu {
     flex: 1;
+    padding: 0 16px;
 }
 
 .nav-section {
@@ -283,6 +236,8 @@ body {
     margin-bottom: 24px;
     flex-wrap: wrap;
     gap: 16px;
+    position: relative;
+    z-index: 50;
 }
 
 .page-header h1 {
@@ -303,6 +258,26 @@ body {
     align-items: center;
     gap: 12px;
     flex-wrap: wrap;
+    position: relative;
+    z-index: 51;
+}
+
+.date-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: #ffffff;
+    border-radius: 40px;
+    border: 1px solid var(--border-color, #e2e8f0);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted, #64748b);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.date-badge i {
+    color: var(--primary, #1b2a4a);
 }
 
 /* Buttons */

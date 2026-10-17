@@ -20,7 +20,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     const totalStrandsEl = document.getElementById('totalStrands');
 
     const gradeCardsContainer = document.getElementById('gradeCards');
-    const gradeFilter = document.getElementById('gradeFilter');
     const strandFilterWrapper = document.getElementById('strandFilterWrapper');
     const strandFilter = document.getElementById('strandFilter');
     const searchInput = document.getElementById('searchInput');
@@ -71,16 +70,18 @@ document.addEventListener('DOMContentLoaded', async function() {
     // ============================================
     function getSubjectIcon(name) {
         const n = (name || '').toLowerCase();
-        if (n.includes('computer') || n.includes('programming') || n.includes('servicing') || n.includes('ict') || n.includes('tech')) return 'fa-laptop-code';
+        if (n.includes('computer') || n.includes('programming') || n.includes('servicing') || n.includes('ict')) return 'fa-laptop-code';
+        if (n.includes('tle') || n.includes('technology and livelihood') || n.includes('vocational') || n.includes('technical')) return 'fa-tools';
         if (n.includes('science') || n.includes('biology') || n.includes('chemistry') || n.includes('physics') || n.includes('earth')) return 'fa-flask';
         if (n.includes('math') || n.includes('algebra') || n.includes('geometry') || n.includes('calculus') || n.includes('statistics')) return 'fa-calculator';
         if (n.includes('english') || n.includes('reading') || n.includes('literature') || n.includes('writing') || n.includes('purposes')) return 'fa-book-open';
         if (n.includes('filipino') || n.includes('komunikasyon') || n.includes('panitikan')) return 'fa-language';
         if (n.includes('history') || n.includes('society') || n.includes('politics') || n.includes('araling') || n.includes('humss')) return 'fa-landmark';
-        if (n.includes('pe') || n.includes('physical') || n.includes('hope') || n.includes('mapeh') || n.includes('health')) return 'fa-running';
+        if (n.includes('mapeh')) return 'fa-icons';
+        if (n.includes('pe') || n.includes('physical') || n.includes('hope') || n.includes('health')) return 'fa-running';
         if (n.includes('art') || n.includes('music')) return 'fa-palette';
         if (n.includes('cookery') || n.includes('bread') || n.includes('pastry') || n.includes('food')) return 'fa-utensils';
-        if (n.includes('values') || n.includes('esp') || n.includes('ethics') || n.includes('philosophy')) return 'fa-heart';
+        if (n.includes('values') || n.includes('esp') || n.includes('pagpapakatao') || n.includes('ethics') || n.includes('philosophy')) return 'fa-heart';
         return 'fa-book';
     }
 
@@ -237,9 +238,31 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         let html = '';
         sortedGrades.forEach(grade => {
-            const gradeSubs = groupedByGrade[grade];
+            let gradeSubs = groupedByGrade[grade];
             const isSHS = grade === 11 || grade === 12;
             const levelLabel = isSHS ? 'Senior High School' : 'Junior High School';
+
+            // DepEd Junior High School standard sequence
+            if (!isSHS) {
+                const jhsOrder = [
+                    'filipino',
+                    'english',
+                    'mathematics',
+                    'science',
+                    'araling panlipunan',
+                    'mapeh',
+                    'edukasyon sa pagpapakatao',
+                    'esp',
+                    'technology and livelihood education',
+                    'tle'
+                ];
+                const getJhsOrder = (name) => {
+                    const lower = (name || '').toLowerCase();
+                    const idx = jhsOrder.findIndex(keyword => lower.includes(keyword));
+                    return idx === -1 ? 999 : idx;
+                };
+                gradeSubs = [...gradeSubs].sort((a, b) => getJhsOrder(a.name) - getJhsOrder(b.name));
+            }
 
             html += `
                 <div class="grade-section-block">
@@ -259,6 +282,17 @@ document.addEventListener('DOMContentLoaded', async function() {
                 const icon = getSubjectIcon(sub.name);
                 const strandDisplay = sub.strand ? `<span class="strand-pill">${sub.strand}</span>` : '';
 
+                // Special MAPEH sub-components display
+                const isMAPEH = (sub.name || '').toUpperCase().includes('MAPEH') || (sub.code || '').toUpperCase().includes('MAPEH');
+                const mapehComponentsHtml = isMAPEH ? `
+                    <div class="mapeh-components-list">
+                        <span class="mapeh-subtag"><i class="fas fa-music"></i> Music</span>
+                        <span class="mapeh-subtag"><i class="fas fa-palette"></i> Arts</span>
+                        <span class="mapeh-subtag"><i class="fas fa-running"></i> Physical Education (PE)</span>
+                        <span class="mapeh-subtag"><i class="fas fa-heartbeat"></i> Health</span>
+                    </div>
+                ` : '';
+
                 html += `
                     <div class="subject-card" data-id="${sub.id}">
                         <div class="subject-card-header">
@@ -277,6 +311,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                         </div>
                         <h4 class="subject-title">${sub.name}</h4>
                         <p class="subject-desc">${sub.description || 'No description provided.'}</p>
+                        ${mapehComponentsHtml}
                         <div class="subject-card-footer">
                             <span class="subject-code-tag"><i class="fas fa-graduation-cap"></i> ${sub.code ? sub.code : 'Grade ' + sub.grade}</span>
                             <span>${sub.strand ? sub.strand + ' Track' : 'General Curriculum'}</span>
@@ -419,9 +454,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                 this.classList.add('active');
 
                 currentActiveGrade = this.dataset.grade; // 'all', '7', ...
-                if (gradeFilter) {
-                    gradeFilter.value = currentActiveGrade === 'all' ? '' : currentActiveGrade;
-                }
 
                 // Handle strand filter visibility
                 if (strandFilterWrapper) {
@@ -434,28 +466,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
 
-    // Grade Filter Dropdown
-    if (gradeFilter) {
-        gradeFilter.addEventListener('change', function() {
-            const val = this.value;
-            currentActiveGrade = val === '' ? 'all' : val;
 
-            if (gradeCardsContainer) {
-                const cards = gradeCardsContainer.querySelectorAll('.grade-card');
-                cards.forEach(c => {
-                    if (c.dataset.grade === currentActiveGrade) c.classList.add('active');
-                    else c.classList.remove('active');
-                });
-            }
-
-            if (strandFilterWrapper) {
-                const isSHS = currentActiveGrade === '11' || currentActiveGrade === '12';
-                strandFilterWrapper.style.display = (currentActiveGrade === 'all' || isSHS) ? 'block' : 'none';
-            }
-
-            renderSubjects();
-        });
-    }
 
     // Strand Filter
     if (strandFilter) {
@@ -476,7 +487,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             currentActiveGrade = 'all';
             currentActiveStrand = '';
 
-            if (gradeFilter) gradeFilter.value = '';
             if (strandFilter) strandFilter.value = '';
             if (searchInput) searchInput.value = '';
 

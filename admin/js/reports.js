@@ -804,6 +804,13 @@ import { supabase } from '../../supabase/config.js';
         if (grade) list = list.filter(s => s.grade.toLowerCase().includes(grade.toLowerCase()));
         if (strand) list = list.filter(s => s.strand.toLowerCase().includes(strand.toLowerCase()));
 
+        list.sort((a, b) => {
+            const gA = parseInt(String(a.grade).replace(/\D/g, ''), 10) || 999;
+            const gB = parseInt(String(b.grade).replace(/\D/g, ''), 10) || 999;
+            if (gA !== gB) return gA - gB;
+            return (a.name || '').localeCompare(b.name || '', undefined, { numeric: true, sensitivity: 'base' });
+        });
+
         currentHeaders = ['#', 'Section Name', 'Grade Level', 'Strand', 'Room', 'Class Adviser', 'Enrolled', 'Capacity', 'Available', 'Occupancy'];
         currentRawData = list.map((s, index) => {
             const occClass = s.pct >= 90 ? 'danger' : s.pct >= 75 ? 'warning' : 'success';

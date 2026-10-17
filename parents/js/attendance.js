@@ -41,8 +41,10 @@ import { supabase } from '../../supabase/config.js';
     // Today's Status
     const todayStatusBadgeContainer = document.getElementById('todayStatusBadgeContainer');
     const todayDateSubtitle = document.getElementById('todayDateSubtitle');
-    const todayTimeIn = document.getElementById('todayTimeIn');
-    const todayTimeOut = document.getElementById('todayTimeOut');
+    const todayStandingText = document.getElementById('todayStandingText');
+    const todayStandingSub = document.getElementById('todayStandingSub');
+    const todaySessionValue = document.getElementById('todaySessionValue');
+    const todaySessionSub = document.getElementById('todaySessionSub');
     const todayRemarks = document.getElementById('todayRemarks');
 
     // Filters & Table
@@ -560,9 +562,11 @@ import { supabase } from '../../supabase/config.js';
             if (todayStatusBadgeContainer) {
                 todayStatusBadgeContainer.innerHTML = `<span class="status-badge status-weekend" style="background: #e0f2fe; color: #0369a1; font-weight: 600; padding: 6px 14px; border-radius: 20px; border: 1px solid #bae6fd;"><i class="fas fa-calendar-times"></i> Weekend (No Classes)</span>`;
             }
-            if (todayTimeIn) todayTimeIn.textContent = '—';
-            if (todayTimeOut) todayTimeOut.textContent = '—';
-            if (todayRemarks) todayRemarks.textContent = 'No classes scheduled on weekends (Saturday & Sunday).';
+            if (todayStandingText) todayStandingText.textContent = 'Weekend';
+            if (todayStandingSub) todayStandingSub.textContent = 'No classes scheduled';
+            if (todaySessionValue) todaySessionValue.textContent = 'Academic Break';
+            if (todaySessionSub) todaySessionSub.textContent = 'Saturday / Sunday';
+            if (todayRemarks) todayRemarks.textContent = 'No classes scheduled on weekends.';
             return;
         }
 
@@ -573,8 +577,10 @@ import { supabase } from '../../supabase/config.js';
             if (todayStatusBadgeContainer) {
                 todayStatusBadgeContainer.innerHTML = `<span class="status-badge status-pending"><i class="fas fa-clock"></i> Not Yet Recorded Today</span>`;
             }
-            if (todayTimeIn) todayTimeIn.textContent = '—';
-            if (todayTimeOut) todayTimeOut.textContent = '—';
+            if (todayStandingText) todayStandingText.textContent = 'Not Yet Recorded';
+            if (todayStandingSub) todayStandingSub.textContent = 'Awaiting adviser roll call';
+            if (todaySessionValue) todaySessionValue.textContent = 'Regular School Day';
+            if (todaySessionSub) todaySessionSub.textContent = 'Morning & Afternoon Classes';
             if (todayRemarks) todayRemarks.textContent = 'Attendance has not been recorded by the teacher for today yet.';
             return;
         }
@@ -599,12 +605,11 @@ import { supabase } from '../../supabase/config.js';
             todayStatusBadgeContainer.innerHTML = `<span class="status-badge ${badgeClass}"><i class="fas ${icon}"></i> ${status}</span>`;
         }
 
-        const tIn = todayRecord.time_in || todayRecord.timeIn || '—';
-        const tOut = todayRecord.time_out || todayRecord.timeOut || '—';
-
-        if (todayTimeIn) todayTimeIn.textContent = formatTime(tIn);
-        if (todayTimeOut) todayTimeOut.textContent = formatTime(tOut);
-        if (todayRemarks) todayRemarks.textContent = todayRecord.remarks || 'Recorded successfully.';
+        if (todayStandingText) todayStandingText.textContent = status;
+        if (todayStandingSub) todayStandingSub.textContent = 'Official DepEd attendance log';
+        if (todaySessionValue) todaySessionValue.textContent = 'Regular School Day';
+        if (todaySessionSub) todaySessionSub.textContent = 'Marked by Class Adviser';
+        if (todayRemarks) todayRemarks.textContent = todayRecord.remarks || 'Present in class.';
     }
 
     // ============================================
@@ -628,7 +633,7 @@ import { supabase } from '../../supabase/config.js';
         if (records.length === 0) {
             attendanceTableBody.innerHTML = `
                 <tr>
-                    <td colspan="7" class="empty-state">
+                    <td colspan="5" class="empty-state">
                         <i class="fas fa-calendar-times"></i>
                         <h4>No Attendance Records Found</h4>
                         <p>No attendance logs match your selected filter criteria for ${studentScopeName}.</p>
@@ -669,8 +674,6 @@ import { supabase } from '../../supabase/config.js';
                         <i class="fas fa-user-graduate" style="color: #0B4F2E; margin-right: 6px;"></i> ${item.student_name || 'Student'}
                     </td>
                     <td class="day-cell">${dayFmt}</td>
-                    <td class="time-cell">${timeInFmt}</td>
-                    <td class="time-cell">${timeOutFmt}</td>
                     <td>
                         <span class="status-badge ${badgeClass}">
                             <i class="fas ${icon}"></i> ${status}
@@ -693,17 +696,15 @@ import { supabase } from '../../supabase/config.js';
         }
 
         let csvContent = 'data:text/csv;charset=utf-8,';
-        csvContent += 'Date,Student Name,Day,Time In,Time Out,Status,Remarks\r\n';
+        csvContent += 'Date,Student Name,Day,Status,Remarks\r\n';
 
         filteredRecords.forEach(r => {
             const dateFmt = formatDate(r.date);
             const dayFmt = getDayOfWeek(r.date);
             const studentFmt = `"${(r.student_name || 'Student').replace(/"/g, '""')}"`;
-            const tIn = formatTime(r.time_in || r.timeIn);
-            const tOut = formatTime(r.time_out || r.timeOut);
             const st = r.status || 'Present';
             const rem = `"${(r.remarks || '').replace(/"/g, '""')}"`;
-            csvContent += `${dateFmt},${studentFmt},${dayFmt},${tIn},${tOut},${st},${rem}\r\n`;
+            csvContent += `${dateFmt},${studentFmt},${dayFmt},${st},${rem}\r\n`;
         });
 
         const encodedUri = encodeURI(csvContent);

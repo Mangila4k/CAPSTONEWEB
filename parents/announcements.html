@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Announcements & Meetings - Parent Portal | HES</title>
+    <title>Announcements & Meetings - Parent Portal | PLSNSH, Placido L. Señor National High School</title>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- Google Fonts -->
@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="css/dashboard.css">
     <link rel="stylesheet" href="css/announcements.css">
     <link rel="stylesheet" href="../css/chatbot.css">
+    <link rel="stylesheet" href="../css/sidebar.css">
 </head>
 
 <body>
@@ -35,24 +36,13 @@
                 <div class="school-badge">Placido L. Señor National High School</div>
             </div>
 
-            <div class="parent-profile">
-                <div class="parent-avatar">
-                    <div class="avatar-initial" id="parentInitial">P</div>
-                    <div class="online-dot"></div>
-                </div>
-                <div class="parent-name" id="sidebarParentName">Parent</div>
-                <div class="parent-role"><i class="fas fa-user-friends"></i> Parent</div>
-                <div class="parent-child-badge" id="sidebarChildBadge" title="Linked Child">
-                    <i class="fas fa-child"></i> Student: <span id="sidebarChildName">Student</span>
-                </div>
-            </div>
-
             <nav class="nav-menu">
                 <div class="nav-section">
                     <div class="nav-section-title">MAIN MENU</div>
                     <ul class="nav-items">
                         <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-                        <li><a href="announcements.html" class="active"><i class="fas fa-bullhorn"></i> Announcements</a></li>
+                        <li><a href="announcements.html" class="active"><i class="fas fa-bullhorn"></i>
+                                Announcements</a></li>
                         <li><a href="grades.html"><i class="fas fa-star"></i> Grades</a></li>
                         <li><a href="attendance.html"><i class="fas fa-calendar-check"></i> Attendance</a></li>
                     </ul>
@@ -62,10 +52,28 @@
                     <div class="nav-section-title">ACCOUNT</div>
                     <ul class="nav-items">
                         <li><a href="profile.html"><i class="fas fa-user"></i> Profile</a></li>
-                        <li><a href="../auth/logout.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                        <li><a href="../auth/logout.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                        </li>
+
                     </ul>
                 </div>
             </nav>
+            <!-- Pinned Sidebar Footer -->
+            <div class="sidebar-footer">
+                <div class="parent-profile">
+                    <div class="parent-avatar">
+                        <div class="avatar-initial" id="parentInitial">P</div>
+                        <div class="online-dot"></div>
+                    </div>
+                    <div class="parent-info">
+                        <div class="parent-name" id="sidebarParentName">Parent</div>
+                        <div class="parent-role"><i class="fas fa-user-friends"></i> Parent</div>
+                        <div class="parent-child-badge" id="sidebarChildBadge" title="Linked Child">
+                            <i class="fas fa-child"></i> Student: <span id="sidebarChildName">Student</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </aside>
 
         <!-- Main Content -->
@@ -96,7 +104,8 @@
                     </div>
                 </div>
 
-                <div class="anc-stat-card" id="cardParentMeetings" style="cursor: pointer;" title="Click to view Parent-Teacher Meetings">
+                <div class="anc-stat-card" id="cardParentMeetings" style="cursor: pointer;"
+                    title="Click to view Parent-Teacher Meetings">
                     <div class="stat-icon-wrapper bg-purple">
                         <i class="fas fa-handshake"></i>
                     </div>

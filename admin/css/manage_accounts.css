@@ -283,7 +283,33 @@
     background: #fff;
     border-radius: 12px;
     border: 1px solid #e9edf4;
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: visible;
+}
+
+.pending-section {
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #e9edf4;
+    margin-bottom: 24px;
+    overflow: visible;
+}
+
+.cell-center {
+    text-align: center;
+}
+
+.cell-actions {
+    position: relative;
+    white-space: nowrap;
+    text-align: center;
+    width: 1%;
+}
+
+tr.dropdown-open,
+tr:has(.manage-dropdown.show) {
+    position: relative;
+    z-index: 100 !important;
 }
 
 .data-table {

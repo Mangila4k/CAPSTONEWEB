@@ -13,6 +13,12 @@ document.addEventListener('DOMContentLoaded', async function() {
     const specializationInput = document.getElementById('specialization');
     const addressInput = document.getElementById('address');
     
+    // Advisory DOM elements
+    const advisoryGradeLevelSelect = document.getElementById('advisoryGradeLevel');
+    const advisorySectionSelect = document.getElementById('advisorySection');
+    const advisorySectionHint = document.getElementById('advisorySectionHint');
+    const previewAdvisory = document.getElementById('previewAdvisory');
+
     const previewName = document.getElementById('previewName');
     const previewEmail = document.getElementById('previewEmail');
     const previewInitial = document.getElementById('previewInitial');
@@ -37,6 +43,8 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     let currentTeacher = null;
     let currentUserId = null;
+    let allSections = [];
+    let initialSectionId = null;
 
     // ===== FUNCTIONS =====
 
@@ -48,7 +56,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         const initial = fullname.charAt(0).toUpperCase() || 'T';
         if (previewInitial) previewInitial.textContent = initial;
 
-        const email = (emailInput?.value.trim()) || 'teacher@hiraya.edu.ph';
+        const email = (emailInput?.value.trim()) || 'teacher@plshs.edu.ph';
         if (previewEmail) previewEmail.innerHTML = `<i class="fas fa-envelope"></i> ${email}`;
 
         const idNumber = (idNumberInput?.value.trim()) || 'N/A';
@@ -59,6 +67,86 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         const phone = (phoneInput?.value.trim()) || 'N/A';
         if (previewPhone) previewPhone.innerHTML = `<i class="fas fa-phone"></i> ${phone}`;
+
+        // Advisory in preview
+        if (previewAdvisory) {
+            const secId = advisorySectionSelect?.value;
+            const gradeVal = advisoryGradeLevelSelect?.value;
+            if (secId) {
+                const found = allSections.find(s => s.id === secId);
+                previewAdvisory.textContent = found ? `${found.grade_level || gradeVal} - ${found.name}` : 'Section Assigned';
+            } else if (gradeVal) {
+                previewAdvisory.textContent = `${gradeVal} (Section pending)`;
+            } else {
+                previewAdvisory.textContent = 'No Advisory Class';
+            }
+        }
+    }
+
+    async function loadSections() {
+        try {
+            const { data, error } = await supabase
+                .from('sections')
+                .select('id, name, grade_level, strand, adviser_id, adviser_name')
+                .order('grade_level', { ascending: true })
+                .order('name', { ascending: true });
+
+            if (error) throw error;
+            allSections = data || [];
+        } catch (err) {
+            console.warn('Could not load sections in edit_teacher:', err);
+        }
+    }
+
+    function updateSectionOptions(selectedSectionToPreserve = null) {
+        if (!advisorySectionSelect) return;
+
+        const selectedGrade = (advisoryGradeLevelSelect?.value || '').trim();
+
+        if (!selectedGrade) {
+            advisorySectionSelect.innerHTML = '<option value="">-- Select Year Level First --</option>';
+            advisorySectionSelect.disabled = true;
+            if (advisorySectionHint) {
+                advisorySectionHint.innerHTML = '<i class="fas fa-info-circle"></i> Select year level to view sections';
+            }
+            updatePreview();
+            return;
+        }
+
+        const filtered = allSections.filter(sec => {
+            const secGrade = (sec.grade_level || '').trim();
+            return secGrade.toLowerCase() === selectedGrade.toLowerCase() ||
+                   secGrade.replace(/\D/g, '') === selectedGrade.replace(/\D/g, '');
+        });
+
+        if (filtered.length === 0) {
+            advisorySectionSelect.innerHTML = `<option value="">-- No sections found in ${selectedGrade} --</option>`;
+            advisorySectionSelect.disabled = true;
+            if (advisorySectionHint) {
+                advisorySectionHint.innerHTML = `<i class="fas fa-exclamation-circle" style="color: #f59e0b;"></i> No active sections found under ${selectedGrade}`;
+            }
+        } else {
+            let optionsHtml = `<option value="">-- Select Section in ${selectedGrade} (Optional) --</option>`;
+            filtered.forEach(sec => {
+                const strandText = sec.strand ? ` [${sec.strand}]` : '';
+                const isCurrentTeacherSection = sec.id === initialSectionId;
+                const adviserText = isCurrentTeacherSection
+                    ? ' (Currently Assigned to this Teacher)'
+                    : (sec.adviser_name ? ` (Current Adviser: ${sec.adviser_name})` : ' (Vacant)');
+                optionsHtml += `<option value="${sec.id}">${sec.name}${strandText}${adviserText}</option>`;
+            });
+
+            advisorySectionSelect.innerHTML = optionsHtml;
+            advisorySectionSelect.disabled = false;
+            if (selectedSectionToPreserve) {
+                advisorySectionSelect.value = selectedSectionToPreserve;
+            }
+            if (advisorySectionHint) {
+                advisorySectionHint.innerHTML = `<i class="fas fa-check-circle" style="color: #10b981;"></i> Showing ${filtered.length} section${filtered.length > 1 ? 's' : ''} in ${selectedGrade}`;
+            }
+        }
+
+        updatePreview();
     }
 
     // Toggle password visibility
@@ -233,6 +321,27 @@ document.addEventListener('DOMContentLoaded', async function() {
             if (specializationInput) specializationInput.value = spec;
             if (addressInput) addressInput.value = addr;
 
+            // Load sections and check if teacher is currently assigned as adviser
+            await loadSections();
+            const tKey = currentTeacher?.id;
+            const uKey = currentUserId;
+            const existingSec = allSections.find(s => 
+                (tKey && s.adviser_id === tKey) || 
+                (uKey && s.adviser_id === uKey) ||
+                (s.adviser_name && fName && s.adviser_name.toLowerCase() === fName.toLowerCase())
+            );
+
+            if (existingSec) {
+                initialSectionId = existingSec.id;
+                if (advisoryGradeLevelSelect) {
+                    advisoryGradeLevelSelect.value = existingSec.grade_level;
+                }
+                updateSectionOptions(existingSec.id);
+            } else {
+                initialSectionId = null;
+                updateSectionOptions();
+            }
+
             updatePreview();
         } catch (err) {
             console.error('Error fetching teacher:', err);
@@ -246,6 +355,18 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (idNumberInput) idNumberInput.addEventListener('input', updatePreview);
     if (phoneInput) phoneInput.addEventListener('input', updatePreview);
     if (specializationInput) specializationInput.addEventListener('input', updatePreview);
+
+    if (advisoryGradeLevelSelect) {
+        advisoryGradeLevelSelect.addEventListener('change', function() {
+            updateSectionOptions();
+        });
+    }
+
+    if (advisorySectionSelect) {
+        advisorySectionSelect.addEventListener('change', function() {
+            updatePreview();
+        });
+    }
 
     if (changePasswordCheckbox) {
         changePasswordCheckbox.addEventListener('change', function() {
@@ -343,6 +464,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 }
 
                 // Update or insert teachers table
+                let savedTeacherId = currentTeacher?.id;
                 if (currentTeacher && currentTeacher.id) {
                     const { error: tErr } = await supabase
                         .from('teachers')
@@ -357,7 +479,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
                     if (tErr) throw tErr;
                 } else if (currentUserId) {
-                    const { error: tInsErr } = await supabase
+                    const { data: newTeacherData, error: tInsErr } = await supabase
                         .from('teachers')
                         .insert([{
                             user_id: currentUserId,
@@ -365,9 +487,47 @@ document.addEventListener('DOMContentLoaded', async function() {
                             specialization: specialization,
                             phone: phone,
                             address: address
-                        }]);
+                        }])
+                        .select()
+                        .single();
 
                     if (tInsErr) throw tInsErr;
+                    if (newTeacherData) savedTeacherId = newTeacherData.id;
+                }
+
+                // Handle Advisory Section changes
+                const newSectionId = advisorySectionSelect?.value || null;
+                if (newSectionId !== initialSectionId) {
+                    // If teacher was previously assigned to another section, clear that section's adviser
+                    if (initialSectionId) {
+                        await supabase
+                            .from('sections')
+                            .update({
+                                adviser_id: null,
+                                adviser_name: null
+                            })
+                            .eq('id', initialSectionId);
+                    }
+
+                    // Assign new section
+                    if (newSectionId) {
+                        const teacherIdentifier = savedTeacherId || currentUserId;
+                        await supabase
+                            .from('sections')
+                            .update({
+                                adviser_id: teacherIdentifier,
+                                adviser_name: fullname
+                            })
+                            .eq('id', newSectionId);
+                    }
+                } else if (newSectionId && initialSectionId === newSectionId) {
+                    // Update adviser_name in case teacher's full name changed
+                    await supabase
+                        .from('sections')
+                        .update({
+                            adviser_name: fullname
+                        })
+                        .eq('id', newSectionId);
                 }
 
                 showAlert(`✅ Teacher "${fullname}" updated successfully! Redirecting...`, 'success');

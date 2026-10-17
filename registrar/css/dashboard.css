@@ -62,7 +62,8 @@ body {
 
 .sidebar-header {
     padding: 0 1.25rem 14px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    margin-bottom: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 .logo {
@@ -288,6 +289,11 @@ body {
 .notification-btn:hover {
     border-color: var(--primary);
     color: var(--primary);
+}
+
+.notif-count.empty,
+.notif-count:empty {
+    display: none !important;
 }
 
 .notif-count {

@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guidance Records - HES Guidance</title>
+    <title>Guidance Records - PLSNSH, Placido L. Señor National High School Guidance</title>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!-- Google Fonts -->
@@ -12,7 +13,10 @@
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/violations.css">
     <link rel="stylesheet" href="../css/chatbot.css">
+    <link rel="stylesheet" href="../css/sidebar.css">
+    <link rel="stylesheet" href="../css/dashboard_announcements.css">
 </head>
+
 <body>
     <!-- Mobile Menu Toggle -->
     <div class="menu-toggle" id="menuToggle">
@@ -25,20 +29,12 @@
             <div class="sidebar-header">
                 <div class="logo">
                     <div class="logo-icon">
-                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
+                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo"
+                            onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
                     </div>
                     <div class="logo-text">PLS<span>NSH</span></div>
                 </div>
                 <div class="school-badge">Placido L. Señor National High School</div>
-            </div>
-
-            <div class="counselor-profile">
-                <div class="counselor-avatar">
-                    <div class="avatar-initial" id="counselorAvatar">G</div>
-                    <div class="online-dot"></div>
-                </div>
-                <div class="counselor-name" id="counselorName">Guidance Counselor</div>
-                <div class="counselor-role"><i class="fas fa-heart-pulse"></i> Guidance Office</div>
             </div>
 
             <nav class="nav-menu">
@@ -46,8 +42,10 @@
                     <div class="nav-section-title">MAIN MENU</div>
                     <ul class="nav-items">
                         <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-                        <li><a href="violations.html" class="active"><i class="fas fa-clipboard-list"></i> Guidance Records</a></li>
-                        <li><a href="add_violation.html"><i class="fas fa-file-circle-plus"></i> Log Guidance Case</a></li>
+                        <li><a href="violations.html" class="active"><i class="fas fa-clipboard-list"></i> Guidance
+                                Records</a></li>
+                        <li><a href="add_violation.html"><i class="fas fa-file-circle-plus"></i> Log Guidance Case</a>
+                        </li>
                         <li><a href="counseling.html"><i class="fas fa-user-doctor"></i> Counseling Sessions</a></li>
                         <li><a href="students.html"><i class="fas fa-user-graduate"></i> Student Directory</a></li>
                     </ul>
@@ -64,10 +62,25 @@
                     <div class="nav-section-title">ACCOUNT</div>
                     <ul class="nav-items">
                         <li><a href="profile.html"><i class="fas fa-user-gear"></i> Counselor Profile</a></li>
-                        <li><a href="../auth/logout.html"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                        <li><a href="../auth/logout.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                        </li>
+
                     </ul>
                 </div>
             </nav>
+            <!-- Pinned Sidebar Footer -->
+            <div class="sidebar-footer">
+                <div class="counselor-profile">
+                    <div class="counselor-avatar">
+                        <div class="avatar-initial" id="counselorAvatar">G</div>
+                        <div class="online-dot"></div>
+                    </div>
+                    <div class="counselor-info">
+                        <div class="counselor-name" id="counselorName">Guidance Counselor</div>
+                        <div class="counselor-role"><i class="fas fa-heart-pulse"></i> Guidance Office</div>
+                    </div>
+                </div>
+            </div>
         </aside>
 
         <!-- Main Content -->
@@ -75,7 +88,8 @@
             <div class="page-header">
                 <div>
                     <h1>Student Guidance Records</h1>
-                    <p class="subtitle">Review, investigate, and record restorative interventions for student guidance cases.</p>
+                    <p class="subtitle">Review, investigate, and record restorative interventions for student guidance
+                        cases.</p>
                 </div>
                 <div class="header-actions">
                     <a href="add_violation.html" class="btn-primary">
@@ -91,7 +105,8 @@
             <div class="filter-toolbar">
                 <div class="search-box-wrap">
                     <i class="fas fa-search"></i>
-                    <input type="text" id="searchInput" placeholder="Search by student name, LRN, or offense..." class="form-control">
+                    <input type="text" id="searchInput" placeholder="Search by student name, LRN, or offense..."
+                        class="form-control">
                 </div>
                 <div class="filters-group">
                     <select id="categoryFilter" class="filter-select">
@@ -130,7 +145,8 @@
                         <h3><i class="fas fa-shield-alt" style="color: #1D4ED8;"></i> Incident Case Logs</h3>
                         <span class="count-pill" id="totalCasesCount">0</span>
                     </div>
-                    <div style="font-size: 13px; color: var(--text-muted); font-weight: 500;" id="tableSummaryText">Showing all recorded cases</div>
+                    <div style="font-size: 13px; color: var(--text-muted); font-weight: 500;" id="tableSummaryText">
+                        Showing all recorded cases</div>
                 </div>
 
                 <div class="table-responsive">
@@ -150,7 +166,8 @@
                         <tbody id="violationsTableBody">
                             <tr>
                                 <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 40px;">
-                                    <i class="fas fa-spinner fa-spin" style="font-size: 24px; display: block; margin-bottom: 10px;"></i>
+                                    <i class="fas fa-spinner fa-spin"
+                                        style="font-size: 24px; display: block; margin-bottom: 10px;"></i>
                                     Loading violation records...
                                 </td>
                             </tr>
@@ -182,7 +199,8 @@
     <div class="modal-overlay" id="callSlipModal">
         <div class="modal-card" style="max-width: 600px;">
             <div class="modal-header">
-                <h3><i class="fas fa-envelope-open-text" style="color: var(--warning);"></i> Parent Call Slip Notice</h3>
+                <h3><i class="fas fa-envelope-open-text" style="color: var(--warning);"></i> Parent Call Slip Notice
+                </h3>
                 <button class="modal-close-btn" id="closeCallSlipModalBtn"><i class="fas fa-times"></i></button>
             </div>
             <div class="modal-body" id="callSlipModalBody">
@@ -190,7 +208,8 @@
             </div>
             <div class="modal-footer">
                 <button class="btn-secondary" id="closeCallSlipBottomBtn">Cancel</button>
-                <button class="btn-primary" id="sendCallSlipBtn" style="background: var(--warning); border-color: var(--warning); color: #000;">
+                <button class="btn-primary" id="sendCallSlipBtn"
+                    style="background: var(--warning); border-color: var(--warning); color: #000;">
                     <i class="fas fa-paper-plane"></i> Send Notification Notice
                 </button>
             </div>
@@ -199,5 +218,7 @@
 
     <!-- Scripts -->
     <script type="module" src="js/violations.js"></script>
+    <script type="module" src="../js/dashboard_announcements_notifier.js"></script>
 </body>
+
 </html>

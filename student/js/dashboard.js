@@ -50,6 +50,7 @@ import { supabase } from '../../supabase/config.js';
     const studentTypeIcon = document.getElementById('studentTypeIcon');
     const studentTypeTitle = document.getElementById('studentTypeTitle');
     const studentTypeDesc = document.getElementById('studentTypeDesc');
+    const studentTypeSub = document.getElementById('studentTypeSub');
 
     // Activities
     const recentActivities = document.getElementById('recentActivities');
@@ -120,6 +121,31 @@ import { supabase } from '../../supabase/config.js';
     if (studentInitial) studentInitial.textContent = getStudentInitials(studentDisplayName);
     if (bannerStudentName) bannerStudentName.textContent = studentDisplayName;
     if (bannerInitial) bannerInitial.textContent = getStudentInitials(studentDisplayName);
+
+    // ============================================
+    // PASSWORD SECURITY BANNER (Initial Credentials Prompt)
+    // ============================================
+    const pwdBanner = document.getElementById('passwordSecurityBanner');
+    const dismissPwdBtn = document.getElementById('dismissPwdBannerBtn');
+    const emailKey = (sessionUser.email || '').toLowerCase();
+    const uidKey = sessionUser.id || sessionUser.uid || '';
+
+    const isPwdAlreadyChanged = localStorage.getItem(`hes_password_changed_${emailKey}`) === 'true' ||
+                                localStorage.getItem(`hes_password_changed_${uidKey}`) === 'true';
+    const isBannerDismissed = localStorage.getItem(`hes_dismiss_pwd_banner_${emailKey}`) === 'true';
+
+    if (pwdBanner && !isPwdAlreadyChanged && !isBannerDismissed) {
+        pwdBanner.style.display = 'block';
+    }
+
+    if (dismissPwdBtn && pwdBanner) {
+        dismissPwdBtn.addEventListener('click', () => {
+            pwdBanner.style.display = 'none';
+            if (emailKey) {
+                localStorage.setItem(`hes_dismiss_pwd_banner_${emailKey}`, 'true');
+            }
+        });
+    }
 
     // ============================================
     // LOGOUT
@@ -249,14 +275,24 @@ import { supabase } from '../../supabase/config.js';
             }
 
             // Update Banner details
-            const lrnVal = studentRow?.lrn || sessionUser.lrn || latest?.lrn || '109876543201';
-            const gradeVal = latest?.grade_level || latest?.grade || studentRow?.grade_level || 'Grade 11';
-            const sectionVal = latest?.section || studentRow?.section || '11-STEM A';
-            const strandVal = latest?.strand || studentRow?.strand || (gradeVal.includes('11') || gradeVal.includes('12') ? 'STEM' : 'N/A');
+            const lrnVal = studentRow?.lrn || sessionUser.lrn || latest?.lrn || '—';
+            const gradeVal = latest?.grade_level || latest?.grade || studentRow?.grade_level || 'Grade 7';
+            
+            let sectionVal = latest?.section || studentRow?.section || '';
+            const secIdToLookup = studentRow?.section_id || latest?.section_id;
+            if (secIdToLookup) {
+                try {
+                    const { data: sData } = await supabase.from('sections').select('name').eq('id', secIdToLookup).maybeSingle();
+                    if (sData?.name) sectionVal = sData.name;
+                } catch(e) {}
+            }
+            if (!sectionVal) sectionVal = 'Unassigned';
+
+            const strandVal = latest?.strand || studentRow?.strand || (gradeVal.includes('11') || gradeVal.includes('12') ? 'STEM' : '—');
             const syVal = latest?.school_year || latest?.schoolYear || '2025-2026';
 
             if (bannerLRN) bannerLRN.innerHTML = `<i class="fas fa-id-card"></i> LRN: ${lrnVal}`;
-            if (bannerGradeSection) bannerGradeSection.textContent = `${gradeVal} - ${sectionVal}`;
+            if (bannerGradeSection) bannerGradeSection.textContent = `${gradeVal} • ${sectionVal}`;
             if (bannerStrand) bannerStrand.textContent = strandVal;
             if (bannerSchoolYear) bannerSchoolYear.textContent = syVal;
 
@@ -439,11 +475,13 @@ import { supabase } from '../../supabase/config.js';
         let color = '#0b2b4a';
         let display = 'New Student';
         let description = 'First time enrollee';
+        let subText = '<i class="fas fa-graduation-cap"></i> First time enrollment';
 
         if (count > 1) {
             icon = 'fa-undo-alt';
             display = 'Continuing Student';
             description = 'Continuing student - progressing to next grade level';
+            subText = '<i class="fas fa-user-graduate"></i> Academic progression';
         }
 
         const hasOldSchool = enrollments.some(e => e.previous_school || e.previousSchool);
@@ -451,6 +489,7 @@ import { supabase } from '../../supabase/config.js';
             icon = 'fa-exchange-alt';
             display = 'Transferee Student';
             description = 'Transferred from another school - requirements verified';
+            subText = '<i class="fas fa-school"></i> Transferred from previous school';
         }
 
         if (studentTypeBadge) {
@@ -469,6 +508,10 @@ import { supabase } from '../../supabase/config.js';
 
         if (studentTypeDesc) {
             studentTypeDesc.textContent = description;
+        }
+
+        if (studentTypeSub) {
+            studentTypeSub.innerHTML = subText;
         }
     }
 
@@ -748,6 +791,23 @@ import { supabase } from '../../supabase/config.js';
             `;
         }).join('');
         
+        // Click on entire notification item to mark read and reduce count
+        document.querySelectorAll('.notif-item').forEach(item => {
+            item.addEventListener('click', async function(e) {
+                if (e.target.closest('a') || e.target.closest('.mark-read-btn')) return;
+                const notifId = this.dataset.id;
+                if (this.classList.contains('unread')) {
+                    this.classList.remove('unread');
+                    this.classList.add('read');
+                    const btn = this.querySelector('.mark-read-btn');
+                    if (btn) btn.remove();
+                    const unread = document.querySelectorAll('.notif-item.unread').length;
+                    updateNotificationCount(unread);
+                    try { await supabase.from('notifications').update({ read: true, is_read: true }).eq('id', notifId); } catch(e) {}
+                }
+            });
+        });
+
         document.querySelectorAll('.mark-read-btn').forEach(btn => {
             btn.addEventListener('click', async function(e) {
                 e.stopPropagation();
@@ -787,9 +847,12 @@ import { supabase } from '../../supabase/config.js';
     function updateNotificationCount(count) {
         if (!notifCount) return;
         if (count > 0) {
-            notifCount.textContent = count;
+            notifCount.textContent = count > 99 ? '99+' : String(count);
+            notifCount.classList.remove('empty');
             notifCount.style.display = 'flex';
         } else {
+            notifCount.textContent = '';
+            notifCount.classList.add('empty');
             notifCount.style.display = 'none';
         }
     }

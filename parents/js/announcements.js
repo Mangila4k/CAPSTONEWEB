@@ -59,7 +59,7 @@ import { AnnouncementsService } from '../../js/announcements_service.js';
                 displayName: savedName,
                 firstName: savedName,
                 role: 'parent',
-                email: 'parent@hiraya.edu.ph'
+                email: ''
             };
         }
 

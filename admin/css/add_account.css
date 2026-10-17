@@ -3,6 +3,13 @@
    Matches base.css and other admin forms
    ============================================ */
 
+/* ===== FORM PAGE WRAPPER (CENTERED) ===== */
+.form-page-wrapper {
+    max-width: 960px;
+    margin: 0 auto;
+    width: 100%;
+}
+
 /* ===== INFO BOX ===== */
 .info-box {
     background: #e8edf5;
@@ -16,6 +23,8 @@
     font-size: 13.5px;
     color: #1B2A4A;
     line-height: 1.5;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .info-box i {
@@ -27,15 +36,19 @@
 
 /* ===== FORM CONTAINER & CARD ===== */
 .form-container {
-    max-width: 900px;
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
 }
 
 .form-card {
     background: #ffffff;
     border-radius: 16px;
-    padding: 28px 32px;
+    padding: 32px 36px;
     border: 1px solid #e9edf4;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .form-header {

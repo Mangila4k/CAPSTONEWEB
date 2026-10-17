@@ -1,9 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>View Enrollment - Registrar Dashboard | PLS NHS</title>
+    <title>View Enrollment - Registrar Dashboard | PLSNSH, Placido L. Señor National High School</title>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Google Fonts -->
@@ -12,7 +13,9 @@
     <link rel="stylesheet" href="css/view_enrollment.css">
     <link rel="stylesheet" href="css/file-modal.css">
     <link rel="stylesheet" href="../css/chatbot.css">
+    <link rel="stylesheet" href="../css/sidebar.css">
 </head>
+
 <body>
     <!-- Mobile Menu Toggle -->
     <div class="menu-toggle" id="menuToggle">
@@ -24,32 +27,24 @@
         <div class="sidebar-header">
             <div class="logo">
                 <div class="logo-icon">
-                    <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
+                    <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo"
+                        onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
                 </div>
                 <div class="logo-text">PLS<span>NSH</span></div>
             </div>
             <div class="school-badge">Placido L. Señor National High School</div>
         </div>
 
-        
-        <div class="admin-profile">
-            <div class="admin-avatar">
-                <div class="avatar-initial" id="adminInitial">JM</div>
-                <div class="online-dot"></div>
-            </div>
-            <div class="admin-name" id="adminName">Justine Mangila</div>
-            <div class="admin-role"><i class="fas fa-id-badge"></i> Registrar</div>
-        </div>
 
         <nav class="nav-menu">
             <div class="nav-section">
                 <div class="nav-section-title">MAIN MENU</div>
                 <ul class="nav-items">
                     <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-                    <li><a href="enrollments.html"><i class="fas fa-file-signature"></i> Enrollments <span class="nav-badge" id="pendingEnrollmentsBadge" style="display: none;">0</span></a></li>
+                    <li><a href="announcements.html"><i class="fas fa-bullhorn"></i> Announcements</a></li>
+                    <li><a href="enrollments.html"><i class="fas fa-file-signature"></i> Enrollments <span class="nav-badge hidden" id="pendingEnrollmentsBadge" data-count="0" style="display: none !important;"></span></a></li>
                     <li><a href="students.html"><i class="fas fa-user-graduate"></i> Students</a></li>
-<li><a href="requirements.html"><i class="fas fa-clipboard-check"></i> Requirements <span
-                                    class="nav-badge" id="pendingRequirementsBadge" style="display: none;">0</span></a></li>
+                    <li><a href="requirements.html"><i class="fas fa-clipboard-check"></i> Requirements <span class="nav-badge hidden" id="pendingRequirementsBadge" data-count="0" style="display: none !important;"></span></a></li>
                     <li><a href="sections.html"><i class="fas fa-layer-group"></i> Sections</a></li>
                     <li><a href="reports.html"><i class="fas fa-chart-bar"></i> Reports</a></li>
                 </ul>
@@ -60,9 +55,23 @@
                 <ul class="nav-items">
                     <li><a href="profile.html"><i class="fas fa-user"></i> Profile</a></li>
                     <li><a href="../auth/login.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+
                 </ul>
             </div>
         </nav>
+        <!-- Pinned Sidebar Footer -->
+        <div class="sidebar-footer">
+            <div class="admin-profile">
+                <div class="admin-avatar">
+                    <div class="avatar-initial" id="adminInitial">JM</div>
+                    <div class="online-dot"></div>
+                </div>
+                <div class="admin-info">
+                    <div class="admin-name" id="adminName">Justine Mangila</div>
+                    <div class="admin-role"><i class="fas fa-id-badge"></i> Registrar</div>
+                </div>
+            </div>
+        </div>
     </aside>
 
     <!-- ===== MAIN CONTENT ===== -->
@@ -73,9 +82,23 @@
                 <h1>Enrollment Details</h1>
                 <p>View and manage enrollment information</p>
             </div>
-            <a href="enrollments.html" class="back-btn">
-                <i class="fas fa-arrow-left"></i> Back to Enrollments
-            </a>
+            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <button type="button" id="headerApproveBtn" class="back-btn"
+                    style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; border: none; cursor: pointer; display: none; align-items: center; gap: 6px; font-weight: 600;">
+                    <i class="fas fa-check-circle"></i> Approve Enrollment
+                </button>
+                <button type="button" id="headerRejectBtn" class="back-btn"
+                    style="background: #ef4444; color: #fff; border: none; cursor: pointer; display: none; align-items: center; gap: 6px; font-weight: 600;">
+                    <i class="fas fa-times-circle"></i> Reject Application
+                </button>
+                <a href="generate_id.html" id="headerGenerateIdBtn" class="back-btn"
+                    style="background: #c89b27; color: #070526; text-decoration: none; display: none; align-items: center; gap: 6px; font-weight: 600;">
+                    <i class="fas fa-id-card"></i> Generate Student ID
+                </a>
+                <a href="enrollments.html" class="back-btn">
+                    <i class="fas fa-arrow-left"></i> Back to Enrollments
+                </a>
+            </div>
         </div>
 
         <!-- Alert Container -->
@@ -95,7 +118,8 @@
                     <div class="student-meta">
                         <span><i class="fas fa-envelope"></i> <span id="studentEmail">student@email.com</span></span>
                         <span><i class="fas fa-id-card"></i> ID: <span id="studentId">Not assigned</span></span>
-                        <span><i class="fas fa-calendar-alt"></i> Registered: <span id="registeredDate">N/A</span></span>
+                        <span><i class="fas fa-calendar-alt"></i> Registered: <span
+                                id="registeredDate">N/A</span></span>
                     </div>
                 </div>
             </div>
@@ -107,16 +131,19 @@
 
         <!-- Requirements Section -->
         <div class="detail-card">
-            <div class="card-header" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+            <div class="card-header"
+                style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <h3><i class="fas fa-clipboard-list"></i> Enrollment Requirements</h3>
                     <span class="badge-count" id="reqBadge">Grade - Student Type</span>
                 </div>
                 <div class="req-header-tools" style="display: flex; align-items: center; gap: 8px;">
-                    <button type="button" class="btn-req-head-action" id="headerRequestMoralBtn" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: #fff; border: none; padding: 7px 14px; border-radius: 8px; font-size: 12.5px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(2,132,199,0.25);">
+                    <button type="button" class="btn-req-head-action" id="headerRequestMoralBtn"
+                        style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: #fff; border: none; padding: 7px 14px; border-radius: 8px; font-size: 12.5px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(2,132,199,0.25);">
                         <i class="fas fa-award"></i> Request Good Moral
                     </button>
-                    <button type="button" class="btn-req-head-action" id="headerRemindReqBtn" style="background: #f1f5f9; color: #1e293b; border: 1px solid #cbd5e1; padding: 7px 13px; border-radius: 8px; font-size: 12.5px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                    <button type="button" class="btn-req-head-action" id="headerRemindReqBtn"
+                        style="background: #f1f5f9; color: #1e293b; border: 1px solid #cbd5e1; padding: 7px 13px; border-radius: 8px; font-size: 12.5px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
                         <i class="fas fa-bell"></i> Remind Requirements
                     </button>
                 </div>
@@ -162,27 +189,32 @@
                                 <option value="Rejected">❌ Rejected / Incomplete</option>
                             </select>
                         </div>
-                        
+
                         <div class="form-group-modern form-actions-inline">
                             <button type="submit" name="update_status" class="btn-update-modern">
                                 <i class="fas fa-save"></i> Update Status
                             </button>
                         </div>
                     </div>
-                    
+
                     <div class="form-group-modern" id="rejectionReasonGroup" style="display: none; margin-top: 14px;">
-                        <label for="rejectionReason"><i class="fas fa-exclamation-triangle" style="color: #dc2626;"></i> Rejection Reason <span class="required">*</span></label>
-                        <textarea name="rejection_reason" id="rejectionReason" class="form-control-modern" rows="3" placeholder="Please provide a clear reason for rejecting this enrollment application..."></textarea>
-                        <small class="form-helper-text"><i class="fas fa-info-circle"></i> This explanation will be automatically delivered to the student's dashboard notification center.</small>
+                        <label for="rejectionReason"><i class="fas fa-exclamation-triangle" style="color: #dc2626;"></i>
+                            Rejection Reason <span class="required">*</span></label>
+                        <textarea name="rejection_reason" id="rejectionReason" class="form-control-modern" rows="3"
+                            placeholder="Please provide a clear reason for rejecting this enrollment application..."></textarea>
+                        <small class="form-helper-text"><i class="fas fa-info-circle"></i> This explanation will be
+                            automatically delivered to the student's dashboard notification center.</small>
                     </div>
                 </form>
 
                 <!-- Action Toolbar -->
                 <div class="enrollment-action-toolbar">
-                    <a href="#" id="generateIdCardBtn" class="btn-action-tool btn-id-tool" style="background: #1a225a; color: #fff; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                    <a href="#" id="generateIdCardBtn" class="btn-action-tool btn-id-tool"
+                        style="background: #1a225a; color: #fff; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
                         <i class="fas fa-id-card" style="color: #f59e0b;"></i> Generate Official ID
                     </a>
-                    <button class="btn-action-tool btn-moral-tool" id="quickRequestGoodMoralBtn" type="button" style="background: #0284c7; color: #fff;">
+                    <button class="btn-action-tool btn-moral-tool" id="quickRequestGoodMoralBtn" type="button"
+                        style="background: #0284c7; color: #fff;">
                         <i class="fas fa-award"></i> Request Good Moral
                     </button>
                     <button onclick="window.print()" class="btn-action-tool btn-print-tool">
@@ -257,61 +289,86 @@
             </div>
             <div class="hes-modal-body">
                 <div style="text-align: center; margin-bottom: 20px;">
-                    <div style="width: 56px; height: 56px; background: #ecfdf5; color: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; margin: 0 auto 10px;">
+                    <div
+                        style="width: 56px; height: 56px; background: #ecfdf5; color: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; margin: 0 auto 10px;">
                         <i class="fas fa-user-check"></i>
                     </div>
-                    <h3 id="credStudentName" style="color: #1e293b; margin: 0 0 4px 0; font-size: 18px;">Student Name</h3>
-                    <p style="color: #64748b; font-size: 13px; margin: 0;">Enrollment has been approved and login credentials are ready.</p>
+                    <h3 id="credStudentName" style="color: #1e293b; margin: 0 0 4px 0; font-size: 18px;">Student Name
+                    </h3>
+                    <p style="color: #64748b; font-size: 13px; margin: 0;">Enrollment has been approved and login
+                        credentials are ready.</p>
                 </div>
-                
-                <div style="background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+
+                <div
+                    style="background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
                     <div style="margin-bottom: 12px;">
-                        <label style="display: block; font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 700; margin-bottom: 4px;">Username (Email Address)</label>
-                        <div style="display: flex; align-items: center; justify-content: space-between; background: #f1f5f9; padding: 8px 12px; border-radius: 6px;">
-                            <span id="credUsername" style="font-family: monospace; font-size: 14px; font-weight: 600; color: #0f172a;">student@email.com</span>
-                            <button type="button" class="btn-copy-cred" id="copyUsernameBtn" style="background: none; border: none; color: #0b2b4a; cursor: pointer; font-size: 13px; padding: 2px 6px;" title="Copy Username"><i class="fas fa-copy"></i></button>
+                        <label
+                            style="display: block; font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 700; margin-bottom: 4px;">Username
+                            (Email Address)</label>
+                        <div
+                            style="display: flex; align-items: center; justify-content: space-between; background: #f1f5f9; padding: 8px 12px; border-radius: 6px;">
+                            <span id="credUsername"
+                                style="font-family: monospace; font-size: 14px; font-weight: 600; color: #0f172a;">student@email.com</span>
+                            <button type="button" class="btn-copy-cred" id="copyUsernameBtn"
+                                style="background: none; border: none; color: #0b2b4a; cursor: pointer; font-size: 13px; padding: 2px 6px;"
+                                title="Copy Username"><i class="fas fa-copy"></i></button>
                         </div>
                     </div>
                     <div>
-                        <label style="display: block; font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 700; margin-bottom: 4px;">Password (Student's Last Name)</label>
-                        <div style="display: flex; align-items: center; justify-content: space-between; background: #f1f5f9; padding: 8px 12px; border-radius: 6px;">
-                            <span id="credPassword" style="font-family: monospace; font-size: 14px; font-weight: 600; color: #0f172a;">LastName</span>
-                            <button type="button" class="btn-copy-cred" id="copyPasswordBtn" style="background: none; border: none; color: #0b2b4a; cursor: pointer; font-size: 13px; padding: 2px 6px;" title="Copy Password"><i class="fas fa-copy"></i></button>
+                        <label
+                            style="display: block; font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 700; margin-bottom: 4px;">Password
+                            (Student's Last Name)</label>
+                        <div
+                            style="display: flex; align-items: center; justify-content: space-between; background: #f1f5f9; padding: 8px 12px; border-radius: 6px;">
+                            <span id="credPassword"
+                                style="font-family: monospace; font-size: 14px; font-weight: 600; color: #0f172a;">LastName</span>
+                            <button type="button" class="btn-copy-cred" id="copyPasswordBtn"
+                                style="background: none; border: none; color: #0b2b4a; cursor: pointer; font-size: 13px; padding: 2px 6px;"
+                                title="Copy Password"><i class="fas fa-copy"></i></button>
                         </div>
                     </div>
                 </div>
-                
-                <div style="background: #e0f2fe; border-left: 4px solid #0284c7; padding: 10px 14px; border-radius: 6px; font-size: 12.5px; color: #0369a1; margin-bottom: 14px;">
+
+                <div
+                    style="background: #e0f2fe; border-left: 4px solid #0284c7; padding: 10px 14px; border-radius: 6px; font-size: 12.5px; color: #0369a1; margin-bottom: 14px;">
                     <i class="fas fa-bell"></i> In-app notification has been posted to the student's portal.
                 </div>
 
-                <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; margin-bottom: 6px;">
-                    <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: #475569; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+                <div
+                    style="background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; margin-bottom: 6px;">
+                    <div
+                        style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: #475569; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
                         <i class="fas fa-paper-plane" style="color: #0b2b4a;"></i> Send Credentials to Student's Inbox
                     </div>
                     <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px;">
-                        <button type="button" id="sendGmailCredBtn" style="width: 100%; padding: 11px 16px; border-radius: 8px; background: linear-gradient(135deg, #EA4335 0%, #D93025 100%); color: #fff; border: none; cursor: pointer; font-weight: 700; font-size: 13.5px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 2px 4px rgba(234,67,53,0.25);">
+                        <button type="button" id="sendGmailCredBtn"
+                            style="width: 100%; padding: 11px 16px; border-radius: 8px; background: linear-gradient(135deg, #EA4335 0%, #D93025 100%); color: #fff; border: none; cursor: pointer; font-weight: 700; font-size: 13.5px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 2px 4px rgba(234,67,53,0.25);">
                             <i class="fab fa-google"></i> Send to Student's Gmail
                         </button>
                         <div style="display: flex; gap: 8px;">
-                            <button type="button" id="copyEmailTextBtn" style="flex: 1; padding: 9px 12px; border-radius: 8px; background: #f1f5f9; color: #1e293b; border: 1px solid #cbd5e1; cursor: pointer; font-weight: 600; font-size: 12.5px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+                            <button type="button" id="copyEmailTextBtn"
+                                style="flex: 1; padding: 9px 12px; border-radius: 8px; background: #f1f5f9; color: #1e293b; border: 1px solid #cbd5e1; cursor: pointer; font-weight: 600; font-size: 12.5px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
                                 <i class="fas fa-copy"></i> Copy Full Email
                             </button>
-                            <button type="button" id="sendMailtoCredBtn" style="padding: 9px 14px; border-radius: 8px; background: #ffffff; color: #475569; border: 1px solid #cbd5e1; cursor: pointer; font-weight: 600; font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px;">
+                            <button type="button" id="sendMailtoCredBtn"
+                                style="padding: 9px 14px; border-radius: 8px; background: #ffffff; color: #475569; border: 1px solid #cbd5e1; cursor: pointer; font-weight: 600; font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px;">
                                 <i class="fas fa-envelope"></i> Default Mail
                             </button>
                         </div>
                     </div>
                     <div style="font-size: 11.5px; color: #64748b;">
-                        <i class="fas fa-info-circle"></i> Opens Gmail compose with student email, subject, and credentials pre-filled for 1-click dispatch.
+                        <i class="fas fa-info-circle"></i> Opens Gmail compose with student email, subject, and
+                        credentials pre-filled for 1-click dispatch.
                     </div>
                 </div>
             </div>
             <div class="hes-modal-footer">
-                <a href="#" id="modalGenerateIdBtn" target="_blank" style="padding: 8px 18px; border-radius: 6px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; text-decoration: none; font-weight: 700; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(16,185,129,0.25);">
+                <a href="#" id="modalGenerateIdBtn" target="_blank"
+                    style="padding: 8px 18px; border-radius: 6px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; text-decoration: none; font-weight: 700; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(16,185,129,0.25);">
                     <i class="fas fa-id-card"></i> Generate Student ID
                 </a>
-                <button type="button" id="dismissCredentialsBtn" style="padding: 8px 22px; border-radius: 6px; background: #0b2b4a; color: #fff; border: none; cursor: pointer; font-weight: 600; font-size: 13px;">Done</button>
+                <button type="button" id="dismissCredentialsBtn"
+                    style="padding: 8px 22px; border-radius: 6px; background: #0b2b4a; color: #fff; border: none; cursor: pointer; font-weight: 600; font-size: 13px;">Done</button>
             </div>
         </div>
     </div>
@@ -327,39 +384,58 @@
             </div>
             <div class="hes-modal-body">
                 <!-- Recipient Card -->
-                <div style="margin-bottom: 14px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
-                    <div style="width: 44px; height: 44px; border-radius: 50%; background: #e0f2fe; color: #0284c7; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">
+                <div
+                    style="margin-bottom: 14px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+                    <div
+                        style="width: 44px; height: 44px; border-radius: 50%; background: #e0f2fe; color: #0284c7; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">
                         <i class="fas fa-user-graduate"></i>
                     </div>
                     <div style="flex: 1; min-width: 0;">
-                        <div style="font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 2px;">Recipient Student</div>
-                        <div style="font-size: 15px; font-weight: 700; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" id="noticeRecipientName">Student Name</div>
-                        <div style="font-size: 13px; color: #0284c7; font-family: monospace; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" id="noticeRecipientEmail">student@email.com</div>
+                        <div
+                            style="font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 2px;">
+                            Recipient Student</div>
+                        <div style="font-size: 15px; font-weight: 700; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                            id="noticeRecipientName">Student Name</div>
+                        <div style="font-size: 13px; color: #0284c7; font-family: monospace; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                            id="noticeRecipientEmail">student@email.com</div>
                     </div>
                 </div>
 
                 <!-- Student Credentials Box -->
-                <div style="margin-bottom: 14px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 12px 14px;">
-                    <div style="font-size: 11px; text-transform: uppercase; color: #15803d; font-weight: 700; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+                <div
+                    style="margin-bottom: 14px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 12px 14px;">
+                    <div
+                        style="font-size: 11px; text-transform: uppercase; color: #15803d; font-weight: 700; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
                         <i class="fas fa-key"></i> Student Portal Login Credentials
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12.5px;">
-                        <div style="background: #ffffff; padding: 6px 10px; border-radius: 6px; border: 1px solid #dcfce7;">
-                            <span style="color: #64748b; font-size: 10.5px; display: block; font-weight: 600;">USERNAME (GMAIL):</span>
-                            <strong style="color: #0f172a; font-family: monospace; font-size: 12.5px; word-break: break-all;" id="noticeStudentUsername">student@email.com</strong>
+                        <div
+                            style="background: #ffffff; padding: 6px 10px; border-radius: 6px; border: 1px solid #dcfce7;">
+                            <span style="color: #64748b; font-size: 10.5px; display: block; font-weight: 600;">USERNAME
+                                (GMAIL):</span>
+                            <strong
+                                style="color: #0f172a; font-family: monospace; font-size: 12.5px; word-break: break-all;"
+                                id="noticeStudentUsername">student@email.com</strong>
                         </div>
-                        <div style="background: #ffffff; padding: 6px 10px; border-radius: 6px; border: 1px solid #dcfce7;">
-                            <span style="color: #64748b; font-size: 10.5px; display: block; font-weight: 600;">PASSWORD (LAST NAME):</span>
-                            <strong style="color: #0f172a; font-family: monospace; font-size: 12.5px;" id="noticeStudentPassword">LastName</strong>
+                        <div
+                            style="background: #ffffff; padding: 6px 10px; border-radius: 6px; border: 1px solid #dcfce7;">
+                            <span style="color: #64748b; font-size: 10.5px; display: block; font-weight: 600;">PASSWORD
+                                (LAST NAME):</span>
+                            <strong style="color: #0f172a; font-family: monospace; font-size: 12.5px;"
+                                id="noticeStudentPassword">LastName</strong>
                         </div>
                     </div>
                 </div>
 
                 <!-- Form Row: Preset -->
                 <div style="margin-bottom: 14px;">
-                    <label style="display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; color: #475569; letter-spacing: 0.5px; margin-bottom: 6px;">Notice Type / Preset</label>
-                    <select id="noticePresetSelect" style="width: 100%; box-sizing: border-box; padding: 10px 14px; border-radius: 8px; border: 1.5px solid #cbd5e1; font-size: 13.5px; background: #ffffff; color: #1e293b; font-weight: 500;">
-                        <option value="welcome_credentials">🎉 Student Portal Login Credentials (Username & Password)</option>
+                    <label
+                        style="display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; color: #475569; letter-spacing: 0.5px; margin-bottom: 6px;">Notice
+                        Type / Preset</label>
+                    <select id="noticePresetSelect"
+                        style="width: 100%; box-sizing: border-box; padding: 10px 14px; border-radius: 8px; border: 1.5px solid #cbd5e1; font-size: 13.5px; background: #ffffff; color: #1e293b; font-weight: 500;">
+                        <option value="welcome_credentials">🎉 Student Portal Login Credentials (Username & Password)
+                        </option>
                         <option value="custom">✏️ Custom Notice Message</option>
                         <option value="missing_form138">📄 Missing Form 138 / Report Card</option>
                         <option value="missing_psa">📜 Missing PSA Birth Certificate</option>
@@ -371,47 +447,63 @@
 
                 <!-- Form Row: Subject -->
                 <div style="margin-bottom: 14px;">
-                    <label style="display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; color: #475569; letter-spacing: 0.5px; margin-bottom: 6px;">Notice Subject / Title</label>
-                    <input type="text" id="noticeTitleInput" value="🎉 Welcome to H.E.S! Your Student Portal Login Credentials" style="width: 100%; box-sizing: border-box; padding: 10px 14px; border-radius: 8px; border: 1.5px solid #cbd5e1; font-size: 13.5px; background: #ffffff; color: #1e293b; font-weight: 600;" />
+                    <label
+                        style="display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; color: #475569; letter-spacing: 0.5px; margin-bottom: 6px;">Notice
+                        Subject / Title</label>
+                    <input type="text" id="noticeTitleInput"
+                        value="🎉 Welcome to H.E.S! Your Student Portal Login Credentials"
+                        style="width: 100%; box-sizing: border-box; padding: 10px 14px; border-radius: 8px; border: 1.5px solid #cbd5e1; font-size: 13.5px; background: #ffffff; color: #1e293b; font-weight: 600;" />
                 </div>
 
                 <!-- Form Row: Message Content -->
                 <div style="margin-bottom: 14px;">
-                    <label style="display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; color: #475569; letter-spacing: 0.5px; margin-bottom: 6px;">Message Content</label>
-                    <textarea id="noticeMessageInput" rows="4" style="width: 100%; box-sizing: border-box; padding: 12px 14px; border-radius: 8px; border: 1.5px solid #cbd5e1; font-size: 13.5px; background: #ffffff; color: #1e293b; font-family: inherit; line-height: 1.5; resize: vertical;">Congratulations! Your enrollment application has been verified. Your Student Portal account is active and you can now log in using your credentials to view your class schedule, grades, and announcements.</textarea>
+                    <label
+                        style="display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; color: #475569; letter-spacing: 0.5px; margin-bottom: 6px;">Message
+                        Content</label>
+                    <textarea id="noticeMessageInput" rows="4"
+                        style="width: 100%; box-sizing: border-box; padding: 12px 14px; border-radius: 8px; border: 1.5px solid #cbd5e1; font-size: 13.5px; background: #ffffff; color: #1e293b; font-family: inherit; line-height: 1.5; resize: vertical;">Congratulations! Your enrollment application has been verified. Your Student Portal account is active and you can now log in using your credentials to view your class schedule, grades, and announcements.</textarea>
                 </div>
 
                 <!-- Include Credentials Checkbox -->
-                <div style="margin-bottom: 14px; display: flex; align-items: center; gap: 8px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px;">
-                    <input type="checkbox" id="includeCredsCheckbox" checked style="width: 16px; height: 16px; cursor: pointer; accent-color: #0b2b4a;" />
-                    <label for="includeCredsCheckbox" style="font-size: 12.5px; font-weight: 600; color: #1e293b; cursor: pointer;">
+                <div
+                    style="margin-bottom: 14px; display: flex; align-items: center; gap: 8px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px;">
+                    <input type="checkbox" id="includeCredsCheckbox" checked
+                        style="width: 16px; height: 16px; cursor: pointer; accent-color: #0b2b4a;" />
+                    <label for="includeCredsCheckbox"
+                        style="font-size: 12.5px; font-weight: 600; color: #1e293b; cursor: pointer;">
                         Include Student Portal Login Credentials (Username: Gmail, Password: Last Name) in this email
                     </label>
                 </div>
 
                 <!-- Notice Tip Box -->
-                <div style="background: #eff6ff; border-left: 4px solid #3b82f6; border-radius: 8px; padding: 12px 14px; font-size: 12.5px; color: #1e40af; margin-bottom: 18px; line-height: 1.4; display: flex; align-items: flex-start; gap: 8px;">
+                <div
+                    style="background: #eff6ff; border-left: 4px solid #3b82f6; border-radius: 8px; padding: 12px 14px; font-size: 12.5px; color: #1e40af; margin-bottom: 18px; line-height: 1.4; display: flex; align-items: flex-start; gap: 8px;">
                     <i class="fas fa-info-circle" style="font-size: 15px; margin-top: 2px; flex-shrink: 0;"></i>
-                    <span>This will deliver the notice directly to the student's personal Gmail inbox and post it in their Student Dashboard.</span>
+                    <span>This will deliver the notice directly to the student's personal Gmail inbox and post it in
+                        their Student Dashboard.</span>
                 </div>
 
                 <!-- Action Buttons Container -->
                 <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <button type="button" id="sendNoticeGmailBtn" style="width: 100%; padding: 12px 18px; border-radius: 10px; background: linear-gradient(135deg, #EA4335 0%, #D93025 100%); color: #ffffff; border: none; cursor: pointer; font-weight: 700; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 6px -1px rgba(234, 67, 53, 0.3); transition: transform 0.15s, box-shadow 0.15s;">
+                    <button type="button" id="sendNoticeGmailBtn"
+                        style="width: 100%; padding: 12px 18px; border-radius: 10px; background: linear-gradient(135deg, #EA4335 0%, #D93025 100%); color: #ffffff; border: none; cursor: pointer; font-weight: 700; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 6px -1px rgba(234, 67, 53, 0.3); transition: transform 0.15s, box-shadow 0.15s;">
                         <i class="fab fa-google" style="font-size: 16px;"></i> Send via Student's Gmail
                     </button>
                     <div style="display: flex; gap: 10px;">
-                        <button type="button" id="saveNoticeInAppBtn" style="flex: 1; padding: 10px 14px; border-radius: 8px; background: #0b2b4a; color: #ffffff; border: none; cursor: pointer; font-weight: 600; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
+                        <button type="button" id="saveNoticeInAppBtn"
+                            style="flex: 1; padding: 10px 14px; border-radius: 8px; background: #0b2b4a; color: #ffffff; border: none; cursor: pointer; font-weight: 600; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
                             <i class="fas fa-bell"></i> Post In-App Notice Only
                         </button>
-                        <button type="button" id="copyNoticeTextBtn" style="padding: 10px 16px; border-radius: 8px; background: #ffffff; color: #334155; border: 1.5px solid #cbd5e1; cursor: pointer; font-weight: 600; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;">
+                        <button type="button" id="copyNoticeTextBtn"
+                            style="padding: 10px 16px; border-radius: 8px; background: #ffffff; color: #334155; border: 1.5px solid #cbd5e1; cursor: pointer; font-weight: 600; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;">
                             <i class="fas fa-copy"></i> Copy Text
                         </button>
                     </div>
                 </div>
             </div>
             <div class="hes-modal-footer">
-                <button type="button" id="dismissNoticeBtn" style="padding: 9px 20px; border-radius: 8px; background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; cursor: pointer; font-weight: 600; font-size: 13px;">Close</button>
+                <button type="button" id="dismissNoticeBtn"
+                    style="padding: 9px 20px; border-radius: 8px; background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; cursor: pointer; font-weight: 600; font-size: 13px;">Close</button>
             </div>
         </div>
     </div>
@@ -422,4 +514,5 @@
     <script src="js/file-modal.js"></script>
     <script src="../js/chatbot.js"></script>
 </body>
+
 </html>

@@ -879,17 +879,35 @@ body {
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
     background: rgba(11, 43, 74, 0.08);
     color: var(--primary);
 }
 
+.student-avatar img,
 .student-avatar-img img {
-    width: 38px;
-    height: 38px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     border-radius: 50%;
     object-fit: cover;
+    display: block;
+    z-index: 1;
+}
+
+.student-avatar span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    position: relative;
+    z-index: 0;
 }
 
 .student-details h4 {

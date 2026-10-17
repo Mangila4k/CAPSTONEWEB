@@ -387,6 +387,19 @@ import { EmailNotificationService } from '../../js/email_service.js';
                 statusBadge.style.color = '#b45309';
             }
         }
+
+        const hApproveBtn = document.getElementById('headerApproveBtn');
+        const hRejectBtn = document.getElementById('headerRejectBtn');
+        const hGenIdBtn = document.getElementById('headerGenerateIdBtn');
+
+        if (hApproveBtn) hApproveBtn.style.display = (displayStatus === 'Pending') ? 'inline-flex' : 'none';
+        if (hRejectBtn) hRejectBtn.style.display = (displayStatus === 'Pending') ? 'inline-flex' : 'none';
+        if (hGenIdBtn) {
+            hGenIdBtn.style.display = (displayStatus === 'Enrolled') ? 'inline-flex' : 'none';
+            if (enr) {
+                hGenIdBtn.href = `generate_id.html?enrollment_id=${enr.id || ''}${enr.student_id ? '&id=' + enr.student_id : (std?.id ? '&id=' + std.id : '')}&email=${encodeURIComponent(enr.email || '')}`;
+            }
+        }
     }
 
     // ============================================
@@ -1040,7 +1053,6 @@ import { EmailNotificationService } from '../../js/email_service.js';
             grade_level: gradeLevel,
             strand: strand,
             date_of_birth: currentEnrollment.date_of_birth || currentEnrollment.dob || currentStudent?.date_of_birth || '2008-01-01',
-            birth_date: currentEnrollment.dob || currentStudent?.birth_date || '2008-01-01',
             age: currentEnrollment.age || currentStudent?.age || 16,
             gender: currentEnrollment.gender || currentStudent?.gender || 'Not specified',
             nationality: currentEnrollment.nationality || currentStudent?.nationality || 'Filipino',
@@ -1114,15 +1126,13 @@ import { EmailNotificationService } from '../../js/email_service.js';
         if (studentTableId) currentEnrollment.student_id = studentTableId;
 
         // 4. Send Approval Notification with login credentials to student
-        const credentialsMessage = `Congratulations ${firstName}! Your enrollment for ${gradeLevel}${strand ? ' (' + strand + ')' : ''} has been approved by the Registrar.\n\nYour Student Portal Login Credentials:\n• Username (Email): ${email}\n• Password: ${lastName}\n\nYou can now log in to the HES Student Portal.`;
+        const credentialsMessage = `Congratulations ${firstName}! Your enrollment for ${gradeLevel}${strand ? ' (' + strand + ')' : ''} has been reviewed and approved by the Registrar.\n\nYour Student Portal Login Credentials:\n• Username (Gmail): ${email}\n• Initial Password: ${lastName}\n\nYou can now log in to the HES Student Portal. Upon your first login, please visit "My Profile" to update your password.`;
 
         const targetStudentId = studentUserId || studentTableId || null;
         await supabase
             .from('notifications')
             .insert([{
                 user_id: targetStudentId,
-                student_id: studentTableId || null,
-                recipient_email: email,
                 role: 'student',
                 title: '🎉 Enrollment Approved!',
                 message: credentialsMessage,
@@ -1281,6 +1291,82 @@ import { EmailNotificationService } from '../../js/email_service.js';
                 }
             };
         }
+
+        const hApproveBtn = document.getElementById('headerApproveBtn');
+        if (hApproveBtn) {
+            hApproveBtn.addEventListener('click', async () => {
+                if (!currentEnrollment) return;
+                const sName = studentName?.textContent || 'Student';
+                if (!confirm(`Are you sure you want to APPROVE enrollment application for ${sName}?`)) return;
+
+                try {
+                    showAlert('Processing enrollment approval & account creation...', 'info');
+                    const creds = await provisionAndApproveStudent();
+
+                    try {
+                        await EmailNotificationService.sendCredentialsEmail({
+                            ...creds,
+                            autoLaunchGmail: true
+                        });
+                    } catch (mailErr) {
+                        console.warn('Email dispatch notice:', mailErr);
+                    }
+
+                    showCredentialsModal(creds);
+                    showAlert(`✅ Enrollment approved for ${creds.studentFullName}! Account created (Username: ${creds.email}, Password: ${creds.lastName}).`, 'success');
+                    renderStudentHeader();
+                    if (statusSelect) statusSelect.value = 'Enrolled';
+                } catch (err) {
+                    console.error('Error approving enrollment:', err);
+                    showAlert('❌ Failed to approve: ' + err.message, 'error');
+                }
+            });
+        }
+
+        const hRejectBtn = document.getElementById('headerRejectBtn');
+        if (hRejectBtn) {
+            hRejectBtn.addEventListener('click', async () => {
+                if (!currentEnrollment) return;
+                const sName = studentName?.textContent || 'Student';
+                const reason = prompt(`Please enter reason for rejecting enrollment for ${sName}:`, 'Incomplete requirements or duplicate application.');
+                if (reason === null) return;
+
+                try {
+                    const { error } = await supabase
+                        .from('enrollments')
+                        .update({
+                            status: 'rejected',
+                            updated_at: new Date().toISOString()
+                        })
+                        .eq('id', currentEnrollment.id);
+
+                    if (error) throw error;
+
+                    currentEnrollment.status = 'rejected';
+                    const targetStudentId = currentEnrollment.student_id || currentEnrollment.user_id || currentEnrollment.id || null;
+                    const notifMsg = `Your enrollment application was not approved. Reason: ${reason}`;
+
+                    await supabase.from('notifications').insert([{
+                        user_id: targetStudentId,
+                        role: 'student',
+                        title: '⚠️ Enrollment Update',
+                        message: notifMsg,
+                        type: 'enrollment_status',
+                        enrollment_id: currentEnrollment.id,
+                        is_read: false,
+                        read: false,
+                        created_at: new Date().toISOString()
+                    }]);
+
+                    showAlert(`Application for ${sName} marked as rejected.`, 'warning');
+                    renderStudentHeader();
+                    if (statusSelect) statusSelect.value = 'Rejected';
+                } catch (err) {
+                    console.error('Error rejecting enrollment:', err);
+                    showAlert('❌ Failed to reject: ' + err.message, 'error');
+                }
+            });
+        }
     }
 
     // ============================================
@@ -1438,8 +1524,6 @@ import { EmailNotificationService } from '../../js/email_service.js';
                 .from('notifications')
                 .insert([{
                     user_id: targetStudentId,
-                    student_id: currentEnrollment?.student_id || null,
-                    recipient_email: targetEmail || null,
                     role: 'student',
                     title: title,
                     message: message,

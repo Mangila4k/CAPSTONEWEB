@@ -1,9 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Schedule - HES, Hiraya Enrollment System</title>
+    <title>Create Schedule - PLSNSH, Placido L. Señor National High School</title>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- Google Fonts -->
@@ -12,7 +13,9 @@
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/create_schedule.css">
     <link rel="stylesheet" href="../css/chatbot.css">
+    <link rel="stylesheet" href="../css/sidebar.css">
 </head>
+
 <body>
     <!-- Mobile Menu Toggle -->
     <div class="menu-toggle" id="menuToggle">
@@ -25,20 +28,12 @@
             <div class="sidebar-header">
                 <div class="logo">
                     <div class="logo-icon">
-                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
+                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo"
+                            onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
                     </div>
                     <div class="logo-text">PLS<span>NSH</span></div>
                 </div>
                 <div class="school-badge">Placido L. Señor National High School</div>
-            </div>
-
-            <div class="admin-profile">
-                <div class="admin-avatar">
-                    <div class="avatar-initial" id="adminAvatar">A</div>
-                    <div class="online-dot"></div>
-                </div>
-                <div class="admin-name" id="adminName">Admin</div>
-                <div class="admin-role"><i class="fas fa-shield-alt"></i> Administrator</div>
             </div>
 
             <div class="nav-menu">
@@ -70,8 +65,23 @@
                     <div class="nav-section-title">ACCOUNT</div>
                     <ul class="nav-items">
                         <li><a href="profile.html"><i class="fas fa-user"></i> Profile</a></li>
-                        <li><a href="../auth/logout.html"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                        <li><a href="../auth/logout.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                        </li>
+
                     </ul>
+                </div>
+            </div>
+            <!-- Pinned Sidebar Footer -->
+            <div class="sidebar-footer">
+                <div class="admin-profile">
+                    <div class="admin-avatar">
+                        <div class="avatar-initial" id="adminAvatar">A</div>
+                        <div class="online-dot"></div>
+                    </div>
+                    <div class="admin-info">
+                        <div class="admin-name" id="adminName">Admin</div>
+                        <div class="admin-role"><i class="fas fa-shield-alt"></i> Administrator</div>
+                    </div>
                 </div>
             </div>
         </aside>
@@ -81,7 +91,8 @@
             <div class="page-header">
                 <div>
                     <h1>Class Schedule Management</h1>
-                    <p class="subtitle">Create and manage class schedules for <span id="sectionNameDisplay">Grade 10 - Section A</span></p>
+                    <p class="subtitle">Create and manage class schedules for <span id="sectionNameDisplay">Grade 10 -
+                            Section A</span></p>
                 </div>
             </div>
 
@@ -98,7 +109,8 @@
                     <p>
                         <span><i class="fas fa-layer-group"></i> <span id="gradeName">Grade 10</span></span>
                         <span><i class="fas fa-user-tie"></i> Adviser: <span id="adviserName">Not Assigned</span></span>
-                        <span><i class="fas fa-calendar"></i> School Year: <span id="schoolYearDisplay">2024-2025</span></span>
+                        <span><i class="fas fa-calendar"></i> School Year: <span
+                                id="schoolYearDisplay">2024-2025</span></span>
                     </p>
                 </div>
             </div>
@@ -108,7 +120,8 @@
                 <div class="card">
                     <div class="card-header">
                         <h3><i class="fas fa-plus-circle"></i> Add New Schedule</h3>
-                        <span class="badge-count"><i class="fas fa-info-circle"></i> Same subject allowed on different days</span>
+                        <span class="badge-count"><i class="fas fa-info-circle"></i> Same subject allowed on different
+                            days</span>
                     </div>
                     <form id="scheduleForm">
                         <div class="form-group">
@@ -127,10 +140,6 @@
                             <label>Teacher <span class="required">*</span></label>
                             <select name="teacher_id" id="teacher_id" required>
                                 <option value="">Select Teacher</option>
-                                <option value="1">Maria Santos</option>
-                                <option value="2">Juan Dela Cruz</option>
-                                <option value="3">Ana Reyes</option>
-                                <option value="4">Carlos Mendoza</option>
                             </select>
                         </div>
 
@@ -195,9 +204,10 @@
                         <i class="fas fa-info-circle"></i>
                         <div>
                             <strong>Schedule Rules:</strong>
-                            <p>✅ Same subject can be scheduled on different days (e.g., Math on Monday and Wednesday)<br>
-                            ❌ Teacher cannot have two classes at the same day and time<br>
-                            ❌ Room cannot be double-booked at the same day and time</p>
+                            <p>✅ Same subject can be scheduled on different days (e.g., Math on Monday and
+                                Wednesday)<br>
+                                ❌ Teacher cannot have two classes at the same day and time<br>
+                                ❌ Room cannot be double-booked at the same day and time</p>
                         </div>
                     </div>
                 </div>
@@ -208,7 +218,7 @@
                         <h3><i class="fas fa-list"></i> Current Schedule</h3>
                         <span class="badge-count" id="scheduleCount">0 subjects</span>
                     </div>
-                    
+
                     <!-- Day Tabs -->
                     <div class="day-tabs">
                         <button class="day-tab active" data-day="monday">Monday</button>
@@ -217,7 +227,7 @@
                         <button class="day-tab" data-day="thursday">Thursday</button>
                         <button class="day-tab" data-day="friday">Friday</button>
                     </div>
-                    
+
                     <!-- Day Schedule Containers -->
                     <div class="day-schedule active" id="monday-schedule">
                         <div class="no-data">
@@ -283,4 +293,5 @@
     <script type="module" src="js/create_schedule.js"></script>
     <script src="../js/chatbot.js"></script>
 </body>
+
 </html>

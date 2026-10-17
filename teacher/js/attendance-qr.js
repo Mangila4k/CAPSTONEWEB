@@ -123,19 +123,7 @@ import { supabase } from '../../supabase/config.js';
     ];
 
     // Default Students
-    const DEFAULT_STUDENTS = [
-        { id: 'stu_g7_1', full_name: 'Juan Dela Cruz', lrn: '109283746501', id_number: '2024-ST-00001', grade_level: 'Grade 7', section: 'Diamond', strand: 'JHS', parent_name: 'PEDRO DELA CRUZ', parent_contact: '09123456781', photo_url: '' },
-        { id: 'stu_g7_2', full_name: 'Maria Santos', lrn: '109283746502', id_number: '2024-ST-00002', grade_level: 'Grade 7', section: 'Diamond', strand: 'JHS', parent_name: 'ELENA SANTOS', parent_contact: '09123456782', photo_url: '' },
-        { id: 'stu_g8_1', full_name: 'Gabriel Alcantara', lrn: '109283746504', id_number: '2024-ST-00004', grade_level: 'Grade 8', section: 'Ruby', strand: 'JHS', parent_name: 'ROBERTO ALCANTARA', parent_contact: '09123456784', photo_url: '' },
-        { id: 'stu_g9_1', full_name: 'Christian Bautista', lrn: '109283746506', id_number: '2024-ST-00006', grade_level: 'Grade 9', section: 'Gold', strand: 'JHS', parent_name: 'ANTONIO BAUTISTA', parent_contact: '09123456786', photo_url: '' },
-        { id: 'stu_g10_1', full_name: 'Mark Anthony Ramos', lrn: '109283746508', id_number: '2024-ST-00008', grade_level: 'Grade 10', section: 'Rizal', strand: 'JHS', parent_name: 'CLARISSA RAMOS', parent_contact: '09123456788', photo_url: '' },
-        { id: 'stu_g11_stem_1', full_name: 'Karl Matthew Sanchez', lrn: '109283746510', id_number: '2024-ST-00010', grade_level: 'Grade 11', section: 'STEM A - Newton', strand: 'STEM', parent_name: 'MARIANNE SANTOS', parent_contact: '09076726568', photo_url: '' },
-        { id: 'stu_g11_stem_2', full_name: 'Alyssa Joy Hernandez', lrn: '109283746511', id_number: '2024-ST-00011', grade_level: 'Grade 11', section: 'STEM A - Newton', strand: 'STEM', parent_name: 'TERESITA HERNANDEZ', parent_contact: '09123456791', photo_url: '' },
-        { id: 'stu_g11_abm_1', full_name: 'Danilo Villanueva Jr.', lrn: '109283746512', id_number: '2024-ST-00012', grade_level: 'Grade 11', section: 'ABM A - Gates', strand: 'ABM', parent_name: 'DANILO VILLANUEVA SR.', parent_contact: '09123456792', photo_url: '' },
-        { id: 'stu_g11_tvl_1', full_name: 'Joshua Paul Garcia', lrn: '109283746514', id_number: '2024-ST-00014', grade_level: 'Grade 11', section: 'TVL A - Turing', strand: 'TVL-ICT', parent_name: 'LORENA GARCIA', parent_contact: '09123456794', photo_url: '' },
-        { id: 'stu_g12_stem_1', full_name: 'Raphael David Morales', lrn: '109283746516', id_number: '2024-ST-00016', grade_level: 'Grade 12', section: 'STEM A - Einstein', strand: 'STEM', parent_name: 'VICTOR MORALES', parent_contact: '09123456796', photo_url: '' },
-        { id: 'stu_g12_humss_1', full_name: 'Elijah John Tolentino', lrn: '109283746518', id_number: '2024-ST-00018', grade_level: 'Grade 12', section: 'HUMSS A - Aristotle', strand: 'HUMSS', parent_name: 'REMEDIOS TOLENTINO', parent_contact: '09123456798', photo_url: '' }
-    ];
+    const DEFAULT_STUDENTS = [];
 
     // ============================================
     // AUTH & SESSION
@@ -368,7 +356,7 @@ import { supabase } from '../../supabase/config.js';
                     };
                 });
             } else {
-                loadedStudents = DEFAULT_STUDENTS;
+                loadedStudents = [];
             }
             allStudents = loadedStudents;
 
@@ -378,7 +366,7 @@ import { supabase } from '../../supabase/config.js';
         } catch (err) {
             console.warn('Data load notice, using fallback:', err);
             allSections = DEFAULT_SECTIONS;
-            allStudents = DEFAULT_STUDENTS;
+            allStudents = [];
             populateSectionDropdown();
             loadTodayScansFromCache();
         }

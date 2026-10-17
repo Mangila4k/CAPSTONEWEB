@@ -41,6 +41,7 @@ import { supabase } from '../../supabase/config.js';
     const studentName = document.getElementById('studentName');
     const studentEmail = document.getElementById('studentEmail');
     const studentIdNumber = document.getElementById('studentIdNumber');
+    const studentSectionPill = document.getElementById('studentSectionPill');
     const studentRegistered = document.getElementById('studentRegistered');
     const studentDaysActive = document.getElementById('studentDaysActive');
     const statusBadge = document.getElementById('statusBadge');
@@ -48,6 +49,14 @@ import { supabase } from '../../supabase/config.js';
     const currentEnrollmentCard = document.getElementById('currentEnrollmentCard');
     const enrollmentInfoGrid = document.getElementById('enrollmentInfoGrid');
     const historyContainer = document.getElementById('historyContainer');
+
+    // Assign Section Modal Elements
+    const modalAssignSection = document.getElementById('modalAssignSection');
+    const modalAssignGradeLevel = document.getElementById('modalAssignGradeLevel');
+    const modalAssignSectionSelect = document.getElementById('modalAssignSectionSelect');
+    const modalAssignSectionHint = document.getElementById('modalAssignSectionHint');
+    const assignSectionModalForm = document.getElementById('assignSectionModalForm');
+    const assignTargetStudentName = document.getElementById('assignTargetStudentName');
 
     // Mobile Menu
     const menuToggle = document.getElementById('menuToggle');
@@ -60,6 +69,8 @@ import { supabase } from '../../supabase/config.js';
     let currentStudent = null;
     let currentEnrollment = null;
     let enrollmentHistory = [];
+    let allSections = [];
+    let currentSection = null;
 
     // ============================================
     // HELPER FUNCTIONS
@@ -124,6 +135,10 @@ import { supabase } from '../../supabase/config.js';
         }
     }
 
+    function isUUID(str) {
+        return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str || '');
+    }
+
     // ============================================
     // LOAD STUDENT DETAILS FROM SUPABASE
     // ============================================
@@ -131,33 +146,117 @@ import { supabase } from '../../supabase/config.js';
     async function loadStudentDetails() {
         try {
             const urlParams = new URLSearchParams(window.location.search);
-            const targetId = urlParams.get('id') || urlParams.get('student_id') || '';
+            const targetId = (urlParams.get('id') || urlParams.get('student_id') || '').trim();
+            const validUUID = isUUID(targetId);
 
             // 1. Fetch Student from Supabase
             let student = null;
+            let enrollments = [];
+
             if (targetId) {
                 try {
-                    const { data: sData } = await supabase
-                        .from('students')
-                        .select('*')
-                        .or(`id.eq.${targetId},lrn.eq.${targetId}`)
-                        .maybeSingle();
-                    if (sData) student = sData;
-                } catch(e) {}
+                    if (validUUID) {
+                        const { data: sData } = await supabase
+                            .from('students')
+                            .select('*')
+                            .eq('id', targetId)
+                            .maybeSingle();
+                        if (sData) student = sData;
+                    } else {
+                        const { data: sData } = await supabase
+                            .from('students')
+                            .select('*')
+                            .or(`lrn.eq.${targetId},email.eq.${targetId}`)
+                            .maybeSingle();
+                        if (sData) student = sData;
+                    }
+                } catch(e) {
+                    console.warn('Student query error:', e);
+                }
+
+                // If not found in students, check enrollments table (e.g. newly enrolled applicant)
+                if (!student) {
+                    try {
+                        let eQuery = supabase.from('enrollments').select('*');
+                        if (validUUID) {
+                            eQuery = eQuery.or(`id.eq.${targetId},student_id.eq.${targetId}`);
+                        } else {
+                            eQuery = eQuery.or(`email.eq.${targetId},lrn.eq.${targetId}`);
+                        }
+                        const { data: enrData } = await eQuery.maybeSingle();
+                        if (enrData) {
+                            student = {
+                                id: enrData.student_id || enrData.id,
+                                enrollment_id: enrData.id,
+                                first_name: enrData.first_name,
+                                middle_name: enrData.middle_name,
+                                last_name: enrData.last_name,
+                                email: enrData.email,
+                                lrn: enrData.lrn || 'Pending Assignment',
+                                date_of_birth: enrData.birth_date || enrData.date_of_birth,
+                                gender: enrData.gender,
+                                grade_level: enrData.grade_level,
+                                strand: enrData.strand,
+                                created_at: enrData.created_at,
+                                status: enrData.status,
+                                student_type: enrData.student_type || 'New Student',
+                                documents_status: (enrData.status || '').toLowerCase() === 'enrolled' ? 'complete' : 'pending'
+                            };
+                            enrollments = [enrData];
+                        }
+                    } catch(e) {
+                        console.warn('Enrollment query error:', e);
+                    }
+                }
             }
 
+            // Fallback 1: Latest real student from students table
             if (!student) {
                 try {
                     const { data: sList } = await supabase
                         .from('students')
                         .select('*')
+                        .order('created_at', { ascending: false })
                         .limit(1);
                     if (sList && sList.length > 0) student = sList[0];
                 } catch(e) {}
             }
 
+            // Fallback 2: Latest real applicant from enrollments table
             if (!student) {
-                showAlert('No student profile found in database.', 'error');
+                try {
+                    const { data: eList } = await supabase
+                        .from('enrollments')
+                        .select('*')
+                        .order('created_at', { ascending: false })
+                        .limit(1);
+                    if (eList && eList.length > 0) {
+                        const enrData = eList[0];
+                        student = {
+                            id: enrData.student_id || enrData.id,
+                            enrollment_id: enrData.id,
+                            first_name: enrData.first_name,
+                            middle_name: enrData.middle_name,
+                            last_name: enrData.last_name,
+                            email: enrData.email,
+                            lrn: enrData.lrn || 'Pending Assignment',
+                            date_of_birth: enrData.birth_date || enrData.date_of_birth,
+                            gender: enrData.gender,
+                            grade_level: enrData.grade_level,
+                            strand: enrData.strand,
+                            created_at: enrData.created_at,
+                            status: enrData.status,
+                            student_type: enrData.student_type || 'New Student',
+                            documents_status: (enrData.status || '').toLowerCase() === 'enrolled' ? 'complete' : 'pending'
+                        };
+                        enrollments = [enrData];
+                    }
+                } catch(e) {}
+            }
+
+            if (!student) {
+                if (studentName) studentName.textContent = 'No Student Found';
+                showAlert('No student profile found in database.', 'info');
                 return;
             }
 
@@ -169,16 +268,53 @@ import { supabase } from '../../supabase/config.js';
                 editBtn.href = `edit_student.html?id=${encodeURIComponent(student.id)}`;
             }
 
-            // 2. Fetch Enrollments for this student
-            let enrollments = [];
+            // 2. Fetch Enrollments for this student (if not already fetched)
+            if (enrollments.length === 0) {
+                try {
+                    const sId = student.id;
+                    const sIdIsUUID = isUUID(sId);
+                    let eQuery = supabase.from('enrollments').select('*');
+                    if (sIdIsUUID && student.email) {
+                        eQuery = eQuery.or(`student_id.eq.${sId},email.eq.${student.email}`);
+                    } else if (sIdIsUUID) {
+                        eQuery = eQuery.eq('student_id', sId);
+                    } else if (student.email) {
+                        eQuery = eQuery.eq('email', student.email);
+                    }
+                    const { data: eData } = await eQuery.order('created_at', { ascending: false });
+                    if (eData) enrollments = eData;
+                } catch(e) {
+                    console.warn('Error fetching enrollments for student:', e);
+                }
+            }
+
+            // 3. Fetch all active sections from Supabase
             try {
-                const { data: eData } = await supabase
-                    .from('enrollments')
-                    .select('*')
-                    .or(`student_id.eq.${student.id},email.eq.${student.email}`)
-                    .order('created_at', { ascending: false });
-                if (eData) enrollments = eData;
-            } catch(e) {}
+                const { data: sList, error: sErr } = await supabase
+                    .from('sections')
+                    .select('id, name, grade_level, strand, adviser_name, room')
+                    .order('grade_level', { ascending: true })
+                    .order('name', { ascending: true });
+                if (!sErr && sList) allSections = sList;
+            } catch (secFetchErr) {
+                console.warn('Error fetching all sections:', secFetchErr);
+            }
+
+            // Identify current section
+            currentSection = null;
+            if (student.section_id) {
+                currentSection = allSections.find(s => s.id === student.section_id) || null;
+                if (!currentSection) {
+                    try {
+                        const { data: directSec } = await supabase
+                            .from('sections')
+                            .select('id, name, grade_level, strand, adviser_name, room')
+                            .eq('id', student.section_id)
+                            .maybeSingle();
+                        if (directSec) currentSection = directSec;
+                    } catch(e) {}
+                }
+            }
 
             enrollmentHistory = enrollments;
             currentEnrollment = enrollments.length > 0 ? enrollments[0] : null;
@@ -217,15 +353,23 @@ import { supabase } from '../../supabase/config.js';
         if (studentRegistered) studentRegistered.textContent = formatDate(student.created_at);
         if (studentDaysActive) studentDaysActive.textContent = daysActive;
 
-        const statusRaw = (currentEnrollment?.status || '').toLowerCase();
-        const isApproved = currentEnrollment ? (statusRaw === 'approved' || statusRaw === 'enrolled') : student.documents_status === 'complete';
-        const statusText = isApproved ? 'Enrolled' : 'Pending Verification';
-        const statusClass = isApproved ? 'badge-enrolled' : 'badge-pending';
+        if (studentSectionPill) {
+            if (currentSection) {
+                studentSectionPill.innerHTML = `<span style="background: #e0f2fe; color: #0369a1; font-weight: 700; padding: 3px 9px; border-radius: 6px; font-size: 13px;"><i class="fas fa-users-rectangle" style="margin-right: 4px;"></i>${currentSection.grade_level ? currentSection.grade_level + ' - ' : ''}${currentSection.name}</span>`;
+            } else {
+                studentSectionPill.innerHTML = `<span style="background: #fef3c7; color: #92400e; font-weight: 600; padding: 2px 8px; border-radius: 6px; font-size: 12px;"><i class="fas fa-clock" style="margin-right: 4px;"></i>Unassigned</span>`;
+            }
+        }
+
+        const statusRaw = (currentEnrollment?.status || student.status || '').toLowerCase();
+        const isApproved = statusRaw === 'approved' || statusRaw === 'enrolled' || student.documents_status === 'complete';
+        const statusText = isApproved ? 'Enrolled' : (statusRaw === 'rejected' ? 'Rejected' : 'Pending Verification');
+        const statusClass = isApproved ? 'badge-enrolled' : (statusRaw === 'rejected' ? 'badge-rejected' : 'badge-pending');
 
         if (statusBadge) {
             statusBadge.className = `profile-badge ${statusClass}`;
             statusBadge.innerHTML = `
-                <i class="fas fa-${isApproved ? 'check-circle' : 'clock'}"></i>
+                <i class="fas fa-${isApproved ? 'check-circle' : (statusRaw === 'rejected' ? 'times-circle' : 'clock')}"></i>
                 Current Status: ${statusText}
             `;
         }
@@ -301,10 +445,10 @@ import { supabase } from '../../supabase/config.js';
         const student = currentStudent;
         const enr = currentEnrollment;
 
-        const gradeName = enr?.grade_level || student?.grade_level || 'Grade 11';
-        const strand = enr?.strand || student?.strand || (gradeName.includes('11') || gradeName.includes('12') ? 'TVL-ICT' : '');
-        const schoolYear = enr?.school_year || enr?.last_school_year || '2025-2026';
-        const form138 = student?.form_138_url;
+        const gradeName = currentSection?.grade_level || enr?.grade_level || student?.grade_level || '—';
+        const strand = enr?.strand || student?.strand || currentSection?.strand || '';
+        const schoolYear = enr?.school_year || enr?.last_school_year || '—';
+        const form138 = student?.form_138_url || enr?.form_138_url;
 
         let strandHtml = '';
         if (strand) {
@@ -319,20 +463,27 @@ import { supabase } from '../../supabase/config.js';
             `;
         }
 
-        let form138Html = '';
-        if (form138) {
-            form138Html = `
-                <div class="info-item" style="grid-column: 1 / -1; border-bottom: none;">
-                    <div class="info-label">Form 138 (Report Card)</div>
-                    <div class="info-value">
-                        <i class="fas fa-file-pdf" style="color: #dc2626;"></i>
-                        <a href="${form138}" target="_blank" class="document-link" style="color: #0b2b4a; font-weight: 600; text-decoration: underline;">
-                            View Submitted Document
-                        </a>
-                    </div>
-                </div>
-            `;
-        }
+        const sectionDisplay = currentSection
+            ? `<div style="display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 10px;">
+                 <span style="font-weight: 700; color: #1e3a8a;">
+                     <i class="fas fa-users-rectangle" style="color: #2563eb; margin-right: 6px;"></i>${currentSection.name}${currentSection.room ? ` <span style="color: #64748b; font-size: 12px; font-weight: 500;">(Rm ${currentSection.room})</span>` : ''}
+                 </span>
+                 <button type="button" onclick="window.openAssignSectionModal()" style="background: #eff6ff; color: #1d4ed8; border: 1.5px solid #bfdbfe; border-radius: 6px; padding: 3px 9px; font-size: 11.5px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                     <i class="fas fa-pen-to-square"></i> Change
+                 </button>
+               </div>`
+            : `<div style="display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 10px;">
+                 <span style="color: #94a3b8; font-style: italic;">
+                     <i class="fas fa-circle-question" style="margin-right: 6px;"></i>Unassigned / Pending
+                 </span>
+                 <button type="button" onclick="window.openAssignSectionModal()" style="background: #2563eb; color: #fff; border: none; border-radius: 6px; padding: 4px 10px; font-size: 11.5px; font-weight: 700; cursor: pointer; box-shadow: 0 1px 3px rgba(37,99,235,0.3); display: inline-flex; align-items: center; gap: 4px;">
+                     <i class="fas fa-plus-circle"></i> Assign
+                 </button>
+               </div>`;
+
+        const adviserDisplay = currentSection && currentSection.adviser_name
+            ? `<span style="font-weight: 600; color: #0f172a;"><i class="fas fa-chalkboard-user" style="color: #059669; margin-right: 6px;"></i>${currentSection.adviser_name}</span>`
+            : `<span style="color: #94a3b8; font-style: italic;"><i class="fas fa-user-slash" style="margin-right: 6px;"></i>No Adviser Assigned</span>`;
 
         enrollmentInfoGrid.innerHTML = `
             <div class="info-item">
@@ -340,6 +491,18 @@ import { supabase } from '../../supabase/config.js';
                 <div class="info-value">
                     <i class="fas fa-layer-group"></i>
                     ${gradeName}
+                </div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Section</div>
+                <div class="info-value">
+                    ${sectionDisplay}
+                </div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Class Adviser</div>
+                <div class="info-value">
+                    ${adviserDisplay}
                 </div>
             </div>
             ${strandHtml}
@@ -354,7 +517,7 @@ import { supabase } from '../../supabase/config.js';
                 <div class="info-label">Enrollment Date</div>
                 <div class="info-value">
                     <i class="fas fa-clock"></i>
-                    ${formatDate(enr?.created_at || student?.created_at)}
+                    ${(enr?.created_at || student?.created_at) ? formatDate(enr?.created_at || student?.created_at) : '—'}
                 </div>
             </div>
             ${form138Html}
@@ -364,7 +527,13 @@ import { supabase } from '../../supabase/config.js';
         if (currentEnrollmentCard) {
             const viewLink = currentEnrollmentCard.querySelector('.view-link');
             if (viewLink) {
-                viewLink.href = `view_enrollment.html?id=${encodeURIComponent(enr?.id || student?.id)}`;
+                const targetEnrollmentId = enr?.id || student?.enrollment_id;
+                if (targetEnrollmentId) {
+                    viewLink.href = `view_enrollment.html?id=${encodeURIComponent(targetEnrollmentId)}`;
+                    viewLink.style.display = 'inline-flex';
+                } else {
+                    viewLink.style.display = 'none';
+                }
             }
         }
     }
@@ -416,8 +585,8 @@ import { supabase } from '../../supabase/config.js';
 
             html += `
                 <tr>
-                    <td style="font-weight: 600;">${record.school_year || record.last_school_year || '2025-2026'}</td>
-                    <td>${record.grade_level || 'Grade 11'}</td>
+                    <td style="font-weight: 600;">${record.school_year || record.last_school_year || '—'}</td>
+                    <td>${record.grade_level || '—'}</td>
                     <td>${record.strand ? `<span class="strand-tag">${record.strand}</span>` : '—'}</td>
                     <td>
                         <span class="badge ${statusClass}">
@@ -439,6 +608,11 @@ import { supabase } from '../../supabase/config.js';
             </table>
         `;
 
+            html += `
+                </tbody>
+            </table>
+        `;
+
         historyContainer.innerHTML = html;
     }
 
@@ -450,13 +624,16 @@ import { supabase } from '../../supabase/config.js';
         if (!container || !currentStudent) return;
 
         try {
+            const isStudentUUID = isUUID(currentStudent.id);
             let query = supabase.from('student_violations').select('*');
-            if (currentStudent.id && currentStudent.lrn) {
+            if (isStudentUUID && currentStudent.lrn && currentStudent.lrn !== 'Not assigned' && currentStudent.lrn !== '—' && currentStudent.lrn !== 'Pending Assignment') {
                 query = query.or(`student_id.eq.${currentStudent.id},lrn.eq.${currentStudent.lrn}`);
-            } else if (currentStudent.id) {
+            } else if (isStudentUUID) {
                 query = query.eq('student_id', currentStudent.id);
-            } else if (currentStudent.lrn) {
+            } else if (currentStudent.lrn && currentStudent.lrn !== 'Not assigned' && currentStudent.lrn !== '—' && currentStudent.lrn !== 'Pending Assignment') {
                 query = query.eq('lrn', currentStudent.lrn);
+            } else {
+                query = query.eq('student_id', '00000000-0000-0000-0000-000000000000');
             }
 
             const { data: vList, error: vErr } = await query.order('incident_date', { ascending: false });
@@ -707,6 +884,162 @@ import { supabase } from '../../supabase/config.js';
             }
         }
     };
+
+    // ============================================
+    // ASSIGN SECTION MODAL & LOGIC
+    // ============================================
+
+    function populateModalSections(gradeLevel, preselectedSectionId = null) {
+        if (!modalAssignSectionSelect) return;
+        if (!gradeLevel) {
+            modalAssignSectionSelect.innerHTML = '<option value="">-- Select Year Level First --</option>';
+            modalAssignSectionSelect.disabled = true;
+            if (modalAssignSectionHint) {
+                modalAssignSectionHint.innerHTML = 'Select a year level to load available sections and their class advisers.';
+            }
+            return;
+        }
+
+        const filtered = allSections.filter(s => {
+            const sGrade = (s.grade_level || '').trim().toLowerCase();
+            const targetGrade = gradeLevel.trim().toLowerCase();
+            return sGrade === targetGrade || sGrade.replace(/\s+/g, '') === targetGrade.replace(/\s+/g, '');
+        });
+
+        if (filtered.length === 0) {
+            modalAssignSectionSelect.innerHTML = `<option value="">-- No active sections found in ${gradeLevel} --</option>`;
+            modalAssignSectionSelect.disabled = true;
+            if (modalAssignSectionHint) {
+                modalAssignSectionHint.innerHTML = `<span style="color: #d97706;"><i class="fas fa-exclamation-triangle"></i> No sections currently defined for ${gradeLevel}.</span>`;
+            }
+            return;
+        }
+
+        let optionsHtml = `<option value="">-- Select Section in ${gradeLevel} --</option>`;
+        filtered.forEach(sec => {
+            const adviser = sec.adviser_name ? ` (Adviser: ${sec.adviser_name})` : ' (No Adviser)';
+            const strand = sec.strand ? ` [${sec.strand}]` : '';
+            const room = sec.room ? ` - Rm ${sec.room}` : '';
+            const isSelected = preselectedSectionId && preselectedSectionId === sec.id ? 'selected' : '';
+            optionsHtml += `<option value="${sec.id}" ${isSelected}>${sec.name}${strand}${room}${adviser}</option>`;
+        });
+
+        modalAssignSectionSelect.innerHTML = optionsHtml;
+        modalAssignSectionSelect.disabled = false;
+        if (modalAssignSectionHint) {
+            modalAssignSectionHint.innerHTML = `<span style="color: #059669;"><i class="fas fa-check-circle"></i> ${filtered.length} section${filtered.length > 1 ? 's' : ''} available under ${gradeLevel}.</span>`;
+        }
+    }
+
+    if (modalAssignGradeLevel) {
+        modalAssignGradeLevel.addEventListener('change', function() {
+            populateModalSections(this.value);
+        });
+    }
+
+    window.openAssignSectionModal = function() {
+        if (!currentStudent) return;
+        if (assignTargetStudentName) {
+            const sName = `${currentStudent.first_name || ''} ${currentStudent.last_name || ''}`.trim() || 'Student';
+            assignTargetStudentName.textContent = sName;
+        }
+
+        const currentGrade = currentSection?.grade_level || currentEnrollment?.grade_level || currentStudent?.grade_level || '';
+        if (modalAssignGradeLevel && currentGrade) {
+            modalAssignGradeLevel.value = currentGrade;
+            populateModalSections(currentGrade, currentStudent.section_id);
+        } else if (modalAssignGradeLevel) {
+            modalAssignGradeLevel.value = '';
+            populateModalSections('');
+        }
+
+        if (modalAssignSection) {
+            modalAssignSection.style.display = 'flex';
+        }
+    };
+
+    window.closeAssignSectionModal = function() {
+        if (modalAssignSection) {
+            modalAssignSection.style.display = 'none';
+        }
+    };
+
+    if (assignSectionModalForm) {
+        assignSectionModalForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            if (!currentStudent) return;
+
+            const selectedGrade = modalAssignGradeLevel ? modalAssignGradeLevel.value : '';
+            const selectedSecId = modalAssignSectionSelect ? modalAssignSectionSelect.value : '';
+
+            if (!selectedGrade || !selectedSecId) {
+                showAlert('Please select both a Year Level and a Section.', 'error');
+                return;
+            }
+
+            const saveBtn = document.getElementById('btnSaveSectionAssignment');
+            if (saveBtn) {
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            }
+
+            try {
+                // 1. Update students table
+                const { error: sErr } = await supabase
+                    .from('students')
+                    .update({
+                        grade_level: selectedGrade,
+                        section_id: selectedSecId,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', currentStudent.id);
+
+                if (sErr) throw sErr;
+
+                // 2. Sync corresponding enrollment if any
+                try {
+                    await supabase
+                        .from('enrollments')
+                        .update({
+                            grade_level: selectedGrade,
+                            updated_at: new Date().toISOString()
+                        })
+                        .eq('student_id', currentStudent.id);
+                } catch(enrErr) {}
+
+                // 3. Update local state
+                currentStudent.grade_level = selectedGrade;
+                currentStudent.section_id = selectedSecId;
+                currentSection = allSections.find(s => s.id === selectedSecId) || null;
+
+                renderProfile();
+                renderCurrentEnrollment();
+
+                window.closeAssignSectionModal();
+                showAlert(`✅ Section successfully updated to "${selectedGrade} - ${currentSection?.name || 'Assigned'}"!`, 'success');
+
+                // Broadcast update so other tabs / views sync
+                try {
+                    localStorage.setItem('hes_student_updated', JSON.stringify({
+                        id: currentStudent.id,
+                        section_id: selectedSecId,
+                        section_name: currentSection?.name,
+                        grade_level: selectedGrade,
+                        timestamp: Date.now()
+                    }));
+                } catch(e) {}
+
+            } catch (err) {
+                console.error('❌ Error saving section assignment:', err);
+                showAlert('Failed to save section: ' + err.message, 'error');
+            } finally {
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = '<i class="fas fa-check"></i> Save Section';
+                }
+            }
+        });
+    }
 
     // ============================================
     // MOBILE MENU

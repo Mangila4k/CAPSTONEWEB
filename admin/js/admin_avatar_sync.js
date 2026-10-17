@@ -71,5 +71,53 @@
 
     // Expose for immediate re-sync
     window.syncAdminAvatarAndName = syncAdminAvatarAndName;
+
+    // ===== SIDEBAR SCROLL PRESERVATION (ZERO-FLICKER) =====
+    (function initSidebarScrollPreservation() {
+        if (window.HESSidebarScrollInitialized) return;
+        window.HESSidebarScrollInitialized = true;
+
+        const STORAGE_KEY = 'hes_sidebar_scroll_admin';
+
+        function restoreScroll() {
+            const navMenu = document.querySelector('.sidebar .nav-menu') || document.querySelector('.nav-menu');
+            if (!navMenu) return;
+
+            const savedPos = sessionStorage.getItem(STORAGE_KEY);
+            if (savedPos !== null) {
+                const pos = parseInt(savedPos, 10);
+                if (!isNaN(pos) && pos >= 0) {
+                    navMenu.style.scrollBehavior = 'auto';
+                    navMenu.scrollTop = pos;
+                }
+            }
+
+            let debounceTimer;
+            navMenu.addEventListener('scroll', function () {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    sessionStorage.setItem(STORAGE_KEY, navMenu.scrollTop);
+                }, 60);
+            }, { passive: true });
+
+            // Ensure every link is 100% clickable and remembers scroll position
+            navMenu.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', function () {
+                    sessionStorage.setItem(STORAGE_KEY, navMenu.scrollTop);
+                }, { passive: true });
+            });
+
+
+        }
+
+        // Run immediately if .nav-menu is already in DOM to set scrollTop before paint
+        restoreScroll();
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', restoreScroll, { once: true });
+        }
+
+        window.addEventListener('pageshow', restoreScroll, { once: true });
+    })();
 })();
 

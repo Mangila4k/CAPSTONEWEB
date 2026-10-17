@@ -140,6 +140,24 @@ document.addEventListener('DOMContentLoaded', async function() {
         return teacher ? teacher.name : null;
     }
 
+    // ===== GRADE & SECTION SORTING HELPERS =====
+    function getGradeOrder(gradeLevel) {
+        if (!gradeLevel) return 999;
+        const match = String(gradeLevel).match(/\d+/);
+        return match ? parseInt(match[0], 10) : 999;
+    }
+
+    function compareSections(a, b) {
+        const gradeA = getGradeOrder(a.grade_level);
+        const gradeB = getGradeOrder(b.grade_level);
+        if (gradeA !== gradeB) {
+            return gradeA - gradeB;
+        }
+        const nameA = String(a.name || '').trim().toLowerCase();
+        const nameB = String(b.name || '').trim().toLowerCase();
+        return nameA.localeCompare(nameB, undefined, { numeric: true, sensitivity: 'base' });
+    }
+
     function populateGradeFilter() {
         if (!gradeFilter) return;
         gradeFilter.innerHTML = '<option value="">All Grades</option>' +
@@ -159,11 +177,10 @@ document.addEventListener('DOMContentLoaded', async function() {
 
             const { data: secData, error: secErr } = await supabase
                 .from('sections')
-                .select('*')
-                .order('name', { ascending: true });
+                .select('*');
 
             if (secErr) throw secErr;
-            sections = secData || [];
+            sections = (secData || []).sort(compareSections);
 
             // Fetch student counts per section
             studentsCountMap = {};
@@ -217,7 +234,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         const grade = gradeFilter ? gradeFilter.value : '';
         const search = searchInput ? searchInput.value.toLowerCase().trim() : '';
 
-        let filtered = [...sections];
+        let filtered = [...sections].sort(compareSections);
 
         if (grade) {
             const cleanGradeNum = grade.replace('Grade ', '').trim();

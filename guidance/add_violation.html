@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Log Student Violation - HES Guidance</title>
+    <title>Log Student Violation - PLSNSH, Placido L. Señor National High School Guidance</title>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!-- Google Fonts -->
@@ -12,7 +13,10 @@
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/violations.css">
     <link rel="stylesheet" href="../css/chatbot.css">
+    <link rel="stylesheet" href="../css/sidebar.css">
+    <link rel="stylesheet" href="../css/dashboard_announcements.css">
 </head>
+
 <body>
     <!-- Mobile Menu Toggle -->
     <div class="menu-toggle" id="menuToggle">
@@ -25,20 +29,12 @@
             <div class="sidebar-header">
                 <div class="logo">
                     <div class="logo-icon">
-                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
+                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo"
+                            onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
                     </div>
                     <div class="logo-text">PLS<span>NSH</span></div>
                 </div>
                 <div class="school-badge">Placido L. Señor National High School</div>
-            </div>
-
-            <div class="counselor-profile">
-                <div class="counselor-avatar">
-                    <div class="avatar-initial" id="counselorAvatar">G</div>
-                    <div class="online-dot"></div>
-                </div>
-                <div class="counselor-name" id="counselorName">Guidance Counselor</div>
-                <div class="counselor-role"><i class="fas fa-heart-pulse"></i> Guidance Office</div>
             </div>
 
             <nav class="nav-menu">
@@ -47,7 +43,8 @@
                     <ul class="nav-items">
                         <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
                         <li><a href="violations.html"><i class="fas fa-clipboard-list"></i> Guidance Records</a></li>
-                        <li><a href="add_violation.html" class="active"><i class="fas fa-file-circle-plus"></i> Log Guidance Case</a></li>
+                        <li><a href="add_violation.html" class="active"><i class="fas fa-file-circle-plus"></i> Log
+                                Guidance Case</a></li>
                         <li><a href="counseling.html"><i class="fas fa-user-doctor"></i> Counseling Sessions</a></li>
                         <li><a href="students.html"><i class="fas fa-user-graduate"></i> Student Directory</a></li>
                     </ul>
@@ -64,10 +61,25 @@
                     <div class="nav-section-title">ACCOUNT</div>
                     <ul class="nav-items">
                         <li><a href="profile.html"><i class="fas fa-user-gear"></i> Counselor Profile</a></li>
-                        <li><a href="../auth/logout.html"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                        <li><a href="../auth/logout.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                        </li>
+
                     </ul>
                 </div>
             </nav>
+            <!-- Pinned Sidebar Footer -->
+            <div class="sidebar-footer">
+                <div class="counselor-profile">
+                    <div class="counselor-avatar">
+                        <div class="avatar-initial" id="counselorAvatar">G</div>
+                        <div class="online-dot"></div>
+                    </div>
+                    <div class="counselor-info">
+                        <div class="counselor-name" id="counselorName">Guidance Counselor</div>
+                        <div class="counselor-role"><i class="fas fa-heart-pulse"></i> Guidance Office</div>
+                    </div>
+                </div>
+            </div>
         </aside>
 
         <!-- Main Content -->
@@ -75,7 +87,8 @@
             <div class="page-header">
                 <div>
                     <h1>Log Student Violation / Incident</h1>
-                    <p class="subtitle">Record an official disciplinary offense or behavioral referral to the Guidance Office.</p>
+                    <p class="subtitle">Record an official disciplinary offense or behavioral referral to the Guidance
+                        Office.</p>
                 </div>
                 <div class="header-actions">
                     <a href="violations.html" class="btn-secondary">
@@ -96,8 +109,10 @@
 
                 <form id="violationForm">
                     <!-- 1. Student Selection -->
-                    <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 24px;">
-                        <h4 style="font-size: 15px; font-weight: 700; color: var(--primary); margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
+                    <div
+                        style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+                        <h4
+                            style="font-size: 15px; font-weight: 700; color: var(--primary); margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
                             <i class="fas fa-user-graduate" style="color: var(--accent);"></i> Student Information
                         </h4>
 
@@ -114,28 +129,35 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="studentLRN">Learner Reference Number (LRN)</label>
-                                <input type="text" id="studentLRN" class="form-control" readonly placeholder="Auto-populated" style="background: #f1f5f9;">
+                                <input type="text" id="studentLRN" class="form-control" readonly
+                                    placeholder="Auto-populated" style="background: #f1f5f9;">
                             </div>
                             <div class="form-group">
                                 <label for="studentGrade">Grade Level</label>
-                                <input type="text" id="studentGrade" class="form-control" readonly placeholder="Auto-populated" style="background: #f1f5f9;">
+                                <input type="text" id="studentGrade" class="form-control" readonly
+                                    placeholder="Auto-populated" style="background: #f1f5f9;">
                             </div>
                             <div class="form-group">
                                 <label for="studentStrand">Strand / Track</label>
-                                <input type="text" id="studentStrand" class="form-control" readonly placeholder="Auto-populated" style="background: #f1f5f9;">
+                                <input type="text" id="studentStrand" class="form-control" readonly
+                                    placeholder="Auto-populated" style="background: #f1f5f9;">
                             </div>
                         </div>
                     </div>
 
                     <!-- 2. Violation Details -->
-                    <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 24px;">
-                        <h4 style="font-size: 15px; font-weight: 700; color: var(--primary); margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
-                            <i class="fas fa-triangle-exclamation" style="color: var(--warning);"></i> Violation Classification & Incident Particulars
+                    <div
+                        style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+                        <h4
+                            style="font-size: 15px; font-weight: 700; color: var(--primary); margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-triangle-exclamation" style="color: var(--warning);"></i> Violation
+                            Classification & Incident Particulars
                         </h4>
 
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="violationCategory">Violation Severity Category <span class="req">*</span></label>
+                                <label for="violationCategory">Violation Severity Category <span
+                                        class="req">*</span></label>
                                 <select id="violationCategory" class="form-select" required>
                                     <option value="Minor">Minor Infraction</option>
                                     <option value="Major">Major Violation (Disciplinary Case)</option>
@@ -162,7 +184,9 @@
 
                         <div class="form-group">
                             <label for="violationTitle">Incident Summary Title <span class="req">*</span></label>
-                            <input type="text" id="violationTitle" class="form-control" placeholder="e.g., Unauthorized Cutting of Afternoon Classes in TVL Computer Lab" required>
+                            <input type="text" id="violationTitle" class="form-control"
+                                placeholder="e.g., Unauthorized Cutting of Afternoon Classes in TVL Computer Lab"
+                                required>
                         </div>
 
                         <div class="form-row">
@@ -194,20 +218,27 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="incidentDescription">Detailed Narrative & Description of Incident <span class="req">*</span></label>
-                            <textarea id="incidentDescription" class="form-control" rows="4" placeholder="Provide a detailed, objective account of the incident: what transpired, behavior exhibited, and immediate reaction..." required></textarea>
+                            <label for="incidentDescription">Detailed Narrative & Description of Incident <span
+                                    class="req">*</span></label>
+                            <textarea id="incidentDescription" class="form-control" rows="4"
+                                placeholder="Provide a detailed, objective account of the incident: what transpired, behavior exhibited, and immediate reaction..."
+                                required></textarea>
                         </div>
 
                         <div class="form-group">
                             <label for="witnesses">Witnesses / Additional Information</label>
-                            <input type="text" id="witnesses" class="form-control" placeholder="e.g. Class Adviser Mr. Santos, Class President, Security Guard on duty">
+                            <input type="text" id="witnesses" class="form-control"
+                                placeholder="e.g. Class Adviser Mr. Santos, Class President, Security Guard on duty">
                         </div>
                     </div>
 
                     <!-- 3. Reporting Person & Initial Action -->
-                    <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 24px;">
-                        <h4 style="font-size: 15px; font-weight: 700; color: var(--primary); margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
-                            <i class="fas fa-hand-holding-heart" style="color: var(--accent);"></i> Reporting Officer & Prescribed Action
+                    <div
+                        style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+                        <h4
+                            style="font-size: 15px; font-weight: 700; color: var(--primary); margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-hand-holding-heart" style="color: var(--accent);"></i> Reporting Officer &
+                            Prescribed Action
                         </h4>
 
                         <div class="form-row">
@@ -244,19 +275,26 @@
 
                         <div class="form-group">
                             <label for="sanctionDetails">Sanction / Guidance Plan Details</label>
-                            <input type="text" id="sanctionDetails" class="form-control" placeholder="e.g. Schedule for 1-on-1 counseling session and behavioral check-in">
+                            <input type="text" id="sanctionDetails" class="form-control"
+                                placeholder="e.g. Schedule for 1-on-1 counseling session and behavioral check-in">
                         </div>
 
                         <!-- Checkboxes for Notifications & Session -->
                         <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px;">
-                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 13.5px; font-weight: 500;">
-                                <input type="checkbox" id="notifyParentCheck" checked style="width: 18px; height: 18px;">
-                                <span><i class="fas fa-bell" style="color: var(--accent);"></i> Send automatic notice to Parent / Guardian Portal</span>
+                            <label
+                                style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 13.5px; font-weight: 500;">
+                                <input type="checkbox" id="notifyParentCheck" checked
+                                    style="width: 18px; height: 18px;">
+                                <span><i class="fas fa-bell" style="color: var(--accent);"></i> Send automatic notice to
+                                    Parent / Guardian Portal</span>
                             </label>
 
-                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 13.5px; font-weight: 500;">
-                                <input type="checkbox" id="autoScheduleCounseling" checked style="width: 18px; height: 18px;">
-                                <span><i class="fas fa-calendar-plus" style="color: var(--purple);"></i> Automatically schedule follow-up counseling session in Guidance Calendar</span>
+                            <label
+                                style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 13.5px; font-weight: 500;">
+                                <input type="checkbox" id="autoScheduleCounseling" checked
+                                    style="width: 18px; height: 18px;">
+                                <span><i class="fas fa-calendar-plus" style="color: var(--purple);"></i> Automatically
+                                    schedule follow-up counseling session in Guidance Calendar</span>
                             </label>
                         </div>
                     </div>
@@ -264,7 +302,8 @@
                     <!-- Submit Actions -->
                     <div style="display: flex; justify-content: flex-end; gap: 14px; align-items: center;">
                         <a href="violations.html" class="btn-secondary">Cancel</a>
-                        <button type="submit" class="btn-primary" id="submitViolationBtn" style="padding: 12px 28px; font-size: 14px;">
+                        <button type="submit" class="btn-primary" id="submitViolationBtn"
+                            style="padding: 12px 28px; font-size: 14px;">
                             <i class="fas fa-check-circle"></i> Save & Submit Violation Report
                         </button>
                     </div>
@@ -275,5 +314,7 @@
 
     <!-- Scripts -->
     <script type="module" src="js/add_violation.js"></script>
+    <script type="module" src="../js/dashboard_announcements_notifier.js"></script>
 </body>
+
 </html>

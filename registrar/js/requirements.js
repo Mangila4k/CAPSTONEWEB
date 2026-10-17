@@ -125,13 +125,15 @@ async function initRequirementsPage() {
                 { data: enrollmentsRows, error: eErr },
                 { data: userRows, error: uErr },
                 { data: docRows, error: dErr },
-                { data: sDocRows, error: sdErr }
+                { data: sDocRows, error: sdErr },
+                { data: sectionsRows }
             ] = await Promise.all([
                 supabase.from('students').select('*').order('created_at', { ascending: false }),
                 supabase.from('enrollments').select('*').order('created_at', { ascending: false }),
                 supabase.from('users').select('*').eq('role', 'student'),
                 supabase.from('documents').select('*'),
-                supabase.from('student_documents').select('*')
+                supabase.from('student_documents').select('*'),
+                supabase.from('sections').select('id, name, grade_level, strand')
             ]);
 
             if (sErr) throw sErr;
@@ -141,6 +143,7 @@ async function initRequirementsPage() {
             const uList = userRows || [];
             const dList = docRows || [];
             const sdList = sDocRows || [];
+            const secMap = new Map((sectionsRows || []).map(sec => [sec.id, sec]));
 
             const processedIds = new Set();
             const evaluatedStudents = [];
@@ -189,6 +192,10 @@ async function initRequirementsPage() {
                     documents: studentDocs
                 });
 
+                const studentSecId = st.section_id || (matchedEnr ? matchedEnr.section_id : null);
+                const studentSecObj = studentSecId && secMap.has(studentSecId) ? secMap.get(studentSecId) : null;
+                const studentSecName = studentSecObj ? studentSecObj.name : null;
+
                 evaluatedStudents.push({
                     id: st.id,
                     student_id: st.id,
@@ -200,6 +207,8 @@ async function initRequirementsPage() {
                     email: email,
                     grade_level: grade,
                     strand: strand,
+                    section_id: studentSecId,
+                    section_name: studentSecName,
                     student_type: type,
                     isTransferee: isTransferee,
                     avatar_url: st.two_by_two_picture_url || st.avatar_url || (matchedEnr ? matchedEnr.two_by_two_picture_url : ''),
@@ -227,6 +236,10 @@ async function initRequirementsPage() {
                 const type = enr.student_type || 'New';
                 const isTransferee = String(type).toLowerCase().includes('transfer') || String(type).toLowerCase().includes('different');
 
+                const enrSecId = enr.section_id || null;
+                const enrSecObj = enrSecId && secMap.has(enrSecId) ? secMap.get(enrSecId) : null;
+                const enrSecName = enrSecObj ? enrSecObj.name : null;
+
                 const studentDocs = dList.filter(d => d.enrollment_id === enr.id);
 
                 const reqEvaluation = evaluateStudentRequirements({
@@ -248,6 +261,8 @@ async function initRequirementsPage() {
                     email: enr.email || '',
                     grade_level: grade,
                     strand: strand,
+                    section_id: enrSecId,
+                    section_name: enrSecName,
                     student_type: type,
                     isTransferee: isTransferee,
                     avatar_url: enr.two_by_two_picture_url || '',
@@ -259,6 +274,28 @@ async function initRequirementsPage() {
             allStudents = evaluatedStudents;
             applyFilters();
             updateStats();
+
+            // Direct routing from notifications: auto-open student checklist modal or filter
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const targetStudentId = urlParams.get('student_id') || urlParams.get('id');
+                const targetSearch = urlParams.get('search');
+
+                if (targetStudentId) {
+                    const targetStudent = allStudents.find(s => 
+                        String(s.id) === String(targetStudentId) || 
+                        String(s.student_id) === String(targetStudentId) || 
+                        String(s.lrn) === String(targetStudentId)
+                    );
+                    if (targetStudent) {
+                        setTimeout(() => openDetailModal(targetStudent), 150);
+                    }
+                } else if (targetSearch && searchInput) {
+                    searchInput.value = targetSearch;
+                    searchQuery = targetSearch.toLowerCase();
+                    applyFilters();
+                }
+            } catch(e) {}
 
         } catch (error) {
             console.error('Error fetching requirements data:', error);
@@ -445,7 +482,8 @@ async function initRequirementsPage() {
                 const matchLrn = (item.lrn || '').toLowerCase().includes(query);
                 const matchEmail = (item.email || '').toLowerCase().includes(query);
                 const matchGrade = (item.grade_level || '').toLowerCase().includes(query);
-                if (!matchName && !matchLrn && !matchEmail && !matchGrade) return false;
+                const matchSection = (item.section_name || '').toLowerCase().includes(query);
+                if (!matchName && !matchLrn && !matchEmail && !matchGrade && !matchSection) return false;
             }
 
             return true;
@@ -532,9 +570,13 @@ async function initRequirementsPage() {
                     <!-- 1. Student Info -->
                     <td>
                         <div class="student-cell">
-                            <div class="student-avatar">
-                                ${student.avatar_url ? `<img src="${student.avatar_url}" alt="${student.fullname}" onerror="this.remove()">` : ''}
-                                <span>${getInitials(student.fullname)}</span>
+                            <div class="student-avatar" title="${student.fullname}">
+                                ${student.avatar_url ? `
+                                    <img src="${student.avatar_url}" alt="${student.fullname}" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
+                                    <span style="display:none;">${getInitials(student.fullname)}</span>
+                                ` : `
+                                    <span>${getInitials(student.fullname)}</span>
+                                `}
                             </div>
                             <div class="student-details">
                                 <span class="student-name">${student.fullname}</span>
@@ -554,7 +596,13 @@ async function initRequirementsPage() {
                                 <span class="level-tag ${levelClass}">${levelLabel}</span>
                                 <span class="grade-text">${student.grade_level}</span>
                             </div>
-                            ${student.strand ? `<div class="strand-text">${student.strand}</div>` : ''}
+                            <div style="display: flex; gap: 4px; align-items: center; flex-wrap: wrap; margin-top: 3px;">
+                                ${student.section_name 
+                                    ? `<span class="section-tag" style="background: #e0f2fe; color: #0284c7; font-weight: 600; font-size: 11px; padding: 1.5px 7px; border-radius: 9999px; border: 1px solid #bae6fd; display: inline-flex; align-items: center; gap: 3px;"><i class="fas fa-users" style="font-size: 9px;"></i> ${student.section_name}</span>` 
+                                    : `<span style="font-size: 10.5px; color: #94a3b8; font-style: italic;">No Section</span>`
+                                }
+                                ${student.strand ? `<span class="strand-text" style="margin: 0; font-size: 11px;">${student.strand}</span>` : ''}
+                            </div>
                         </div>
                     </td>
 
@@ -670,19 +718,18 @@ async function initRequirementsPage() {
         if (statIncompleteEl) statIncompleteEl.textContent = incomplete;
         if (statRemindersEl) statRemindersEl.textContent = remindersCount;
 
-        // Update live sidebar badge for requirements
+        // Requirements page is active: registrar has seen their requirements notification, so the red number disappears
         const reqBadges = document.querySelectorAll('#pendingRequirementsBadge');
         reqBadges.forEach(b => {
-            if (incomplete > 0) {
-                b.textContent = incomplete;
-                b.style.display = 'inline-flex';
-            } else {
-                b.style.display = 'none';
-            }
+            b.style.setProperty('display', 'none', 'important');
+            b.classList.add('hidden');
+            b.setAttribute('data-count', '0');
+            b.textContent = '';
         });
 
         try {
-            localStorage.setItem('hes_pending_requirements_count', String(incomplete));
+            localStorage.setItem('hes_seen_requirements_at', String(Date.now()));
+            localStorage.removeItem('hes_pending_requirements_count');
         } catch(e) {}
     }
 
@@ -720,8 +767,15 @@ async function initRequirementsPage() {
         const checklistContainer = document.getElementById('modalChecklistItems');
 
         if (bannerName) bannerName.textContent = student.fullname;
-        if (bannerSub) bannerSub.innerHTML = `<strong>${student.grade_level}</strong> ${student.strand ? '• ' + student.strand : ''} • LRN: ${student.lrn}`;
-        if (bannerAvatar) bannerAvatar.textContent = getInitials(student.fullname);
+        const sectionBadgeHtml = student.section_name 
+            ? ` • <span style="background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 9999px; font-weight: 600; font-size: 11px; display: inline-flex; align-items: center; gap: 4px;"><i class="fas fa-users" style="font-size: 9px;"></i> ${student.section_name}</span>`
+            : '';
+        if (bannerSub) bannerSub.innerHTML = `<strong>${student.grade_level}</strong>${sectionBadgeHtml} ${student.strand ? '• ' + student.strand : ''} • LRN: ${student.lrn}`;
+        if (bannerAvatar) {
+            bannerAvatar.innerHTML = student.avatar_url
+                ? `<img src="${student.avatar_url}" alt="${student.fullname}" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';"><span style="display:none;">${getInitials(student.fullname)}</span>`
+                : `<span>${getInitials(student.fullname)}</span>`;
+        }
 
         const ev = student.evaluation;
         if (bannerStatus) {

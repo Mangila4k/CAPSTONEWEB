@@ -175,7 +175,14 @@ document.addEventListener('DOMContentLoaded', async function() {
                 <tr>
                     <td>
                         <div class="teacher-info" style="display: flex; align-items: center; gap: 12px;">
-                            <div class="teacher-avatar" style="width: 38px; height: 38px; border-radius: 50%; background: #1B2A4A; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px;">${initial}</div>
+                            <div class="teacher-avatar" style="width: 38px; height: 38px; border-radius: 50%; background: #1B2A4A; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; position: relative; overflow: hidden; flex-shrink: 0;" title="${teacher.fullname}">
+                                ${teacher.avatar_url ? `
+                                    <img src="${teacher.avatar_url}" alt="${teacher.fullname}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
+                                    <span style="display:none;">${initial}</span>
+                                ` : `
+                                    <span>${initial}</span>
+                                `}
+                            </div>
                             <div class="teacher-details">
                                 <h4 style="margin: 0; font-size: 14px; font-weight: 600; color: #0f172a;">${teacher.fullname}</h4>
                                 <span style="font-size: 12px; color: #64748b;"><i class="fas fa-calendar-alt"></i> Joined: ${formattedDate}</span>
@@ -327,8 +334,12 @@ document.addEventListener('DOMContentLoaded', async function() {
                 const fullName = matchedUser ? `${matchedUser.first_name || ''} ${matchedUser.last_name || ''}`.trim() : (t.fullname || 'Faculty Teacher');
                 const email = matchedUser ? matchedUser.email : (t.email || 'teacher@hiraya.edu.ph');
 
-                // Find assigned sections
-                const assignedSections = sections.filter(sec => sec.adviser_id === t.id || sec.adviser_id === t.user_id);
+                // Find assigned sections (by teacher ID, user ID, or adviser full name)
+                const assignedSections = sections.filter(sec => 
+                    sec.adviser_id === t.id || 
+                    sec.adviser_id === t.user_id ||
+                    (sec.adviser_name && fullName && sec.adviser_name.trim().toLowerCase() === fullName.trim().toLowerCase())
+                );
 
                 combinedTeachers.push({
                     id: t.id,
@@ -340,11 +351,12 @@ document.addEventListener('DOMContentLoaded', async function() {
                     phone: t.phone || '',
                     created_at: t.created_at || (matchedUser ? matchedUser.created_at : new Date().toISOString()),
                     section_count: assignedSections.length,
-                    sections: assignedSections.map(s => s.name || `${s.grade_level || ''} - ${s.strand || ''}`).join(', '),
+                    sections: assignedSections.map(s => `${s.grade_level ? `${s.grade_level} - ` : ''}${s.name}`).join(', '),
                     teacher_load_url: t.teacher_load_url || null,
                     teacher_load_name: t.teacher_load_name || null,
                     teacher_load_file_type: t.teacher_load_file_type || null,
-                    teacher_load_updated_at: t.teacher_load_updated_at || null
+                    teacher_load_updated_at: t.teacher_load_updated_at || null,
+                    avatar_url: t.avatar_url || t.profile_picture || matchedUser?.profile_picture || matchedUser?.avatar_url || null
                 });
             });
 
@@ -352,7 +364,10 @@ document.addEventListener('DOMContentLoaded', async function() {
             users.forEach(u => {
                 if (!processedUserIds.has(u.id)) {
                     const fullName = `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.email;
-                    const assignedSections = sections.filter(sec => sec.adviser_id === u.id);
+                    const assignedSections = sections.filter(sec => 
+                        sec.adviser_id === u.id ||
+                        (sec.adviser_name && fullName && sec.adviser_name.trim().toLowerCase() === fullName.trim().toLowerCase())
+                    );
 
                     combinedTeachers.push({
                         id: u.id,
@@ -364,11 +379,12 @@ document.addEventListener('DOMContentLoaded', async function() {
                         phone: '',
                         created_at: u.created_at || new Date().toISOString(),
                         section_count: assignedSections.length,
-                        sections: assignedSections.map(s => s.name).join(', '),
+                        sections: assignedSections.map(s => `${s.grade_level ? `${s.grade_level} - ` : ''}${s.name}`).join(', '),
                         teacher_load_url: null,
                         teacher_load_name: null,
                         teacher_load_file_type: null,
-                        teacher_load_updated_at: null
+                        teacher_load_updated_at: null,
+                        avatar_url: u.profile_picture || u.avatar_url || null
                     });
                 }
             });

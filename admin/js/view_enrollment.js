@@ -44,7 +44,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
     const studentIdNumber = document.getElementById('studentIdNumber');
     const totalEnrollmentsEl = document.getElementById('totalEnrollments');
     const sinceYearEl = document.getElementById('sinceYear');
-    const avatarEl = document.querySelector('.student-avatar-large');
+    const avatarEl = document.getElementById('studentAvatar') || document.querySelector('.student-avatar-large');
     const enrollmentInfoGrid = document.getElementById('enrollmentInfoGrid');
     const requirementsContainer = document.getElementById('requirementsContainer');
     const historyBody = document.getElementById('historyBody');
@@ -66,6 +66,9 @@ import { EmailNotificationService } from '../../js/email_service.js';
 
     let currentEnrollment = null;
     let currentStudent = null;
+    let currentAddress = null;
+    let currentParent = null;
+    let currentSection = null;
     let enrollmentHistory = [];
     let submittedRequirements = [];
     let missingRequirements = [];
@@ -110,11 +113,13 @@ import { EmailNotificationService } from '../../js/email_service.js';
     async function loadEnrollmentDetails() {
         try {
             const urlParams = new URLSearchParams(window.location.search);
-            const targetId = urlParams.get('id') || urlParams.get('enrollment_id') || '';
+            const targetId = (urlParams.get('id') || urlParams.get('enrollment_id') || '').trim();
+
+            const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(targetId);
 
             // 1. Query Enrollments
             let enr = null;
-            if (targetId) {
+            if (targetId && isUuid) {
                 try {
                     const { data: eData } = await supabase
                         .from('enrollments')
@@ -123,23 +128,47 @@ import { EmailNotificationService } from '../../js/email_service.js';
                         .maybeSingle();
                     if (eData) enr = eData;
                 } catch(e) {}
+
+                if (!enr) {
+                    try {
+                        const { data: eData } = await supabase
+                            .from('enrollments')
+                            .select('*')
+                            .eq('student_id', targetId)
+                            .order('created_at', { ascending: false })
+                            .limit(1)
+                            .maybeSingle();
+                        if (eData) enr = eData;
+                    } catch(e) {}
+                }
+            } else if (targetId) {
+                // Not a UUID: maybe it's an email or LRN
+                try {
+                    const { data: eList } = await supabase
+                        .from('enrollments')
+                        .select('*')
+                        .or(`email.ilike.${targetId},lrn.eq.${targetId}`)
+                        .order('created_at', { ascending: false })
+                        .limit(1);
+                    if (eList && eList.length > 0) enr = eList[0];
+                } catch(e) {}
             }
 
-            // Fallback: If not found by ID or no ID provided, fetch first available enrollment
+            // Fallback: If not found or no ID provided, fetch latest enrollment from Supabase
             if (!enr) {
                 try {
-                    let query = supabase.from('enrollments').select('*').order('created_at', { ascending: false }).limit(1);
-                    if (targetId) {
-                        query = supabase.from('enrollments').select('*').or(`id.eq.${targetId},student_id.eq.${targetId}`).limit(1);
-                    }
-                    const { data: fallbackList } = await query;
+                    const { data: fallbackList } = await supabase
+                        .from('enrollments')
+                        .select('*')
+                        .order('created_at', { ascending: false })
+                        .limit(1);
                     if (fallbackList && fallbackList.length > 0) {
                         enr = fallbackList[0];
                     }
                 } catch(e) {}
             }
 
-            // Fallback: If no enrollments exist at all, query from students table
+            // 2. Fetch associated student record
             let student = null;
             if (enr && enr.student_id) {
                 try {
@@ -163,14 +192,18 @@ import { EmailNotificationService } from '../../js/email_service.js';
                 } catch(e) {}
             }
 
-            if (!student) {
+            if (!student && targetId && isUuid) {
                 try {
-                    const { data: sList } = await supabase.from('students').select('*').limit(1);
-                    if (sList && sList.length > 0) student = sList[0];
+                    const { data: sData } = await supabase
+                        .from('students')
+                        .select('*')
+                        .eq('id', targetId)
+                        .maybeSingle();
+                    if (sData) student = sData;
                 } catch(e) {}
             }
 
-            // If enrollment is still null, synthesize from student
+            // If no enrollment but student found, synthesize enrollment
             if (!enr && student) {
                 enr = {
                     id: student.id,
@@ -180,24 +213,53 @@ import { EmailNotificationService } from '../../js/email_service.js';
                     email: student.email,
                     grade_level: student.grade_level || 'Grade 11',
                     strand: student.strand || 'TVL-ICT',
-                    school_year: '2025-2026',
+                    school_year: '2026-2027',
                     status: student.documents_status === 'complete' ? 'approved' : 'pending',
                     created_at: student.created_at || new Date().toISOString()
                 };
             }
 
             if (!enr) {
-                showAlert('No enrollment application found in the database.', 'error');
+                showAlert('No enrollment applications found in the database.', 'error');
+                if (studentName) studentName.textContent = 'No records found';
+                if (enrollmentInfoGrid) enrollmentInfoGrid.innerHTML = '<div style="text-align: center; padding: 24px; color: #64748b; grid-column: 1/-1;">No enrollment application available.</div>';
+                if (historyBody) historyBody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 24px; color: #94a3b8;">No enrollment history recorded.</td></tr>';
                 return;
             }
 
             currentEnrollment = enr;
             currentStudent = student;
 
-            // 2. Fetch all enrollment history for this student
+            // 3. Query Address
+            currentAddress = null;
+            if (student?.id) {
+                try {
+                    const { data: addrData } = await supabase
+                        .from('addresses')
+                        .select('*')
+                        .eq('student_id', student.id)
+                        .maybeSingle();
+                    if (addrData) currentAddress = addrData;
+                } catch(e) {}
+            }
+
+            // 4. Query Parents / Guardians
+            currentParent = null;
+            if (student?.id) {
+                try {
+                    const { data: parData } = await supabase
+                        .from('parents_guardians')
+                        .select('*')
+                        .eq('student_id', student.id)
+                        .maybeSingle();
+                    if (parData) currentParent = parData;
+                } catch(e) {}
+            }
+
+            // 5. Fetch all enrollment history for this student
             try {
                 let hQuery = supabase.from('enrollments').select('*');
-                if (student && student.id) {
+                if (student?.id) {
                     hQuery = hQuery.or(`student_id.eq.${student.id},email.eq.${student.email || enr.email}`);
                 } else if (enr.email) {
                     hQuery = hQuery.eq('email', enr.email);
@@ -212,20 +274,35 @@ import { EmailNotificationService } from '../../js/email_service.js';
                 enrollmentHistory = [enr];
             }
 
-            // 3. Fetch Documents attached
+            // 6. Query Section & Adviser
+            currentSection = null;
+            if (student?.section_id) {
+                try {
+                    const { data: secData } = await supabase
+                        .from('sections')
+                        .select('id, name, grade_level, strand, adviser_name, room')
+                        .eq('id', student.section_id)
+                        .maybeSingle();
+                    if (secData) currentSection = secData;
+                } catch(e) {}
+            }
+
+            // 7. Fetch Documents attached
             let docRecord = null;
             try {
-                const { data: dData } = await supabase
-                    .from('documents')
-                    .select('*')
-                    .eq('enrollment_id', enr.id)
-                    .maybeSingle();
-                if (dData) docRecord = dData;
+                if (enr.id) {
+                    const { data: dData } = await supabase
+                        .from('documents')
+                        .select('*')
+                        .eq('enrollment_id', enr.id)
+                        .maybeSingle();
+                    if (dData) docRecord = dData;
+                }
             } catch(e) {}
 
             let sDocs = [];
             try {
-                if (student && student.id) {
+                if (student?.id) {
                     const { data: sdData } = await supabase
                         .from('student_documents')
                         .select('*')
@@ -239,13 +316,14 @@ import { EmailNotificationService } from '../../js/email_service.js';
 
             // Render all UI components
             renderStudentInfo();
-        const adminGenBtn = document.getElementById('adminGenerateIdBtn');
-        if (adminGenBtn && currentEnrollment) {
-            adminGenBtn.href = 'generate_id.html?enrollment_id=' + (currentEnrollment.id || '') + (currentEnrollment.student_id ? '&id=' + currentEnrollment.student_id : '');
-        }
+            const adminGenBtn = document.getElementById('adminGenerateIdBtn');
+            if (adminGenBtn && currentEnrollment) {
+                adminGenBtn.href = `generate_id.html?enrollment_id=${currentEnrollment.id || ''}${currentEnrollment.student_id ? '&id=' + currentEnrollment.student_id : (student?.id ? '&id=' + student.id : '')}&email=${encodeURIComponent(currentEnrollment.email || '')}`;
+            }
             renderEnrollmentInfo();
             renderRequirements();
             renderHistory();
+            updateActionButtons();
 
         } catch (error) {
             console.error('❌ Error loading enrollment details:', error);
@@ -257,33 +335,90 @@ import { EmailNotificationService } from '../../js/email_service.js';
     // BUILD REQUIREMENTS DATA
     // ============================================
 
-    function buildRequirementsList(student, enr, doc, sDocs) {
+    function buildRequirementsList(student, enr, doc, sDocs = []) {
         submittedRequirements = [];
         missingRequirements = [];
 
-        const reportCardLabel = 'Report Card';
+        const isTransferee = String(enr?.student_type || student?.student_type || enr?.previous_school || '').toLowerCase().includes('transfer');
+        const isSeniorHigh = String(enr?.grade_level || student?.grade_level || '').includes('11') || String(enr?.grade_level || student?.grade_level || '').includes('12');
 
-        // Check Form 138 / Report Card
-        const form138Url = student?.form_138_url || doc?.report_card || sDocs.find(d => d.document_type === 'form_138' || d.document_type === 'report_card' || (d.title && d.title.toLowerCase().includes('report card')))?.file_url;
+        const docsArray = Array.isArray(sDocs) ? sDocs : [];
+
+        // 1. Report Card / Form 138 (Required)
+        const form138Url = student?.form_138_url || doc?.report_card || doc?.form_138 || docsArray.find(d => d.document_type === 'form_138' || d.document_type === 'report_card' || (d.title && d.title.toLowerCase().includes('report card')))?.file_url;
         if (form138Url) {
             submittedRequirements.push({
-                name: reportCardLabel,
+                name: 'Report Card (Form 138)',
                 is_required: true,
                 can_be_followed: false,
                 file_path: form138Url
             });
         } else {
             missingRequirements.push({
-                name: reportCardLabel,
+                name: 'Report Card (Form 138)',
                 is_required: true,
                 can_be_followed: false,
                 file_path: null
             });
         }
 
-        // Check Form 137 for transferees
+        // 2. PSA Birth Certificate (Required)
+        const psaUrl = student?.psa_birth_url || doc?.birth_certificate || doc?.psa || docsArray.find(d => d.document_type === 'psa' || d.document_type === 'birth_certificate')?.file_url;
+        if (psaUrl) {
+            submittedRequirements.push({
+                name: 'PSA Birth Certificate',
+                is_required: true,
+                can_be_followed: false,
+                file_path: psaUrl
+            });
+        } else {
+            missingRequirements.push({
+                name: 'PSA Birth Certificate',
+                is_required: true,
+                can_be_followed: false,
+                file_path: null
+            });
+        }
+
+        // 3. Good Moral Certificate (Required)
+        const goodMoralUrl = student?.good_moral_url || doc?.good_moral || enr?.good_moral_url || docsArray.find(d => d.document_type === 'good_moral')?.file_url;
+        if (goodMoralUrl) {
+            submittedRequirements.push({
+                name: 'Good Moral Certificate',
+                is_required: true,
+                can_be_followed: false,
+                file_path: goodMoralUrl
+            });
+        } else {
+            missingRequirements.push({
+                name: 'Good Moral Certificate',
+                is_required: true,
+                can_be_followed: false,
+                file_path: null
+            });
+        }
+
+        // 4. 2x2 ID Picture (Required)
+        const twoByTwoUrl = student?.two_by_two_picture_url || student?.avatar_url || doc?.two_by_two_picture || doc?.id_picture || docsArray.find(d => d.document_type === 'two_by_two_picture' || (d.title && d.title.includes('2x2')))?.file_url;
+        if (twoByTwoUrl) {
+            submittedRequirements.push({
+                name: '2x2 ID Picture (White Background)',
+                is_required: true,
+                can_be_followed: false,
+                file_path: twoByTwoUrl
+            });
+        } else {
+            missingRequirements.push({
+                name: '2x2 ID Picture (White Background)',
+                is_required: true,
+                can_be_followed: false,
+                file_path: null
+            });
+        }
+
+        // 5. Form 137 (Required if Transferee)
         if (isTransferee) {
-            const form137Url = student?.form_137_url || doc?.form_137 || sDocs.find(d => d.document_type === 'form_137' || (d.title && d.title.toLowerCase().includes('form 137')) || (d.title && d.title.toLowerCase().includes('permanent record')))?.file_url;
+            const form137Url = student?.form_137_url || doc?.form_137 || docsArray.find(d => d.document_type === 'form_137' || (d.title && d.title.toLowerCase().includes('form 137')) || (d.title && d.title.toLowerCase().includes('permanent record')))?.file_url;
             if (form137Url) {
                 submittedRequirements.push({
                     name: 'Form 137 (Permanent Record)',
@@ -301,58 +436,24 @@ import { EmailNotificationService } from '../../js/email_service.js';
             }
         }
 
-        // Check PSA Birth Certificate
-        const psaUrl = student?.psa_birth_url || doc?.birth_certificate || sDocs.find(d => d.document_type === 'psa' || d.document_type === 'birth_certificate')?.file_url;
-        if (psaUrl) {
-            submittedRequirements.push({
-                name: 'PSA Birth Certificate',
-                is_required: true,
-                can_be_followed: false,
-                file_path: psaUrl
-            });
-        } else {
-            missingRequirements.push({
-                name: 'PSA Birth Certificate',
-                is_required: true,
-                can_be_followed: false,
-                file_path: null
-            });
-        }
-
-        // Check Good Moral Certificate
-        const goodMoralUrl = student?.good_moral_url || doc?.good_moral || sDocs.find(d => d.document_type === 'good_moral')?.file_url;
-        if (goodMoralUrl) {
-            submittedRequirements.push({
-                name: 'Good Moral Certificate',
-                is_required: true,
-                can_be_followed: false,
-                file_path: goodMoralUrl
-            });
-        } else {
-            missingRequirements.push({
-                name: 'Good Moral Certificate',
-                is_required: true,
-                can_be_followed: false,
-                file_path: null
-            });
-        }
-
-        // Check 2x2 ID Picture
-        const twoByTwoUrl = student?.two_by_two_picture_url || student?.avatar_url || doc?.two_by_two_picture || sDocs.find(d => d.document_type === 'two_by_two_picture' || (d.title && d.title.includes('2x2')))?.file_url;
-        if (twoByTwoUrl) {
-            submittedRequirements.push({
-                name: '2x2 ID Picture (White Background)',
-                is_required: true,
-                can_be_followed: false,
-                file_path: twoByTwoUrl
-            });
-        } else {
-            missingRequirements.push({
-                name: '2x2 ID Picture (White Background)',
-                is_required: true,
-                can_be_followed: false,
-                file_path: null
-            });
+        // 6. Junior High Certificate of Completion (for Senior High)
+        if (isSeniorHigh) {
+            const jhsCertUrl = student?.jhs_certificate_url || doc?.jhs_certificate || docsArray.find(d => d.document_type === 'jhs_certificate' || (d.title && d.title.toLowerCase().includes('completion')))?.file_url;
+            if (jhsCertUrl) {
+                submittedRequirements.push({
+                    name: 'JHS Certificate of Completion',
+                    is_required: false,
+                    can_be_followed: true,
+                    file_path: jhsCertUrl
+                });
+            } else {
+                missingRequirements.push({
+                    name: 'JHS Certificate of Completion',
+                    is_required: false,
+                    can_be_followed: true,
+                    file_path: null
+                });
+            }
         }
     }
 
@@ -361,21 +462,25 @@ import { EmailNotificationService } from '../../js/email_service.js';
     // ============================================
 
     function renderStudentInfo() {
-        const enr = currentEnrollment;
-        const student = currentStudent;
+        const enr = currentEnrollment || {};
+        const student = currentStudent || {};
 
-        const fName = (student?.first_name || enr?.first_name || '').trim();
-        const lName = (student?.last_name || enr?.last_name || '').trim();
-        const fullName = `${fName} ${lName}`.trim() || 'Student Applicant';
-        const email = student?.email || enr?.email || '—';
-        const lrn = student?.lrn || enr?.lrn || 'Not assigned';
+        const fName = (student.first_name || enr.first_name || '').trim();
+        const lName = (student.last_name || enr.last_name || '').trim();
+        const mName = (student.middle_name || '').trim();
+        const suffix = (student.suffix || '').trim();
+        let fullName = `${fName} ${mName ? mName + ' ' : ''}${lName}${suffix ? ' ' + suffix : ''}`.trim();
+        if (!fullName) fullName = 'Student Applicant';
+
+        const email = enr.email || student.email || '—';
+        const lrn = student.lrn || student.student_id_number || enr.lrn || 'Pending LRN';
 
         if (studentName) studentName.textContent = fullName;
         if (studentEmail) studentEmail.textContent = email;
         if (studentIdNumber) studentIdNumber.textContent = lrn;
         if (totalEnrollmentsEl) totalEnrollmentsEl.textContent = enrollmentHistory.length;
 
-        const createdAt = student?.created_at || enr?.created_at;
+        const createdAt = enr.created_at || student.created_at;
         const sinceYear = createdAt ? new Date(createdAt).getFullYear() : 2026;
         if (sinceYearEl) sinceYearEl.textContent = sinceYear;
 
@@ -383,8 +488,9 @@ import { EmailNotificationService } from '../../js/email_service.js';
             avatarEl.textContent = fullName.charAt(0).toUpperCase() || 'S';
         }
 
-        if (viewFullProfileLink && student?.id) {
-            viewFullProfileLink.href = `view_student.html?id=${encodeURIComponent(student.id)}`;
+        if (viewFullProfileLink) {
+            const profileTargetId = student.id || enr.student_id || enr.id;
+            viewFullProfileLink.href = profileTargetId ? `view_student.html?id=${encodeURIComponent(profileTargetId)}` : 'student.html';
         }
     }
 
@@ -395,13 +501,16 @@ import { EmailNotificationService } from '../../js/email_service.js';
     function renderEnrollmentInfo() {
         if (!enrollmentInfoGrid || !currentEnrollment) return;
 
-        const enr = currentEnrollment;
-        const student = currentStudent;
+        const enr = currentEnrollment || {};
+        const student = currentStudent || {};
+        const addr = currentAddress || {};
+        const par = currentParent || {};
 
-        const gradeLevel = enr.grade_level || student?.grade_level || 'Grade 11';
-        const strand = enr.strand || student?.strand || 'Not Applicable';
-        const schoolYear = enr.school_year || enr.last_school_year || '2025-2026';
-        const rawStatus = (enr.status || '').toLowerCase();
+        const gradeLevel = enr.grade_level || student.grade_level || 'Grade 11';
+        const strand = enr.strand || student.strand || (gradeLevel.includes('11') || gradeLevel.includes('12') ? 'TVL-ICT' : 'Junior High');
+        const schoolYear = enr.school_year || enr.last_school_year || '2026-2027';
+
+        const rawStatus = (enr.status || 'Pending').trim().toLowerCase();
         let status = 'Pending';
         let statusClass = 'pending';
 
@@ -413,43 +522,71 @@ import { EmailNotificationService } from '../../js/email_service.js';
             statusClass = 'rejected';
         }
 
-        const studentType = enr.previous_school ? 'Transferee' : 'Regular / Continuing';
+        // Student Type
+        const rawStudentType = enr.student_type || student.student_type || (gradeLevel.includes('7') ? 'New Student' : 'Continuing');
+        const typeMap = {
+            'new': 'New Student (From Elementary)',
+            'continuing': 'Continuing Student',
+            'transferee': 'Transferee',
+            'same_school': 'From PLSNHS',
+            'different_school': 'Transferee (From another school)'
+        };
+        const studentType = typeMap[rawStudentType] || rawStudentType;
+
+        // Previous School
+        const rawPrevSchool = (enr.previous_school || student.previous_school || '').trim();
+        const prevSchool = (rawPrevSchool && rawPrevSchool !== 'N/A') ? rawPrevSchool : 'Placido L. Señor National High School (PLSNHS)';
+
+        // Previous Grade
+        const rawPrevGrade = (enr.previous_grade || student.previous_grade || '').trim();
+        const prevGrade = (rawPrevGrade && rawPrevGrade !== 'N/A') ? rawPrevGrade : '—';
+
+        // General Average
+        const rawGpa = (enr.general_average || student.general_average || '').toString().trim();
+        const gpa = (rawGpa && rawGpa !== 'N/A') ? rawGpa : '—';
+
+        // Personal Details
+        const rawDob = enr.date_of_birth || enr.dob || student.date_of_birth || student.birth_date;
+        const birthDate = rawDob ? formatDate(rawDob) : '—';
+        const gender = enr.gender || student.gender || '—';
+        const contactNum = enr.contact_number || enr.guardian_contact || student.contact_number || student.phone || '—';
+
+        // Address
+        let fullAddress = enr.address || student.address || enr.guardian_address;
+        if (!fullAddress && (addr.barangay || addr.city)) {
+            fullAddress = [addr.street, addr.barangay, addr.city, addr.province, addr.zip_code].filter(Boolean).join(', ');
+        }
+        if (!fullAddress) fullAddress = '—';
+
+        // Guardian
+        const parentName = enr.guardian_name || enr.mother_name || enr.father_name || par.guardian_name || par.father_name || par.mother_name || student.parent_name || '—';
+        const parentContact = enr.guardian_contact || par.guardian_contact || par.father_contact || par.mother_contact || student.parent_contact || contactNum;
+        const relationship = enr.guardian_relationship || par.guardian_relationship || 'Parent / Guardian';
 
         enrollmentInfoGrid.innerHTML = `
             <div class="info-item">
                 <div class="info-label">Student Type</div>
-                <div class="info-value">
-                    <i class="fas fa-user-tag"></i>
-                    ${studentType}
-                </div>
+                <div class="info-value"><i class="fas fa-user-tag"></i> ${studentType}</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Grade Level</div>
-                <div class="info-value">
-                    <i class="fas fa-layer-group"></i>
-                    ${gradeLevel}
-                </div>
+                <div class="info-value"><i class="fas fa-layer-group"></i> ${gradeLevel}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Section</div>
+                <div class="info-value"><i class="fas fa-users-rectangle" style="color: #2563eb;"></i> ${currentSection ? `<strong>${currentSection.name}</strong>${currentSection.room ? ` (Rm ${currentSection.room})` : ''}` : '<span style="color: #94a3b8; font-style: italic;">Unassigned</span>'}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Class Adviser</div>
+                <div class="info-value"><i class="fas fa-chalkboard-user" style="color: #059669;"></i> ${currentSection && currentSection.adviser_name ? `<strong>${currentSection.adviser_name}</strong>` : '<span style="color: #94a3b8; font-style: italic;">No Adviser Assigned</span>'}</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Strand / Track</div>
-                <div class="info-value">
-                    <i class="fas fa-tag"></i>
-                    ${strand}
-                </div>
+                <div class="info-value"><i class="fas fa-tag"></i> ${strand}</div>
             </div>
             <div class="info-item">
                 <div class="info-label">School Year</div>
-                <div class="info-value">
-                    <i class="fas fa-calendar-alt"></i>
-                    ${schoolYear}
-                </div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Application Date</div>
-                <div class="info-value">
-                    <i class="fas fa-clock"></i>
-                    ${formatDate(enr.created_at)}
-                </div>
+                <div class="info-value"><i class="fas fa-calendar-alt"></i> ${schoolYear}</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Enrollment Status</div>
@@ -458,6 +595,34 @@ import { EmailNotificationService } from '../../js/email_service.js';
                         ${status}
                     </span>
                 </div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Application Date</div>
+                <div class="info-value"><i class="fas fa-clock"></i> ${formatDate(enr.created_at)}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Previous School</div>
+                <div class="info-value"><i class="fas fa-school"></i> ${prevSchool}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">General Average</div>
+                <div class="info-value"><i class="fas fa-chart-line"></i> ${gpa}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Date of Birth / Gender</div>
+                <div class="info-value"><i class="fas fa-birthday-cake"></i> ${birthDate} (${gender})</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Contact Number</div>
+                <div class="info-value"><i class="fas fa-phone"></i> ${contactNum}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Complete Address</div>
+                <div class="info-value"><i class="fas fa-map-marker-alt"></i> ${fullAddress}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Guardian / Relationship</div>
+                <div class="info-value"><i class="fas fa-user-friends"></i> ${parentName} (${relationship}) - ${parentContact}</div>
             </div>
         `;
     }
@@ -469,8 +634,8 @@ import { EmailNotificationService } from '../../js/email_service.js';
     function renderRequirements() {
         if (!requirementsContainer) return;
 
-        const enr = currentEnrollment;
-        const student = currentStudent;
+        const enr = currentEnrollment || {};
+        const student = currentStudent || {};
 
         const totalReq = submittedRequirements.length + missingRequirements.length;
         const submittedCount = submittedRequirements.length;
@@ -486,8 +651,11 @@ import { EmailNotificationService } from '../../js/email_service.js';
         const summaryMissing = document.getElementById('summaryMissing');
         const summaryComplete = document.getElementById('summaryComplete');
 
-        if (reqGradeLevel) reqGradeLevel.textContent = enr?.grade_level || student?.grade_level || 'Grade 11';
-        if (reqStudentType) reqStudentType.textContent = enr?.previous_school ? 'Transferee' : 'Regular';
+        const gLevel = enr.grade_level || student.grade_level || 'Grade 11';
+        const sType = enr.previous_school ? 'Transferee' : (enr.student_type || 'Regular / Continuing');
+
+        if (reqGradeLevel) reqGradeLevel.textContent = gLevel;
+        if (reqStudentType) reqStudentType.textContent = sType;
         if (requirementsCount) requirementsCount.textContent = `${submittedCount}/${totalReq} Requirements`;
         if (progressPercentage) progressPercentage.textContent = `${percentage}%`;
         if (progressFill) progressFill.style.width = `${percentage}%`;
@@ -570,6 +738,10 @@ import { EmailNotificationService } from '../../js/email_service.js';
             `;
         }
 
+        if (submittedRequirements.length === 0 && missingRequirements.length === 0) {
+            html = '<div style="text-align: center; padding: 20px; color: #64748b;">No requirement data found.</div>';
+        }
+
         requirementsContainer.innerHTML = html;
     }
 
@@ -610,7 +782,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
 
             return `
                 <tr>
-                    <td style="font-weight: 600;">${record.school_year || record.last_school_year || '2025-2026'}</td>
+                    <td style="font-weight: 600;">${record.school_year || record.last_school_year || '2026-2027'}</td>
                     <td>${record.grade_level || 'Grade 11'}</td>
                     <td>${record.strand || '—'}</td>
                     <td>
@@ -689,8 +861,6 @@ import { EmailNotificationService } from '../../js/email_service.js';
 
             await supabase.from('notifications').insert([{
                 user_id: targetId,
-                student_id: targetStudentId,
-                recipient_email: targetEmail,
                 role: 'student',
                 title: 'Missing Requirement Notice',
                 message: notifMsg,
@@ -820,6 +990,280 @@ import { EmailNotificationService } from '../../js/email_service.js';
             EmailNotificationService.sendViaMailto(emailData);
         });
     }
+
+    // ============================================
+    // APPROVE & REJECT ACTIONS (SUPABASE DYNAMIC)
+    // ============================================
+
+    function updateActionButtons() {
+        const enr = currentEnrollment;
+        const student = currentStudent;
+        const btnApprove = document.getElementById('btnApproveEnrollment');
+        const btnReject = document.getElementById('btnRejectEnrollment');
+        const adminGenBtn = document.getElementById('adminGenerateIdBtn');
+        const statusBadge = document.getElementById('enrollmentStatusBadge');
+
+        const rawStatus = (enr?.status || 'pending').trim().toLowerCase();
+        const isEnrolled = rawStatus === 'approved' || rawStatus === 'enrolled';
+        const isRejected = rawStatus === 'rejected';
+
+        if (statusBadge) {
+            statusBadge.textContent = isEnrolled ? 'Enrolled' : (isRejected ? 'Rejected' : 'Pending');
+            statusBadge.className = `status-badge-small status-${isEnrolled ? 'enrolled' : (isRejected ? 'rejected' : 'pending')}`;
+            statusBadge.style.background = isEnrolled ? '#d1fae5' : (isRejected ? '#fee2e2' : '#fef3c7');
+            statusBadge.style.color = isEnrolled ? '#065f46' : (isRejected ? '#991b1b' : '#92400e');
+        }
+
+        if (btnApprove) {
+            btnApprove.style.display = isEnrolled ? 'none' : 'inline-flex';
+        }
+        if (btnReject) {
+            btnReject.style.display = isRejected ? 'none' : 'inline-flex';
+        }
+        if (adminGenBtn) {
+            if (isEnrolled && enr) {
+                adminGenBtn.style.display = 'inline-flex';
+                adminGenBtn.href = `generate_id.html?enrollment_id=${enr.id || ''}${enr.student_id ? '&id=' + enr.student_id : (student?.id ? '&id=' + student.id : '')}&email=${encodeURIComponent(enr.email || '')}`;
+            } else {
+                adminGenBtn.style.display = 'none';
+            }
+        }
+    }
+
+    async function handleApproveEnrollment() {
+        if (!currentEnrollment) return;
+        const enr = currentEnrollment;
+        const student = currentStudent;
+
+        const fName = (student?.first_name || enr.first_name || '').trim();
+        const lName = (student?.last_name || enr.last_name || '').trim();
+        let fullName = `${fName} ${lName}`.trim() || 'Student Applicant';
+
+        if (missingRequirements && missingRequirements.length > 0) {
+            const proceed = confirm(`⚠️ Notice: ${fullName} has ${missingRequirements.length} missing requirement(s):\n- ${missingRequirements.map(r => r.name).join('\n- ')}\n\nDo you still wish to APPROVE this enrollment and generate student login credentials?`);
+            if (!proceed) return;
+        } else {
+            if (!confirm(`Are you sure you want to APPROVE enrollment for ${fullName}?`)) return;
+        }
+
+        try {
+            showAlert('Processing enrollment approval & provisioning student account...', 'info');
+
+            const email = (enr.email || student?.email || '').trim().toLowerCase();
+            let lastName = lName;
+            let firstName = fName;
+            const gradeName = enr.grade_level || student?.grade_level || 'Grade 11';
+            const strand = enr.strand || student?.strand || '';
+
+            if (!lastName && fullName) {
+                const parts = fullName.split(' ');
+                firstName = parts.slice(0, -1).join(' ') || parts[0];
+                lastName = parts[parts.length - 1];
+            }
+            if (!lastName) lastName = 'Student';
+
+            let studentUserId = null;
+
+            // 1. Provision / Update user in public.users table (Username = Email, Password = Last Name)
+            if (email) {
+                const { data: existingUsers } = await supabase
+                    .from('users')
+                    .select('*')
+                    .ilike('email', email);
+
+                if (existingUsers && existingUsers.length > 0) {
+                    studentUserId = existingUsers[0].id;
+                    await supabase
+                        .from('users')
+                        .update({
+                            password: lastName,
+                            role: 'student',
+                            first_name: firstName || existingUsers[0].first_name,
+                            last_name: lastName || existingUsers[0].last_name,
+                            updated_at: new Date().toISOString()
+                        })
+                        .eq('id', studentUserId);
+                } else {
+                    const { data: newUser } = await supabase
+                        .from('users')
+                        .insert([{
+                            email: email,
+                            password: lastName,
+                            role: 'student',
+                            first_name: firstName,
+                            last_name: lastName,
+                            created_at: new Date().toISOString(),
+                            updated_at: new Date().toISOString()
+                        }])
+                        .select();
+
+                    if (newUser && newUser.length > 0) {
+                        studentUserId = newUser[0].id;
+                    }
+                }
+            }
+
+            // 2. Update / create students table
+            let studentTableId = enr.student_id || student?.id;
+            const studentPayload = {
+                first_name: firstName,
+                last_name: lastName,
+                middle_name: enr.middle_name || student?.middle_name || null,
+                email: email,
+                grade_level: gradeName,
+                strand: strand || null,
+                lrn: enr.lrn || student?.lrn || ('141525' + String(Date.now()).slice(-6)),
+                date_of_birth: enr.date_of_birth || enr.dob || student?.date_of_birth || '2008-01-01',
+                contact_number: enr.contact_number || enr.guardian_contact || student?.contact_number || '09000000000',
+                enrollment_id: enr.id,
+                two_by_two_picture_url: enr.two_by_two_picture_url || student?.two_by_two_picture_url || null,
+                avatar_url: enr.two_by_two_picture_url || student?.avatar_url || null,
+                documents_status: 'complete',
+                updated_at: new Date().toISOString()
+            };
+
+            if (studentTableId) {
+                await supabase
+                    .from('students')
+                    .update(studentPayload)
+                    .eq('id', studentTableId);
+            } else if (email) {
+                studentPayload.created_at = new Date().toISOString();
+                const { data: createdStudent } = await supabase
+                    .from('students')
+                    .insert([studentPayload])
+                    .select();
+
+                if (createdStudent && createdStudent.length > 0) {
+                    studentTableId = createdStudent[0].id;
+                }
+            }
+
+            // Link student_id in users
+            if (studentUserId && studentTableId) {
+                try {
+                    await supabase
+                        .from('users')
+                        .update({ student_id: studentTableId })
+                        .eq('id', studentUserId);
+                } catch (uErr) {
+                    console.warn('Users update notice:', uErr);
+                }
+            }
+
+            // Update enrollments record
+            await supabase
+                .from('enrollments')
+                .update({
+                    status: 'enrolled',
+                    student_id: studentTableId || null,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', enr.id);
+
+            currentEnrollment.status = 'enrolled';
+            if (studentTableId) currentEnrollment.student_id = studentTableId;
+
+            // In-app notification
+            const credsMsg = `Congratulations ${firstName}! Your enrollment application for ${gradeName} (${strand || 'General'}) S.Y. ${enr.school_year || '2026-2027'} has been approved by the Administration.\n\nYour Student Portal Login Credentials:\n• Username (Gmail): ${email}\n• Initial Password: ${lastName}\n\nYou can now log in to the HES Student Portal. Upon your first login, please visit "My Profile" to update your password.`;
+
+            const targetStudentId = studentUserId || studentTableId || null;
+            await supabase.from('notifications').insert([{
+                user_id: targetStudentId,
+                role: 'student',
+                title: '🎉 Enrollment Approved!',
+                message: credsMsg,
+                type: 'action',
+                enrollment_id: enr.id,
+                read: false,
+                is_read: false,
+                created_at: new Date().toISOString()
+            }]);
+
+            const credsPayload = {
+                email,
+                lastName,
+                firstName,
+                studentFullName: fullName,
+                gradeLevel: gradeName,
+                strand: strand || '',
+                schoolYear: enr.school_year || '2026-2027',
+                enrollmentId: enr.id,
+                studentId: studentTableId || studentUserId
+            };
+
+            // Trigger Gmail dispatch with pre-filled credentials
+            try {
+                await EmailNotificationService.sendCredentialsEmail({
+                    ...credsPayload,
+                    autoLaunchGmail: true
+                });
+            } catch (mailErr) {
+                console.warn('Email dispatch notice:', mailErr);
+            }
+
+            window.showCredentialsModal(credsPayload);
+            showAlert(`✅ Enrollment for ${fullName} approved! Account created (Username: ${email}, Password: ${lastName}).`, 'success');
+
+            renderEnrollmentInfo();
+            updateActionButtons();
+
+        } catch (err) {
+            console.error('❌ Error approving enrollment:', err);
+            showAlert('Failed to approve enrollment: ' + err.message, 'error');
+        }
+    }
+
+    async function handleRejectEnrollment() {
+        if (!currentEnrollment) return;
+        const enr = currentEnrollment;
+        const fullName = studentName?.textContent || 'Student';
+
+        const reason = prompt(`Please enter reason for rejecting enrollment for ${fullName}:`, 'Incomplete requirements or invalid documents.');
+        if (reason === null) return;
+
+        try {
+            showAlert('Updating application status...', 'info');
+
+            await supabase
+                .from('enrollments')
+                .update({
+                    status: 'rejected',
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', enr.id);
+
+            currentEnrollment.status = 'rejected';
+
+            const targetId = enr.student_id || null;
+            const rejMsg = `Notice for ${fullName}: Your enrollment application was not approved. Reason: ${reason}`;
+
+            await supabase.from('notifications').insert([{
+                user_id: targetId,
+                role: 'student',
+                title: '⚠️ Enrollment Update',
+                message: rejMsg,
+                type: 'enrollment_status',
+                enrollment_id: enr.id,
+                is_read: false,
+                read: false,
+                created_at: new Date().toISOString()
+            }]);
+
+            showAlert(`Application for ${fullName} has been marked as rejected.`, 'warning');
+            renderEnrollmentInfo();
+            updateActionButtons();
+
+        } catch (err) {
+            console.error('❌ Error rejecting enrollment:', err);
+            showAlert('Failed to reject enrollment: ' + err.message, 'error');
+        }
+    }
+
+    const btnApprove = document.getElementById('btnApproveEnrollment');
+    const btnReject = document.getElementById('btnRejectEnrollment');
+    if (btnApprove) btnApprove.addEventListener('click', handleApproveEnrollment);
+    if (btnReject) btnReject.addEventListener('click', handleRejectEnrollment);
 
     // Close modal on background click
     document.addEventListener('click', function(e) {

@@ -1,18 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Attendance Management - Teacher Dashboard | HES</title>
+    <title>Student Attendance Management - Teacher Dashboard | PLSNSH, Placido L. Señor National High School</title>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Base & Custom CSS -->
     <link rel="stylesheet" href="css/student-attendance.css">
+    <link rel="stylesheet" href="../css/sidebar.css">
     <link rel="stylesheet" href="../css/chatbot.css">
     <script>window.location.replace('attendance-qr.html');</script>
 </head>
+
 <body>
     <div class="app-container">
         <!-- ===== SIDEBAR ===== -->
@@ -20,34 +23,34 @@
             <div class="sidebar-header">
                 <div class="logo">
                     <div class="logo-icon">
-                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
+                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo"
+                            onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
                     </div>
                     <div class="logo-text">PLS<span>NSH</span></div>
                 </div>
                 <div class="school-badge">Placido L. Señor National High School</div>
             </div>
 
-            <div class="teacher-profile">
-                <div class="teacher-avatar">
-                    <div class="avatar-initial" id="teacherInitial">T</div>
-                    <div class="online-dot"></div>
-                </div>
-                <div class="teacher-name" id="teacherName">Teacher</div>
-                <div class="teacher-role"><i class="fas fa-chalkboard-user"></i> Teacher</div>
-            </div>
-
             <nav class="nav-menu">
                 <div class="nav-section">
                     <div class="nav-section-title">MAIN MENU</div>
                     <ul class="nav-items">
-                        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
-                        <li><a href="attendance-face.html"><i class="fas fa-camera"></i> <span>Face Attendance</span></a></li>
-                        <li><a href="attendance-qr.html"><i class="fas fa-qrcode"></i> <span>Student QR Scanner</span></a></li>
-                        <li><a href="student-attendance.html" class="active"><i class="fas fa-user-check"></i> <span>Student Attendance</span></a></li>
+                        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a>
+                        </li>
+                        <li><a href="announcements.html"><i class="fas fa-bullhorn"></i> <span>Announcements</span></a>
+                        </li>
+                        <li><a href="attendance-face.html"><i class="fas fa-camera"></i> <span>Face
+                                    Attendance</span></a></li>
+                        <li><a href="attendance-qr.html"><i class="fas fa-qrcode"></i> <span>Student QR
+                                    Scanner</span></a></li>
+                        <li><a href="student-attendance.html" class="active"><i class="fas fa-user-check"></i>
+                                <span>Student Attendance</span></a></li>
                         <li><a href="classes.html"><i class="fas fa-users"></i> <span>My Classes</span></a></li>
-                        <li><a href="class-program.html"><i class="fas fa-calendar-alt"></i> <span>Class Program</span></a></li>
+                        <li><a href="class-program.html"><i class="fas fa-calendar-alt"></i> <span>Class
+                                    Program</span></a></li>
                         <li><a href="teacher-load.html"><i class="fas fa-clock"></i> <span>Teacher Load</span></a></li>
-                        <li><a href="assessments.html"><i class="fas fa-clipboard-list"></i> <span>Assessments</span></a></li>
+                        <li><a href="assessments.html"><i class="fas fa-clipboard-list"></i>
+                                <span>Assessments</span></a></li>
                         <li><a href="grades.html"><i class="fas fa-star"></i> <span>Grades</span></a></li>
                     </ul>
                 </div>
@@ -56,10 +59,25 @@
                     <div class="nav-section-title">ACCOUNT</div>
                     <ul class="nav-items">
                         <li><a href="profile.html"><i class="fas fa-user"></i> <span>Profile</span></a></li>
-                        <li><a href="../auth/login.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+                        <li><a href="../auth/login.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i>
+                                <span>Logout</span></a></li>
                     </ul>
                 </div>
             </nav>
+
+            <!-- Pinned Sidebar Footer -->
+            <div class="sidebar-footer">
+                <div class="teacher-profile">
+                    <div class="teacher-avatar">
+                        <div class="avatar-initial" id="teacherInitial">RQ</div>
+                        <div class="online-dot"></div>
+                    </div>
+                    <div class="teacher-info">
+                        <div class="teacher-name" id="teacherName">Ryan Quiroga</div>
+                        <div class="teacher-role"><i class="fas fa-chalkboard-user"></i> Teacher</div>
+                    </div>
+                </div>
+            </div>
         </aside>
 
         <!-- ===== MAIN CONTENT ===== -->
@@ -78,10 +96,12 @@
             <!-- Philippine Time Display -->
             <div class="ph-time-bar">
                 <div class="time-item">
-                    <i class="fas fa-clock"></i> Philippine Standard Time: <span id="phTimeDisplay" class="fw-bold">Loading...</span>
+                    <i class="fas fa-clock"></i> Philippine Standard Time: <span id="phTimeDisplay"
+                        class="fw-bold">Loading...</span>
                 </div>
                 <div class="time-policy">
-                    <i class="fas fa-shield-alt"></i> Only teachers can record student attendance. Attendance is disabled on weekends.
+                    <i class="fas fa-shield-alt"></i> Only teachers can record student attendance. Attendance is
+                    disabled on weekends.
                 </div>
             </div>
 
@@ -94,7 +114,8 @@
                 <div class="weekend-content">
                     <h3>Weekend Recess (Saturday / Sunday)</h3>
                     <p id="studentWeekendText">
-                        School is closed on weekends. No attendance can be recorded or marked for students on Saturday or Sunday. Please select a weekday (Monday to Friday) to record attendance.
+                        School is closed on weekends. No attendance can be recorded or marked for students on Saturday
+                        or Sunday. Please select a weekday (Monday to Friday) to record attendance.
                     </p>
                 </div>
                 <button type="button" class="btn-jump-weekday" id="btnJumpToWeekday">
@@ -167,7 +188,9 @@
                 <div class="search-bar-row">
                     <div class="search-input-wrap">
                         <i class="fas fa-search search-icon"></i>
-                        <input type="text" id="studentSearch" placeholder="Search student by name, LRN, section, or strand..." class="form-input search-input">
+                        <input type="text" id="studentSearch"
+                            placeholder="Search student by name, LRN, section, or strand..."
+                            class="form-input search-input">
                         <button type="button" id="clearSearchBtn" class="clear-search-btn" style="display:none;">
                             <i class="fas fa-times"></i>
                         </button>
@@ -229,17 +252,22 @@
                         <span class="active-filter-badge" id="activeFilterSummary">Showing all sections</span>
                     </div>
                     <div class="batch-actions-group">
-                        <a href="attendance-qr.html" class="btn-batch btn-scan-qr" style="background: linear-gradient(135deg, #0b2b4a 0%, #1e40af 100%); color: white; border: none; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-weight: 700;" title="Open Live Student ID QR Scanner Studio">
+                        <a href="attendance-qr.html" class="btn-batch btn-scan-qr"
+                            style="background: linear-gradient(135deg, #0b2b4a 0%, #1e40af 100%); color: white; border: none; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-weight: 700;"
+                            title="Open Live Student ID QR Scanner Studio">
                             <i class="fas fa-qrcode" style="color: #facc15;"></i> Scan Student QR
                         </a>
                         <span class="batch-label">Quick Actions:</span>
-                        <button type="button" class="btn-batch btn-batch-present" id="btnMarkAllPresent" title="Mark all filtered students as Present">
+                        <button type="button" class="btn-batch btn-batch-present" id="btnMarkAllPresent"
+                            title="Mark all filtered students as Present">
                             <i class="fas fa-check-double"></i> Mark All Present
                         </button>
-                        <button type="button" class="btn-batch btn-batch-late" id="btnMarkAllLate" title="Mark all filtered students as Late">
+                        <button type="button" class="btn-batch btn-batch-late" id="btnMarkAllLate"
+                            title="Mark all filtered students as Late">
                             <i class="fas fa-clock"></i> Mark All Late
                         </button>
-                        <button type="button" class="btn-batch btn-batch-absent" id="btnMarkAllAbsent" title="Mark all filtered students as Absent">
+                        <button type="button" class="btn-batch btn-batch-absent" id="btnMarkAllAbsent"
+                            title="Mark all filtered students as Absent">
                             <i class="fas fa-times-circle"></i> Mark All Absent
                         </button>
                         <button type="button" class="btn-save-attendance" id="btnSaveStudentAttendance">
@@ -283,4 +311,5 @@
     <script type="module" src="js/student-attendance.js"></script>
     <script src="../js/chatbot.js"></script>
 </body>
+
 </html>

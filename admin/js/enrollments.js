@@ -5,7 +5,7 @@
 import { supabase } from '../../supabase/config.js';
 import { EmailNotificationService } from '../../js/email_service.js';
 
-(function() {
+(function () {
     'use strict';
 
     console.log('📋 Admin Enrollments Management (Supabase) ready');
@@ -117,7 +117,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
                     .select('*')
                     .order('created_at', { ascending: false });
                 if (!eErr && eData) enrollmentsData = eData;
-            } catch(e) {
+            } catch (e) {
                 console.warn('Enrollments fetch error:', e);
             }
 
@@ -128,7 +128,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
                     .from('students')
                     .select('*');
                 if (!sErr && sData) studentsData = sData;
-            } catch(e) {
+            } catch (e) {
                 console.warn('Students fetch error:', e);
             }
 
@@ -139,43 +139,51 @@ import { EmailNotificationService } from '../../js/email_service.js';
                     .from('users')
                     .select('id, first_name, last_name, email, role');
                 if (uData) usersData = uData;
-            } catch(e) {}
+            } catch (e) { }
 
             // 4. Fetch Documents
             let documentsData = [];
             try {
                 const { data: dData } = await supabase.from('documents').select('*');
                 if (dData) documentsData = dData;
-            } catch(e) {}
+            } catch (e) { }
 
             let studentDocumentsData = [];
             try {
                 const { data: sdData } = await supabase.from('student_documents').select('*');
                 if (sdData) studentDocumentsData = sdData;
-            } catch(e) {}
+            } catch (e) { }
 
             // Combine and Normalize Enrollments
             const items = [];
             const seenStudentIds = new Set();
+            const seenEnrollmentKeys = new Set();
 
-            // Process explicit enrollments
+            // Process explicit enrollments (prevent duplicate copies per student)
             enrollmentsData.forEach(enr => {
                 const student = studentsData.find(s => s.id === enr.student_id || (s.email && enr.email && s.email.toLowerCase() === enr.email.toLowerCase())) || {};
                 const user = usersData.find(u => u.id === student.user_id || u.student_id === student.id || (u.email && enr.email && u.email.toLowerCase() === enr.email.toLowerCase())) || {};
                 const doc = documentsData.find(d => d.enrollment_id === enr.id) || {};
                 const sDocs = studentDocumentsData.filter(d => d.student_id === student.id);
 
+                const email = (enr.email || student.email || user.email || '').trim().toLowerCase();
+                const dedupeKey = email || (student.id ? `sid_${student.id}` : enr.id);
+                if (dedupeKey) {
+                    if (seenEnrollmentKeys.has(dedupeKey)) return;
+                    seenEnrollmentKeys.add(dedupeKey);
+                }
+
                 if (student.id) seenStudentIds.add(student.id);
 
                 const fName = (enr.first_name || student.first_name || user.first_name || '').trim();
                 const lName = (enr.last_name || student.last_name || user.last_name || '').trim();
                 const fullName = `${fName} ${lName}`.trim() || 'Student Applicant';
-                const email = enr.email || student.email || user.email || '—';
+                const displayEmail = enr.email || student.email || user.email || '—';
                 const lrn = student.lrn || enr.lrn || 'Not assigned';
                 const gradeLevel = enr.grade_level || student.grade_level || 'Grade 11';
                 const strand = enr.strand || student.strand || (gradeLevel.includes('11') || gradeLevel.includes('12') ? 'TVL-ICT' : '');
                 const schoolYear = enr.school_year || enr.last_school_year || '2025-2026';
-                
+
                 // Status mapping
                 let status = 'Pending';
                 const rawStatus = (enr.status || '').toLowerCase();
@@ -203,7 +211,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
                     student_id: student.id || enr.student_id,
                     user_id: user.id || null,
                     fullname: fullName,
-                    email: email,
+                    email: displayEmail,
                     id_number: lrn !== 'Not assigned' ? lrn : null,
                     grade_name: gradeLevel,
                     strand: strand,
@@ -218,7 +226,10 @@ import { EmailNotificationService } from '../../js/email_service.js';
 
             // Include any registered students who do not yet have an enrollment row
             studentsData.forEach(student => {
-                if (student.id && !seenStudentIds.has(student.id)) {
+                const sEmail = (student.email || '').trim().toLowerCase();
+                const dedupeKey = sEmail || `sid_${student.id}`;
+                if (student.id && !seenStudentIds.has(student.id) && !seenEnrollmentKeys.has(dedupeKey)) {
+                    seenEnrollmentKeys.add(dedupeKey);
                     const user = usersData.find(u => u.student_id === student.id || (u.email && student.email && u.email.toLowerCase() === student.email.toLowerCase())) || {};
                     const fName = (student.first_name || user.first_name || '').trim();
                     const lName = (student.last_name || user.last_name || '').trim();
@@ -227,7 +238,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
                     const lrn = student.lrn || 'Not assigned';
                     const gradeLevel = student.grade_level || 'Grade 11';
                     const strand = student.strand || (gradeLevel.includes('11') || gradeLevel.includes('12') ? 'TVL-ICT' : '');
-                    
+
                     const isTransferee = String(student.student_type || '').toLowerCase().includes('transfer') || String(student.student_type || '').toLowerCase().includes('different');
                     const hasForm138 = Boolean(student.form_138_url);
                     const hasPsa = Boolean(student.psa_birth_url);
@@ -379,24 +390,60 @@ import { EmailNotificationService } from '../../js/email_service.js';
             const statusLower = enrollment.status.toLowerCase();
             const statusClass = `badge-${statusLower}`;
 
-            // Action Buttons
-            let actionsHtml = '';
+            // Action Menu Items for Manage Dropdown
+            let menuItemsHtml = `
+                <a href="view_enrollment.html?id=${enrollment.id}" class="manage-item view-item" title="View Full Details">
+                    <i class="fas fa-eye"></i>
+                    <span>View Details</span>
+                </a>
+            `;
+
             if (enrollment.status === 'Pending') {
-                if (enrollment.has_missing) {
-                    actionsHtml += `<button class="action-btn approve disabled" disabled title="Missing requirements"><i class="fas fa-check"></i></button>`;
-                } else {
-                    actionsHtml += `<button class="action-btn approve" onclick="window.approveEnrollment('${enrollment.id}')" title="Approve Enrollment"><i class="fas fa-check"></i></button>`;
-                }
-                actionsHtml += `<button class="action-btn reject" onclick="window.openRejectModal('${enrollment.id}', '${enrollment.fullname.replace(/'/g, "\\'")}')" title="Reject Application"><i class="fas fa-times"></i></button>`;
-                actionsHtml += `<button class="action-btn view" onclick="window.viewEnrollment('${enrollment.id}')" title="View Full Details"><i class="fas fa-eye"></i></button>`;
-                actionsHtml += `<button class="action-btn delete" onclick="window.deleteEnrollment('${enrollment.id}', '${enrollment.fullname.replace(/'/g, "\\'")}')" title="Delete Record"><i class="fas fa-trash"></i></button>`;
-            } else {
-                actionsHtml += `<a class="action-btn generate-id" href="generate_id.html?enrollment_id=${enrollment.id}${enrollment.student_id ? '&id=' + enrollment.student_id : ''}" title="Generate Official Student ID" style="background:#c89b27; color:#070526; display:inline-flex; align-items:center; justify-content:center; text-decoration:none;"><i class="fas fa-id-card"></i></a>`;
-                actionsHtml += `<button class="action-btn pending" onclick="window.pendingEnrollment('${enrollment.id}')" title="Revert to Pending"><i class="fas fa-undo-alt"></i></button>`;
-                actionsHtml += `<button class="action-btn view" onclick="window.viewEnrollment('${enrollment.id}')" title="View Full Details"><i class="fas fa-eye"></i></button>`;
-                actionsHtml += `<button class="action-btn delete" onclick="window.deleteEnrollment('${enrollment.id}', '${enrollment.fullname.replace(/'/g, "\\'")}')" title="Delete Record"><i class="fas fa-trash"></i></button>`;
-                actionsHtml += `<span class="action-spacer" style="display:inline-block; width:28px;"></span>`;
+                menuItemsHtml += `
+                    <button type="button" class="manage-item approve-item" onclick="window.approveEnrollment('${enrollment.id}')" title="Approve Enrollment${enrollment.has_missing ? ' (Has missing requirements)' : ''}">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Approve Application</span>
+                    </button>
+                    <button type="button" class="manage-item reject-item" onclick="window.openRejectModal('${enrollment.id}', '${enrollment.fullname.replace(/'/g, "\\'")}')" title="Reject Application">
+                        <i class="fas fa-times-circle"></i>
+                        <span>Reject Application</span>
+                    </button>
+                `;
+            } else if (enrollment.status === 'Enrolled') {
+                menuItemsHtml += `
+                    <a href="generate_id.html?enrollment_id=${enrollment.id}${enrollment.student_id ? '&id=' + enrollment.student_id : ''}" class="manage-item id-item" title="Generate Official Student ID">
+                        <i class="fas fa-id-card"></i>
+                        <span>Generate Student ID</span>
+                    </a>
+                `;
+            } else if (enrollment.status === 'Rejected') {
+                menuItemsHtml += `
+                    <button type="button" class="manage-item approve-item" onclick="window.approveEnrollment('${enrollment.id}')" title="Reconsider & Approve Application">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Approve Application</span>
+                    </button>
+                `;
             }
+
+            menuItemsHtml += `
+                <div class="manage-divider"></div>
+                <button type="button" class="manage-item delete-item" onclick="window.deleteEnrollment('${enrollment.id}', '${enrollment.fullname.replace(/'/g, "\\'")}')" title="Delete Record">
+                    <i class="fas fa-trash-alt"></i>
+                    <span>Delete Record</span>
+                </button>
+            `;
+
+            const manageDropdownHtml = `
+                <div class="manage-dropdown">
+                    <button type="button" class="btn-manage" aria-expanded="false" title="Manage Enrollment Actions">
+                        <span>Manage</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="manage-menu">
+                        ${menuItemsHtml}
+                    </div>
+                </div>
+            `;
 
             html += `
                 <tr>
@@ -420,10 +467,8 @@ import { EmailNotificationService } from '../../js/email_service.js';
                     <td><span class="badge ${statusClass}">${enrollment.status}</span></td>
                     <td>${requirementsHtml}</td>
                     <td><span class="grade-tag">${formattedDate}</span></td>
-                    <td>
-                        <div class="action-btns" style="display: flex; gap: 6px; align-items: center;">
-                            ${actionsHtml}
-                        </div>
+                    <td class="cell-center cell-actions">
+                        ${manageDropdownHtml}
                     </td>
                 </tr>
             `;
@@ -431,9 +476,40 @@ import { EmailNotificationService } from '../../js/email_service.js';
 
         tableBody.innerHTML = html;
 
+        // Manage Dropdown Toggles and Hover / Dropup Detection
+        tableBody.querySelectorAll('.btn-manage').forEach(btn => {
+            btn.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const dropdown = this.closest('.manage-dropdown');
+                const row = this.closest('tr');
+                const isOpen = dropdown.classList.contains('show');
+
+                // Close all open dropdowns
+                document.querySelectorAll('.manage-dropdown.show').forEach(d => {
+                    d.classList.remove('show');
+                    d.classList.remove('dropup');
+                    const r = d.closest('tr');
+                    if (r) r.classList.remove('dropdown-open');
+                });
+
+                if (!isOpen) {
+                    const rect = this.getBoundingClientRect();
+                    const spaceBelow = window.innerHeight - rect.bottom;
+                    if (spaceBelow < 200) {
+                        dropdown.classList.add('dropup');
+                    } else {
+                        dropdown.classList.remove('dropup');
+                    }
+                    dropdown.classList.add('show');
+                    if (row) row.classList.add('dropdown-open');
+                }
+            });
+        });
+
         // Attach Notify Click Handlers
         document.querySelectorAll('.btn-notify-missing').forEach(btn => {
-            btn.addEventListener('click', function(e) {
+            btn.addEventListener('click', function (e) {
                 e.stopPropagation();
                 const studentName = this.dataset.studentName;
                 const userId = this.dataset.userId;
@@ -445,20 +521,31 @@ import { EmailNotificationService } from '../../js/email_service.js';
         });
     }
 
+    // Close any open dropdowns when clicking anywhere outside
+    document.addEventListener('click', function (e) {
+        if (!e.target.closest('.manage-dropdown')) {
+            document.querySelectorAll('.manage-dropdown.show').forEach(d => {
+                d.classList.remove('show');
+                d.classList.remove('dropup');
+                const r = d.closest('tr');
+                if (r) r.classList.remove('dropdown-open');
+            });
+        }
+    });
+
     // ============================================
     // SUPABASE ACTIONS (APPROVE, REJECT, PENDING, DELETE)
     // ============================================
 
-    window.approveEnrollment = async function(id) {
+    window.approveEnrollment = async function (id) {
         const item = rawEnrollments.find(e => String(e.id) === String(id));
         if (!item) return;
 
-        if (item.has_missing) {
-            showAlert('Cannot approve - required documents are missing.', 'error');
-            return;
-        }
+        const confirmMsg = item.has_missing
+            ? `⚠️ Notice: ${item.fullname || 'This student'} still has missing requirements.\n\nDo you want to proceed with APPROVING this enrollment and generating student login credentials?`
+            : `Are you sure you want to APPROVE enrollment for ${item.fullname}?`;
 
-        if (!confirm(`Are you sure you want to APPROVE enrollment for ${item.fullname}?`)) {
+        if (!confirm(confirmMsg)) {
             return;
         }
 
@@ -558,24 +645,32 @@ import { EmailNotificationService } from '../../js/email_service.js';
                 }
             }
 
-            // 4. Update enrollments table
+            // Link student_id in users if not linked
+            if (studentUserId && studentTableId) {
+                try {
+                    await supabase
+                        .from('users')
+                        .update({ student_id: studentTableId })
+                        .eq('id', studentUserId);
+                } catch (uErr) {
+                    console.warn('Users update notice:', uErr);
+                }
+            }
+
             await supabase
                 .from('enrollments')
                 .update({
                     status: 'enrolled',
-                    student_id: studentTableId || studentUserId,
+                    student_id: studentTableId || null,
                     updated_at: new Date().toISOString()
                 })
                 .eq('id', id);
 
-            // 5. Insert notification for student with login credentials
-            const credsMsg = `Congratulations ${firstName}! Your enrollment application for ${gradeName} (${strand || 'General'}) S.Y. ${item.school_year || '2026-2027'} has been approved.\n\nYour Student Portal Login Credentials:\n• Username (Email): ${email}\n• Password: ${lastName}\n\nYou can now log in to the HES Student Portal.`;
+            const credsMsg = `Congratulations ${firstName}! Your enrollment application for ${gradeName} (${strand || 'General'}) S.Y. ${item.school_year || '2026-2027'} has been approved by the Administration.\n\nYour Student Portal Login Credentials:\n• Username (Gmail): ${email}\n• Initial Password: ${lastName}\n\nYou can now log in to the HES Student Portal. Upon your first login, please visit "My Profile" to update your password.`;
 
             const targetStudentId = studentUserId || studentTableId || null;
             await supabase.from('notifications').insert([{
                 user_id: targetStudentId,
-                student_id: studentTableId || null,
-                recipient_email: email,
                 role: 'student',
                 title: '🎉 Enrollment Approved!',
                 message: credsMsg,
@@ -585,23 +680,6 @@ import { EmailNotificationService } from '../../js/email_service.js';
                 is_read: false,
                 created_at: new Date().toISOString()
             }]);
-
-            if (targetStudentId) {
-                try {
-                    const k = `hes_notifications_${targetStudentId}`;
-                    const raw = localStorage.getItem(k);
-                    let list = raw ? JSON.parse(raw) : [];
-                    list.unshift({
-                        id: 'notif_' + Date.now(),
-                        type: 'action',
-                        title: '🎉 Enrollment Approved!',
-                        message: credsMsg,
-                        time: 'Just now',
-                        read: false
-                    });
-                    localStorage.setItem(k, JSON.stringify(list.slice(0, 30)));
-                } catch(e) {}
-            }
 
             const credsPayload = {
                 email,
@@ -615,9 +693,11 @@ import { EmailNotificationService } from '../../js/email_service.js';
                 studentId: studentTableId || studentUserId
             };
 
-            // Automatic email dispatch to student's email address
             try {
-                await EmailNotificationService.sendCredentialsEmail(credsPayload);
+                await EmailNotificationService.sendCredentialsEmail({
+                    ...credsPayload,
+                    autoLaunchGmail: true
+                });
             } catch (mailErr) {
                 console.warn('Email dispatch notice:', mailErr);
             }
@@ -632,9 +712,6 @@ import { EmailNotificationService } from '../../js/email_service.js';
         }
     };
 
-    // ============================================
-    // CREDENTIALS MODAL HELPERS
-    // ============================================
 
     let activeCredentialsData = null;
 
@@ -723,14 +800,14 @@ import { EmailNotificationService } from '../../js/email_service.js';
         });
     }
 
-    window.openRejectModal = function(id, name) {
+    window.openRejectModal = function (id, name) {
         if (rejectEnrollmentId) rejectEnrollmentId.value = id;
         if (rejectStudentName) rejectStudentName.value = name;
         if (rejectionReason) rejectionReason.value = '';
         if (rejectModal) rejectModal.classList.add('show');
     };
 
-    window.closeRejectModal = function() {
+    window.closeRejectModal = function () {
         if (rejectModal) rejectModal.classList.remove('show');
     };
 
@@ -738,7 +815,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
     if (cancelRejectBtn) cancelRejectBtn.addEventListener('click', window.closeRejectModal);
 
     if (rejectForm) {
-        rejectForm.addEventListener('submit', async function(e) {
+        rejectForm.addEventListener('submit', async function (e) {
             e.preventDefault();
             const id = rejectEnrollmentId ? rejectEnrollmentId.value : '';
             const reason = rejectionReason ? rejectionReason.value.trim() : '';
@@ -770,8 +847,6 @@ import { EmailNotificationService } from '../../js/email_service.js';
                     const rejMsg = `Notice for ${studentName}: Your enrollment application was not approved. Reason: ${reason}`;
                     await supabase.from('notifications').insert([{
                         user_id: targetId,
-                        student_id: item?.student_id || item?.id || null,
-                        recipient_email: item?.email || null,
                         role: 'student',
                         title: 'Enrollment Application Update',
                         message: rejMsg,
@@ -796,9 +871,9 @@ import { EmailNotificationService } from '../../js/email_service.js';
                                 read: false
                             });
                             localStorage.setItem(k, JSON.stringify(list.slice(0, 30)));
-                        } catch(e) {}
+                        } catch (e) { }
                     }
-                } catch(nErr) {}
+                } catch (nErr) { }
 
                 showAlert(`✅ Enrollment for ${studentName} has been rejected. Notification sent.`, 'success');
                 await loadEnrollments();
@@ -810,7 +885,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
         });
     }
 
-    window.pendingEnrollment = async function(id) {
+    window.pendingEnrollment = async function (id) {
         const item = rawEnrollments.find(e => String(e.id) === String(id));
         if (!item) return;
 
@@ -835,11 +910,11 @@ import { EmailNotificationService } from '../../js/email_service.js';
         }
     };
 
-    window.viewEnrollment = function(id) {
+    window.viewEnrollment = function (id) {
         window.location.href = `view_enrollment.html?id=${encodeURIComponent(id)}`;
     };
 
-    window.deleteEnrollment = async function(id, name) {
+    window.deleteEnrollment = async function (id, name) {
         if (!confirm(`Are you sure you want to permanently DELETE the enrollment record for ${name || 'this student'}?\n\nThis action cannot be undone.`)) {
             return;
         }
@@ -864,7 +939,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
 
     async function notifyMissing(studentName, missingList, userId, studentId, email) {
         const missingText = missingList.map(req => `• ${req}`).join('\n');
-        
+
         if (!confirm(`Send notification to ${studentName} about missing requirements?\n\nRequired documents:\n${missingText}`)) {
             return;
         }
@@ -875,8 +950,6 @@ import { EmailNotificationService } from '../../js/email_service.js';
 
             await supabase.from('notifications').insert([{
                 user_id: targetId,
-                student_id: studentId || null,
-                recipient_email: email || null,
                 role: 'student',
                 title: 'Missing Enrollment Documents',
                 message: notifMsg,
@@ -900,7 +973,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
                         read: false
                     });
                     localStorage.setItem(k, JSON.stringify(list.slice(0, 30)));
-                } catch(e) {}
+                } catch (e) { }
             }
 
             showAlert(`✅ Notification sent successfully to ${studentName}!`, 'success');
@@ -914,7 +987,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
     // RESET & FILTERS
     // ============================================
 
-    window.resetFilters = function() {
+    window.resetFilters = function () {
         if (statusFilter) statusFilter.value = '';
         if (gradeFilter) gradeFilter.value = '';
         if (strandFilter) strandFilter.value = '';
@@ -924,7 +997,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
     };
 
     if (filterForm) {
-        filterForm.addEventListener('submit', function(e) {
+        filterForm.addEventListener('submit', function (e) {
             e.preventDefault();
             applyFilters();
         });
@@ -940,13 +1013,13 @@ import { EmailNotificationService } from '../../js/email_service.js';
     // ============================================
 
     if (menuToggle && sidebar) {
-        menuToggle.addEventListener('click', function(e) {
+        menuToggle.addEventListener('click', function (e) {
             e.stopPropagation();
             sidebar.classList.toggle('active');
         });
     }
 
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', function (e) {
         if (sidebar && sidebar.classList.contains('active') && !sidebar.contains(e.target) && (!menuToggle || !menuToggle.contains(e.target))) {
             sidebar.classList.remove('active');
         }
@@ -973,7 +1046,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
             gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
             osc.start();
             osc.stop(ctx.currentTime + 0.35);
-        } catch(e) {}
+        } catch (e) { }
     }
 
     function setupRealtimeSubscription() {
@@ -987,6 +1060,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
                 }, (payload) => {
                     console.log('⚡ Realtime enrollment update:', payload);
                     loadEnrollments();
+                    loadNotifications();
                     if (payload.eventType === 'INSERT') {
                         playNotificationChime();
                         showAlert(`🔔 New enrollment submitted: ${payload.new?.first_name || ''} ${payload.new?.last_name || ''}`, 'info');
@@ -1002,6 +1076,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
                         playNotificationChime();
                         showAlert(`🔔 ${notif.title || 'Notification'}: ${notif.message || ''}`, 'info');
                         loadEnrollments();
+                        loadNotifications();
                     }
                 })
                 .subscribe();
@@ -1016,10 +1091,131 @@ import { EmailNotificationService } from '../../js/email_service.js';
                     const data = JSON.parse(e.newValue);
                     if (!data.role || data.role === 'admin' || data.role === 'all' || (data.roles && data.roles.includes('admin'))) {
                         loadEnrollments();
+                        loadNotifications();
                         playNotificationChime();
                         showAlert(`🔔 ${data.title || 'New Enrollment'}: ${data.message || ''}`, 'info');
                     }
-                } catch(err) {}
+                } catch (err) { }
+            }
+        });
+    }
+
+    // ============================================
+    // NOTIFICATIONS SYSTEM
+    // ============================================
+
+    const notificationBtn = document.getElementById('notificationBtn');
+    const notificationDropdown = document.getElementById('notificationDropdown');
+    const notificationList = document.getElementById('notificationList');
+    const notifCount = document.getElementById('notifCount');
+    const markAllReadBtn = document.getElementById('markAllReadBtn');
+    let adminNotifs = [];
+
+    async function loadNotifications() {
+        if (!notificationList) return;
+        try {
+            const { data, error } = await supabase
+                .from('notifications')
+                .select('*')
+                .or('role.eq.admin,role.eq.all,role.is.null')
+                .order('created_at', { ascending: false })
+                .limit(30);
+
+            if (!error && data) {
+                adminNotifs = data;
+            } else {
+                adminNotifs = [];
+            }
+        } catch (e) {
+            adminNotifs = [];
+        }
+
+        const unread = adminNotifs.filter(n => !n.is_read && !n.read).length;
+        if (notifCount) {
+            if (unread > 0) {
+                notifCount.textContent = unread > 99 ? '99+' : unread;
+                notifCount.style.display = 'flex';
+            } else {
+                notifCount.style.display = 'none';
+            }
+        }
+
+        if (adminNotifs.length === 0) {
+            notificationList.innerHTML = `
+                <div class="empty-notifications" style="text-align: center; padding: 24px; color: #94a3b8;">
+                    <i class="fas fa-bell-slash" style="font-size: 24px; margin-bottom: 8px; display: block;"></i>
+                    <p style="margin: 0; font-size: 13px;">No notifications yet</p>
+                </div>
+            `;
+            return;
+        }
+
+        notificationList.innerHTML = adminNotifs.map(notif => {
+            const isRead = notif.is_read || notif.read;
+            const enrollmentLink = (notif.enrollment_id || notif.enrollmentId) ? `view_enrollment.html?id=${notif.enrollment_id || notif.enrollmentId}` : null;
+            const timeStr = notif.created_at ? new Date(notif.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : 'Just now';
+
+            return `
+                <div class="notif-item ${isRead ? 'read' : 'unread'}" style="padding: 10px 12px; border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: background 0.15s; background: ${isRead ? '#ffffff' : '#f0fdf4'}; border-radius: 8px; margin-bottom: 4px;" data-id="${notif.id}">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+                        <strong style="font-size: 13px; color: #0f172a;">${notif.title || 'Notification'}</strong>
+                        <span style="font-size: 11px; color: #94a3b8; white-space: nowrap;">${timeStr}</span>
+                    </div>
+                    <div style="font-size: 12px; color: #475569; margin-top: 2px;">${notif.message || ''}</div>
+                    ${enrollmentLink ? `
+                        <div style="margin-top: 6px;">
+                            <a href="${enrollmentLink}" style="display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 700; color: #1B2A4A; background: #e0e7ff; padding: 3px 10px; border-radius: 6px; text-decoration: none;">
+                                <i class="fas fa-eye"></i> View Student Information
+                            </a>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }).join('');
+
+        notificationList.querySelectorAll('.notif-item').forEach(item => {
+            item.addEventListener('click', async function (e) {
+                if (e.target.closest('a')) return;
+                const id = this.dataset.id;
+                const notif = adminNotifs.find(n => String(n.id) === String(id));
+                if (notif && !notif.is_read && !notif.read) {
+                    notif.is_read = true;
+                    try {
+                        await supabase.from('notifications').update({ read: true, is_read: true }).eq('id', id);
+                    } catch (err) { }
+                    loadNotifications();
+                }
+                if (notif && (notif.enrollment_id || notif.enrollmentId)) {
+                    window.location.href = `view_enrollment.html?id=${notif.enrollment_id || notif.enrollmentId}`;
+                }
+            });
+        });
+    }
+
+    if (notificationBtn && notificationDropdown) {
+        notificationBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            const isOpen = notificationDropdown.style.display === 'block';
+            notificationDropdown.style.display = isOpen ? 'none' : 'block';
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!notificationDropdown.contains(e.target) && !notificationBtn.contains(e.target)) {
+                notificationDropdown.style.display = 'none';
+            }
+        });
+    }
+
+    if (markAllReadBtn) {
+        markAllReadBtn.addEventListener('click', async function (e) {
+            e.stopPropagation();
+            try {
+                await supabase.from('notifications').update({ read: true, is_read: true }).or('role.eq.admin,role.eq.all,role.is.null');
+                adminNotifs.forEach(n => { n.is_read = true; n.read = true; });
+                loadNotifications();
+                showAlert('✅ All notifications marked as read', 'success');
+            } catch (err) {
+                showAlert('❌ Error: ' + err.message, 'error');
             }
         });
     }
@@ -1029,6 +1225,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
     // ============================================
 
     loadEnrollments();
+    loadNotifications();
     setupRealtimeSubscription();
 
 })();

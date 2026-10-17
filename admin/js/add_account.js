@@ -25,6 +25,24 @@ document.addEventListener('DOMContentLoaded', function() {
     const menuToggle = document.getElementById('menuToggle');
     const sidebar = document.getElementById('sidebar');
 
+    // Advisory DOM elements
+    const advisoryGradeLevelSelect = document.getElementById('advisoryGradeLevel');
+    const advisorySectionSelect = document.getElementById('advisorySection');
+    const advisorySectionHint = document.getElementById('advisorySectionHint');
+    const teacherAdvisorySection = document.getElementById('teacherAdvisorySection');
+    const previewAdvisoryRow = document.getElementById('previewAdvisoryRow');
+    const previewAdvisoryText = document.getElementById('previewAdvisoryText');
+
+    // Student Placement DOM elements
+    const studentGradeLevelSelect = document.getElementById('studentGradeLevel');
+    const studentSectionSelect = document.getElementById('studentSectionSelect');
+    const studentSectionHint = document.getElementById('studentSectionHint');
+    const studentPlacementSection = document.getElementById('studentPlacementSection');
+    const previewStudentPlacementRow = document.getElementById('previewStudentPlacementRow');
+    const previewStudentPlacementText = document.getElementById('previewStudentPlacementText');
+
+    let allSections = [];
+
     if (menuToggle && sidebar) {
         menuToggle.addEventListener('click', function() {
             sidebar.classList.toggle('active');
@@ -32,6 +50,111 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ===== FUNCTIONS =====
+
+    async function loadSections() {
+        try {
+            const { data, error } = await supabase
+                .from('sections')
+                .select('id, name, grade_level, strand, adviser_id, adviser_name')
+                .order('grade_level', { ascending: true })
+                .order('name', { ascending: true });
+
+            if (error) throw error;
+            allSections = data || [];
+        } catch (err) {
+            console.warn('Could not load sections in add_account:', err);
+        }
+    }
+
+    function updateSectionOptions() {
+        if (!advisorySectionSelect) return;
+
+        const selectedGrade = (advisoryGradeLevelSelect?.value || '').trim();
+
+        if (!selectedGrade) {
+            advisorySectionSelect.innerHTML = '<option value="">-- Select Year Level First --</option>';
+            advisorySectionSelect.disabled = true;
+            if (advisorySectionHint) {
+                advisorySectionHint.innerHTML = '<i class="fas fa-info-circle"></i> Select year level to view sections';
+            }
+            updatePreview();
+            return;
+        }
+
+        const filtered = allSections.filter(sec => {
+            const secGrade = (sec.grade_level || '').trim();
+            return secGrade.toLowerCase() === selectedGrade.toLowerCase() ||
+                   secGrade.replace(/\D/g, '') === selectedGrade.replace(/\D/g, '');
+        });
+
+        if (filtered.length === 0) {
+            advisorySectionSelect.innerHTML = `<option value="">-- No sections found in ${selectedGrade} --</option>`;
+            advisorySectionSelect.disabled = true;
+            if (advisorySectionHint) {
+                advisorySectionHint.innerHTML = `<i class="fas fa-exclamation-circle" style="color: #f59e0b;"></i> No active sections found under ${selectedGrade}`;
+            }
+        } else {
+            let optionsHtml = `<option value="">-- Select Section in ${selectedGrade} (Optional) --</option>`;
+            filtered.forEach(sec => {
+                const strandText = sec.strand ? ` [${sec.strand}]` : '';
+                const adviserText = sec.adviser_name ? ` (Current Adviser: ${sec.adviser_name})` : ' (Vacant)';
+                optionsHtml += `<option value="${sec.id}">${sec.name}${strandText}${adviserText}</option>`;
+            });
+
+            advisorySectionSelect.innerHTML = optionsHtml;
+            advisorySectionSelect.disabled = false;
+            if (advisorySectionHint) {
+                advisorySectionHint.innerHTML = `<i class="fas fa-check-circle" style="color: #10b981;"></i> Showing ${filtered.length} section${filtered.length > 1 ? 's' : ''} in ${selectedGrade}`;
+            }
+        }
+
+        updatePreview();
+    }
+
+    function updateStudentSectionOptions() {
+        if (!studentSectionSelect) return;
+
+        const selectedGrade = (studentGradeLevelSelect?.value || '').trim();
+
+        if (!selectedGrade) {
+            studentSectionSelect.innerHTML = '<option value="">-- Select Year Level First --</option>';
+            studentSectionSelect.disabled = true;
+            if (studentSectionHint) {
+                studentSectionHint.innerHTML = '<i class="fas fa-info-circle"></i> Select year level to load sections';
+            }
+            updatePreview();
+            return;
+        }
+
+        const filtered = allSections.filter(sec => {
+            const secGrade = (sec.grade_level || '').trim();
+            return secGrade.toLowerCase() === selectedGrade.toLowerCase() ||
+                   secGrade.replace(/\D/g, '') === selectedGrade.replace(/\D/g, '');
+        });
+
+        if (filtered.length === 0) {
+            studentSectionSelect.innerHTML = `<option value="">-- No sections found in ${selectedGrade} --</option>`;
+            studentSectionSelect.disabled = true;
+            if (studentSectionHint) {
+                studentSectionHint.innerHTML = `<i class="fas fa-exclamation-circle" style="color: #f59e0b;"></i> No active sections found under ${selectedGrade}`;
+            }
+        } else {
+            let optionsHtml = `<option value="">-- Select Section in ${selectedGrade} --</option>`;
+            filtered.forEach(sec => {
+                const strandText = sec.strand ? ` [${sec.strand}]` : '';
+                const adviserText = sec.adviser_name ? ` (Adviser: ${sec.adviser_name})` : '';
+                optionsHtml += `<option value="${sec.id}">${sec.name}${strandText}${adviserText}</option>`;
+            });
+
+            studentSectionSelect.innerHTML = optionsHtml;
+            studentSectionSelect.disabled = false;
+            if (studentSectionHint) {
+                studentSectionHint.innerHTML = `<i class="fas fa-check-circle" style="color: #10b981;"></i> Showing ${filtered.length} section${filtered.length > 1 ? 's' : ''} in ${selectedGrade}`;
+            }
+        }
+
+        updatePreview();
+    }
 
     function getPreviewIDNumber(role) {
         if (role === 'Teacher') {
@@ -106,6 +229,50 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 previewRole.textContent = 'Select Role';
                 previewRole.className = 'preview-role-badge';
+            }
+        }
+
+        // Show/hide teacher advisory section based on role
+        const isTeacher = role === 'Teacher';
+        if (teacherAdvisorySection) {
+            teacherAdvisorySection.style.display = isTeacher ? 'block' : 'none';
+        }
+        if (previewAdvisoryRow) {
+            previewAdvisoryRow.style.display = isTeacher ? 'block' : 'none';
+            if (isTeacher && previewAdvisoryText) {
+                const secId = advisorySectionSelect?.value;
+                const gradeVal = advisoryGradeLevelSelect?.value;
+                if (secId) {
+                    const foundSec = allSections.find(s => s.id === secId);
+                    const secLabel = foundSec ? `${foundSec.grade_level || gradeVal} - ${foundSec.name}` : 'Section Assigned';
+                    previewAdvisoryText.innerHTML = `<strong>Adviser:</strong> ${secLabel}`;
+                } else if (gradeVal) {
+                    previewAdvisoryText.innerHTML = `<strong>Adviser:</strong> ${gradeVal} (Section pending)`;
+                } else {
+                    previewAdvisoryText.innerHTML = `Class Adviser: None (Subject Teacher)`;
+                }
+            }
+        }
+
+        // Show/hide student placement section based on role
+        const isStudent = role === 'Student';
+        if (studentPlacementSection) {
+            studentPlacementSection.style.display = isStudent ? 'block' : 'none';
+        }
+        if (previewStudentPlacementRow) {
+            previewStudentPlacementRow.style.display = isStudent ? 'block' : 'none';
+            if (isStudent && previewStudentPlacementText) {
+                const stdSecId = studentSectionSelect?.value;
+                const stdGradeVal = studentGradeLevelSelect?.value;
+                if (stdSecId) {
+                    const foundSec = allSections.find(s => s.id === stdSecId);
+                    const secLabel = foundSec ? `${foundSec.grade_level || stdGradeVal} - ${foundSec.name}` : 'Section Assigned';
+                    previewStudentPlacementText.innerHTML = `<strong>Section:</strong> ${secLabel}`;
+                } else if (stdGradeVal) {
+                    previewStudentPlacementText.innerHTML = `<strong>Section:</strong> ${stdGradeVal} (Section unassigned)`;
+                } else {
+                    previewStudentPlacementText.innerHTML = `Section: Unassigned`;
+                }
             }
         }
 
@@ -202,6 +369,30 @@ document.addEventListener('DOMContentLoaded', function() {
     if (fullnameInput) fullnameInput.addEventListener('input', updatePreview);
     if (emailInput) emailInput.addEventListener('input', updatePreview);
 
+    if (advisoryGradeLevelSelect) {
+        advisoryGradeLevelSelect.addEventListener('change', function() {
+            updateSectionOptions();
+        });
+    }
+
+    if (advisorySectionSelect) {
+        advisorySectionSelect.addEventListener('change', function() {
+            updatePreview();
+        });
+    }
+
+    if (studentGradeLevelSelect) {
+        studentGradeLevelSelect.addEventListener('change', function() {
+            updateStudentSectionOptions();
+        });
+    }
+
+    if (studentSectionSelect) {
+        studentSectionSelect.addEventListener('change', function() {
+            updatePreview();
+        });
+    }
+
     if (passwordInput) {
         passwordInput.addEventListener('input', function() {
             checkPasswordStrength();
@@ -221,6 +412,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const role = roleSelect.value;
             const password = passwordInput.value;
             const confirm = confirmInput.value;
+            const selectedSectionId = advisorySectionSelect?.value || null;
+            const selectedGradeLevel = advisoryGradeLevelSelect?.value || null;
 
             let errors = [];
             if (!fullname) errors.push('Full name is required');
@@ -290,18 +483,48 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 if (userErr) throw userErr;
 
+                let advisoryInfoMsg = '';
+
                 // 3. Role-specific auxiliary records
                 if (roleLower === 'teacher') {
-                    const { error: teacherErr } = await supabase
+                    const { data: teacherData, error: teacherErr } = await supabase
                         .from('teachers')
                         .insert([{
                             user_id: newUser.id,
                             employee_id: generatedID,
                             specialization: 'General'
-                        }]);
+                        }])
+                        .select()
+                        .maybeSingle();
+
                     if (teacherErr) console.warn('Teacher insert warning:', teacherErr);
+
+                    // If an advisory section was selected, assign this teacher as official adviser
+                    if (selectedSectionId) {
+                        const teacherIdentifier = teacherData?.id || newUser.id;
+                        const { error: secErr } = await supabase
+                            .from('sections')
+                            .update({
+                                adviser_id: teacherIdentifier,
+                                adviser_name: fullname
+                            })
+                            .eq('id', selectedSectionId);
+
+                        if (secErr) {
+                            console.warn('Advisory section assignment warning:', secErr);
+                        } else {
+                            const assignedSec = allSections.find(s => s.id === selectedSectionId);
+                            const secLabel = assignedSec ? `${assignedSec.grade_level || selectedGradeLevel} - ${assignedSec.name}` : selectedSectionId;
+                            advisoryInfoMsg = `<br><strong>Advisory Class:</strong> ${secLabel}`;
+                        }
+                    }
                 } else if (roleLower === 'student') {
                     const randomLrn = Math.floor(100000000000 + Math.random() * 900000000000).toString();
+                    const selectedStudentGrade = studentGradeLevelSelect?.value || null;
+                    const selectedStudentSectionId = studentSectionSelect?.value || null;
+                    const assignedStudentSec = allSections.find(s => s.id === selectedStudentSectionId);
+                    const studentStrand = assignedStudentSec?.strand || null;
+
                     const { data: stdData, error: sErr } = await supabase
                         .from('students')
                         .insert([{
@@ -309,6 +532,9 @@ document.addEventListener('DOMContentLoaded', function() {
                             first_name: firstName,
                             last_name: lastName,
                             email: email,
+                            grade_level: selectedStudentGrade,
+                            section_id: selectedStudentSectionId,
+                            strand: studentStrand,
                             date_of_birth: '2008-01-01',
                             contact_number: '09000000000',
                             student_type: 'New Student'
@@ -322,6 +548,10 @@ document.addEventListener('DOMContentLoaded', function() {
                             .update({ student_id: stdData.id })
                             .eq('id', newUser.id);
                     }
+
+                    if (selectedStudentSectionId && assignedStudentSec) {
+                        advisoryInfoMsg = `<br><strong>Class Section:</strong> ${selectedStudentGrade || assignedStudentSec.grade_level} - ${assignedStudentSec.name}`;
+                    }
                 }
 
                 // 4. Log activity if activity_logs exists
@@ -331,13 +561,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         .insert([{
                             action: `Created new ${role} account for ${fullname} (${email})`,
                             role: 'admin',
-                            details: `Assigned ID: ${generatedID}`
+                            details: `Assigned ID: ${generatedID}${advisoryInfoMsg ? ` (Adviser: ${selectedSectionId})` : ''}`
                         }]);
                 } catch (actErr) {
                     console.warn('Activity log error:', actErr);
                 }
 
-                showAlert(`✅ Account created successfully!<br><strong>Assigned ID:</strong> ${generatedID}<br>Redirecting to Accounts list...`, 'success');
+                showAlert(`✅ Account created successfully!<br><strong>Assigned ID:</strong> ${generatedID}${advisoryInfoMsg}<br>Redirecting to Accounts list...`, 'success');
 
                 setTimeout(() => {
                     window.location.href = 'manage_accounts.html';
@@ -366,5 +596,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    updatePreview();
+    // Initialize
+    (async function init() {
+        await loadSections();
+        updatePreview();
+    })();
 });

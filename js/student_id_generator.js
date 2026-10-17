@@ -1,10 +1,4 @@
-/**
- * Official Student ID Card Generator
- * Placido L. Señor National High School (PLSNHS)
- * Precision CR80 Layout matching the official reference ID card design.
- * Real-time QR code generation, 2x2 picture support, dual-sided SVG vectors,
- * and high-resolution print & PNG export.
- */
+
 
 import { supabase } from '../supabase/config.js';
 
@@ -51,110 +45,57 @@ export class StudentIdGenerator {
     init() {
         console.log('🎓 Initializing PLSNHS Official Student ID Generator...');
 
-        // 1. Render interface immediately
         this.renderInterface();
         this.setupEvents();
         this.selectStudent(this.selectedStudent);
 
-        // 2. Asynchronously load students from Supabase in background
         this.loadStudentsAsync();
     }
-        async loadStudentsAsync() {
+    async loadStudentsAsync() {
         if (!supabase) return;
 
         try {
-            const [stResult, enrResult] = await Promise.all([
-                supabase.from('students').select('*').order('last_name', { ascending: true }),
-                supabase.from('enrollments').select('*').order('created_at', { ascending: false })
-            ]);
+            const { data: studentsData, error: stErr } = await supabase
+                .from('students')
+                .select('*')
+                .order('last_name', { ascending: true });
 
-            const sList = (stResult && stResult.data) ? stResult.data : [];
-            const eList = (enrResult && enrResult.data) ? enrResult.data : [];
-
-            const studentMap = new Map();
-
-            // 1. Map existing students in students table
-            for (const st of sList) {
-                const enr = eList.find(e => 
-                    e.student_id === st.id || 
-                    (e.email && st.email && e.email.toLowerCase() === st.email.toLowerCase())
-                ) || {};
-
-                const fName = (st.first_name || enr.first_name || '').trim();
-                const lName = (st.last_name || enr.last_name || '').trim();
-                const fullName = `${fName} ${lName}`.trim() || st.fullname || 'Student';
-                const grade = st.grade_level || enr.grade_level || 'Grade 11';
-                const isSHS = String(grade).includes('11') || String(grade).includes('12') || String(grade).toUpperCase().includes('SENIOR');
-                const levelCat = isSHS ? 'SENIOR HIGH' : 'JUNIOR HIGH';
-                const lrn = st.lrn || enr.lrn || '141525100086';
-
-                const photo = st.two_by_two_picture_url || enr.two_by_two_picture_url || st.avatar_url || '';
-                const parentName = st.parent_name || enr.guardian_name || enr.mother_name || enr.father_name || 'MARIANNE E. SANTOS';
-                const parentContact = st.parent_contact || enr.guardian_contact || enr.contact_number || '09076726568';
-
-                const rawNum = st.lrn ? st.lrn.slice(-5) : (st.id ? String(st.id).replace(/[^0-9]/g, '').slice(-5) : '00123');
-                const idNumber = st.id_number || `2024-ST-${rawNum.padStart(5, '0')}`;
-
-                const key = String(st.id);
-                studentMap.set(key, {
-                    id: st.id,
-                    student_id: st.id,
-                    enrollment_id: enr.id || st.enrollment_id || null,
-                    email: st.email || enr.email || '',
-                    lrn: lrn,
-                    id_number: idNumber,
-                    first_name: fName,
-                    last_name: lName,
-                    fullname: fullName,
-                    grade_level: grade,
-                    level_category: levelCat,
-                    photo_url: photo,
-                    parent_name: parentName,
-                    parent_contact: parentContact,
-                    principal_name: 'Dr. Ryan R. Quiroga',
-                    principal_sig: 'Dr. Ryan R. Quiroga',
-                    status: st.status || enr.status || 'Active'
-                });
+            if (stErr) {
+                console.warn('Notice loading students:', stErr);
+                return;
             }
 
-            // 2. Map enrollments that might not be in students table yet
-            for (const enr of eList) {
-                const enrKey = enr.student_id ? String(enr.student_id) : null;
-                const emailKey = enr.email ? enr.email.toLowerCase() : null;
+            const { data: enrData } = await supabase
+                .from('enrollments')
+                .select('*')
+                .order('created_at', { ascending: false });
 
-                let alreadyMapped = false;
-                if (enrKey && studentMap.has(enrKey)) alreadyMapped = true;
-                if (!alreadyMapped && emailKey) {
-                    for (const s of studentMap.values()) {
-                        if (s.email && s.email.toLowerCase() === emailKey) {
-                            alreadyMapped = true;
-                            if (!s.enrollment_id) s.enrollment_id = enr.id;
-                            if (!s.photo_url && enr.two_by_two_picture_url) s.photo_url = enr.two_by_two_picture_url;
-                            break;
-                        }
-                    }
-                }
+            const sList = studentsData || [];
+            const eList = enrData || [];
 
-                if (!alreadyMapped) {
-                    const fName = (enr.first_name || '').trim();
-                    const lName = (enr.last_name || '').trim();
-                    const fullName = `${fName} ${lName}`.trim() || enr.fullname || 'Student';
-                    const grade = enr.grade_level || 'Grade 11';
+            if (sList.length > 0) {
+                const loaded = sList.map(st => {
+                    const enr = eList.find(e => e.student_id === st.id || (e.email && st.email && e.email.toLowerCase() === st.email.toLowerCase())) || {};
+
+                    const fName = (st.first_name || enr.first_name || '').trim();
+                    const lName = (st.last_name || enr.last_name || '').trim();
+                    const fullName = `${fName} ${lName}`.trim() || st.fullname || 'Student';
+                    const grade = st.grade_level || enr.grade_level || 'Grade 11';
                     const isSHS = String(grade).includes('11') || String(grade).includes('12') || String(grade).toUpperCase().includes('SENIOR');
                     const levelCat = isSHS ? 'SENIOR HIGH' : 'JUNIOR HIGH';
-                    const lrn = enr.lrn || '141525100086';
-                    const photo = enr.two_by_two_picture_url || '';
-                    const parentName = enr.guardian_name || enr.mother_name || enr.father_name || 'MARIANNE E. SANTOS';
-                    const parentContact = enr.guardian_contact || enr.contact_number || '09076726568';
-                    const rawNum = enr.lrn ? enr.lrn.slice(-5) : (enr.id ? String(enr.id).replace(/[^0-9]/g, '').slice(-5) : '00123');
-                    const idNumber = `2024-ST-${rawNum.padStart(5, '0')}`;
+                    const lrn = st.lrn || enr.lrn || '141525100086';
 
-                    const itemKey = `enr_${enr.id}`;
-                    studentMap.set(itemKey, {
-                        id: enr.student_id || enr.id,
-                        student_id: enr.student_id || enr.id,
-                        enrollment_id: enr.id,
-                        email: enr.email || '',
+                    const photo = st.two_by_two_picture_url || enr.two_by_two_picture_url || st.avatar_url || '';
+                    const parentName = st.parent_name || enr.guardian_name || enr.mother_name || enr.father_name || 'MARIANNE E. SANTOS';
+                    const parentContact = st.parent_contact || enr.guardian_contact || enr.contact_number || '09076726568';
+
+                    const rawNum = st.lrn ? st.lrn.slice(-5) : (st.id ? st.id.replace(/[^0-9]/g, '').slice(-5) : '00123');
+                    const idNumber = st.id_number || `2024-ST-${rawNum.padStart(5, '0')}`;
+
+                    return {
+                        id: st.id,
+                        student_id: st.id,
+                        enrollment_id: enr.id || st.enrollment_id,
                         lrn: lrn,
                         id_number: idNumber,
                         first_name: fName,
@@ -167,42 +108,24 @@ export class StudentIdGenerator {
                         parent_contact: parentContact,
                         principal_name: 'Dr. Ryan R. Quiroga',
                         principal_sig: 'Dr. Ryan R. Quiroga',
-                        status: enr.status || 'Enrolled'
-                    });
+                        status: st.status || enr.status || 'Active'
+                    };
+                });
+
+                this.students = loaded;
+                this.updateSelectDropdown();
+
+                const params = new URLSearchParams(window.location.search);
+                const targetId = params.get('id') || params.get('student_id');
+                const enrId = params.get('enrollment_id');
+
+                if (targetId) {
+                    const found = this.students.find(s => s.id === targetId || s.student_id === targetId);
+                    if (found) this.selectStudent(found);
+                } else if (enrId) {
+                    const found = this.students.find(s => s.enrollment_id === enrId);
+                    if (found) this.selectStudent(found);
                 }
-            }
-
-            this.students = Array.from(studentMap.values());
-            this.updateSelectDropdown();
-
-            // Check URL params for target student
-            const params = new URLSearchParams(window.location.search);
-            const targetId = params.get('id') || params.get('student_id');
-            const enrId = params.get('enrollment_id');
-            const emailParam = params.get('email');
-
-            let targetStudent = null;
-            if (targetId) {
-                targetStudent = this.students.find(s => 
-                    String(s.id) === String(targetId) || 
-                    String(s.student_id) === String(targetId) ||
-                    String(s.enrollment_id) === String(targetId)
-                );
-            }
-            if (!targetStudent && enrId) {
-                targetStudent = this.students.find(s => 
-                    String(s.enrollment_id) === String(enrId) ||
-                    String(s.id) === String(enrId)
-                );
-            }
-            if (!targetStudent && emailParam) {
-                targetStudent = this.students.find(s => 
-                    s.email && s.email.toLowerCase() === emailParam.toLowerCase().trim()
-                );
-            }
-
-            if (targetStudent) {
-                this.selectStudent(targetStudent);
             }
         } catch (err) {
             console.warn('Notice during background student fetch:', err);

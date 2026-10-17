@@ -1,10 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>View Section - HES, Hiraya Enrollment System</title>
+    <title>View Section - PLSNSH, Placido L. Señor National High School</title>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- Google Fonts -->
@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/view_section.css">
     <link rel="stylesheet" href="../css/chatbot.css">
+    <link rel="stylesheet" href="../css/sidebar.css">
 </head>
 
 <body data-section-id="1" data-section-name="Grade 10 - Section A">
@@ -33,15 +34,6 @@
                     <div class="logo-text">PLS<span>NSH</span></div>
                 </div>
                 <div class="school-badge">Placido L. Señor National High School</div>
-            </div>
-
-            <div class="admin-profile">
-                <div class="admin-avatar">
-                    <div class="avatar-initial" id="adminAvatar">A</div>
-                    <div class="online-dot"></div>
-                </div>
-                <div class="admin-name" id="adminName">Admin</div>
-                <div class="admin-role"><i class="fas fa-shield-alt"></i> Administrator</div>
             </div>
 
             <div class="nav-menu">
@@ -73,8 +65,23 @@
                     <div class="nav-section-title">ACCOUNT</div>
                     <ul class="nav-items">
                         <li><a href="profile.html"><i class="fas fa-user"></i> Profile</a></li>
-                        <li><a href="../auth/logout.html"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                        <li><a href="../auth/logout.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                        </li>
+
                     </ul>
+                </div>
+            </div>
+            <!-- Pinned Sidebar Footer -->
+            <div class="sidebar-footer">
+                <div class="admin-profile">
+                    <div class="admin-avatar">
+                        <div class="avatar-initial" id="adminAvatar">A</div>
+                        <div class="online-dot"></div>
+                    </div>
+                    <div class="admin-info">
+                        <div class="admin-name" id="adminName">Admin</div>
+                        <div class="admin-role"><i class="fas fa-shield-alt"></i> Administrator</div>
+                    </div>
                 </div>
             </div>
         </aside>
@@ -94,15 +101,15 @@
             <!-- Section Header -->
             <div class="section-header">
                 <div class="section-title-section">
-                    <h2 class="section-title" id="sectionTitle">Grade 10 - Section A</h2>
-                    <span class="section-badge" id="sectionGrade">Grade 10</span>
+                    <h2 class="section-title" id="sectionTitle">Loading section...</h2>
+                    <span class="section-badge" id="sectionGrade">—</span>
                 </div>
                 <div class="section-info">
                     <div class="info-item">
                         <i class="fas fa-chalkboard-user"></i>
                         <div>
                             <span class="info-label">Adviser</span>
-                            <span class="info-value" id="sectionAdviser">Maria Santos</span>
+                            <span class="info-value" id="sectionAdviser">—</span>
                         </div>
                     </div>
                     <div class="info-item">

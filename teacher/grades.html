@@ -1,17 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grade Management - Teacher Dashboard | HES</title>
+    <title>Grade Management - Teacher Dashboard | PLSNSH, Placido L. Señor National High School</title>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Grades CSS -->
     <link rel="stylesheet" href="css/grades.css">
+    <link rel="stylesheet" href="../css/sidebar.css">
     <link rel="stylesheet" href="../css/chatbot.css">
 </head>
+
 <body>
     <div class="app-container">
         <!-- ===== SIDEBAR ===== -->
@@ -19,34 +22,36 @@
             <div class="sidebar-header">
                 <div class="logo">
                     <div class="logo-icon">
-                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
+                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo"
+                            onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
                     </div>
                     <div class="logo-text">PLS<span>NSH</span></div>
                 </div>
                 <div class="school-badge">Placido L. Señor National High School</div>
             </div>
 
-            <div class="teacher-profile">
-                <div class="teacher-avatar">
-                    <div class="avatar-initial" id="teacherInitial">T</div>
-                    <div class="online-dot"></div>
-                </div>
-                <div class="teacher-name" id="teacherName">Teacher</div>
-                <div class="teacher-role"><i class="fas fa-chalkboard-user"></i> Teacher</div>
-            </div>
-
             <nav class="nav-menu">
                 <div class="nav-section">
                     <div class="nav-section-title">MAIN MENU</div>
                     <ul class="nav-items">
-                        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
-                        <li><a href="attendance-face.html"><i class="fas fa-camera"></i> <span>Face Attendance</span></a></li>
-                        <li><a href="attendance-qr.html"><i class="fas fa-qrcode"></i> <span>Student QR Scanner</span></a></li>
+                        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a>
+                        </li>
+                        <li><a href="announcements.html"><i class="fas fa-bullhorn"></i> <span>Announcements</span></a>
+                        </li>
+                        <li><a href="attendance-face.html"><i class="fas fa-camera"></i> <span>Face
+                                    Attendance</span></a>
+                        </li>
+                        <li><a href="attendance-qr.html"><i class="fas fa-qrcode"></i> <span>Student QR
+                                    Scanner</span></a>
+                        </li>
                         <li><a href="classes.html"><i class="fas fa-users"></i> <span>My Classes</span></a></li>
-                        <li><a href="class-program.html"><i class="fas fa-calendar-alt"></i> <span>Class Program</span></a></li>
+                        <li><a href="class-program.html"><i class="fas fa-calendar-alt"></i> <span>Class
+                                    Program</span></a></li>
                         <li><a href="teacher-load.html"><i class="fas fa-clock"></i> <span>Teacher Load</span></a></li>
-                        <li><a href="assessments.html"><i class="fas fa-clipboard-list"></i> <span>Assessments</span></a></li>
-                        <li><a href="grades.html" class="active"><i class="fas fa-star"></i> <span>Grades</span></a></li>
+                        <li><a href="assessments.html"><i class="fas fa-clipboard-list"></i>
+                                <span>Assessments</span></a></li>
+                        <li><a href="grades.html" class="active"><i class="fas fa-star"></i> <span>Grades</span></a>
+                        </li>
                     </ul>
                 </div>
 
@@ -54,10 +59,25 @@
                     <div class="nav-section-title">ACCOUNT</div>
                     <ul class="nav-items">
                         <li><a href="profile.html"><i class="fas fa-user"></i> <span>Profile</span></a></li>
-                        <li><a href="../auth/login.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+                        <li><a href="../auth/login.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i>
+                                <span>Logout</span></a></li>
                     </ul>
                 </div>
             </nav>
+
+            <!-- Pinned Sidebar Footer -->
+            <div class="sidebar-footer">
+                <div class="teacher-profile">
+                    <div class="teacher-avatar">
+                        <div class="avatar-initial" id="teacherInitial">RQ</div>
+                        <div class="online-dot"></div>
+                    </div>
+                    <div class="teacher-info">
+                        <div class="teacher-name" id="teacherName">Ryan Quiroga</div>
+                        <div class="teacher-role"><i class="fas fa-chalkboard-user"></i> Teacher</div>
+                    </div>
+                </div>
+            </div>
         </aside>
 
         <!-- ===== MAIN CONTENT ===== -->
@@ -65,8 +85,8 @@
             <!-- Page Header -->
             <div class="page-header">
                 <div>
-                    <h1>Grade Management</h1>
-                    <p>Record and manage student grades for your classes</p>
+                    <h1>Grade Management & Auto-Calculation</h1>
+                    <p>Input student scores with real-time DepEd grade computation, transmutation, and analytics</p>
                 </div>
                 <div class="date-badge">
                     <i class="fas fa-calendar-alt"></i> Loading...
@@ -117,95 +137,247 @@
 
             <!-- Filter Card -->
             <div class="filter-card">
-                <h3><i class="fas fa-filter"></i> Select Class and Subject</h3>
+                <h3><i class="fas fa-filter"></i> Select Class, Subject & Grading Quarter</h3>
                 <form id="filterForm" class="filter-form">
                     <div class="filter-grid">
                         <div class="filter-group">
                             <label><i class="fas fa-layer-group"></i> Section / Class</label>
                             <select name="section_id" id="section_id" required>
-                                <option value="">Select Section</option>
+                                <option value="">Loading sections...</option>
                             </select>
                         </div>
 
                         <div class="filter-group">
                             <label><i class="fas fa-book"></i> Subject</label>
                             <select name="subject_id" id="subject_id" required>
-                                <option value="">Select Subject</option>
+                                <option value="">Select a section first</option>
                             </select>
                         </div>
 
                         <div class="filter-group">
                             <label><i class="fas fa-chart-line"></i> Quarter</label>
                             <select name="quarter" id="quarter" required>
-                                <option value="1st Quarter">1st Quarter</option>
-                                <option value="2nd Quarter">2nd Quarter</option>
-                                <option value="3rd Quarter">3rd Quarter</option>
-                                <option value="4th Quarter">4th Quarter</option>
+                                <option value="1">1st Quarter</option>
+                                <option value="2">2nd Quarter</option>
+                                <option value="3">3rd Quarter</option>
+                                <option value="4">4th Quarter</option>
                             </select>
                         </div>
 
                         <div class="filter-group">
-                            <button type="submit" class="btn-filter">
-                                <i class="fas fa-search"></i> Load Students
+                            <label><i class="fas fa-calendar-check"></i> School Year</label>
+                            <select name="school_year" id="school_year">
+                                <option value="2025-2026" selected>2025-2026</option>
+                                <option value="2024-2025">2024-2025</option>
+                                <option value="2026-2027">2026-2027</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group btn-col">
+                            <button type="submit" class="btn-filter" id="loadStudentsBtn">
+                                <i class="fas fa-search"></i> Load Class Roster
                             </button>
                         </div>
                     </div>
                 </form>
             </div>
 
-            <!-- Statistics Panel -->
-            <div class="stats-panel" id="statsPanel"></div>
+            <!-- Grading Workspace Area (Shows when class is loaded) -->
+            <div id="gradingWorkspace" style="display: none;">
 
-            <!-- Grade Entry Form -->
-            <div class="grade-card">
-                <div class="grade-header">
-                    <h3>
-                        <i class="fas fa-star"></i>
-                        Grade Entry
-                        <span class="quarter-badge" id="quarterBadge">1st Quarter</span>
-                    </h3>
-                    <div class="batch-actions">
-                        <button type="button" class="btn-batch btn-pass" onclick="window.setAllGrades(75)">
-                            <i class="fas fa-check-circle"></i> All Passing (75)
-                        </button>
-                        <button type="button" class="btn-batch btn-fail" onclick="window.setAllGrades(65)">
-                            <i class="fas fa-times-circle"></i> All Failing (65)
-                        </button>
+                <!-- Grading Mode Switcher & Tools -->
+                <div class="grading-control-card">
+                    <div class="mode-switcher-container">
+                        <div class="mode-tabs">
+                            <button type="button" class="mode-tab active" id="tabComponentMode"
+                                onclick="window.switchGradingMode('components')">
+                                <i class="fas fa-calculator"></i> Component Breakdown (WW + PT + QA)
+                            </button>
+                            <button type="button" class="mode-tab" id="tabQuarterMode"
+                                onclick="window.switchGradingMode('quarters')">
+                                <i class="fas fa-table-list"></i> 4-Quarter Final Rating (Q1 - Q4)
+                            </button>
+                        </div>
+
+                        <div class="auto-calc-indicator">
+                            <i class="fas fa-bolt text-warning"></i>
+                            <span>Real-Time Auto Calculation: <strong>ON</strong></span>
+                        </div>
+                    </div>
+
+                    <!-- Component Breakdown Toolbar (Visible in component mode) -->
+                    <div class="weights-toolbar" id="weightsToolbar">
+                        <div class="weights-presets">
+                            <span class="preset-label"><i class="fas fa-sliders-h"></i> DepEd Subject Weights:</span>
+                            <button type="button" class="btn-preset active" data-preset="languages"
+                                onclick="window.applyWeightPreset('languages')">
+                                Languages / AP / EsP (30-50-20)
+                            </button>
+                            <button type="button" class="btn-preset" data-preset="math-sci"
+                                onclick="window.applyWeightPreset('math-sci')">
+                                Math & Science (40-40-20)
+                            </button>
+                            <button type="button" class="btn-preset" data-preset="mapeh-tvl"
+                                onclick="window.applyWeightPreset('mapeh-tvl')">
+                                MAPEH / TVL / TLE (20-60-20)
+                            </button>
+                        </div>
+
+                        <div class="weights-inputs-row">
+                            <div class="weight-input-group">
+                                <label for="weightWW">Written Works (WW):</label>
+                                <div class="weight-input-wrapper">
+                                    <input type="number" id="weightWW" min="0" max="100" value="30"
+                                        oninput="window.updateCustomWeights()">
+                                    <span>%</span>
+                                </div>
+                            </div>
+                            <div class="weight-input-group">
+                                <label for="weightPT">Performance Tasks (PT):</label>
+                                <div class="weight-input-wrapper">
+                                    <input type="number" id="weightPT" min="0" max="100" value="50"
+                                        oninput="window.updateCustomWeights()">
+                                    <span>%</span>
+                                </div>
+                            </div>
+                            <div class="weight-input-group">
+                                <label for="weightQA">Quarterly Assessment (QA):</label>
+                                <div class="weight-input-wrapper">
+                                    <input type="number" id="weightQA" min="0" max="100" value="20"
+                                        oninput="window.updateCustomWeights()">
+                                    <span>%</span>
+                                </div>
+                            </div>
+
+                            <div class="transmutation-toggle-group">
+                                <label class="toggle-switch-container">
+                                    <input type="checkbox" id="transmuteCheckbox" checked
+                                        onchange="window.toggleTransmutation()">
+                                    <span class="toggle-slider"></span>
+                                    <span class="toggle-label">DepEd Transmutation Table (60% standard)</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="formula-banner">
+                            <i class="fas fa-info-circle"></i>
+                            <span id="formulaText">Formula: Quarterly Grade = (WW × 30%) + (PT × 50%) + (QA × 20%)
+                                &nbsp;•&nbsp; Automatically transmuted to standard 75-100 passing scale</span>
+                        </div>
                     </div>
                 </div>
 
-                <form id="gradesForm">
-                    <input type="hidden" name="section_id" id="formSectionId" value="">
-                    <input type="hidden" name="subject_id" id="formSubjectId" value="">
-                    <input type="hidden" name="quarter" id="formQuarter" value="">
+                <!-- Live Class Statistics Panel -->
+                <div class="stats-panel" id="statsPanel">
+                    <div class="stat-item">
+                        <div class="stat-value" id="statClassAverage">—</div>
+                        <div class="stat-label">Class Average</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="statHighest">—</div>
+                        <div class="stat-label">Highest Grade</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="statLowest">—</div>
+                        <div class="stat-label">Lowest Grade</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value text-success" id="statPassedCount">0</div>
+                        <div class="stat-label">Passed (≥75)</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value text-danger" id="statFailedCount">0</div>
+                        <div class="stat-label">Failed (&lt;75)</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value text-primary" id="statPassingRate">0%</div>
+                        <div class="stat-label">Passing Rate</div>
+                    </div>
+                </div>
 
-                    <div class="table-container">
-                        <table class="data-table grades-table">
-                            <thead>
-                                <tr>
-                                    <th>Student Information</th>
-                                    <th style="width: 120px;">Grade (0-100)</th>
-                                </tr>
-                            </thead>
-                            <tbody id="gradeTableBody">
-                                <tr>
-                                    <td colspan="2">
-                                        <div class="no-data">
-                                            <i class="fas fa-hand-pointer"></i>
-                                            <h3>Select a Class and Subject</h3>
-                                            <p>Please select a section, subject, and quarter to enter grades.</p>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                <!-- Grade Entry Card -->
+                <div class="grade-card">
+                    <div class="grade-header">
+                        <div class="grade-header-left">
+                            <h3 id="tableTitleHeader">
+                                <i class="fas fa-star"></i>
+                                Student Grade Sheet
+                                <span class="quarter-badge" id="quarterBadge">1st Quarter</span>
+                                <span class="section-badge" id="sectionBadge">Section</span>
+                            </h3>
+                            <p class="grade-header-sub" id="tableSubtitle">Enter component scores below. Final
+                                grades and remarks compute automatically in real time.</p>
+                        </div>
+
+                        <div class="batch-actions">
+                            <button type="button" class="btn-batch btn-pass" onclick="window.setQuickScores(75)"
+                                title="Fill empty scores with passing marks">
+                                <i class="fas fa-check-circle"></i> Quick Pass (75)
+                            </button>
+                            <button type="button" class="btn-batch btn-excellent"
+                                onclick="window.setQuickScores(88)" title="Fill with 88">
+                                <i class="fas fa-award"></i> Quick (88)
+                            </button>
+                            <button type="button" class="btn-batch btn-clear" onclick="window.clearAllScores()"
+                                title="Clear all input fields">
+                                <i class="fas fa-eraser"></i> Clear
+                            </button>
+                            <button type="button" class="btn-batch btn-export" onclick="window.exportGradesCSV()"
+                                title="Download CSV">
+                                <i class="fas fa-file-csv"></i> Export CSV
+                            </button>
+                        </div>
                     </div>
 
-                    <button type="submit" class="btn-save" id="saveGradesBtn">
-                        <i class="fas fa-save"></i> Save Grades
-                    </button>
-                </form>
+                    <!-- Keyboard Tip -->
+                    <div class="keyboard-nav-tip">
+                        <i class="fas fa-keyboard"></i>
+                        <span><strong>Tip:</strong> Press <kbd>Enter</kbd> or <kbd>↓</kbd> / <kbd>↑</kbd> to quickly
+                            navigate down/up between students, or <kbd>Tab</kbd> to move across component
+                            columns.</span>
+                    </div>
+
+                    <form id="gradesForm">
+                        <input type="hidden" name="section_id" id="formSectionId" value="">
+                        <input type="hidden" name="subject_id" id="formSubjectId" value="">
+                        <input type="hidden" name="quarter" id="formQuarter" value="1">
+                        <input type="hidden" name="school_year" id="formSchoolYear" value="2025-2026">
+
+                        <div class="table-container">
+                            <table class="data-table grades-table" id="gradesMainTable">
+                                <!-- Table Head injected dynamically based on Mode -->
+                                <thead id="gradeTableHead">
+                                    <!-- Injected by JS -->
+                                </thead>
+                                <tbody id="gradeTableBody">
+                                    <!-- Injected by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Footer Actions -->
+                        <div class="grade-footer-actions">
+                            <div class="save-status-info" id="saveStatusInfo">
+                                <i class="fas fa-info-circle"></i> All calculated scores ready to save to database.
+                            </div>
+                            <button type="submit" class="btn-save" id="saveGradesBtn">
+                                <i class="fas fa-save"></i> Save Grades to Supabase
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
+
+                <!-- Empty / Standby Placeholder (When no class loaded yet) -->
+                <div class="grade-card" id="emptyPlaceholderCard">
+                    <div class="no-data">
+                        <i class="fas fa-chart-line"></i>
+                        <h3>Select a Class, Subject & Quarter</h3>
+                        <p>Use the filter options above to load your student roster and start inputting grades with
+                            instant auto-calculation.</p>
+                    </div>
+                </div>
+
         </main>
     </div>
 
@@ -214,4 +386,5 @@
     <script type="module" src="js/grades.js"></script>
     <script src="../js/chatbot.js"></script>
 </body>
+
 </html>

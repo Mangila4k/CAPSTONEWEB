@@ -62,7 +62,8 @@ body {
 
 .sidebar-header {
     padding: 0 1.25rem 14px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    margin-bottom: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 .logo {
@@ -109,56 +110,10 @@ body {
     color: rgba(255, 255, 255, 0.8);
 }
 
-/* Teacher Profile */
+/* Teacher Profile in Sidebar Footer is styled by css/sidebar.css */
 .teacher-profile {
-    padding: 10px 1.25rem 14px;
-    text-align: center;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.teacher-avatar {
-    position: relative;
-    width: 60px;
-    height: 60px;
-    margin: 0 auto 8px;
-}
-
-.teacher-avatar .avatar-initial {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background: var(--accent);
-    color: var(--primary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.6rem;
-    font-weight: 700;
-}
-
-.online-dot {
-    position: absolute;
-    bottom: 2px;
-    right: 2px;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: var(--success);
-    border: 2px solid var(--primary);
-}
-
-.teacher-name {
-    font-weight: 600;
-    font-size: 1rem;
-}
-
-.teacher-role {
-    font-size: 0.8rem;
-    color: rgba(255, 255, 255, 0.5);
-}
-
-.teacher-role i {
-    margin-right: 4px;
+    margin: 0;
+    padding: 0;
 }
 
 /* Navigation */

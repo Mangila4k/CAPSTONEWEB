@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Students Management - HES, Hiraya Enrollment System</title>
+    <title>Students Management - PLSNSH, Placido L. Señor National High School</title>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- Google Fonts -->
@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/student.css">
     <link rel="stylesheet" href="../css/chatbot.css">
+    <link rel="stylesheet" href="../css/sidebar.css">
 </head>
 
 <body>
@@ -35,15 +36,6 @@
                 <div class="school-badge">Placido L. Señor National High School</div>
             </div>
 
-            <div class="admin-profile">
-                <div class="admin-avatar">
-                    <div class="avatar-initial" id="adminAvatar">A</div>
-                    <div class="online-dot"></div>
-                </div>
-                <div class="admin-name" id="adminName">Admin</div>
-                <div class="admin-role"><i class="fas fa-shield-alt"></i> Administrator</div>
-            </div>
-
             <div class="nav-menu">
                 <div class="nav-section">
                     <div class="nav-section-title">MAIN MENU</div>
@@ -62,7 +54,8 @@
                     <div class="nav-section-title">COMMUNICATION & MANAGEMENT</div>
                     <ul class="nav-items">
                         <li><a href="announcements.html"><i class="fas fa-bullhorn"></i> Announcements</a></li>
-                        <li><a href="guidance_violations.html"><i class="fas fa-scale-balanced"></i> Guidance & Violations</a></li>
+                        <li><a href="guidance_violations.html"><i class="fas fa-scale-balanced"></i> Guidance &
+                                Violations</a></li>
                         <li><a href="manage_accounts.html"><i class="fas fa-users-cog"></i> Accounts</a></li>
                         <li><a href="attendance.html"><i class="fas fa-calendar-check"></i> Attendance</a></li>
                         <li><a href="register_face.html"><i class="fas fa-camera"></i> Face Registration</a></li>
@@ -75,8 +68,23 @@
                     <div class="nav-section-title">ACCOUNT</div>
                     <ul class="nav-items">
                         <li><a href="profile.html"><i class="fas fa-user"></i> Profile</a></li>
-                        <li><a href="../auth/logout.html"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                        <li><a href="../auth/logout.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                        </li>
+
                     </ul>
+                </div>
+            </div>
+            <!-- Pinned Sidebar Footer -->
+            <div class="sidebar-footer">
+                <div class="admin-profile">
+                    <div class="admin-avatar">
+                        <div class="avatar-initial" id="adminAvatar">A</div>
+                        <div class="online-dot"></div>
+                    </div>
+                    <div class="admin-info">
+                        <div class="admin-name" id="adminName">Admin</div>
+                        <div class="admin-role"><i class="fas fa-shield-alt"></i> Administrator</div>
+                    </div>
                 </div>
             </div>
         </aside>
@@ -250,7 +258,8 @@
     <div class="modal-overlay" id="deleteReasonModal" style="display: none;">
         <div class="modal" style="max-width: 540px;">
             <div class="modal-header" style="background: #fef2f2; border-bottom: 1px solid #fecaca;">
-                <h3 style="color: #991b1b;"><i class="fas fa-user-xmark" style="color: #dc2626;"></i> Remove / Transfer Student Record</h3>
+                <h3 style="color: #991b1b;"><i class="fas fa-user-xmark" style="color: #dc2626;"></i> Remove / Transfer
+                    Student Record</h3>
                 <button class="modal-close" id="closeDeleteModal" type="button">
                     <i class="fas fa-times"></i>
                 </button>
@@ -258,11 +267,16 @@
             <form id="deleteStudentForm">
                 <div class="modal-body" style="padding: 22px;">
                     <!-- Student Summary Card -->
-                    <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 14px 16px; margin-bottom: 18px; display: flex; align-items: center; gap: 14px;">
-                        <div id="delStudentAvatar" style="width: 44px; height: 44px; border-radius: 50%; background: #1B2A4A; color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; flex-shrink: 0;">S</div>
+                    <div
+                        style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 14px 16px; margin-bottom: 18px; display: flex; align-items: center; gap: 14px;">
+                        <div id="delStudentAvatar"
+                            style="width: 44px; height: 44px; border-radius: 50%; background: #1B2A4A; color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; flex-shrink: 0;">
+                            S</div>
                         <div style="flex: 1; min-width: 0;">
-                            <div id="delStudentName" style="font-weight: 700; color: #0f172a; font-size: 15px;">Student Name</div>
-                            <div id="delStudentMeta" style="font-size: 12px; color: #64748b; margin-top: 2px;">LRN: — • Grade 11</div>
+                            <div id="delStudentName" style="font-weight: 700; color: #0f172a; font-size: 15px;">Student
+                                Name</div>
+                            <div id="delStudentMeta" style="font-size: 12px; color: #64748b; margin-top: 2px;">LRN: — •
+                                Grade 11</div>
                         </div>
                         <span id="delStudentStatus" class="badge badge-active">Active</span>
                     </div>
@@ -271,15 +285,22 @@
                     <input type="hidden" id="deleteStudentUserId">
 
                     <div style="margin-bottom: 16px;">
-                        <label for="deleteReasonCategory" style="display: block; font-size: 13px; font-weight: 700; color: #1e293b; margin-bottom: 6px;">
+                        <label for="deleteReasonCategory"
+                            style="display: block; font-size: 13px; font-weight: 700; color: #1e293b; margin-bottom: 6px;">
                             Reason for Removal / Transfer <span style="color: #dc2626;">*</span>
                         </label>
-                        <select id="deleteReasonCategory" style="width: 100%; box-sizing: border-box; padding: 10px 14px; border-radius: 8px; border: 1.5px solid #cbd5e1; font-size: 13.5px; background: #ffffff; color: #1e293b; font-weight: 600;" required>
-                            <option value="Transferred to Another School">🏫 Transferred to Another School (Transferred Out)</option>
-                            <option value="Dropped Out / Discontinued Studies">🚪 Dropped Out / Discontinued Studies</option>
+                        <select id="deleteReasonCategory"
+                            style="width: 100%; box-sizing: border-box; padding: 10px 14px; border-radius: 8px; border: 1.5px solid #cbd5e1; font-size: 13.5px; background: #ffffff; color: #1e293b; font-weight: 600;"
+                            required>
+                            <option value="Transferred to Another School">🏫 Transferred to Another School (Transferred
+                                Out)</option>
+                            <option value="Dropped Out / Discontinued Studies">🚪 Dropped Out / Discontinued Studies
+                            </option>
                             <option value="Withdrawn by Parent / Guardian">📝 Withdrawn by Parent / Guardian</option>
-                            <option value="Disciplinary Dismissal / Expelled">⚖️ Disciplinary Dismissal / Expelled</option>
-                            <option value="Graduated / Completed Academic Level">🎓 Graduated / Completed Academic Level</option>
+                            <option value="Disciplinary Dismissal / Expelled">⚖️ Disciplinary Dismissal / Expelled
+                            </option>
+                            <option value="Graduated / Completed Academic Level">🎓 Graduated / Completed Academic Level
+                            </option>
                             <option value="Duplicate or Erroneous Entry">⚠️ Duplicate / Erroneous Record</option>
                             <option value="Other Reason">❓ Other Reason (Specify below)</option>
                         </select>
@@ -287,60 +308,82 @@
 
                     <!-- Destination School Field (Shown for Transferred) -->
                     <div id="transferDetailsGroup" style="margin-bottom: 16px;">
-                        <label for="destinationSchool" style="display: block; font-size: 13px; font-weight: 700; color: #1e293b; margin-bottom: 6px;">
+                        <label for="destinationSchool"
+                            style="display: block; font-size: 13px; font-weight: 700; color: #1e293b; margin-bottom: 6px;">
                             Destination School / Institution <span style="color: #dc2626;">*</span>
                         </label>
-                        <input type="text" id="destinationSchool" placeholder="e.g. Cebu City National Science High School, Cebu" style="width: 100%; box-sizing: border-box; padding: 10px 14px; border-radius: 8px; border: 1.5px solid #cbd5e1; font-size: 13.5px; background: #ffffff; color: #1e293b;" required>
-                        <div style="font-size: 11.5px; color: #64748b; margin-top: 4px;">Will be formally recorded in the Transferees registry for DepEd Form 137 / SF10 forwarding.</div>
+                        <input type="text" id="destinationSchool"
+                            placeholder="e.g. Cebu City National Science High School, Cebu"
+                            style="width: 100%; box-sizing: border-box; padding: 10px 14px; border-radius: 8px; border: 1.5px solid #cbd5e1; font-size: 13.5px; background: #ffffff; color: #1e293b;"
+                            required>
+                        <div style="font-size: 11.5px; color: #64748b; margin-top: 4px;">Will be formally recorded in
+                            the Transferees registry for DepEd Form 137 / SF10 forwarding.</div>
                     </div>
 
                     <div style="margin-bottom: 16px;">
-                        <label for="effectiveDate" style="display: block; font-size: 13px; font-weight: 700; color: #1e293b; margin-bottom: 6px;">
+                        <label for="effectiveDate"
+                            style="display: block; font-size: 13px; font-weight: 700; color: #1e293b; margin-bottom: 6px;">
                             Effective Date <span style="color: #dc2626;">*</span>
                         </label>
-                        <input type="date" id="effectiveDate" style="width: 100%; box-sizing: border-box; padding: 10px 14px; border-radius: 8px; border: 1.5px solid #cbd5e1; font-size: 13.5px; background: #ffffff; color: #1e293b;" required>
+                        <input type="date" id="effectiveDate"
+                            style="width: 100%; box-sizing: border-box; padding: 10px 14px; border-radius: 8px; border: 1.5px solid #cbd5e1; font-size: 13.5px; background: #ffffff; color: #1e293b;"
+                            required>
                     </div>
 
                     <div style="margin-bottom: 16px;">
-                        <label for="deleteRemarks" style="display: block; font-size: 13px; font-weight: 700; color: #1e293b; margin-bottom: 6px;">
+                        <label for="deleteRemarks"
+                            style="display: block; font-size: 13px; font-weight: 700; color: #1e293b; margin-bottom: 6px;">
                             Administrative Notes / Justification Remarks
                         </label>
-                        <textarea id="deleteRemarks" rows="3" placeholder="Provide additional details, clearance status, or documentation remarks..." style="width: 100%; box-sizing: border-box; padding: 10px 14px; border-radius: 8px; border: 1.5px solid #cbd5e1; font-size: 13.5px; background: #ffffff; color: #1e293b; resize: vertical;"></textarea>
+                        <textarea id="deleteRemarks" rows="3"
+                            placeholder="Provide additional details, clearance status, or documentation remarks..."
+                            style="width: 100%; box-sizing: border-box; padding: 10px 14px; border-radius: 8px; border: 1.5px solid #cbd5e1; font-size: 13.5px; background: #ffffff; color: #1e293b; resize: vertical;"></textarea>
                     </div>
 
                     <div style="margin-bottom: 20px;">
-                        <label style="display: block; font-size: 13px; font-weight: 700; color: #1e293b; margin-bottom: 6px;">
+                        <label
+                            style="display: block; font-size: 13px; font-weight: 700; color: #1e293b; margin-bottom: 6px;">
                             Action Mode
                         </label>
-                        <div style="display: flex; flex-direction: column; gap: 8px; background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px; border-radius: 8px;">
-                            <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; font-size: 13px; color: #1e293b;">
+                        <div
+                            style="display: flex; flex-direction: column; gap: 8px; background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px; border-radius: 8px;">
+                            <label
+                                style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; font-size: 13px; color: #1e293b;">
                                 <input type="radio" name="removalMode" value="archive" checked style="margin-top: 2px;">
                                 <div>
                                     <strong>Mark as Inactive / Transferred Out (Recommended)</strong>
-                                    <div style="font-size: 11.5px; color: #64748b;">Preserves academic history and grades while removing student from active class rosters.</div>
+                                    <div style="font-size: 11.5px; color: #64748b;">Preserves academic history and
+                                        grades while removing student from active class rosters.</div>
                                 </div>
                             </label>
-                            <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; font-size: 13px; color: #dc2626;">
+                            <label
+                                style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; font-size: 13px; color: #dc2626;">
                                 <input type="radio" name="removalMode" value="permanent" style="margin-top: 2px;">
                                 <div>
                                     <strong>Permanently Delete Record</strong>
-                                    <div style="font-size: 11.5px; color: #ef4444;">Completely purges the student and user account from the database. Cannot be undone.</div>
+                                    <div style="font-size: 11.5px; color: #ef4444;">Completely purges the student and
+                                        user account from the database. Cannot be undone.</div>
                                 </div>
                             </label>
                         </div>
                     </div>
 
-                    <div style="background: #fffbeb; border: 1px solid #fef3c7; border-left: 4px solid #f59e0b; padding: 10px 14px; border-radius: 6px; font-size: 12px; color: #92400e; display: flex; align-items: flex-start; gap: 8px;">
+                    <div
+                        style="background: #fffbeb; border: 1px solid #fef3c7; border-left: 4px solid #f59e0b; padding: 10px 14px; border-radius: 6px; font-size: 12px; color: #92400e; display: flex; align-items: flex-start; gap: 8px;">
                         <i class="fas fa-shield-alt" style="margin-top: 2px; color: #d97706;"></i>
-                        <span>This action will be formally recorded in the <strong>Audit & Transferee Registry</strong> with timestamp, administrator ID, and specified justification.</span>
+                        <span>This action will be formally recorded in the <strong>Audit & Transferee Registry</strong>
+                            with timestamp, administrator ID, and specified justification.</span>
                     </div>
                 </div>
 
-                <div class="modal-footer" style="padding: 16px 22px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 10px;">
-                    <button type="button" class="btn-refresh" id="cancelDeleteBtn" style="border: 1.5px solid #cbd5e1; background: #fff; color: #475569; padding: 9px 18px; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                <div class="modal-footer"
+                    style="padding: 16px 22px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 10px;">
+                    <button type="button" class="btn-refresh" id="cancelDeleteBtn"
+                        style="border: 1.5px solid #cbd5e1; background: #fff; color: #475569; padding: 9px 18px; border-radius: 8px; font-weight: 600; cursor: pointer;">
                         Cancel
                     </button>
-                    <button type="submit" id="confirmDeleteSubmitBtn" style="background: #dc2626; color: #ffffff; border: none; padding: 9px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 2px 6px rgba(220, 38, 38, 0.3);">
+                    <button type="submit" id="confirmDeleteSubmitBtn"
+                        style="background: #dc2626; color: #ffffff; border: none; padding: 9px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 2px 6px rgba(220, 38, 38, 0.3);">
                         <i class="fas fa-trash-alt"></i> Confirm Removal
                     </button>
                 </div>

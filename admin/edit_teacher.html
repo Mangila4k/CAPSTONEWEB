@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Teacher - HES, Hiraya Enrollment System</title>
+    <title>Edit Teacher - PLSNSH, Placido L. Señor National High School</title>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- Google Fonts -->
@@ -12,6 +12,7 @@
     <link rel="stylesheet" href=" css/base.css">
     <link rel="stylesheet" href=" css/edit_teacher.css">
     <link rel="stylesheet" href="../css/chatbot.css">
+    <link rel="stylesheet" href="../css/sidebar.css">
 </head>
 <body>
     <!-- Mobile Menu Toggle -->
@@ -29,15 +30,6 @@
                 <div class="logo-text">PLS<span>NSH</span></div>
             </div>
             <div class="school-badge">Placido L. Señor National High School</div>
-        </div>
-
-        <div class="admin-profile">
-            <div class="admin-avatar">
-                <div class="avatar-initial" id="adminAvatar">A</div>
-                <div class="online-dot"></div>
-            </div>
-            <div class="admin-name" id="adminName">Admin</div>
-            <div class="admin-role"><i class="fas fa-shield-alt"></i> Administrator</div>
         </div>
 
         <div class="nav-menu">
@@ -69,11 +61,25 @@
                 <div class="nav-section-title">ACCOUNT</div>
                 <ul class="nav-items">
                     <li><a href="profile.html"><i class="fas fa-user"></i> Profile</a></li>
-                    <li><a href="../auth/logout.html"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                        <li><a href="../auth/logout.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                    
                 </ul>
             </div>
         </div>
-    </aside>
+                <!-- Pinned Sidebar Footer -->
+            <div class="sidebar-footer">
+                <div class="admin-profile">
+                    <div class="admin-avatar">
+                        <div class="avatar-initial" id="adminAvatar">A</div>
+                        <div class="online-dot"></div>
+                    </div>
+                    <div class="admin-info">
+                        <div class="admin-name" id="adminName">Admin</div>
+                        <div class="admin-role"><i class="fas fa-shield-alt"></i> Administrator</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
 
     <!-- Main Content -->
     <main class="main-content">
@@ -102,7 +108,7 @@
                             <input type="text" 
                                    name="fullname" 
                                    id="fullname"
-                                   placeholder="e.g., Juan Dela Cruz" 
+                                   placeholder="Enter full name" 
                                    value=""
                                    required>
                         </div>
@@ -161,6 +167,50 @@
                                   placeholder="Complete address"></textarea>
                     </div>
 
+                    <!-- Class Advisory Assignment -->
+                    <div class="advisory-card" style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 20px 22px; margin: 10px 0 24px 0;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div style="width: 34px; height: 34px; border-radius: 8px; background: #e0e7ff; color: #4338ca; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+                                    <i class="fas fa-chalkboard-teacher"></i>
+                                </div>
+                                <div>
+                                    <h4 style="margin: 0; font-size: 14.5px; font-weight: 700; color: #1e293b;">Class Advisory Assignment</h4>
+                                    <p style="margin: 2px 0 0 0; font-size: 12px; color: #64748b;">Update the year level and section where this teacher serves as Class Adviser</p>
+                                </div>
+                            </div>
+                            <span style="background: #f1f5f9; color: #475569; font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 20px; border: 1px solid #cbd5e1;">Optional</span>
+                        </div>
+
+                        <div class="form-row" style="margin-bottom: 0;">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label class="form-label" for="advisoryGradeLevel">Advisory Year Level</label>
+                                <select name="advisory_grade_level" id="advisoryGradeLevel" style="width:100%; padding:10px 14px; border:1.5px solid #e2e8f0; border-radius:8px; font-size:14px; background:#fff;">
+                                    <option value="">-- No Advisory Class (Subject Teacher Only) --</option>
+                                    <option value="Grade 7">Grade 7 (Junior High School)</option>
+                                    <option value="Grade 8">Grade 8 (Junior High School)</option>
+                                    <option value="Grade 9">Grade 9 (Junior High School)</option>
+                                    <option value="Grade 10">Grade 10 (Junior High School)</option>
+                                    <option value="Grade 11">Grade 11 (Senior High School)</option>
+                                    <option value="Grade 12">Grade 12 (Senior High School)</option>
+                                </select>
+                                <div class="form-hint" style="font-size:12px; color:#64748b; margin-top:6px;">
+                                    <i class="fas fa-filter"></i> Filters the section list below
+                                </div>
+                            </div>
+
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label class="form-label" for="advisorySection">Advisory Section</label>
+                                <select name="advisory_section_id" id="advisorySection" disabled style="width:100%; padding:10px 14px; border:1.5px solid #e2e8f0; border-radius:8px; font-size:14px; background:#fff;">
+                                    <option value="">-- Select Year Level First --</option>
+                                </select>
+                                <div class="form-hint" id="advisorySectionHint" style="font-size:12px; color:#64748b; margin-top:6px;">
+                                    <i class="fas fa-info-circle"></i> Select year level to view sections
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Live Preview -->
                     <div class="preview-card">
                         <div class="preview-header">
@@ -177,6 +227,7 @@
                                 <div class="preview-meta" id="previewMeta">
                                     <span><i class="fas fa-id-card"></i> <span id="previewId">HES-TCH-000000</span></span>
                                     <span><i class="fas fa-book"></i> <span id="previewSpecialization">Not set</span></span>
+                                    <span><i class="fas fa-chalkboard-teacher"></i> <span id="previewAdvisory">No Advisory Class</span></span>
                                     <span><i class="fas fa-phone"></i> <span id="previewPhone">N/A</span></span>
                                 </div>
                             </div>

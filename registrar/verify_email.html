@@ -1,15 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verify Email - HES, Hiraya Enrollment System</title>
+    <title>Verify Email - PLSNSH, Placido L. Señor National High School</title>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/chatbot.css">
-    
+
     <style>
         /* ===== VERIFY EMAIL CSS - NAVY BLUE ===== */
         :root {
@@ -68,6 +69,7 @@
                 opacity: 0;
                 transform: translateY(-20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -114,6 +116,7 @@
                 opacity: 0;
                 transform: translateY(-10px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -351,6 +354,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="logo">
@@ -358,30 +362,31 @@
         </div>
         <h2>Verify Your Email</h2>
         <div class="subtitle">Please enter the verification code sent to your email</div>
-        
+
         <div class="role-badge" id="roleBadge">
             <i class="fas fa-user"></i> <span id="userRole">User</span>
         </div>
-        
+
         <div class="email-info">
             <i class="fas fa-envelope"></i> Code sent to: <strong id="userEmail">user@example.com</strong>
         </div>
-        
+
         <!-- Alert Container -->
         <div id="alertContainer"></div>
-        
+
         <form id="verifyForm">
-            <input type="text" name="code" class="code-input" id="codeInput" placeholder="000000" maxlength="6" pattern="[0-9]{6}" required autofocus>
+            <input type="text" name="code" class="code-input" id="codeInput" placeholder="000000" maxlength="6"
+                pattern="[0-9]{6}" required autofocus>
             <button type="submit" id="verifyBtn">Verify Email</button>
         </form>
-        
+
         <div class="resend-link" id="resendLink">
             <a href="#" id="resendBtn"><i class="fas fa-redo"></i> Resend Verification Code</a>
         </div>
         <div class="resend-timer" id="timerDisplay" style="display: none;">
             <i class="fas fa-clock"></i> You can resend code in <span id="countdown">60</span> seconds
         </div>
-        
+
         <div class="back-link">
             <a href="#" id="backLink"><i class="fas fa-arrow-left"></i> Back to Profile</a>
         </div>
@@ -392,7 +397,7 @@
          * No hardcoded data - all data comes from PHP via window.verifyData
          */
 
-        (function() {
+        (function () {
             'use strict';
 
             console.log('📧 Verify Email page ready');
@@ -466,12 +471,12 @@
 
             if (codeInput) {
                 // Only allow numbers
-                codeInput.addEventListener('input', function(e) {
+                codeInput.addEventListener('input', function (e) {
                     this.value = this.value.replace(/[^0-9]/g, '').slice(0, 6);
                 });
 
                 // Auto-submit when 6 digits entered
-                codeInput.addEventListener('input', function(e) {
+                codeInput.addEventListener('input', function (e) {
                     if (this.value.length === 6) {
                         // Simulate form submission
                         if (verifyForm) {
@@ -491,7 +496,7 @@
             // ============================================
 
             if (verifyForm) {
-                verifyForm.addEventListener('submit', function(e) {
+                verifyForm.addEventListener('submit', function (e) {
                     e.preventDefault();
 
                     const code = codeInput ? codeInput.value.trim() : '';
@@ -513,14 +518,14 @@
                         // For demo, we'll check if code is "123456" (demo only)
                         if (code === '123456') {
                             showAlert('✅ Email verified successfully! Redirecting...', 'success');
-                            
+
                             // Redirect after delay
                             setTimeout(() => {
                                 window.location.href = data.back_url || '../auth/login.html';
                             }, 2000);
                         } else {
                             showAlert('❌ Invalid verification code. Please try again.', 'error');
-                            
+
                             if (verifyBtn) {
                                 verifyBtn.disabled = false;
                                 verifyBtn.innerHTML = 'Verify Email';
@@ -535,7 +540,7 @@
             // ============================================
 
             if (resendBtn) {
-                resendBtn.addEventListener('click', function(e) {
+                resendBtn.addEventListener('click', function (e) {
                     e.preventDefault();
 
                     // Check if cooldown is active
@@ -545,7 +550,7 @@
 
                     // Simulate resend request
                     showAlert('📧 A new verification code has been sent to your email.', 'success');
-                    
+
                     // Start cooldown
                     startCooldown(60);
                     sessionStorage.setItem('lastResendTime', Date.now().toString());
@@ -570,28 +575,28 @@
 
             function startCooldown(seconds) {
                 canResend = false;
-                
+
                 if (resendBtn) {
                     resendBtn.classList.add('disabled');
                 }
-                
+
                 if (timerDisplay) {
                     timerDisplay.style.display = 'flex';
                 }
-                
+
                 let remaining = seconds;
                 if (countdownSpan) {
                     countdownSpan.textContent = remaining;
                 }
-                
+
                 if (timerInterval) clearInterval(timerInterval);
-                
-                timerInterval = setInterval(function() {
+
+                timerInterval = setInterval(function () {
                     remaining--;
                     if (countdownSpan) {
                         countdownSpan.textContent = remaining;
                     }
-                    
+
                     if (remaining <= 0) {
                         clearInterval(timerInterval);
                         canResend = true;
@@ -634,7 +639,7 @@
             // KEYBOARD SHORTCUTS
             // ============================================
 
-            document.addEventListener('keydown', function(e) {
+            document.addEventListener('keydown', function (e) {
                 // Enter key on code input submits form
                 if (e.key === 'Enter' && codeInput && document.activeElement === codeInput) {
                     e.preventDefault();
@@ -657,4 +662,5 @@
     </script>
     <script src="../js/chatbot.js"></script>
 </body>
+
 </html>

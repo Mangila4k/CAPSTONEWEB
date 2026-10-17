@@ -9,6 +9,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const fullnameInput = document.getElementById('fullname');
     const emailInput = document.getElementById('email');
     const specializationInput = document.getElementById('specialization');
+    const advisoryGradeLevelSelect = document.getElementById('advisoryGradeLevel');
+    const advisorySectionSelect = document.getElementById('advisorySection');
+    const advisorySectionHint = document.getElementById('advisorySectionHint');
     const passwordInput = document.getElementById('password');
     const confirmInput = document.getElementById('confirm_password');
     const strengthBar = document.getElementById('strengthBar');
@@ -17,9 +20,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const previewName = document.getElementById('previewName');
     const previewEmail = document.getElementById('previewEmail');
     const previewSpecialization = document.getElementById('previewSpecialization');
+    const previewAdvisoryText = document.getElementById('previewAdvisoryText');
     const previewInitial = document.getElementById('previewInitial');
     const teacherForm = document.getElementById('teacherForm');
     const alertContainer = document.getElementById('alertContainer');
+
+    // State for sections
+    let allSections = [];
 
     // ===== FUNCTIONS =====
 
@@ -31,11 +38,91 @@ document.addEventListener('DOMContentLoaded', function() {
         const initial = fullname.charAt(0).toUpperCase() || 'T';
         if (previewInitial) previewInitial.textContent = initial;
 
-        const email = (emailInput?.value.trim()) || 'teacher@hiraya.edu.ph';
+        const email = (emailInput?.value.trim()) || 'teacher@plshs.edu.ph';
         if (previewEmail) previewEmail.innerHTML = `<i class="fas fa-envelope"></i> ${email}`;
 
         const specialization = (specializationInput?.value.trim()) || 'Specialization not set';
         if (previewSpecialization) previewSpecialization.innerHTML = `<i class="fas fa-book"></i> ${specialization}`;
+
+        // Advisory Assignment in Preview
+        if (previewAdvisoryText) {
+            const secId = advisorySectionSelect?.value;
+            const gradeVal = advisoryGradeLevelSelect?.value;
+
+            if (secId) {
+                const foundSec = allSections.find(s => s.id === secId);
+                const secName = foundSec ? `${foundSec.grade_level || gradeVal} - ${foundSec.name}` : 'Section Assigned';
+                previewAdvisoryText.innerHTML = `<strong>Class Adviser:</strong> ${secName}`;
+            } else if (gradeVal) {
+                previewAdvisoryText.innerHTML = `<strong>Class Adviser:</strong> ${gradeVal} (Section pending)`;
+            } else {
+                previewAdvisoryText.innerHTML = `Class Adviser: None (Subject Teacher)`;
+            }
+        }
+    }
+
+    // Load sections from Supabase
+    async function loadSections() {
+        try {
+            const { data, error } = await supabase
+                .from('sections')
+                .select('id, name, grade_level, strand, adviser_id, adviser_name')
+                .order('grade_level', { ascending: true })
+                .order('name', { ascending: true });
+
+            if (error) throw error;
+            allSections = data || [];
+        } catch (err) {
+            console.warn('Could not load sections for advisory assignment:', err);
+        }
+    }
+
+    // Populate sections dropdown based on selected grade level
+    function updateSectionOptions() {
+        if (!advisorySectionSelect) return;
+
+        const selectedGrade = (advisoryGradeLevelSelect?.value || '').trim();
+
+        if (!selectedGrade) {
+            advisorySectionSelect.innerHTML = '<option value="">-- Select Year Level First --</option>';
+            advisorySectionSelect.disabled = true;
+            if (advisorySectionHint) {
+                advisorySectionHint.innerHTML = '<i class="fas fa-info-circle"></i> Select a year level to view sections';
+            }
+            updatePreview();
+            return;
+        }
+
+        // Filter sections matching the grade level
+        const filtered = allSections.filter(sec => {
+            const secGrade = (sec.grade_level || '').trim();
+            // Match "Grade 7" with "Grade 7" or "7"
+            return secGrade.toLowerCase() === selectedGrade.toLowerCase() ||
+                   secGrade.replace(/\D/g, '') === selectedGrade.replace(/\D/g, '');
+        });
+
+        if (filtered.length === 0) {
+            advisorySectionSelect.innerHTML = `<option value="">-- No sections found in ${selectedGrade} --</option>`;
+            advisorySectionSelect.disabled = true;
+            if (advisorySectionHint) {
+                advisorySectionHint.innerHTML = `<i class="fas fa-exclamation-circle" style="color: #f59e0b;"></i> No active sections found under ${selectedGrade}`;
+            }
+        } else {
+            let optionsHtml = `<option value="">-- Select Section in ${selectedGrade} (Optional) --</option>`;
+            filtered.forEach(sec => {
+                const strandText = sec.strand ? ` [${sec.strand}]` : '';
+                const adviserText = sec.adviser_name ? ` (Current Adviser: ${sec.adviser_name})` : ' (Vacant)';
+                optionsHtml += `<option value="${sec.id}">${sec.name}${strandText}${adviserText}</option>`;
+            });
+
+            advisorySectionSelect.innerHTML = optionsHtml;
+            advisorySectionSelect.disabled = false;
+            if (advisorySectionHint) {
+                advisorySectionHint.innerHTML = `<i class="fas fa-check-circle" style="color: #10b981;"></i> Showing ${filtered.length} section${filtered.length > 1 ? 's' : ''} in ${selectedGrade}`;
+            }
+        }
+
+        updatePreview();
     }
 
     // Toggle password visibility
@@ -146,6 +233,18 @@ document.addEventListener('DOMContentLoaded', function() {
     if (emailInput) emailInput.addEventListener('input', updatePreview);
     if (specializationInput) specializationInput.addEventListener('input', updatePreview);
 
+    if (advisoryGradeLevelSelect) {
+        advisoryGradeLevelSelect.addEventListener('change', function() {
+            updateSectionOptions();
+        });
+    }
+
+    if (advisorySectionSelect) {
+        advisorySectionSelect.addEventListener('change', function() {
+            updatePreview();
+        });
+    }
+
     if (passwordInput) {
         passwordInput.addEventListener('input', function() {
             checkPasswordStrength();
@@ -169,6 +268,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const confirm = confirmInput.value;
             const phone = document.getElementById('phone')?.value.trim() || '';
             const specialization = specializationInput?.value.trim() || 'General';
+            const selectedSectionId = advisorySectionSelect?.value || null;
+            const selectedGradeLevel = advisoryGradeLevelSelect?.value || null;
 
             let errors = [];
 
@@ -237,7 +338,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const employeeId = `HES-TCH-${randomNum}`;
 
                 // Insert into teachers table
-                const { error: teacherErr } = await supabase
+                const { data: newTeacher, error: teacherErr } = await supabase
                     .from('teachers')
                     .insert([{
                         user_id: newUser.id,
@@ -245,11 +346,35 @@ document.addEventListener('DOMContentLoaded', function() {
                         specialization: specialization,
                         phone: phone,
                         address: null
-                    }]);
+                    }])
+                    .select()
+                    .single();
 
                 if (teacherErr) throw teacherErr;
 
-                showAlert(`✅ Teacher "${fullname}" added successfully!<br><strong>Assigned ID:</strong> ${employeeId}<br>Redirecting to Teachers list...`, 'success');
+                let advisoryInfoMsg = '';
+
+                // If an advisory section was selected, assign this teacher as official adviser
+                if (selectedSectionId) {
+                    const teacherIdentifier = newTeacher?.id || newUser.id;
+                    const { error: secErr } = await supabase
+                        .from('sections')
+                        .update({
+                            adviser_id: teacherIdentifier,
+                            adviser_name: fullname
+                        })
+                        .eq('id', selectedSectionId);
+
+                    if (secErr) {
+                        console.warn('Advisory section assignment error:', secErr);
+                    } else {
+                        const assignedSec = allSections.find(s => s.id === selectedSectionId);
+                        const secLabel = assignedSec ? `${assignedSec.grade_level || selectedGradeLevel} - ${assignedSec.name}` : selectedSectionId;
+                        advisoryInfoMsg = `<br><strong>Advisory Class:</strong> ${secLabel}`;
+                    }
+                }
+
+                showAlert(`✅ Teacher "${fullname}" added successfully!<br><strong>Assigned ID:</strong> ${employeeId}${advisoryInfoMsg}<br>Redirecting to Teachers list...`, 'success');
 
                 setTimeout(() => {
                     window.location.href = 'teachers.html';
@@ -266,5 +391,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    updatePreview();
+    // Initialize
+    (async function init() {
+        await loadSections();
+        updatePreview();
+    })();
 });

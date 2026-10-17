@@ -26,7 +26,6 @@ import { supabase } from '../../supabase/config.js';
     const totalEnrollmentsEl = document.getElementById('totalEnrollments');
     const enrolledCountEl = document.getElementById('enrolledCount');
     const monthlyCountEl = document.getElementById('monthlyCount');
-    const pendingBadge = document.getElementById('pendingEnrollmentsBadge');
 
     // Report elements
     const reportForm = document.getElementById('reportForm');
@@ -156,15 +155,6 @@ import { supabase } from '../../supabase/config.js';
             if (totalEnrollmentsEl) totalEnrollmentsEl.textContent = totalEnCount || 0;
             if (enrolledCountEl) enrolledCountEl.textContent = approvedCount || 0;
             if (monthlyCountEl) monthlyCountEl.textContent = monthlyEnCount || 0;
-
-            if (pendingBadge) {
-                if (pendingCount && pendingCount > 0) {
-                    pendingBadge.textContent = pendingCount;
-                    pendingBadge.style.display = 'inline-flex';
-                } else {
-                    pendingBadge.style.display = 'none';
-                }
-            }
         } catch(err) {
             console.warn('Error loading stats for reports:', err);
         }

@@ -1,17 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Section Details - Teacher Dashboard | HES</title>
+    <title>Section Details - Teacher Dashboard | PLSNSH, Placido L. Señor National High School</title>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- View Section CSS -->
     <link rel="stylesheet" href="css/view-section.css">
+    <link rel="stylesheet" href="../css/sidebar.css">
     <link rel="stylesheet" href="../css/chatbot.css">
 </head>
+
 <body>
     <div class="app-container">
         <!-- ===== SIDEBAR ===== -->
@@ -19,33 +22,33 @@
             <div class="sidebar-header">
                 <div class="logo">
                     <div class="logo-icon">
-                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
+                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo"
+                            onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
                     </div>
                     <div class="logo-text">PLS<span>NSH</span></div>
                 </div>
                 <div class="school-badge">Placido L. Señor National High School</div>
             </div>
 
-            <div class="teacher-profile">
-                <div class="teacher-avatar">
-                    <div class="avatar-initial" id="teacherInitial">T</div>
-                    <div class="online-dot"></div>
-                </div>
-                <div class="teacher-name" id="teacherName">Teacher</div>
-                <div class="teacher-role"><i class="fas fa-chalkboard-user"></i> Teacher</div>
-            </div>
-
             <nav class="nav-menu">
                 <div class="nav-section">
                     <div class="nav-section-title">MAIN MENU</div>
                     <ul class="nav-items">
-                        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
-                        <li><a href="attendance-face.html"><i class="fas fa-camera"></i> <span>Face Attendance</span></a></li>
-                        <li><a href="attendance-qr.html"><i class="fas fa-qrcode"></i> <span>Student QR Scanner</span></a></li>
-                        <li><a href="classes.html" class="active"><i class="fas fa-users"></i> <span>My Classes</span></a></li>
-                        <li><a href="class-program.html"><i class="fas fa-calendar-alt"></i> <span>Class Program</span></a></li>
+                        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a>
+                        </li>
+                        <li><a href="announcements.html"><i class="fas fa-bullhorn"></i> <span>Announcements</span></a>
+                        </li>
+                        <li><a href="attendance-face.html"><i class="fas fa-camera"></i> <span>Face
+                                    Attendance</span></a></li>
+                        <li><a href="attendance-qr.html"><i class="fas fa-qrcode"></i> <span>Student QR
+                                    Scanner</span></a></li>
+                        <li><a href="classes.html" class="active"><i class="fas fa-users"></i> <span>My
+                                    Classes</span></a></li>
+                        <li><a href="class-program.html"><i class="fas fa-calendar-alt"></i> <span>Class
+                                    Program</span></a></li>
                         <li><a href="teacher-load.html"><i class="fas fa-clock"></i> <span>Teacher Load</span></a></li>
-                        <li><a href="assessments.html"><i class="fas fa-clipboard-list"></i> <span>Assessments</span></a></li>
+                        <li><a href="assessments.html"><i class="fas fa-clipboard-list"></i>
+                                <span>Assessments</span></a></li>
                         <li><a href="grades.html"><i class="fas fa-star"></i> <span>Grades</span></a></li>
                     </ul>
                 </div>
@@ -54,10 +57,25 @@
                     <div class="nav-section-title">ACCOUNT</div>
                     <ul class="nav-items">
                         <li><a href="profile.html"><i class="fas fa-user"></i> <span>Profile</span></a></li>
-                        <li><a href="../auth/login.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+                        <li><a href="../auth/login.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i>
+                                <span>Logout</span></a></li>
                     </ul>
                 </div>
             </nav>
+
+            <!-- Pinned Sidebar Footer -->
+            <div class="sidebar-footer">
+                <div class="teacher-profile">
+                    <div class="teacher-avatar">
+                        <div class="avatar-initial" id="teacherInitial">RQ</div>
+                        <div class="online-dot"></div>
+                    </div>
+                    <div class="teacher-info">
+                        <div class="teacher-name" id="teacherName">Ryan Quiroga</div>
+                        <div class="teacher-role"><i class="fas fa-chalkboard-user"></i> Teacher</div>
+                    </div>
+                </div>
+            </div>
         </aside>
 
         <!-- ===== MAIN CONTENT ===== -->
@@ -69,7 +87,8 @@
                     <p>View information about <span id="sectionName">Loading...</span></p>
                 </div>
                 <div class="header-actions">
-                    <a href="assessments.html" class="back-btn" style="background: var(--primary); color: white; border: none; margin-right: 8px;">
+                    <a href="assessments.html" class="back-btn"
+                        style="background: var(--primary); color: white; border: none; margin-right: 8px;">
                         <i class="fas fa-clipboard-list"></i> Assessments & Classwork
                     </a>
                     <a href="classes.html" class="back-btn">
@@ -142,72 +161,95 @@
             </div>
 
             <!-- Section Tabs -->
-            <div class="section-tabs" style="display: flex; gap: 10px; margin: 20px 0 15px; border-bottom: 2px solid var(--gray-200); padding-bottom: 8px;">
-                <button class="tab-btn active" id="tabAttendanceBtn" style="padding: 10px 20px; font-weight: 600; border-radius: 8px; border: none; background: var(--primary); color: #fff; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+            <div class="section-tabs"
+                style="display: flex; gap: 10px; margin: 20px 0 15px; border-bottom: 2px solid var(--gray-200); padding-bottom: 8px;">
+                <button class="tab-btn active" id="tabAttendanceBtn"
+                    style="padding: 10px 20px; font-weight: 600; border-radius: 8px; border: none; background: var(--primary); color: #fff; cursor: pointer; display: flex; align-items: center; gap: 8px;">
                     <i class="fas fa-clipboard-check"></i> Section Attendance & Notifications
                 </button>
-                <button class="tab-btn" id="tabStudentsBtn" style="padding: 10px 20px; font-weight: 600; border-radius: 8px; border: 1px solid var(--gray-300); background: #fff; color: var(--gray-700); cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                <button class="tab-btn" id="tabStudentsBtn"
+                    style="padding: 10px 20px; font-weight: 600; border-radius: 8px; border: 1px solid var(--gray-300); background: #fff; color: var(--gray-700); cursor: pointer; display: flex; align-items: center; gap: 8px;">
                     <i class="fas fa-user-graduate"></i> Enrolled Students (<span id="tabStudentCount">0</span>)
                 </button>
-                <button class="tab-btn" id="tabScheduleBtn" style="padding: 10px 20px; font-weight: 600; border-radius: 8px; border: 1px solid var(--gray-300); background: #fff; color: var(--gray-700); cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                <button class="tab-btn" id="tabScheduleBtn"
+                    style="padding: 10px 20px; font-weight: 600; border-radius: 8px; border: 1px solid var(--gray-300); background: #fff; color: var(--gray-700); cursor: pointer; display: flex; align-items: center; gap: 8px;">
                     <i class="fas fa-calendar-alt"></i> Student Load
                 </button>
             </div>
 
             <!-- Attendance Tab Content -->
             <div id="sectionAttendancePanel" class="tab-panel active">
-                <div class="card attendance-manager-card" style="background: #fff; border-radius: var(--radius); border: 1px solid var(--gray-200); padding: 22px; margin-bottom: 25px; box-shadow: var(--shadow-sm);">
-                    <div class="attendance-manager-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 18px; border-bottom: 1px solid var(--gray-200); padding-bottom: 16px;">
+                <div class="card attendance-manager-card"
+                    style="background: #fff; border-radius: var(--radius); border: 1px solid var(--gray-200); padding: 22px; margin-bottom: 25px; box-shadow: var(--shadow-sm);">
+                    <div class="attendance-manager-header"
+                        style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 18px; border-bottom: 1px solid var(--gray-200); padding-bottom: 16px;">
                         <div>
-                            <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 10px;">
+                            <h3
+                                style="font-size: 1.25rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 10px;">
                                 <i class="fas fa-user-check text-primary"></i> Daily Student Attendance Manager
                             </h3>
                             <p style="color: var(--gray-500); font-size: 0.9rem; margin-top: 4px;">
-                                Only teachers can record student attendance. Saving attendance automatically dispatches notifications to students and parents.
+                                Only teachers can record student attendance. Saving attendance automatically dispatches
+                                notifications to students and parents.
                             </p>
                         </div>
-                        
+
                         <div class="attendance-date-picker-wrap" style="display: flex; align-items: center; gap: 10px;">
-                            <label for="sectionAttDate" style="font-weight: 600; font-size: 0.9rem; color: var(--gray-700);">Date:</label>
-                            <input type="date" id="sectionAttDate" class="form-control" style="padding: 8px 14px; border: 1px solid var(--gray-300); border-radius: 8px; font-size: 0.95rem; font-weight: 600; color: var(--gray-800); outline: none;">
-                            <span id="dateWeekdayBadge" class="badge" style="background: var(--gray-100); color: var(--gray-700); padding: 8px 12px; border-radius: 8px; font-weight: 600;">Today</span>
+                            <label for="sectionAttDate"
+                                style="font-weight: 600; font-size: 0.9rem; color: var(--gray-700);">Date:</label>
+                            <input type="date" id="sectionAttDate" class="form-control"
+                                style="padding: 8px 14px; border: 1px solid var(--gray-300); border-radius: 8px; font-size: 0.95rem; font-weight: 600; color: var(--gray-800); outline: none;">
+                            <span id="dateWeekdayBadge" class="badge"
+                                style="background: var(--gray-100); color: var(--gray-700); padding: 8px 12px; border-radius: 8px; font-weight: 600;">Today</span>
                         </div>
                     </div>
 
                     <!-- Weekend Notice Banner (Dynamic) -->
-                    <div id="weekendNoticeBanner" style="display: none; background: #fffbeb; border: 2px dashed #f59e0b; border-radius: 10px; padding: 18px 20px; margin-bottom: 20px; text-align: center;">
-                        <div style="font-size: 2.2rem; color: #d97706; margin-bottom: 6px;"><i class="fas fa-calendar-times"></i></div>
-                        <h4 style="color: #92400e; font-size: 1.15rem; margin-bottom: 4px;">Weekend Notice — No Classes on Saturday & Sunday</h4>
+                    <div id="weekendNoticeBanner"
+                        style="display: none; background: #fffbeb; border: 2px dashed #f59e0b; border-radius: 10px; padding: 18px 20px; margin-bottom: 20px; text-align: center;">
+                        <div style="font-size: 2.2rem; color: #d97706; margin-bottom: 6px;"><i
+                                class="fas fa-calendar-times"></i></div>
+                        <h4 style="color: #92400e; font-size: 1.15rem; margin-bottom: 4px;">Weekend Notice — No Classes
+                            on Saturday & Sunday</h4>
                         <p style="color: #b45309; font-size: 0.92rem; max-width: 600px; margin: 0 auto 8px;">
-                            School attendance cannot be recorded on weekends. No students can be marked as Present, Late, or Absent on Saturday or Sunday.
+                            School attendance cannot be recorded on weekends. No students can be marked as Present,
+                            Late, or Absent on Saturday or Sunday.
                         </p>
-                        <span style="display: inline-block; background: #fef3c7; color: #92400e; font-weight: 600; padding: 4px 14px; border-radius: 20px; font-size: 0.85rem;">
+                        <span
+                            style="display: inline-block; background: #fef3c7; color: #92400e; font-weight: 600; padding: 4px 14px; border-radius: 20px; font-size: 0.85rem;">
                             <i class="fas fa-info-circle"></i> Please select a weekday (Monday to Friday)
                         </span>
                     </div>
 
                     <!-- Summary KPI Counters & Actions -->
-                    <div class="att-controls-bar" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 18px;">
+                    <div class="att-controls-bar"
+                        style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 18px;">
                         <div class="att-pills" style="display: flex; gap: 10px; flex-wrap: wrap;">
-                            <span class="pill pill-present" style="background: #dcfce7; color: #15803d; padding: 6px 14px; border-radius: 20px; font-weight: 600; font-size: 0.88rem; display: flex; align-items: center; gap: 6px;">
+                            <span class="pill pill-present"
+                                style="background: #dcfce7; color: #15803d; padding: 6px 14px; border-radius: 20px; font-weight: 600; font-size: 0.88rem; display: flex; align-items: center; gap: 6px;">
                                 <i class="fas fa-check-circle"></i> Present: <strong id="countPresent">0</strong>
                             </span>
-                            <span class="pill pill-late" style="background: #fef3c7; color: #b45309; padding: 6px 14px; border-radius: 20px; font-weight: 600; font-size: 0.88rem; display: flex; align-items: center; gap: 6px;">
+                            <span class="pill pill-late"
+                                style="background: #fef3c7; color: #b45309; padding: 6px 14px; border-radius: 20px; font-weight: 600; font-size: 0.88rem; display: flex; align-items: center; gap: 6px;">
                                 <i class="fas fa-clock"></i> Late: <strong id="countLate">0</strong>
                             </span>
-                            <span class="pill pill-absent" style="background: #fee2e2; color: #b91c1c; padding: 6px 14px; border-radius: 20px; font-weight: 600; font-size: 0.88rem; display: flex; align-items: center; gap: 6px;">
+                            <span class="pill pill-absent"
+                                style="background: #fee2e2; color: #b91c1c; padding: 6px 14px; border-radius: 20px; font-weight: 600; font-size: 0.88rem; display: flex; align-items: center; gap: 6px;">
                                 <i class="fas fa-times-circle"></i> Absent: <strong id="countAbsent">0</strong>
                             </span>
-                            <span class="pill pill-excused" style="background: #e0f2fe; color: #0369a1; padding: 6px 14px; border-radius: 20px; font-weight: 600; font-size: 0.88rem; display: flex; align-items: center; gap: 6px;">
+                            <span class="pill pill-excused"
+                                style="background: #e0f2fe; color: #0369a1; padding: 6px 14px; border-radius: 20px; font-weight: 600; font-size: 0.88rem; display: flex; align-items: center; gap: 6px;">
                                 <i class="fas fa-file-medical"></i> Excused: <strong id="countExcused">0</strong>
                             </span>
                         </div>
 
                         <div class="att-actions-btns" style="display: flex; gap: 10px; flex-wrap: wrap;">
-                            <button id="markAllPresentBtn" type="button" class="btn" style="background: #f1f5f9; color: var(--gray-700); border: 1px solid var(--gray-300); padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                            <button id="markAllPresentBtn" type="button" class="btn"
+                                style="background: #f1f5f9; color: var(--gray-700); border: 1px solid var(--gray-300); padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 6px;">
                                 <i class="fas fa-check-double text-success"></i> Mark All Present
                             </button>
-                            <button id="saveSectionAttendanceBtn" type="button" class="btn" style="background: var(--primary); color: #fff; border: none; padding: 8px 20px; border-radius: 8px; font-weight: 700; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 10px rgba(11, 43, 74, 0.25);">
+                            <button id="saveSectionAttendanceBtn" type="button" class="btn"
+                                style="background: var(--primary); color: #fff; border: none; padding: 8px 20px; border-radius: 8px; font-weight: 700; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 10px rgba(11, 43, 74, 0.25);">
                                 <i class="fas fa-save"></i> Save & Notify Students
                             </button>
                         </div>
@@ -218,17 +260,26 @@
                         <table class="data-table" style="width: 100%; border-collapse: collapse;">
                             <thead>
                                 <tr style="background: var(--gray-100); text-align: left;">
-                                    <th style="padding: 12px 16px; border-bottom: 2px solid var(--gray-200); width: 30%;">Student</th>
-                                    <th style="padding: 12px 16px; border-bottom: 2px solid var(--gray-200); width: 30%;">Attendance Status</th>
-                                    <th style="padding: 12px 16px; border-bottom: 2px solid var(--gray-200); width: 15%;">Time In</th>
-                                    <th style="padding: 12px 16px; border-bottom: 2px solid var(--gray-200); width: 25%;">Remarks</th>
+                                    <th
+                                        style="padding: 12px 16px; border-bottom: 2px solid var(--gray-200); width: 30%;">
+                                        Student</th>
+                                    <th
+                                        style="padding: 12px 16px; border-bottom: 2px solid var(--gray-200); width: 30%;">
+                                        Attendance Status</th>
+                                    <th
+                                        style="padding: 12px 16px; border-bottom: 2px solid var(--gray-200); width: 15%;">
+                                        Time In</th>
+                                    <th
+                                        style="padding: 12px 16px; border-bottom: 2px solid var(--gray-200); width: 25%;">
+                                        Remarks</th>
                                 </tr>
                             </thead>
                             <tbody id="sectionAttendanceBody">
                                 <tr>
                                     <td colspan="4" style="text-align: center; padding: 30px;">
                                         <div class="no-data">
-                                            <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; color: var(--primary);"></i>
+                                            <i class="fas fa-spinner fa-spin"
+                                                style="font-size: 1.5rem; color: var(--primary);"></i>
                                             <p style="margin-top: 8px;">Loading section students...</p>
                                         </div>
                                     </td>
@@ -274,51 +325,68 @@
             <!-- Schedule Tab Panel -->
             <div id="sectionSchedulePanel" class="tab-panel" style="display: none;">
                 <!-- 1. Official Schedule Document Upload Card -->
-                <div class="card" style="margin-bottom: 24px; border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 22px; background: #fff; box-shadow: var(--shadow-sm);">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 14px; margin-bottom: 16px;">
+                <div class="card"
+                    style="margin-bottom: 24px; border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 22px; background: #fff; box-shadow: var(--shadow-sm);">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 14px; margin-bottom: 16px;">
                         <div>
-                            <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 8px;">
+                            <h3
+                                style="font-size: 1.2rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 8px;">
                                 <i class="fas fa-paper-plane text-primary"></i> Send Student Load Schedule
                             </h3>
                             <p style="color: var(--gray-500); font-size: 0.88rem; margin-top: 4px;">
-                                Send or upload your section's official student load schedule—often an image file (PNG, JPG) or PDF. Students can instantly view, download, and print this out.
+                                Send or upload your section's official student load schedule—often an image file (PNG,
+                                JPG) or PDF. Students can instantly view, download, and print this out.
                             </p>
                         </div>
                         <div id="scheduleDocStatusBadge">
-                            <span class="badge" style="background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 0.8rem; display: none;" id="docActiveBadge">
+                            <span class="badge"
+                                style="background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 0.8rem; display: none;"
+                                id="docActiveBadge">
                                 <i class="fas fa-check-circle"></i> Document Active
                             </span>
                         </div>
                     </div>
 
                     <!-- Uploaded Document Display (shown if file exists) -->
-                    <div id="uploadedScheduleBox" style="display: none; padding: 16px 20px; background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 10px; margin-bottom: 14px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+                    <div id="uploadedScheduleBox"
+                        style="display: none; padding: 16px 20px; background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 10px; margin-bottom: 14px;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
                             <div style="display: flex; align-items: center; gap: 16px;">
-                                <div id="docIconBox" style="width: 48px; height: 48px; border-radius: 10px; background: rgba(11, 43, 74, 0.08); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: var(--primary);">
+                                <div id="docIconBox"
+                                    style="width: 48px; height: 48px; border-radius: 10px; background: rgba(11, 43, 74, 0.08); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: var(--primary);">
                                     <i class="fas fa-file-pdf text-danger"></i>
                                 </div>
                                 <div>
-                                    <div id="docFileName" style="font-weight: 700; color: var(--primary); font-size: 0.95rem;">Section_Class_Program.pdf</div>
-                                    <div id="docMetaInfo" style="color: var(--gray-500); font-size: 0.8rem; margin-top: 2px;">
+                                    <div id="docFileName"
+                                        style="font-weight: 700; color: var(--primary); font-size: 0.95rem;">
+                                        Section_Class_Program.pdf</div>
+                                    <div id="docMetaInfo"
+                                        style="color: var(--gray-500); font-size: 0.8rem; margin-top: 2px;">
                                         Uploaded on Oct 7, 2026 • 245 KB • Assigned by Teacher
                                     </div>
                                 </div>
                             </div>
                             <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                                <a id="btnOpenGDocLink" target="_blank" rel="noopener noreferrer" class="btn btn-sm" style="display: none; padding: 7px 14px; border-radius: 6px; font-weight: 600; background: #1a73e8; color: #fff; text-decoration: none; align-items: center; gap: 6px;">
+                                <a id="btnOpenGDocLink" target="_blank" rel="noopener noreferrer" class="btn btn-sm"
+                                    style="display: none; padding: 7px 14px; border-radius: 6px; font-weight: 600; background: #1a73e8; color: #fff; text-decoration: none; align-items: center; gap: 6px;">
                                     <i class="fab fa-google-drive"></i> Open in Google Docs
                                 </a>
-                                <button type="button" class="btn btn-sm" id="btnPreviewUploadedDoc" style="padding: 7px 14px; border-radius: 6px; font-weight: 600; background: var(--primary); color: #fff; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                                <button type="button" class="btn btn-sm" id="btnPreviewUploadedDoc"
+                                    style="padding: 7px 14px; border-radius: 6px; font-weight: 600; background: var(--primary); color: #fff; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px;">
                                     <i class="fas fa-eye"></i> View Full
                                 </button>
-                                <button type="button" class="btn btn-sm" id="btnDownloadUploadedDoc" style="padding: 7px 14px; border-radius: 6px; font-weight: 600; background: #fff; color: var(--primary); border: 1px solid var(--gray-300); cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                                <button type="button" class="btn btn-sm" id="btnDownloadUploadedDoc"
+                                    style="padding: 7px 14px; border-radius: 6px; font-weight: 600; background: #fff; color: var(--primary); border: 1px solid var(--gray-300); cursor: pointer; display: flex; align-items: center; gap: 6px;">
                                     <i class="fas fa-download"></i> Download
                                 </button>
-                                <button type="button" class="btn btn-sm" id="btnReplaceDoc" style="padding: 7px 14px; border-radius: 6px; font-weight: 600; background: #fff; color: var(--gray-700); border: 1px solid var(--gray-300); cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                                <button type="button" class="btn btn-sm" id="btnReplaceDoc"
+                                    style="padding: 7px 14px; border-radius: 6px; font-weight: 600; background: #fff; color: var(--gray-700); border: 1px solid var(--gray-300); cursor: pointer; display: flex; align-items: center; gap: 6px;">
                                     <i class="fas fa-sync-alt"></i> Replace
                                 </button>
-                                <button type="button" class="btn btn-sm" id="btnDeleteDoc" style="padding: 7px 14px; border-radius: 6px; font-weight: 600; background: #fff; color: #ef4444; border: 1px solid #fca5a5; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                                <button type="button" class="btn btn-sm" id="btnDeleteDoc"
+                                    style="padding: 7px 14px; border-radius: 6px; font-weight: 600; background: #fff; color: #ef4444; border: 1px solid #fca5a5; cursor: pointer; display: flex; align-items: center; gap: 6px;">
                                     <i class="fas fa-trash-alt"></i> Delete
                                 </button>
                             </div>
@@ -326,45 +394,59 @@
                     </div>
 
                     <!-- Upload Dropzone (shown if no file or replacing) -->
-                    <div id="scheduleUploadDropzone" style="border: 2px dashed var(--gray-300); border-radius: 12px; padding: 24px 20px; text-align: center; background: var(--gray-50); transition: all 0.2s ease;">
-                        
+                    <div id="scheduleUploadDropzone"
+                        style="border: 2px dashed var(--gray-300); border-radius: 12px; padding: 24px 20px; text-align: center; background: var(--gray-50); transition: all 0.2s ease;">
+
                         <!-- Toggle: File vs Google Docs -->
-                        <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 18px; flex-wrap: wrap;">
-                            <button type="button" id="btnToggleMethodFile" style="padding: 7px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; cursor: pointer; border: 1px solid var(--primary); background: var(--primary); color: #fff;">
+                        <div
+                            style="display: flex; justify-content: center; gap: 10px; margin-bottom: 18px; flex-wrap: wrap;">
+                            <button type="button" id="btnToggleMethodFile"
+                                style="padding: 7px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; cursor: pointer; border: 1px solid var(--primary); background: var(--primary); color: #fff;">
                                 <i class="fas fa-file-image"></i> Upload Image / PDF File
                             </button>
-                            <button type="button" id="btnToggleMethodGDocs" style="padding: 7px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; cursor: pointer; border: 1px solid var(--gray-300); background: #fff; color: var(--gray-700);">
+                            <button type="button" id="btnToggleMethodGDocs"
+                                style="padding: 7px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; cursor: pointer; border: 1px solid var(--gray-300); background: #fff; color: var(--gray-700);">
                                 <i class="fab fa-google-drive" style="color: #4285F4;"></i> Google Docs / Drive Link
                             </button>
                         </div>
 
                         <!-- Method 1: File Dropzone -->
                         <div id="areaFileDropzone" style="cursor: pointer;">
-                            <input type="file" id="scheduleFileInput" accept="image/png,image/jpeg,image/jpg,application/pdf" style="display: none;">
+                            <input type="file" id="scheduleFileInput"
+                                accept="image/png,image/jpeg,image/jpg,application/pdf" style="display: none;">
                             <div style="font-size: 2.2rem; color: var(--primary); margin-bottom: 8px;">
                                 <i class="fas fa-file-image"></i>
                             </div>
-                            <h4 style="font-weight: 700; color: var(--primary); margin-bottom: 4px;">Click to upload or drag schedule image (PNG, JPG) or PDF here</h4>
+                            <h4 style="font-weight: 700; color: var(--primary); margin-bottom: 4px;">Click to upload or
+                                drag schedule image (PNG, JPG) or PDF here</h4>
                             <p style="color: var(--gray-500); font-size: 0.85rem; margin-bottom: 14px;">
                                 Recommended: Clear screenshot or photo of schedule (PNG, JPG) or PDF document (Max 15MB)
                             </p>
-                            <button type="button" class="btn btn-sm" id="btnTriggerUpload" style="padding: 8px 18px; border-radius: 8px; font-weight: 600; background: var(--primary); color: #fff; border: none; cursor: pointer;">
+                            <button type="button" class="btn btn-sm" id="btnTriggerUpload"
+                                style="padding: 8px 18px; border-radius: 8px; font-weight: 600; background: var(--primary); color: #fff; border: none; cursor: pointer;">
                                 <i class="fas fa-folder-open"></i> Choose Schedule Image / PDF
                             </button>
                         </div>
 
                         <!-- Method 2: Google Docs / Drive Link -->
-                        <div id="areaGDocsInput" style="display: none; padding: 12px 16px; background: #fff; border: 1.5px solid #bfdbfe; border-radius: 10px; max-width: 560px; margin: 0 auto; text-align: left;">
+                        <div id="areaGDocsInput"
+                            style="display: none; padding: 12px 16px; background: #fff; border: 1.5px solid #bfdbfe; border-radius: 10px; max-width: 560px; margin: 0 auto; text-align: left;">
                             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
                                 <i class="fab fa-google-drive" style="color: #4285F4; font-size: 1.3rem;"></i>
-                                <strong style="font-size: 0.95rem; color: #1e3a8a;">Share Google Docs Student Load Link</strong>
+                                <strong style="font-size: 0.95rem; color: #1e3a8a;">Share Google Docs Student Load
+                                    Link</strong>
                             </div>
                             <div style="margin-bottom: 10px;">
-                                <input type="url" id="gdocsUrlInput" placeholder="https://docs.google.com/document/d/... or Google Drive URL" style="width: 100%; padding: 10px 14px; border: 1.5px solid var(--gray-300); border-radius: 8px; font-size: 0.9rem; outline: none;">
+                                <input type="url" id="gdocsUrlInput"
+                                    placeholder="https://docs.google.com/document/d/... or Google Drive URL"
+                                    style="width: 100%; padding: 10px 14px; border: 1.5px solid var(--gray-300); border-radius: 8px; font-size: 0.9rem; outline: none;">
                             </div>
-                            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-                                <span style="font-size: 0.76rem; color: #64748b;">Set sharing permissions to "Anyone with the link can view".</span>
-                                <button type="button" id="btnSaveGDocsLink" style="padding: 8px 18px; background: #1a73e8; color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                                <span style="font-size: 0.76rem; color: #64748b;">Set sharing permissions to "Anyone
+                                    with the link can view".</span>
+                                <button type="button" id="btnSaveGDocsLink"
+                                    style="padding: 8px 18px; background: #1a73e8; color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
                                     <i class="fas fa-link"></i> Attach Google Doc
                                 </button>
                             </div>
@@ -374,10 +456,13 @@
                 </div>
 
                 <!-- 2. Class Periods & Timetable Manager Card -->
-                <div class="card" style="border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 22px; background: #fff; box-shadow: var(--shadow-sm);">
-                    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; border-bottom: 1px solid var(--gray-200); padding-bottom: 14px;">
+                <div class="card"
+                    style="border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 22px; background: #fff; box-shadow: var(--shadow-sm);">
+                    <div class="card-header"
+                        style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; border-bottom: 1px solid var(--gray-200); padding-bottom: 14px;">
                         <div>
-                            <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 8px;">
+                            <h3
+                                style="font-size: 1.2rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 8px;">
                                 <i class="fas fa-calendar-alt text-primary"></i> Class Periods & Timetable
                             </h3>
                             <p style="color: var(--gray-500); font-size: 0.88rem; margin-top: 3px;">
@@ -385,8 +470,11 @@
                             </p>
                         </div>
                         <div style="display: flex; align-items: center; gap: 10px;">
-                            <span class="badge" id="scheduleCountBadge" style="background: var(--gray-100); color: var(--primary); padding: 6px 12px; border-radius: 20px; font-weight: 600;">0 classes</span>
-                            <button type="button" class="btn btn-sm btn-primary" id="btnAddPeriodBtn" style="padding: 8px 16px; border-radius: 8px; font-weight: 600; background: var(--primary); color: #fff; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                            <span class="badge" id="scheduleCountBadge"
+                                style="background: var(--gray-100); color: var(--primary); padding: 6px 12px; border-radius: 20px; font-weight: 600;">0
+                                classes</span>
+                            <button type="button" class="btn btn-sm btn-primary" id="btnAddPeriodBtn"
+                                style="padding: 8px 16px; border-radius: 8px; font-weight: 600; background: var(--primary); color: #fff; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px;">
                                 <i class="fas fa-plus-circle"></i> Add Class Period
                             </button>
                         </div>
@@ -403,28 +491,39 @@
             </div>
 
             <!-- Modal: Add / Edit Class Period -->
-            <div id="modalSchedulePeriod" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1050; align-items: center; justify-content: center; padding: 20px;">
-                <div style="background: #fff; width: 100%; max-width: 520px; border-radius: 14px; box-shadow: var(--shadow-lg); overflow: hidden; animation: fadeIn 0.2s ease;">
-                    <div style="padding: 18px 22px; background: var(--primary); color: #fff; display: flex; justify-content: space-between; align-items: center;">
-                        <h3 id="modalPeriodTitle" style="font-size: 1.15rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px;">
+            <div id="modalSchedulePeriod"
+                style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1050; align-items: center; justify-content: center; padding: 20px;">
+                <div
+                    style="background: #fff; width: 100%; max-width: 520px; border-radius: 14px; box-shadow: var(--shadow-lg); overflow: hidden; animation: fadeIn 0.2s ease;">
+                    <div
+                        style="padding: 18px 22px; background: var(--primary); color: #fff; display: flex; justify-content: space-between; align-items: center;">
+                        <h3 id="modalPeriodTitle"
+                            style="font-size: 1.15rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px;">
                             <i class="fas fa-calendar-plus"></i> Add Class Period
                         </h3>
-                        <button type="button" id="btnClosePeriodModal" style="background: transparent; border: none; color: #fff; font-size: 1.2rem; cursor: pointer;">&times;</button>
+                        <button type="button" id="btnClosePeriodModal"
+                            style="background: transparent; border: none; color: #fff; font-size: 1.2rem; cursor: pointer;">&times;</button>
                     </div>
                     <form id="formSchedulePeriod" style="padding: 22px;">
                         <input type="hidden" id="editPeriodId" value="">
-                        
+
                         <div style="margin-bottom: 14px;">
-                            <label style="display: block; font-weight: 600; font-size: 0.88rem; color: var(--gray-700); margin-bottom: 6px;">Subject *</label>
-                            <select id="periodSubjectSelect" required style="width: 100%; padding: 10px 12px; border: 1px solid var(--gray-300); border-radius: 8px; font-size: 0.95rem;">
+                            <label
+                                style="display: block; font-weight: 600; font-size: 0.88rem; color: var(--gray-700); margin-bottom: 6px;">Subject
+                                *</label>
+                            <select id="periodSubjectSelect" required
+                                style="width: 100%; padding: 10px 12px; border: 1px solid var(--gray-300); border-radius: 8px; font-size: 0.95rem;">
                                 <option value="">Select Subject...</option>
                             </select>
                         </div>
 
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
                             <div>
-                                <label style="display: block; font-weight: 600; font-size: 0.88rem; color: var(--gray-700); margin-bottom: 6px;">Day *</label>
-                                <select id="periodDaySelect" required style="width: 100%; padding: 10px 12px; border: 1px solid var(--gray-300); border-radius: 8px; font-size: 0.95rem;">
+                                <label
+                                    style="display: block; font-weight: 600; font-size: 0.88rem; color: var(--gray-700); margin-bottom: 6px;">Day
+                                    *</label>
+                                <select id="periodDaySelect" required
+                                    style="width: 100%; padding: 10px 12px; border: 1px solid var(--gray-300); border-radius: 8px; font-size: 0.95rem;">
                                     <option value="Monday">Monday</option>
                                     <option value="Tuesday">Tuesday</option>
                                     <option value="Wednesday">Wednesday</option>
@@ -434,52 +533,75 @@
                                 </select>
                             </div>
                             <div>
-                                <label style="display: block; font-weight: 600; font-size: 0.88rem; color: var(--gray-700); margin-bottom: 6px;">Room *</label>
-                                <input type="text" id="periodRoomInput" placeholder="e.g. Room 204 / Lab 1" required style="width: 100%; padding: 10px 12px; border: 1px solid var(--gray-300); border-radius: 8px; font-size: 0.95rem;">
+                                <label
+                                    style="display: block; font-weight: 600; font-size: 0.88rem; color: var(--gray-700); margin-bottom: 6px;">Room
+                                    *</label>
+                                <input type="text" id="periodRoomInput" placeholder="e.g. Room 204 / Lab 1" required
+                                    style="width: 100%; padding: 10px 12px; border: 1px solid var(--gray-300); border-radius: 8px; font-size: 0.95rem;">
                             </div>
                         </div>
 
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
                             <div>
-                                <label style="display: block; font-weight: 600; font-size: 0.88rem; color: var(--gray-700); margin-bottom: 6px;">Start Time *</label>
-                                <input type="time" id="periodStartTime" required style="width: 100%; padding: 10px 12px; border: 1px solid var(--gray-300); border-radius: 8px; font-size: 0.95rem;">
+                                <label
+                                    style="display: block; font-weight: 600; font-size: 0.88rem; color: var(--gray-700); margin-bottom: 6px;">Start
+                                    Time *</label>
+                                <input type="time" id="periodStartTime" required
+                                    style="width: 100%; padding: 10px 12px; border: 1px solid var(--gray-300); border-radius: 8px; font-size: 0.95rem;">
                             </div>
                             <div>
-                                <label style="display: block; font-weight: 600; font-size: 0.88rem; color: var(--gray-700); margin-bottom: 6px;">End Time *</label>
-                                <input type="time" id="periodEndTime" required style="width: 100%; padding: 10px 12px; border: 1px solid var(--gray-300); border-radius: 8px; font-size: 0.95rem;">
+                                <label
+                                    style="display: block; font-weight: 600; font-size: 0.88rem; color: var(--gray-700); margin-bottom: 6px;">End
+                                    Time *</label>
+                                <input type="time" id="periodEndTime" required
+                                    style="width: 100%; padding: 10px 12px; border: 1px solid var(--gray-300); border-radius: 8px; font-size: 0.95rem;">
                             </div>
                         </div>
 
                         <div style="margin-bottom: 18px;">
-                            <label style="display: block; font-weight: 600; font-size: 0.88rem; color: var(--gray-700); margin-bottom: 6px;">Assigned Teacher</label>
-                            <select id="periodTeacherSelect" style="width: 100%; padding: 10px 12px; border: 1px solid var(--gray-300); border-radius: 8px; font-size: 0.95rem;">
+                            <label
+                                style="display: block; font-weight: 600; font-size: 0.88rem; color: var(--gray-700); margin-bottom: 6px;">Assigned
+                                Teacher</label>
+                            <select id="periodTeacherSelect"
+                                style="width: 100%; padding: 10px 12px; border: 1px solid var(--gray-300); border-radius: 8px; font-size: 0.95rem;">
                                 <option value="">Assign Teacher (Optional)...</option>
                             </select>
                         </div>
 
-                        <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid var(--gray-200); padding-top: 16px;">
-                            <button type="button" id="btnCancelPeriodModal" style="padding: 9px 18px; border: 1px solid var(--gray-300); background: #fff; border-radius: 8px; font-weight: 600; cursor: pointer; color: var(--gray-700);">Cancel</button>
-                            <button type="submit" id="btnSavePeriod" style="padding: 9px 22px; border: none; background: var(--primary); color: #fff; border-radius: 8px; font-weight: 600; cursor: pointer;">Save Period</button>
+                        <div
+                            style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid var(--gray-200); padding-top: 16px;">
+                            <button type="button" id="btnCancelPeriodModal"
+                                style="padding: 9px 18px; border: 1px solid var(--gray-300); background: #fff; border-radius: 8px; font-weight: 600; cursor: pointer; color: var(--gray-700);">Cancel</button>
+                            <button type="submit" id="btnSavePeriod"
+                                style="padding: 9px 22px; border: none; background: var(--primary); color: #fff; border-radius: 8px; font-weight: 600; cursor: pointer;">Save
+                                Period</button>
                         </div>
                     </form>
                 </div>
             </div>
 
             <!-- Modal: Full Screen Document Viewer -->
-            <div id="modalDocViewer" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 1060; align-items: center; justify-content: center; padding: 20px;">
-                <div style="background: #fff; width: 100%; max-width: 900px; height: 85vh; border-radius: 14px; box-shadow: var(--shadow-lg); overflow: hidden; display: flex; flex-direction: column;">
-                    <div style="padding: 14px 20px; background: var(--primary); color: #fff; display: flex; justify-content: space-between; align-items: center;">
-                        <h4 id="docViewerTitle" style="margin: 0; font-size: 1.05rem; display: flex; align-items: center; gap: 8px;">
+            <div id="modalDocViewer"
+                style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 1060; align-items: center; justify-content: center; padding: 20px;">
+                <div
+                    style="background: #fff; width: 100%; max-width: 900px; height: 85vh; border-radius: 14px; box-shadow: var(--shadow-lg); overflow: hidden; display: flex; flex-direction: column;">
+                    <div
+                        style="padding: 14px 20px; background: var(--primary); color: #fff; display: flex; justify-content: space-between; align-items: center;">
+                        <h4 id="docViewerTitle"
+                            style="margin: 0; font-size: 1.05rem; display: flex; align-items: center; gap: 8px;">
                             <i class="fas fa-file-image"></i> Official Student Load Document / Image
                         </h4>
                         <div style="display: flex; gap: 8px; align-items: center;">
-                            <button type="button" id="btnPrintModalDoc" style="background: rgba(255,255,255,0.2); border: none; color: #fff; padding: 6px 12px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                            <button type="button" id="btnPrintModalDoc"
+                                style="background: rgba(255,255,255,0.2); border: none; color: #fff; padding: 6px 12px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px;">
                                 <i class="fas fa-print"></i> Print
                             </button>
-                            <button type="button" id="btnCloseDocViewer" style="background: transparent; border: none; color: #fff; font-size: 1.4rem; cursor: pointer; line-height: 1;">&times;</button>
+                            <button type="button" id="btnCloseDocViewer"
+                                style="background: transparent; border: none; color: #fff; font-size: 1.4rem; cursor: pointer; line-height: 1;">&times;</button>
                         </div>
                     </div>
-                    <div id="docViewerContent" style="flex: 1; overflow: auto; background: var(--gray-100); display: flex; align-items: center; justify-content: center; padding: 15px;">
+                    <div id="docViewerContent"
+                        style="flex: 1; overflow: auto; background: var(--gray-100); display: flex; align-items: center; justify-content: center; padding: 15px;">
                         <!-- Embed iframe or img populated by JS -->
                     </div>
                 </div>
@@ -492,4 +614,5 @@
     <script type="module" src="js/view-section.js"></script>
     <script src="../js/chatbot.js"></script>
 </body>
+
 </html>

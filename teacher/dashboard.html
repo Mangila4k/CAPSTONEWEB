@@ -4,11 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teacher Dashboard - HES, Hiraya Enrollment System</title>
+    <title>Teacher Dashboard - PLSNSH, Placido L. Señor National High School</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="../css/sidebar.css">
     <link rel="stylesheet" href="../css/chatbot.css">
+    <link rel="stylesheet" href="../css/dashboard_announcements.css">
 </head>
 
 <body>
@@ -18,33 +20,32 @@
             <div class="sidebar-header">
                 <div class="logo">
                     <div class="logo-icon">
-                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
+                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo"
+                            onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
                     </div>
                     <div class="logo-text">PLS<span>NSH</span></div>
                 </div>
                 <div class="school-badge">Placido L. Señor National High School</div>
             </div>
 
-            <div class="teacher-profile">
-                <div class="teacher-avatar">
-                    <div class="avatar-initial" id="teacherInitial">T</div>
-                    <div class="online-dot"></div>
-                </div>
-                <div class="teacher-name" id="teacherName">Teacher</div>
-                <div class="teacher-role"><i class="fas fa-chalkboard-user"></i> Teacher</div>
-            </div>
-
             <nav class="nav-menu">
                 <div class="nav-section">
                     <div class="nav-section-title">MAIN MENU</div>
                     <ul class="nav-items">
-                        <li><a href="dashboard.html" class="active"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
-                        <li><a href="attendance-face.html"><i class="fas fa-camera"></i> <span>Face Attendance</span></a></li>
-                        <li><a href="attendance-qr.html"><i class="fas fa-qrcode"></i> <span>Student QR Scanner</span></a></li>
+                        <li><a href="dashboard.html" class="active"><i class="fas fa-tachometer-alt"></i>
+                                <span>Dashboard</span></a></li>
+                        <li><a href="announcements.html"><i class="fas fa-bullhorn"></i> <span>Announcements</span></a>
+                        </li>
+                        <li><a href="attendance-face.html"><i class="fas fa-camera"></i> <span>Face
+                                    Attendance</span></a></li>
+                        <li><a href="attendance-qr.html"><i class="fas fa-qrcode"></i> <span>Student QR
+                                    Scanner</span></a></li>
                         <li><a href="classes.html"><i class="fas fa-users"></i> <span>My Classes</span></a></li>
-                        <li><a href="class-program.html"><i class="fas fa-calendar-alt"></i> <span>Class Program</span></a></li>
+                        <li><a href="class-program.html"><i class="fas fa-calendar-alt"></i> <span>Class
+                                    Program</span></a></li>
                         <li><a href="teacher-load.html"><i class="fas fa-clock"></i> <span>Teacher Load</span></a></li>
-                        <li><a href="assessments.html"><i class="fas fa-clipboard-list"></i> <span>Assessments</span></a></li>
+                        <li><a href="assessments.html"><i class="fas fa-clipboard-list"></i>
+                                <span>Assessments</span></a></li>
                         <li><a href="grades.html"><i class="fas fa-star"></i> <span>Grades</span></a></li>
                     </ul>
                 </div>
@@ -53,11 +54,25 @@
                     <div class="nav-section-title">ACCOUNT</div>
                     <ul class="nav-items">
                         <li><a href="profile.html"><i class="fas fa-user"></i> <span>Profile</span></a></li>
-                        <li><a href="../auth/login.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+                        <li><a href="../auth/login.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i>
+                                <span>Logout</span></a></li>
                     </ul>
-
                 </div>
             </nav>
+
+            <!-- Pinned Sidebar Footer -->
+            <div class="sidebar-footer">
+                <div class="teacher-profile">
+                    <div class="teacher-avatar">
+                        <div class="avatar-initial" id="teacherInitial">RQ</div>
+                        <div class="online-dot"></div>
+                    </div>
+                    <div class="teacher-info">
+                        <div class="teacher-name" id="teacherName">Ryan Quiroga</div>
+                        <div class="teacher-role"><i class="fas fa-chalkboard-user"></i> Teacher</div>
+                    </div>
+                </div>
+            </div>
         </aside>
 
         <!-- ===== MAIN CONTENT ===== -->
@@ -96,7 +111,8 @@
                     <div class="faw-status-grid">
                         <div class="faw-status-item" id="fawTimeInBox">
                             <div class="faw-status-label">
-                                <span><i class="fas fa-sign-in-alt" style="color: #10b981;"></i> Time-In Validation</span>
+                                <span><i class="fas fa-sign-in-alt" style="color: #10b981;"></i> Time-In
+                                    Validation</span>
                                 <span class="faw-tag pending" id="fawTimeInStatusTag">PENDING</span>
                             </div>
                             <div class="faw-status-time" id="fawTimeInDisplay">--:-- --</div>
@@ -105,7 +121,8 @@
 
                         <div class="faw-status-item" id="fawTimeOutBox">
                             <div class="faw-status-label">
-                                <span><i class="fas fa-sign-out-alt" style="color: #0b2b4a;"></i> Time-Out Validation</span>
+                                <span><i class="fas fa-sign-out-alt" style="color: #0b2b4a;"></i> Time-Out
+                                    Validation</span>
                                 <span class="faw-tag pending" id="fawTimeOutStatusTag">PENDING</span>
                             </div>
                             <div class="faw-status-time" id="fawTimeOutDisplay">--:-- --</div>
@@ -223,7 +240,8 @@
                     </a>
 
                     <a href="class-program.html" class="action-card">
-                        <div class="action-icon" style="background: #eff6ff; color: #2563eb;"><i class="fas fa-calendar-alt"></i></div>
+                        <div class="action-icon" style="background: #eff6ff; color: #2563eb;"><i
+                                class="fas fa-calendar-alt"></i></div>
                         <div class="action-info">
                             <h4>Class Program</h4>
                             <p>Manage timetables & send student load</p>
@@ -231,11 +249,14 @@
                     </a>
 
                     <a href="teacher-load.html" class="action-card">
-                        <div class="action-icon" style="background: #fef3c7; color: #d97706;"><i class="fas fa-clock"></i></div>
+                        <div class="action-icon" style="background: #fef3c7; color: #d97706;"><i
+                                class="fas fa-clock"></i></div>
                         <div class="action-info">
                             <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px;">
                                 <h4>Teacher Load</h4>
-                                <span id="dashScheduleBadge" style="display: none; background: #fef2f2; color: #dc2626; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; border: 1px solid #fecaca;"><i class="fas fa-file-pdf"></i> PDF Attached</span>
+                                <span id="dashScheduleBadge"
+                                    style="display: none; background: #fef2f2; color: #dc2626; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; border: 1px solid #fecaca;"><i
+                                        class="fas fa-file-pdf"></i> PDF Attached</span>
                             </div>
                             <p>Check official load assigned by admin</p>
                         </div>
@@ -250,7 +271,8 @@
                     </a>
 
                     <a href="assessments.html" class="action-card">
-                        <div class="action-icon" style="background: #e0f2fe; color: #0284c7;"><i class="fas fa-clipboard-check"></i></div>
+                        <div class="action-icon" style="background: #e0f2fe; color: #0284c7;"><i
+                                class="fas fa-clipboard-check"></i></div>
                         <div class="action-info">
                             <h4>Class Assessments</h4>
                             <p>Assign tasks & review student submissions</p>
@@ -291,6 +313,7 @@
     <script type="module" src="js/schedule-helper.js"></script>
     <script type="module" src="js/dashboard.js"></script>
     <script src="../js/chatbot.js"></script>
+    <script type="module" src="../js/dashboard_announcements_notifier.js"></script>
 </body>
 
 </html>

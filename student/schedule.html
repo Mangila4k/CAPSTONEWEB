@@ -1,14 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Class Program - HES, Hiraya Enrollment System</title>
+    <title>Class Program - PLSNSH, Placido L. Señor National High School</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/schedule.css">
     <link rel="stylesheet" href="../css/chatbot.css">
+    <link rel="stylesheet" href="../css/sidebar.css">
 </head>
+
 <body>
     <div class="app-container">
         <!-- ===== SIDEBAR ===== -->
@@ -16,20 +19,12 @@
             <div class="sidebar-header">
                 <div class="logo">
                     <div class="logo-icon">
-                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
+                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo"
+                            onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
                     </div>
-                    <div class="logo-text">PLS<span>NSH</span></div>
+                    <div class="logo-text">PLS<span>NHS</span></div>
                 </div>
                 <div class="school-badge">Placido L. Señor National High School</div>
-            </div>
-
-            <div class="student-profile">
-                <div class="student-avatar">
-                    <div class="avatar-initial" id="studentInitial">S</div>
-                    <div class="online-dot"></div>
-                </div>
-                <div class="student-name" id="studentName">Student</div>
-                <div class="student-role"><i class="fas fa-user-graduate"></i> Student</div>
             </div>
 
             <nav class="nav-menu">
@@ -38,11 +33,25 @@
                     <ul class="nav-items">
                         <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
                         <li><a href="attendance.html"><i class="fas fa-calendar-check"></i> Attendance</a></li>
-                        <li><a href="schedule.html" class="active"><i class="fas fa-calendar-alt"></i> Class Program</a></li>
-                        <li><a href="assessments.html"><i class="fas fa-clipboard-list"></i> Assessments</a></li>
-                        <li><a href="grades.html"><i class="fas fa-star"></i> My Grades</a></li>
                         <li><a href="requirements.html"><i class="fas fa-file-alt"></i> Requirements</a></li>
-                        <li><a href="violations.html"><i class="fas fa-scale-balanced"></i> Guidance & Violations</a></li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">ACADEMICS</div>
+                    <ul class="nav-items">
+                        <li><a href="assessments.html"><i class="fas fa-clipboard-list"></i> Assessments</a></li>
+                        <li><a href="schedule.html" class="active"><i class="fas fa-calendar-alt"></i> Class Program</a>
+                        </li>
+                        <li><a href="grades.html"><i class="fas fa-star"></i> My Grades</a></li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">DISCIPLINE & CONDUCT</div>
+                    <ul class="nav-items">
+                        <li><a href="violations.html"><i class="fas fa-scale-balanced"></i> Guidance & Violations</a>
+                        </li>
                     </ul>
                 </div>
 
@@ -50,10 +59,25 @@
                     <div class="nav-section-title">ACCOUNT</div>
                     <ul class="nav-items">
                         <li><a href="profile.html"><i class="fas fa-user-circle"></i> My Profile</a></li>
-                        <li><a href="../auth/login.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                        <li><a href="../auth/login.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                        </li>
+
                     </ul>
                 </div>
             </nav>
+            <!-- Pinned Sidebar Footer -->
+            <div class="sidebar-footer">
+                <div class="student-profile">
+                    <div class="student-avatar">
+                        <div class="avatar-initial" id="studentInitial">S</div>
+                        <div class="online-dot"></div>
+                    </div>
+                    <div class="student-info">
+                        <div class="student-name" id="studentName">Student</div>
+                        <div class="student-role"><i class="fas fa-user-graduate"></i> Student</div>
+                    </div>
+                </div>
+            </div>
         </aside>
 
         <!-- ===== MAIN CONTENT ===== -->
@@ -74,7 +98,8 @@
                 <div class="print-meta-grid">
                     <div><strong>Learner:</strong> <span id="printStudentName">Student</span></div>
                     <div><strong>LRN:</strong> <span id="printStudentLrn">108472910482</span></div>
-                    <div><strong>Grade & Section:</strong> <span id="printGradeSection">Grade 11 - Section C</span></div>
+                    <div><strong>Grade & Section:</strong> <span id="printGradeSection">Grade 11 - Section C</span>
+                    </div>
                     <div><strong>Track & Strand:</strong> <span id="printTrackStrand">TVL - ICT</span></div>
                     <div><strong>School Year:</strong> <span id="printSchoolYear">2025-2026</span></div>
                     <div><strong>Class Adviser:</strong> <span id="printAdviserName">Faculty Adviser</span></div>
@@ -88,7 +113,8 @@
                     <p>View your weekly class program, student load schedule image/document, and official timetable</p>
                 </div>
                 <div class="header-actions" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                    <button type="button" class="btn-print-schedule" id="btnPrintSchedule" title="Print official class program">
+                    <button type="button" class="btn-print-schedule" id="btnPrintSchedule"
+                        title="Print official class program">
                         <i class="fas fa-print"></i> Print Class Program
                     </button>
                     <div class="date-badge" id="dateBadge">
@@ -108,14 +134,17 @@
                 <div class="udb-content">
                     <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                         <h3 id="udbTitle">Official Section Student Load / Class Program</h3>
-                        <span class="badge" id="udbBadge" style="background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">
+                        <span class="badge" id="udbBadge"
+                            style="background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">
                             <i class="fas fa-check-circle"></i> Sent by Teacher
                         </span>
                     </div>
-                    <p id="udbMeta">Official student load schedule image or document sent by your class adviser/teacher.</p>
+                    <p id="udbMeta">Official student load schedule image or document sent by your class adviser/teacher.
+                    </p>
                 </div>
                 <div class="udb-actions">
-                    <a href="#" target="_blank" class="btn-udb gdocs" id="btnOpenGDocsSchedule" style="display: none; text-decoration: none;">
+                    <a href="#" target="_blank" class="btn-udb gdocs" id="btnOpenGDocsSchedule"
+                        style="display: none; text-decoration: none;">
                         <i class="fab fa-google-drive"></i> Open in Google Docs
                     </a>
                     <button type="button" class="btn-udb view" id="btnViewUploadedSchedule">
@@ -142,9 +171,12 @@
                     </div>
                 </div>
                 <div class="section-details">
-                    <span class="detail-item"><i class="fas fa-layer-group"></i> Grade: <strong id="gradeDisplay">N/A</strong></span>
-                    <span class="detail-item"><i class="fas fa-calendar-alt"></i> School Year: <strong id="schoolYearDisplay">N/A</strong></span>
-                    <span class="detail-item"><i class="fas fa-user-graduate"></i> Total Classes: <strong id="totalClasses">0</strong></span>
+                    <span class="detail-item"><i class="fas fa-layer-group"></i> Grade: <strong
+                            id="gradeDisplay">N/A</strong></span>
+                    <span class="detail-item"><i class="fas fa-calendar-alt"></i> School Year: <strong
+                            id="schoolYearDisplay">N/A</strong></span>
+                    <span class="detail-item"><i class="fas fa-user-graduate"></i> Total Classes: <strong
+                            id="totalClasses">0</strong></span>
                 </div>
             </div>
 
@@ -201,7 +233,8 @@
             <div class="schedule-container">
                 <div class="schedule-header">
                     <h3><i class="fas fa-table"></i> Weekly Class Program</h3>
-                    <span class="schedule-info-badge"><i class="fas fa-info-circle"></i> All times are in 24-hour format</span>
+                    <span class="schedule-info-badge"><i class="fas fa-info-circle"></i> All times are in 24-hour
+                        format</span>
                 </div>
 
                 <!-- Schedule Missing / Fallback Notice (Displays if timetable rows are empty, showing teacher's uploaded schedule or notice) -->
@@ -233,7 +266,9 @@
                         <span class="legend-color free"></span> Free Period
                     </span>
                     <span class="legend-item">
-                        <span style="width:16px;height:16px;border-radius:4px;background:rgba(11,43,74,0.08);border-left:3px solid var(--primary);"></span> Current Day Highlight
+                        <span
+                            style="width:16px;height:16px;border-radius:4px;background:rgba(11,43,74,0.08);border-left:3px solid var(--primary);"></span>
+                        Current Day Highlight
                     </span>
                 </div>
             </div>
@@ -291,29 +326,38 @@
                     </div>
                 </div>
                 <div class="print-doc-footer-meta">
-                    <span>Placido L. Señor National High School • DepEd School ID: 303042 • Langtad, Naga City, Cebu</span>
+                    <span>Placido L. Señor National High School • DepEd School ID: 303042 • Langtad, Naga City,
+                        Cebu</span>
                     <span>Standard School Form • Strictly 1-Page Official Class Program</span>
                 </div>
             </div>
 
             <!-- Modal: Full Screen Document Viewer -->
-            <div id="modalStudentDocViewer" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 1060; align-items: center; justify-content: center; padding: 20px;">
-                <div style="background: #fff; width: 100%; max-width: 900px; height: 85vh; border-radius: 14px; box-shadow: var(--shadow-lg); overflow: hidden; display: flex; flex-direction: column;">
-                    <div style="padding: 14px 20px; background: var(--primary); color: #fff; display: flex; justify-content: space-between; align-items: center;">
-                        <h4 id="studentDocViewerTitle" style="margin: 0; font-size: 1.05rem; display: flex; align-items: center; gap: 8px;">
+            <div id="modalStudentDocViewer"
+                style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 1060; align-items: center; justify-content: center; padding: 20px;">
+                <div
+                    style="background: #fff; width: 100%; max-width: 900px; height: 85vh; border-radius: 14px; box-shadow: var(--shadow-lg); overflow: hidden; display: flex; flex-direction: column;">
+                    <div
+                        style="padding: 14px 20px; background: var(--primary); color: #fff; display: flex; justify-content: space-between; align-items: center;">
+                        <h4 id="studentDocViewerTitle"
+                            style="margin: 0; font-size: 1.05rem; display: flex; align-items: center; gap: 8px;">
                             <i class="fas fa-file-alt"></i> Official Class Program Document
                         </h4>
                         <div style="display: flex; gap: 8px; align-items: center;">
-                            <a href="#" target="_blank" id="btnOpenInNewTabFromViewer" style="display: none; background: rgba(255,255,255,0.2); border: none; color: #fff; padding: 6px 12px; border-radius: 6px; font-weight: 600; cursor: pointer; text-decoration: none; font-size: 0.82rem; align-items: center; gap: 6px;">
+                            <a href="#" target="_blank" id="btnOpenInNewTabFromViewer"
+                                style="display: none; background: rgba(255,255,255,0.2); border: none; color: #fff; padding: 6px 12px; border-radius: 6px; font-weight: 600; cursor: pointer; text-decoration: none; font-size: 0.82rem; align-items: center; gap: 6px;">
                                 <i class="fas fa-external-link-alt"></i> Open in New Tab
                             </a>
-                            <button type="button" id="btnPrintFromViewer" style="background: rgba(255,255,255,0.2); border: none; color: #fff; padding: 6px 12px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                            <button type="button" id="btnPrintFromViewer"
+                                style="background: rgba(255,255,255,0.2); border: none; color: #fff; padding: 6px 12px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px;">
                                 <i class="fas fa-print"></i> Print
                             </button>
-                            <button type="button" id="btnCloseStudentDocViewer" style="background: transparent; border: none; color: #fff; font-size: 1.4rem; cursor: pointer; line-height: 1;">&times;</button>
+                            <button type="button" id="btnCloseStudentDocViewer"
+                                style="background: transparent; border: none; color: #fff; font-size: 1.4rem; cursor: pointer; line-height: 1;">&times;</button>
                         </div>
                     </div>
-                    <div id="studentDocViewerContent" style="flex: 1; overflow: auto; background: var(--gray-100); display: flex; align-items: center; justify-content: center; padding: 15px;">
+                    <div id="studentDocViewerContent"
+                        style="flex: 1; overflow: auto; background: var(--gray-100); display: flex; align-items: center; justify-content: center; padding: 15px;">
                         <!-- Embed iframe or img -->
                     </div>
                 </div>
@@ -325,4 +369,5 @@
     <script type="module" src="js/schedule.js"></script>
     <script src="../js/chatbot.js"></script>
 </body>
+
 </html>

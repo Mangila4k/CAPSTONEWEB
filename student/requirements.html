@@ -1,14 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Requirements - HES, Hiraya Enrollment System</title>
+    <title>Requirements - PLSNSH, Placido L. Señor National High School</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/grades.css">
     <link rel="stylesheet" href="css/requirements.css">
     <link rel="stylesheet" href="../css/chatbot.css">
+    <link rel="stylesheet" href="../css/sidebar.css">
 </head>
+
 <body>
     <div class="app-container">
         <!-- ===== SIDEBAR ===== -->
@@ -16,20 +20,12 @@
             <div class="sidebar-header">
                 <div class="logo">
                     <div class="logo-icon">
-                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
+                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo"
+                            onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
                     </div>
-                    <div class="logo-text">PLS<span>NSH</span></div>
+                    <div class="logo-text">PLS<span>NHS</span></div>
                 </div>
                 <div class="school-badge">Placido L. Señor National High School</div>
-            </div>
-
-            <div class="student-profile">
-                <div class="student-avatar">
-                    <div class="avatar-initial" id="studentInitial">S</div>
-                    <div class="online-dot"></div>
-                </div>
-                <div class="student-name" id="studentName">Student</div>
-                <div class="student-role"><i class="fas fa-user-graduate"></i> Student</div>
             </div>
 
             <nav class="nav-menu">
@@ -38,11 +34,25 @@
                     <ul class="nav-items">
                         <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
                         <li><a href="attendance.html"><i class="fas fa-calendar-check"></i> Attendance</a></li>
-                        <li><a href="schedule.html"><i class="fas fa-calendar-alt"></i> Class Program</a></li>
+                        <li><a href="requirements.html" class="active"><i class="fas fa-file-alt"></i> Requirements</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">ACADEMICS</div>
+                    <ul class="nav-items">
                         <li><a href="assessments.html"><i class="fas fa-clipboard-list"></i> Assessments</a></li>
+                        <li><a href="schedule.html"><i class="fas fa-calendar-alt"></i> Class Program</a></li>
                         <li><a href="grades.html"><i class="fas fa-star"></i> My Grades</a></li>
-                        <li><a href="requirements.html" class="active"><i class="fas fa-file-alt"></i> Requirements</a></li>
-                        <li><a href="violations.html"><i class="fas fa-scale-balanced"></i> Guidance & Violations</a></li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">DISCIPLINE & CONDUCT</div>
+                    <ul class="nav-items">
+                        <li><a href="violations.html"><i class="fas fa-scale-balanced"></i> Guidance & Violations</a>
+                        </li>
                     </ul>
                 </div>
 
@@ -50,10 +60,25 @@
                     <div class="nav-section-title">ACCOUNT</div>
                     <ul class="nav-items">
                         <li><a href="profile.html"><i class="fas fa-user-circle"></i> My Profile</a></li>
-                        <li><a href="../auth/login.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                        <li><a href="../auth/login.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                        </li>
+
                     </ul>
                 </div>
             </nav>
+            <!-- Pinned Sidebar Footer -->
+            <div class="sidebar-footer">
+                <div class="student-profile">
+                    <div class="student-avatar">
+                        <div class="avatar-initial" id="studentInitial">S</div>
+                        <div class="online-dot"></div>
+                    </div>
+                    <div class="student-info">
+                        <div class="student-name" id="studentName">Student</div>
+                        <div class="student-role"><i class="fas fa-user-graduate"></i> Student</div>
+                    </div>
+                </div>
+            </div>
         </aside>
 
         <!-- ===== MAIN CONTENT ===== -->
@@ -62,12 +87,63 @@
             <div class="page-header">
                 <div>
                     <h1><i class="fas fa-file-alt"></i> Requirements</h1>
-                    <p>View and upload your enrollment requirements</p>
+                    <p>View your enrollment requirements and submitted documents</p>
+                </div>
+                <div class="date-badge" id="dateBadge">
+                    <i class="fas fa-calendar-alt"></i> Loading...
                 </div>
             </div>
 
             <!-- Alert Container -->
             <div id="alertContainer"></div>
+
+            <!-- Class Info Card -->
+            <div class="class-info-card" id="classInfoCard" style="display: none;">
+                <div class="class-info-details">
+                    <h3><i class="fas fa-graduation-cap"></i> Current Enrollment</h3>
+                    <div class="class-info-badges">
+                        <span class="info-badge"><i class="fas fa-layer-group"></i> Grade: <span
+                                id="gradeDisplay">Loading...</span></span>
+                        <span class="info-badge" id="sectionBadgeWrapper"><i class="fas fa-users"></i> Section: <span
+                                id="sectionDisplay">—</span></span>
+                        <span class="info-badge"><i class="fas fa-tag"></i> Strand: <span
+                                id="strandDisplay">Loading...</span></span>
+                        <span class="info-badge"><i class="fas fa-check-circle"></i> Status: <span
+                                id="statusDisplay">Loading...</span></span>
+                    </div>
+                </div>
+                <div class="school-year">
+                    <i class="fas fa-calendar-alt"></i> <span id="schoolYearDisplay">2025-2026</span>
+                </div>
+            </div>
+
+            <!-- Statistics -->
+            <div class="stats-container" id="statsContainer" style="display: none;">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <h3>Requirements</h3>
+                        <div class="stat-icon"><i class="fas fa-file-alt"></i></div>
+                    </div>
+                    <div class="stat-number" id="totalCount">0</div>
+                    <div class="stat-label">Total Requirements</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <h3>Submitted</h3>
+                        <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                    </div>
+                    <div class="stat-number" id="submittedCount">0</div>
+                    <div class="stat-label">Submitted & Verified</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <h3>Missing</h3>
+                        <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                    </div>
+                    <div class="stat-number" id="missingCount">0</div>
+                    <div class="stat-label">Action Needed</div>
+                </div>
+            </div>
 
             <!-- No Enrollment Card -->
             <div class="no-enrollment-card" id="noEnrollmentCard" style="display: none;">
@@ -82,68 +158,18 @@
             <!-- Requirements Content -->
             <div id="requirementsContent" style="display: none;">
                 <!-- Status Alert -->
-                <div class="status-alert" id="statusAlert">
+                <div class="status-alert" id="statusAlert" style="display: none;">
                     <!-- Dynamic content -->
                 </div>
 
-                <!-- Info Card -->
-                <div class="info-card">
-                    <div class="info-card-content">
-                        <div class="info-icon">
-                            <i class="fas fa-graduation-cap"></i>
-                        </div>
-                        <div class="info-details">
-                            <h3 id="enrollmentGrade">Grade N/A</h3>
-                            <p>
-                                <strong>Student Type:</strong> 
-                                <span class="student-type-badge student-type-new" id="studentTypeBadge">New Student</span>
-                                &nbsp;·&nbsp;
-                                <strong>Status:</strong> 
-                                <span class="status-badge status-pending" id="enrollmentStatusBadge">Pending</span>
-                            </p>
-                        </div>
-                        <div>
-                            <span class="enrollment-approved-badge" id="approvedBadge" style="display: none;">
-                                <i class="fas fa-check-circle"></i> Enrollment Approved
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Progress Card -->
-                <div class="progress-card">
-                    <div class="progress-header">
-                        <h3><i class="fas fa-chart-progress"></i> Requirements Progress</h3>
-                        <span class="progress-percentage" id="progressPercentage">0% Complete</span>
-                    </div>
-                    <div class="progress-container">
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
-                        </div>
-                    </div>
-                    <div class="progress-stats">
-                        <span class="stat">
-                            <span class="stat-value" id="submittedCount">0</span>
-                            <span class="stat-label">Submitted</span>
-                        </span>
-                        <span class="stat">
-                            <span class="stat-value" id="missingCount">0</span>
-                            <span class="stat-label">Missing</span>
-                        </span>
-                        <span class="stat">
-                            <span class="stat-value" id="totalCount">0</span>
-                            <span class="stat-label">Total</span>
-                        </span>
-                    </div>
-                </div>
-
-                <!-- Requirements Card -->
-                <div class="requirements-card">
+                <!-- Requirements Grid Card -->
+                <div class="subjects-card" id="requirementsCard">
                     <h3>
-                        <i class="fas fa-list"></i> Requirements List
-                        <span class="student-type-label" id="requirementsTypeLabel">for New Student</span>
+                        <i class="fas fa-folder-open"></i> Required Documents & Requirements
                     </h3>
-                    <div class="requirements-list" id="requirementsList">
+
+                    <!-- Requirements Grid -->
+                    <div class="subjects-grid" id="requirementsList">
                         <!-- Dynamic content -->
                     </div>
                 </div>
@@ -177,7 +203,7 @@
                             <div class="instruction-number">4</div>
                             <div class="instruction-content">
                                 <h4>Track Progress</h4>
-                                <p>Monitor your submission status in the progress bar</p>
+                                <p>Monitor your submission status in the stats cards above</p>
                             </div>
                         </div>
                     </div>
@@ -199,7 +225,6 @@
         </main>
     </div>
 
-    <!-- ===== UPLOAD MODAL ===== -->
     <div class="modal" id="uploadModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -248,4 +273,5 @@
     <script type="module" src="js/requirements.js"></script>
     <script src="../js/chatbot.js"></script>
 </body>
+
 </html>

@@ -1,10 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>View Enrollment - HES, Hiraya Enrollment System</title>
+    <title>View Enrollment - PLSNSH, Placido L. Señor National High School</title>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- Google Fonts -->
@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/view_enrollment.css">
     <link rel="stylesheet" href="../css/chatbot.css">
+    <link rel="stylesheet" href="../css/sidebar.css">
 </head>
 
 <body>
@@ -33,15 +34,6 @@
                     <div class="logo-text">PLS<span>NSH</span></div>
                 </div>
                 <div class="school-badge">Placido L. Señor National High School</div>
-            </div>
-
-            <div class="admin-profile">
-                <div class="admin-avatar">
-                    <div class="avatar-initial" id="adminAvatar">A</div>
-                    <div class="online-dot"></div>
-                </div>
-                <div class="admin-name" id="adminName">Admin</div>
-                <div class="admin-role"><i class="fas fa-shield-alt"></i> Administrator</div>
             </div>
 
             <div class="nav-menu">
@@ -74,8 +66,23 @@
                     <div class="nav-section-title">ACCOUNT</div>
                     <ul class="nav-items">
                         <li><a href="profile.html"><i class="fas fa-user"></i> Profile</a></li>
-                        <li><a href="../auth/logout.html"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                        <li><a href="../auth/logout.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                        </li>
+
                     </ul>
+                </div>
+            </div>
+            <!-- Pinned Sidebar Footer -->
+            <div class="sidebar-footer">
+                <div class="admin-profile">
+                    <div class="admin-avatar">
+                        <div class="avatar-initial" id="adminAvatar">A</div>
+                        <div class="online-dot"></div>
+                    </div>
+                    <div class="admin-info">
+                        <div class="admin-name" id="adminName">Admin</div>
+                        <div class="admin-role"><i class="fas fa-shield-alt"></i> Administrator</div>
+                    </div>
                 </div>
             </div>
         </aside>
@@ -87,8 +94,17 @@
                     <h1>Enrollment Details</h1>
                     <p class="subtitle">View enrollment information</p>
                 </div>
-                <div style="display: flex; gap: 10px; align-items: center;">
-                    <a href="generate_id.html" id="adminGenerateIdBtn" class="back-btn" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                    <button type="button" id="btnApproveEnrollment" class="back-btn"
+                        style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; border: none; cursor: pointer; display: none; align-items: center; gap: 6px; font-weight: 600;">
+                        <i class="fas fa-check-circle"></i> Approve Enrollment
+                    </button>
+                    <button type="button" id="btnRejectEnrollment" class="back-btn"
+                        style="background: #ef4444; color: #fff; border: none; cursor: pointer; display: none; align-items: center; gap: 6px; font-weight: 600;">
+                        <i class="fas fa-times-circle"></i> Reject Application
+                    </button>
+                    <a href="generate_id.html" id="adminGenerateIdBtn" class="back-btn"
+                        style="background: #c89b27; color: #070526; text-decoration: none; display: none; align-items: center; gap: 6px; font-weight: 600;">
                         <i class="fas fa-id-card"></i> Generate Student ID
                     </a>
                     <a href="enrollments.html" class="back-btn">
@@ -104,31 +120,35 @@
             <div class="detail-card">
                 <div class="card-header">
                     <h3><i class="fas fa-user-graduate"></i> Student Information</h3>
-                    <a href="student.html" class="view-link" id="viewFullProfileLink">
-                        View Full Profile <i class="fas fa-arrow-right"></i>
-                    </a>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span id="enrollmentStatusBadge" class="status-badge-small"
+                            style="padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 12px;">Pending</span>
+                        <a href="student.html" class="view-link" id="viewFullProfileLink">
+                            View Full Profile <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
                 </div>
 
                 <div class="student-info">
-                    <div class="student-avatar-large">J</div>
+                    <div class="student-avatar-large" id="studentAvatar">
+                        <i class="fas fa-user"></i>
+                    </div>
                     <div class="student-details">
-                        <h3 id="studentName">Juan Dela Cruz</h3>
+                        <h3 id="studentName">Loading student information...</h3>
                         <div class="student-meta">
-                            <span><i class="fas fa-envelope"></i> <span
-                                    id="studentEmail">juan.dela@plshs.edu.ph</span></span>
-                            <span><i class="fas fa-id-card"></i> ID: <span
-                                    id="studentIdNumber">HES-STU-000001</span></span>
+                            <span><i class="fas fa-envelope"></i> <span id="studentEmail">—</span></span>
+                            <span><i class="fas fa-id-card"></i> ID: <span id="studentIdNumber">—</span></span>
                         </div>
                     </div>
                 </div>
 
                 <div class="stats-mini-grid">
                     <div class="stat-mini-card">
-                        <div class="stat-mini-number" id="totalEnrollments">0</div>
+                        <div class="stat-mini-number" id="totalEnrollments">—</div>
                         <div class="stat-mini-label">Total Enrollments</div>
                     </div>
                     <div class="stat-mini-card">
-                        <div class="stat-mini-number" id="sinceYear">2026</div>
+                        <div class="stat-mini-number" id="sinceYear">—</div>
                         <div class="stat-mini-label">Since Year</div>
                     </div>
                 </div>
@@ -141,7 +161,10 @@
                 </div>
 
                 <div class="info-grid" id="enrollmentInfoGrid">
-                    <!-- Loaded by JavaScript -->
+                    <div style="text-align: center; padding: 24px; color: #64748b; grid-column: 1/-1;">
+                        <i class="fas fa-circle-notch fa-spin" style="margin-right: 6px;"></i> Loading enrollment
+                        details...
+                    </div>
                 </div>
             </div>
 
@@ -151,7 +174,7 @@
                     <h3><i class="fas fa-file-alt"></i> Enrollment Requirements</h3>
                     <div class="completion-badge">
                         <i class="fas fa-check-circle"></i>
-                        <span id="requirementsCount">0/0 Requirements</span>
+                        <span id="requirementsCount">—</span>
                     </div>
                 </div>
 
@@ -159,11 +182,11 @@
                 <div class="requirements-info-banner">
                     <div class="info-banner-item">
                         <i class="fas fa-layer-group"></i>
-                        <span>Grade Level: <strong id="reqGradeLevel">Grade 11</strong></span>
+                        <span>Grade Level: <strong id="reqGradeLevel">—</strong></span>
                     </div>
                     <div class="info-banner-item">
                         <i class="fas fa-user-tag"></i>
-                        <span>Student Type: <strong id="reqStudentType">New</strong></span>
+                        <span>Student Type: <strong id="reqStudentType">—</strong></span>
                     </div>
                 </div>
 
@@ -180,7 +203,10 @@
 
                 <!-- Requirements Lists -->
                 <div id="requirementsContainer">
-                    <!-- Loaded by JavaScript -->
+                    <div style="text-align: center; padding: 24px; color: #64748b;">
+                        <i class="fas fa-circle-notch fa-spin" style="margin-right: 6px;"></i> Loading submitted
+                        documents...
+                    </div>
                 </div>
 
                 <!-- Summary Stats -->
@@ -204,7 +230,7 @@
             <div class="detail-card">
                 <div class="card-header">
                     <h3><i class="fas fa-history"></i> Enrollment History</h3>
-                    <span class="badge-count" id="historyCount">0 records</span>
+                    <span class="badge-count" id="historyCount">—</span>
                 </div>
                 <div class="table-container">
                     <table class="data-table history-table">
@@ -218,7 +244,12 @@
                             </tr>
                         </thead>
                         <tbody id="historyBody">
-                            <!-- Loaded by JavaScript -->
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 24px; color: #64748b;">
+                                    <i class="fas fa-circle-notch fa-spin" style="margin-right: 6px;"></i> Loading
+                                    enrollment records...
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>

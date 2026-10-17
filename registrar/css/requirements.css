@@ -809,11 +809,11 @@ body {
 }
 
 .student-avatar {
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     border-radius: 10px;
     background: linear-gradient(135deg, #0b2b4a 0%, #1e3a5f 100%);
-    color: white;
+    color: #ffffff;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -821,12 +821,36 @@ body {
     font-size: 13px;
     flex-shrink: 0;
     overflow: hidden;
+    position: relative;
+    box-shadow: 0 2px 6px rgba(11, 43, 74, 0.16);
+    border: 1.5px solid rgba(255, 255, 255, 0.12);
 }
 
 .student-avatar img {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
+    border-radius: inherit;
+    display: block;
+    z-index: 1;
+}
+
+.student-avatar span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    font-size: 13px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    position: relative;
+    z-index: 0;
 }
 
 .student-details {
@@ -1255,10 +1279,10 @@ body {
 }
 
 .modal-student-avatar {
-    width: 48px;
-    height: 48px;
+    width: 52px;
+    height: 52px;
     border-radius: 14px;
-    background: var(--primary);
+    background: linear-gradient(135deg, #0b2b4a 0%, #1e3a5f 100%);
     color: white;
     font-weight: 800;
     font-size: 18px;
@@ -1266,6 +1290,37 @@ body {
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 4px 12px rgba(11, 43, 74, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.15);
+}
+
+.modal-student-avatar img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: inherit;
+    display: block;
+    z-index: 1;
+}
+
+.modal-student-avatar span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    font-size: 18px;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    position: relative;
+    z-index: 0;
 }
 
 .checklist-group {

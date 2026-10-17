@@ -1,0 +1,623 @@
+/* ===== HES PROFESSIONAL SIDEBAR & FOOTER SYSTEM ===== */
+/* Pinned user profile & professional logout button for all user portals */
+
+.sidebar {
+    display: flex !important;
+    flex-direction: column !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    bottom: 0 !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    overflow: hidden !important;
+    overscroll-behavior: contain !important;
+    overscroll-behavior-y: contain !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    padding-bottom: 0 !important;
+    box-sizing: border-box !important;
+}
+
+.sidebar-header {
+    flex-shrink: 0 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    padding-left: 1.25rem !important;
+    padding-right: 1.25rem !important;
+    padding-bottom: 14px !important;
+    margin-bottom: 16px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18) !important;
+}
+
+.nav-menu {
+    flex: 1 1 auto !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    overscroll-behavior: contain !important;
+    overscroll-behavior-y: contain !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-gutter: stable !important;
+    min-height: 0 !important;
+    padding-left: 0.9rem !important;
+    padding-right: 0.9rem !important;
+    padding-bottom: 28px !important;
+    box-sizing: border-box !important;
+}
+
+/* Squeezed compact spacing so Announcements, Accounts, Attendance, Face Registration, Activities, Reports fit smoothly without jitter */
+.sidebar .nav-section {
+    margin-bottom: 10px !important;
+}
+
+.sidebar .nav-section-title {
+    font-size: 10.5px !important;
+    letter-spacing: 0.8px !important;
+    margin-bottom: 4px !important;
+    padding-left: 6px !important;
+    opacity: 0.65 !important;
+}
+
+.sidebar .nav-items {
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.sidebar .nav-items li {
+    margin-bottom: 2px !important;
+}
+
+.sidebar .nav-items a {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    padding: 6px 12px !important;
+    min-height: 34px !important;
+    font-size: 13.5px !important;
+    font-weight: 500 !important;
+    line-height: 1.3 !important;
+    border-radius: 8px !important;
+    box-sizing: border-box !important;
+    border: 1px solid transparent !important;
+    border-color: transparent !important;
+    color: rgba(255, 255, 255, 0.75) !important;
+    cursor: pointer !important;
+    pointer-events: auto !important;
+    transition: background 0.15s ease, color 0.15s ease !important;
+    transform: none !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+}
+
+.sidebar .nav-items a i {
+    width: 20px !important;
+    text-align: center !important;
+    font-size: 15px !important;
+    flex-shrink: 0 !important;
+    color: rgba(255, 255, 255, 0.75) !important;
+    transition: color 0.15s ease !important;
+}
+
+/* Anti-flicker: Lock font-weights so all items stay in the exact same place without shifting */
+.sidebar .nav-items a:hover {
+    font-weight: 500 !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: #ffffff !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+}
+
+.sidebar .nav-items a:hover i {
+    color: #ffffff !important;
+}
+
+/* Active menu item - Clean, flat, unified design with white text, no yellow border, no text shift */
+.sidebar .nav-items a.active {
+    font-weight: 500 !important;
+    background: rgba(255, 255, 255, 0.14) !important;
+    color: #ffffff !important;
+    border: 1px solid transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+}
+
+.sidebar .nav-items a.active i {
+    color: #ffffff !important;
+}
+
+.sidebar .nav-items a.active:hover {
+    font-weight: 500 !important;
+    background: rgba(255, 255, 255, 0.18) !important;
+    color: #ffffff !important;
+    border: 1px solid transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+}
+
+.sidebar .nav-items a.active:hover i {
+    color: #ffffff !important;
+}
+
+/* Zero-blink on click / active / focus */
+.sidebar .nav-items a:focus,
+.sidebar .nav-items a:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+    border-color: transparent !important;
+}
+
+.sidebar .nav-items a:active {
+    font-weight: 500 !important;
+    background: rgba(255, 255, 255, 0.14) !important;
+    color: #ffffff !important;
+    border: 1px solid transparent !important;
+    border-color: transparent !important;
+    transition: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* Custom sleek scrollbar for sidebar menu */
+.nav-menu::-webkit-scrollbar {
+    width: 4px;
+}
+.nav-menu::-webkit-scrollbar-track {
+    background: transparent;
+}
+.nav-menu::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.18);
+    border-radius: 4px;
+}
+.nav-menu::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.32);
+}
+
+/* ===== SIDEBAR FOOTER (PINNED AT VERY BOTTOM) ===== */
+.sidebar-footer {
+    margin-top: auto !important;
+    flex-shrink: 0 !important;
+    padding: 10px 14px 14px !important;
+    background: linear-gradient(180deg, rgba(7, 24, 43, 0.45) 0%, rgba(4, 15, 28, 0.92) 100%) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    box-shadow: none !important;
+    box-sizing: border-box !important;
+}
+
+/* User Card in Footer - Simple, clean flat design across ALL dashboards (non-clickable) */
+.sidebar-footer .teacher-profile,
+.sidebar-footer .student-profile,
+.sidebar-footer .admin-profile,
+.sidebar-footer .counselor-profile,
+.sidebar-footer .parent-profile,
+.sidebar-footer .user-profile-card,
+.sidebar-footer > div:first-child {
+    padding: 10px 12px !important;
+    margin: 0 !important;
+    border-radius: 12px !important;
+    border: 1px solid rgba(255, 255, 255, 0.14) !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    text-align: left !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    width: 100% !important;
+    text-decoration: none !important;
+    box-sizing: border-box !important;
+    cursor: default !important;
+    pointer-events: auto !important;
+    box-shadow: none !important;
+    transition: none !important;
+}
+
+.sidebar-footer .teacher-profile:hover,
+.sidebar-footer .student-profile:hover,
+.sidebar-footer .admin-profile:hover,
+.sidebar-footer .counselor-profile:hover,
+.sidebar-footer .parent-profile:hover,
+.sidebar-footer .user-profile-card:hover,
+.sidebar-footer > div:first-child:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-color: rgba(255, 255, 255, 0.14) !important;
+    box-shadow: none !important;
+}
+
+/* Avatar styling */
+.sidebar-footer .teacher-avatar,
+.sidebar-footer .student-avatar,
+.sidebar-footer .admin-avatar,
+.sidebar-footer .counselor-avatar,
+.sidebar-footer .parent-avatar,
+.sidebar-footer .user-avatar {
+    position: relative !important;
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    max-width: 44px !important;
+    max-height: 44px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    flex-shrink: 0 !important;
+    border-radius: 50% !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.sidebar-footer .avatar-initial,
+.sidebar-footer .admin-avatar .avatar-initial,
+.sidebar-footer .teacher-avatar .avatar-initial,
+.sidebar-footer .counselor-avatar .avatar-initial,
+.sidebar-footer .student-avatar .avatar-initial,
+.sidebar-footer .parent-avatar .avatar-initial {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    max-width: 44px !important;
+    max-height: 44px !important;
+    border-radius: 50% !important;
+    background: #facc15 !important;
+    color: #0b2b4a !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 1.05rem !important;
+    font-weight: 800 !important;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+    letter-spacing: -0.5px !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    box-sizing: border-box !important;
+    text-shadow: none !important;
+}
+
+.sidebar-footer img {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    border-radius: 50% !important;
+    object-fit: cover !important;
+    display: block !important;
+    box-shadow: none !important;
+    border: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.sidebar-footer .online-dot {
+    position: absolute !important;
+    bottom: 0px !important;
+    right: 0px !important;
+    width: 12px !important;
+    height: 12px !important;
+    border-radius: 50% !important;
+    background: #10b981 !important;
+    border: 2px solid #07182b !important;
+    box-sizing: border-box !important;
+    z-index: 2 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+}
+
+/* User Info */
+.sidebar-footer .teacher-info,
+.sidebar-footer .student-info,
+.sidebar-footer .admin-info,
+.sidebar-footer .counselor-info,
+.sidebar-footer .parent-info,
+.sidebar-footer .user-info {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: flex-start !important;
+    text-align: left !important;
+    gap: 2px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.sidebar-footer .teacher-name,
+.sidebar-footer .student-name,
+.sidebar-footer .admin-name,
+.sidebar-footer .counselor-name,
+.sidebar-footer .parent-name,
+.sidebar-footer .user-name {
+    font-size: 0.95rem !important;
+    font-weight: 700 !important;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+    color: #ffffff !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    line-height: 1.25 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    letter-spacing: -0.2px !important;
+    text-align: left !important;
+    text-shadow: none !important;
+}
+
+/* User Role - Just a clean word, no yellow border, no shadow across ALL user portals */
+.sidebar-footer .teacher-role,
+.sidebar-footer .student-role,
+.sidebar-footer .admin-role,
+.sidebar-footer .counselor-role,
+.sidebar-footer .parent-role,
+.sidebar-footer .user-role,
+.sidebar .student-role,
+.sidebar .admin-role,
+.sidebar .teacher-role,
+.sidebar .counselor-role,
+.sidebar .parent-role,
+.sidebar .user-role {
+    font-size: 0.78rem !important;
+    font-weight: 500 !important;
+    color: #94a3b8 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    margin: 2px 0 0 0 !important;
+    padding: 0 !important;
+    line-height: 1.2 !important;
+    text-align: left !important;
+    border: none !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    letter-spacing: normal !important;
+    text-transform: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    transition: none !important;
+}
+
+.sidebar-footer .teacher-role i,
+.sidebar-footer .student-role i,
+.sidebar-footer .admin-role i,
+.sidebar-footer .counselor-role i,
+.sidebar-footer .parent-role i,
+.sidebar-footer .user-role i,
+.sidebar .student-role i,
+.sidebar .admin-role i,
+.sidebar .teacher-role i,
+.sidebar .counselor-role i,
+.sidebar .parent-role i,
+.sidebar .user-role i {
+    font-size: 0.76rem !important;
+    color: #94a3b8 !important;
+    opacity: 0.9 !important;
+    margin: 0 !important;
+    display: inline-block !important;
+    text-shadow: none !important;
+    transition: none !important;
+}
+
+.sidebar-footer .teacher-role:hover,
+.sidebar-footer .student-role:hover,
+.sidebar-footer .admin-role:hover,
+.sidebar-footer .counselor-role:hover,
+.sidebar-footer .parent-role:hover,
+.sidebar-footer .user-role:hover {
+    background: transparent !important;
+    border: none !important;
+    color: #94a3b8 !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.sidebar-footer .teacher-role:hover i,
+.sidebar-footer .student-role:hover i,
+.sidebar-footer .admin-role:hover i,
+.sidebar-footer .counselor-role:hover i,
+.sidebar-footer .parent-role:hover i,
+.sidebar-footer .user-role:hover i {
+    color: #94a3b8 !important;
+    text-shadow: none !important;
+}
+
+/* Specific badge in parent sidebar */
+.sidebar-footer .parent-child-badge {
+    font-size: 0.70rem !important;
+    color: #facc15 !important;
+    margin-top: 2px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    padding: 0 !important;
+}
+
+.sidebar-footer .parent-child-badge i {
+    font-size: 0.68rem !important;
+    color: #facc15 !important;
+    margin: 0 !important;
+}
+
+/* ===== PROFESSIONAL LOGOUT BUTTON ===== */
+.sidebar-logout-btn {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    width: 100% !important;
+    padding: 9px 12px !important;
+    border-radius: 8px !important;
+    background: rgba(239, 68, 68, 0.12) !important;
+    color: #fca5a5 !important;
+    border: 1px solid rgba(239, 68, 68, 0.3) !important;
+    font-size: 0.84rem !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    cursor: pointer !important;
+    transition: all 0.22s ease !important;
+    box-sizing: border-box !important;
+    letter-spacing: 0.2px !important;
+}
+
+.sidebar-logout-btn i {
+    font-size: 0.88rem !important;
+    transition: transform 0.2s ease !important;
+}
+
+.sidebar-logout-btn:hover {
+    background: #ef4444 !important;
+    color: #ffffff !important;
+    border-color: #ef4444 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35) !important;
+}
+
+.sidebar-logout-btn:hover i {
+    transform: translateX(2px) !important;
+}
+
+.sidebar-logout-btn:active {
+    transform: translateY(0) !important;
+}
+
+/* ===== MOBILE & COLLAPSED SIDEBAR ADAPTATION ===== */
+@media (max-width: 768px) {
+    .sidebar:not(.active) .sidebar-footer {
+        padding: 10px 6px !important;
+        align-items: center !important;
+    }
+
+    .sidebar:not(.active) .sidebar-footer .teacher-info,
+    .sidebar:not(.active) .sidebar-footer .student-info,
+    .sidebar:not(.active) .sidebar-footer .admin-info,
+    .sidebar:not(.active) .sidebar-footer .counselor-info,
+    .sidebar:not(.active) .sidebar-footer .parent-info,
+    .sidebar:not(.active) .sidebar-footer .parent-child-badge {
+        display: none !important;
+    }
+
+    .sidebar.active .sidebar-footer {
+        padding: 10px 14px 14px !important;
+    }
+
+    .sidebar.active .sidebar-footer .teacher-info,
+    .sidebar.active .sidebar-footer .student-info,
+    .sidebar.active .sidebar-footer .admin-info,
+    .sidebar.active .sidebar-footer .counselor-info,
+    .sidebar.active .sidebar-footer .parent-info,
+    .sidebar.active .sidebar-footer .parent-child-badge {
+        display: flex !important;
+    }
+
+    .sidebar-logout-btn {
+        width: 42px !important;
+        height: 42px !important;
+        padding: 0 !important;
+        border-radius: 10px !important;
+    }
+
+    .sidebar-logout-btn span {
+        display: none !important;
+    }
+
+    .sidebar-logout-btn i {
+        font-size: 1.05rem !important;
+        margin: 0 !important;
+    }
+}
+
+/* ===== NOTIFICATION SIDEBAR BADGES & CATEGORY TAGS ===== */
+.sidebar .nav-badge,
+.nav-items a .nav-badge,
+.nav-badge {
+    background: #ef4444;
+    color: #ffffff;
+    font-size: 10.5px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 999px;
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    line-height: 1;
+    box-shadow: 0 1px 3px rgba(239, 68, 68, 0.4);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* Bulletproof hiding rules: NO badge or red number should ever appear when read / count is 0 or empty */
+.nav-badge.hidden,
+.nav-badge[style*="display: none"],
+.nav-badge[style*="display:none"],
+.nav-badge[data-count="0"],
+.nav-badge:empty {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    width: 0 !important;
+    height: 0 !important;
+    min-width: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    pointer-events: none !important;
+}
+
+.notif-category-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4.5px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+.notif-category-tag.tag-enrollment {
+    background: #e0f2fe;
+    color: #0369a1;
+    border: 1px solid #bae6fd;
+}
+
+.notif-category-tag.tag-requirement {
+    background: #fef3c7;
+    color: #b45309;
+    border: 1px solid #fde68a;
+}
+
+.notif-category-tag.tag-announcement {
+    background: #f3e8ff;
+    color: #7e22ce;
+    border: 1px solid #e9d5ff;
+}
+
+.notif-category-tag.tag-general {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+}
+

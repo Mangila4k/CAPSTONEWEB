@@ -37,6 +37,14 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
 
+    // Set Current Date in Date Badge
+    const dateBadge = document.querySelector('.date-badge, #currentDateDisplay, #dateBadge');
+    if (dateBadge) {
+        const now = new Date();
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        dateBadge.innerHTML = `<i class="fas fa-calendar-alt"></i> ${now.toLocaleDateString('en-US', options)}`;
+    }
+
     // 2. Fetch Data from Supabase
     await loadDashboardStats();
     await loadRecentViolations();

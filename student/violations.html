@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guidance & Violations Record - HES, Hiraya Enrollment System</title>
+    <title>Guidance & Violations Record - PLSNSH, Placido L. Señor National High School</title>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <!-- Google Fonts -->
@@ -11,7 +12,9 @@
     <!-- CSS -->
     <link rel="stylesheet" href="css/violations.css">
     <link rel="stylesheet" href="../css/chatbot.css">
+    <link rel="stylesheet" href="../css/sidebar.css">
 </head>
+
 <body>
     <div class="app-container">
         <!-- ===== SIDEBAR ===== -->
@@ -19,20 +22,12 @@
             <div class="sidebar-header">
                 <div class="logo">
                     <div class="logo-icon">
-                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
+                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo"
+                            onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
                     </div>
-                    <div class="logo-text">PLS<span>NSH</span></div>
+                    <div class="logo-text">PLS<span>NHS</span></div>
                 </div>
                 <div class="school-badge">Placido L. Señor National High School</div>
-            </div>
-
-            <div class="student-profile">
-                <div class="student-avatar">
-                    <div class="avatar-initial" id="studentInitial">S</div>
-                    <div class="online-dot"></div>
-                </div>
-                <div class="student-name" id="studentName">Student</div>
-                <div class="student-role"><i class="fas fa-user-graduate"></i> Student</div>
             </div>
 
             <nav class="nav-menu">
@@ -41,11 +36,24 @@
                     <ul class="nav-items">
                         <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
                         <li><a href="attendance.html"><i class="fas fa-calendar-check"></i> Attendance</a></li>
-                        <li><a href="schedule.html"><i class="fas fa-calendar-alt"></i> Class Program</a></li>
-                        <li><a href="assessments.html"><i class="fas fa-clipboard-list"></i> Assessments</a></li>
-                        <li><a href="grades.html"><i class="fas fa-star"></i> My Grades</a></li>
                         <li><a href="requirements.html"><i class="fas fa-file-alt"></i> Requirements</a></li>
-                        <li><a href="violations.html" class="active"><i class="fas fa-scale-balanced"></i> Guidance & Violations</a></li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">ACADEMICS</div>
+                    <ul class="nav-items">
+                        <li><a href="assessments.html"><i class="fas fa-clipboard-list"></i> Assessments</a></li>
+                        <li><a href="schedule.html"><i class="fas fa-calendar-alt"></i> Class Program</a></li>
+                        <li><a href="grades.html"><i class="fas fa-star"></i> My Grades</a></li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">DISCIPLINE & CONDUCT</div>
+                    <ul class="nav-items">
+                        <li><a href="violations.html" class="active"><i class="fas fa-scale-balanced"></i> Guidance &
+                                Violations</a></li>
                     </ul>
                 </div>
 
@@ -53,10 +61,25 @@
                     <div class="nav-section-title">ACCOUNT</div>
                     <ul class="nav-items">
                         <li><a href="profile.html"><i class="fas fa-user-circle"></i> My Profile</a></li>
-                        <li><a href="../auth/login.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                        <li><a href="../auth/login.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                        </li>
+
                     </ul>
                 </div>
             </nav>
+            <!-- Pinned Sidebar Footer -->
+            <div class="sidebar-footer">
+                <div class="student-profile">
+                    <div class="student-avatar">
+                        <div class="avatar-initial" id="studentInitial">S</div>
+                        <div class="online-dot"></div>
+                    </div>
+                    <div class="student-info">
+                        <div class="student-name" id="studentName">Student</div>
+                        <div class="student-role"><i class="fas fa-user-graduate"></i> Student</div>
+                    </div>
+                </div>
+            </div>
         </aside>
 
         <!-- ===== MAIN CONTENT ===== -->
@@ -68,7 +91,8 @@
                     <p>Official disciplinary records, guidance purposes, and decisions or actions taken</p>
                 </div>
                 <div style="display: flex; gap: 10px; align-items: center;">
-                    <a href="profile.html" style="padding: 9px 16px; border-radius: 8px; background: #fff; border: 1.5px solid #cbd5e1; color: #0b2b4a; font-weight: 600; font-size: 13px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                    <a href="profile.html"
+                        style="padding: 9px 16px; border-radius: 8px; background: #fff; border: 1.5px solid #cbd5e1; color: #0b2b4a; font-weight: 600; font-size: 13px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
                         <i class="fas fa-qrcode"></i> View Emergency QR
                     </a>
                 </div>
@@ -85,7 +109,8 @@
                     </div>
                     <div>
                         <div class="standing-title" id="standingTitle">Good Moral Standing</div>
-                        <div class="standing-desc" id="standingDesc">You currently have a clean disciplinary record with no active sanctions or unresolved counseling referrals.</div>
+                        <div class="standing-desc" id="standingDesc">You currently have a clean disciplinary record with
+                            no active sanctions or unresolved counseling referrals.</div>
                     </div>
                 </div>
                 <div>
@@ -158,18 +183,23 @@
             </div>
 
             <!-- Guidance Office Info Box -->
-            <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 16px; padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+            <div
+                style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 16px; padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
                 <div style="display: flex; align-items: center; gap: 16px;">
-                    <div style="width: 48px; height: 48px; border-radius: 12px; background: #e0f2fe; color: #0369a1; display: flex; align-items: center; justify-content: center; font-size: 22px;">
+                    <div
+                        style="width: 48px; height: 48px; border-radius: 12px; background: #e0f2fe; color: #0369a1; display: flex; align-items: center; justify-content: center; font-size: 22px;">
                         <i class="fas fa-user-tie"></i>
                     </div>
                     <div>
-                        <h4 style="margin: 0; font-size: 15px; color: #0f172a; font-weight: 700;">Guidance & Counseling Office</h4>
-                        <p style="margin: 2px 0 0; font-size: 12.5px; color: #64748b;">Office Hours: Mon - Fri, 8:00 AM - 5:00 PM • Room 204, Administration Bldg.</p>
+                        <h4 style="margin: 0; font-size: 15px; color: #0f172a; font-weight: 700;">Guidance & Counseling
+                            Office</h4>
+                        <p style="margin: 2px 0 0; font-size: 12.5px; color: #64748b;">Office Hours: Mon - Fri, 8:00 AM
+                            - 5:00 PM • Room 204, Administration Bldg.</p>
                     </div>
                 </div>
                 <div>
-                    <a href="mailto:guidance@hes.edu.ph?subject=Student%20Inquiry" style="padding: 9px 18px; border-radius: 8px; background: #0b2b4a; color: #fff; text-decoration: none; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+                    <a href="mailto:guidance@hes.edu.ph?subject=Student%20Inquiry"
+                        style="padding: 9px 18px; border-radius: 8px; background: #0b2b4a; color: #fff; text-decoration: none; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
                         <i class="fas fa-envelope"></i> Contact Guidance Counselor
                     </a>
                 </div>
@@ -182,7 +212,8 @@
         <div class="hes-modal-card">
             <div class="hes-modal-header">
                 <div class="hes-modal-title">
-                    <i class="fas fa-file-contract" style="color: #f59e0b;"></i> Official Incident & Guidance Action Details
+                    <i class="fas fa-file-contract" style="color: #f59e0b;"></i> Official Incident & Guidance Action
+                    Details
                 </div>
                 <button class="hes-modal-close" onclick="closeCaseModal()">&times;</button>
             </div>
@@ -190,10 +221,12 @@
                 <!-- Loaded dynamically -->
             </div>
             <div class="hes-modal-footer">
-                <button type="button" class="btn-view-record" onclick="window.printCaseRecord()" style="background: #0284c7;">
+                <button type="button" class="btn-view-record" onclick="window.printCaseRecord()"
+                    style="background: #0284c7;">
                     <i class="fas fa-print"></i> Print Record
                 </button>
-                <button type="button" class="btn-view-record" onclick="closeCaseModal()" style="background: #64748b;">Close</button>
+                <button type="button" class="btn-view-record" onclick="closeCaseModal()"
+                    style="background: #64748b;">Close</button>
             </div>
         </div>
     </div>
@@ -203,4 +236,5 @@
     <script type="module" src="js/violations.js"></script>
     <script src="../js/chatbot.js"></script>
 </body>
+
 </html>

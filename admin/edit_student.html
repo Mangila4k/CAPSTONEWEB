@@ -1,9 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Student - HES, Hiraya Enrollment System</title>
+    <title>Edit Student - PLSNSH, Placido L. Señor National High School</title>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- Google Fonts -->
@@ -12,7 +13,9 @@
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/edit_student.css">
     <link rel="stylesheet" href="../css/chatbot.css">
+    <link rel="stylesheet" href="../css/sidebar.css">
 </head>
+
 <body>
     <!-- Mobile Menu Toggle -->
     <div class="menu-toggle" id="menuToggle">
@@ -24,20 +27,12 @@
         <div class="sidebar-header">
             <div class="logo">
                 <div class="logo-icon">
-                    <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
+                    <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo"
+                        onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
                 </div>
                 <div class="logo-text">PLS<span>NSH</span></div>
             </div>
             <div class="school-badge">Placido L. Señor National High School</div>
-        </div>
-
-        <div class="admin-profile">
-            <div class="admin-avatar">
-                <div class="avatar-initial" id="adminAvatar">A</div>
-                <div class="online-dot"></div>
-            </div>
-            <div class="admin-name" id="adminName">Admin</div>
-            <div class="admin-role"><i class="fas fa-shield-alt"></i> Administrator</div>
         </div>
 
         <div class="nav-menu">
@@ -69,8 +64,22 @@
                 <div class="nav-section-title">ACCOUNT</div>
                 <ul class="nav-items">
                     <li><a href="profile.html"><i class="fas fa-user"></i> Profile</a></li>
-                    <li><a href="../auth/logout.html"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                    <li><a href="../auth/logout.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+
                 </ul>
+            </div>
+        </div>
+        <!-- Pinned Sidebar Footer -->
+        <div class="sidebar-footer">
+            <div class="admin-profile">
+                <div class="admin-avatar">
+                    <div class="avatar-initial" id="adminAvatar">A</div>
+                    <div class="online-dot"></div>
+                </div>
+                <div class="admin-info">
+                    <div class="admin-name" id="adminName">Admin</div>
+                    <div class="admin-role"><i class="fas fa-shield-alt"></i> Administrator</div>
+                </div>
             </div>
         </div>
     </aside>
@@ -93,29 +102,29 @@
                 <i class="fas fa-user-edit"></i>
                 <h3>Student Information</h3>
             </div>
-            
+
             <form id="editStudentForm">
                 <div class="form-row form-row-3">
                     <div class="form-group">
                         <label class="form-label">First Name <span class="required">*</span></label>
-                        <input type="text" name="firstname" id="firstname" value="Juan" required>
+                        <input type="text" name="firstname" id="firstname" placeholder="Enter first name" required>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Middle Name / M.I.</label>
-                        <input type="text" name="middlename" id="middlename" value="D" placeholder="e.g. D.">
+                        <input type="text" name="middlename" id="middlename" placeholder="e.g. D.">
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Last Name <span class="required">*</span></label>
-                        <input type="text" name="lastname" id="lastname" value="Dela Cruz" required>
+                        <input type="text" name="lastname" id="lastname" placeholder="Enter last name" required>
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">Birthdate <span class="required">*</span></label>
-                        <input type="date" name="birthdate" id="birthdate" value="2008-06-15" required>
+                        <input type="date" name="birthdate" id="birthdate" required>
                         <div class="form-hint">
                             <i class="fas fa-info-circle"></i> Must be 15-30 years old
                         </div>
@@ -125,7 +134,7 @@
                         <label class="form-label">Gender <span class="required">*</span></label>
                         <select name="gender" id="gender" required>
                             <option value="">Select gender</option>
-                            <option value="Male" selected>Male</option>
+                            <option value="Male">Male</option>
                             <option value="Female">Female</option>
                             <option value="Other">Other</option>
                         </select>
@@ -134,14 +143,42 @@
 
                 <div class="form-group">
                     <label class="form-label">Email Address <span class="required">*</span></label>
-                    <input type="email" name="email" id="email" value="juan.dela@plshs.edu.ph" required>
+                    <input type="email" name="email" id="email" placeholder="student@example.com" required>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">Student ID</label>
-                    <input type="text" name="id_number" id="id_number" value="HES-STU-000001" readonly disabled>
+                    <input type="text" name="id_number" id="id_number" placeholder="Loading ID..." readonly disabled>
                     <div class="form-hint">
                         <i class="fas fa-lock"></i> Student ID cannot be edited
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Grade / Year Level</label>
+                        <select name="grade_level" id="editStudentGradeLevel">
+                            <option value="">-- Select Grade Level --</option>
+                            <option value="Grade 7">Grade 7 (Junior High)</option>
+                            <option value="Grade 8">Grade 8 (Junior High)</option>
+                            <option value="Grade 9">Grade 9 (Junior High)</option>
+                            <option value="Grade 10">Grade 10 (Junior High)</option>
+                            <option value="Grade 11">Grade 11 (Senior High)</option>
+                            <option value="Grade 12">Grade 12 (Senior High)</option>
+                        </select>
+                        <div class="form-hint">
+                            <i class="fas fa-filter"></i> Filters section options
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Class Section</label>
+                        <select name="section_id" id="editStudentSection" disabled>
+                            <option value="">-- Select Grade Level First --</option>
+                        </select>
+                        <div class="form-hint" id="editStudentSectionHint">
+                            <i class="fas fa-info-circle"></i> Assign student class section
+                        </div>
                     </div>
                 </div>
 
@@ -152,15 +189,16 @@
                         <h4>Live Preview</h4>
                     </div>
                     <div class="preview-content">
-                        <div class="preview-avatar" id="previewInitial">J</div>
+                        <div class="preview-avatar" id="previewInitial"><i class="fas fa-user"></i></div>
                         <div class="preview-details">
-                            <h5 id="previewName">Juan D. Dela Cruz</h5>
+                            <h5 id="previewName">Student Name</h5>
                             <div class="preview-email" id="previewEmail">
-                                <i class="fas fa-envelope"></i> juan.dela@plshs.edu.ph
+                                <i class="fas fa-envelope"></i> —
                             </div>
                             <div class="preview-meta" id="previewMeta">
-                                <span><i class="fas fa-calendar"></i> <span id="previewAge">16 years old</span></span>
-                                <span><i class="fas fa-venus-mars"></i> <span id="previewGender">Male</span></span>
+                                <span><i class="fas fa-calendar"></i> <span id="previewAge">—</span></span>
+                                <span><i class="fas fa-venus-mars"></i> <span id="previewGender">—</span></span>
+                                <span><i class="fas fa-users-rectangle"></i> <span id="previewSection">—</span></span>
                             </div>
                         </div>
                     </div>
@@ -170,7 +208,7 @@
                     <button type="submit" name="update_student" class="btn-primary">
                         <i class="fas fa-save"></i> Save Changes
                     </button>
-                    <a href="view_student.html?id=1" class="btn-secondary">
+                    <a id="cancelEditStudentBtn" href="student.html" class="btn-secondary">
                         <i class="fas fa-times"></i> Cancel
                     </a>
                 </div>
@@ -183,7 +221,7 @@
                 <i class="fas fa-key"></i>
                 <h3>Password Management</h3>
             </div>
-            
+
             <div class="password-reset-section">
                 <div class="password-header">
                     <input type="checkbox" id="resetPasswordCheckbox">
@@ -235,4 +273,5 @@
     <script type="module" src="js/edit_student.js"></script>
     <script src="../js/chatbot.js"></script>
 </body>
+
 </html>

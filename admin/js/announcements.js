@@ -19,7 +19,7 @@ import { supabase } from '../../supabase/config.js';
         students: ['student'],
         parent_teacher_meeting: ['parent', 'teacher'],
         both: ['parent', 'teacher'],
-        all: ['parent', 'teacher', 'student']
+        all: ['parent', 'teacher', 'student', 'guidance', 'registrar', 'admin']
     };
 
     const AUDIENCE_LABELS = {
@@ -810,7 +810,6 @@ import { supabase } from '../../supabase/config.js';
      */
     async function notifyTargetUsers(announcement) {
         const users = await getAudienceUsers(announcement.target_audience);
-        if (users.length === 0) return 0;
 
         const isMeeting = announcement.meeting_type && announcement.meeting_type !== 'none';
         let message = announcement.content || '';
@@ -832,10 +831,23 @@ import { supabase } from '../../supabase/config.js';
             is_read: false
         }));
 
+        // Also add broadcast row so students/teachers/parents without user_id rows still receive it
+        rows.push({
+            user_id: null,
+            role: announcement.target_audience === 'all' ? null : announcement.target_audience,
+            announcement_id: String(announcement.id),
+            type: isMeeting ? 'meeting' : 'announcement',
+            title: `📢 ${announcement.title}`,
+            message: message.slice(0, 500),
+            priority: announcement.priority || 'normal',
+            read: false,
+            is_read: false
+        });
+
         // Insert in chunks to stay within request limits
         for (let i = 0; i < rows.length; i += 500) {
             const { error } = await supabase.from('notifications').insert(rows.slice(i, i + 500));
-            if (error) throw error;
+            if (error) console.warn('Notification insert note:', error);
         }
         return rows.length;
     }

@@ -462,8 +462,8 @@
 }
 
 .student-avatar {
-    width: 34px;
-    height: 34px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     color: #fff;
     display: flex;
@@ -472,9 +472,33 @@
     font-size: 13px;
     font-weight: 700;
     flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
     box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12);
     border: 2px solid #ffffff;
     transition: transform 0.2s ease;
+}
+
+.student-avatar img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    z-index: 1;
+}
+
+.student-avatar span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    position: relative;
+    z-index: 0;
 }
 
 .student-row:hover .student-avatar {

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Counselor Profile - HES Guidance</title>
+    <title>Counselor Profile - PLSNSH, Placido L. Señor National High School Guidance</title>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!-- Google Fonts -->
@@ -12,6 +12,8 @@
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/profile.css">
     <link rel="stylesheet" href="../css/chatbot.css">
+    <link rel="stylesheet" href="../css/sidebar.css">
+    <link rel="stylesheet" href="../css/dashboard_announcements.css">
 </head>
 <body>
     <!-- Mobile Menu Toggle -->
@@ -30,15 +32,6 @@
                     <div class="logo-text">PLS<span>NSH</span></div>
                 </div>
                 <div class="school-badge">Placido L. Señor National High School</div>
-            </div>
-
-            <div class="counselor-profile">
-                <div class="counselor-avatar">
-                    <div class="avatar-initial" id="counselorAvatar">G</div>
-                    <div class="online-dot"></div>
-                </div>
-                <div class="counselor-name" id="counselorName">Guidance Counselor</div>
-                <div class="counselor-role"><i class="fas fa-heart-pulse"></i> Guidance Office</div>
             </div>
 
             <nav class="nav-menu">
@@ -64,10 +57,24 @@
                     <div class="nav-section-title">ACCOUNT</div>
                     <ul class="nav-items">
                         <li><a href="profile.html" class="active"><i class="fas fa-user-gear"></i> Counselor Profile</a></li>
-                        <li><a href="../auth/logout.html"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                        <li><a href="../auth/logout.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                        
                     </ul>
                 </div>
             </nav>
+                    <!-- Pinned Sidebar Footer -->
+            <div class="sidebar-footer">
+                <div class="counselor-profile">
+                    <div class="counselor-avatar">
+                        <div class="avatar-initial" id="counselorAvatar">G</div>
+                        <div class="online-dot"></div>
+                    </div>
+                    <div class="counselor-info">
+                        <div class="counselor-name" id="counselorName">Guidance Counselor</div>
+                        <div class="counselor-role"><i class="fas fa-heart-pulse"></i> Guidance Office</div>
+                    </div>
+                </div>
+            </div>
         </aside>
 
         <!-- Main Content -->
@@ -200,5 +207,6 @@
 
     <!-- Scripts -->
     <script type="module" src="js/profile.js"></script>
+    <script type="module" src="../js/dashboard_announcements_notifier.js"></script>
 </body>
 </html>

@@ -198,8 +198,18 @@ document.addEventListener('DOMContentLoaded', async function() {
                 .limit(60);
 
             if (enrData && enrData.length > 0) {
+                // Ensure only one unique enrollment activity is logged per student (prevent redundant copies)
+                const seenStudentEnrollmentKeys = new Set();
                 enrData.forEach(e => {
                     const studentName = `${e.first_name || ''} ${e.last_name || ''}`.trim() || 'Student Applicant';
+                    const email = (e.email || '').toLowerCase().trim();
+                    const dedupeKey = email || (e.student_id ? `sid_${e.student_id}` : studentName.toLowerCase());
+
+                    if (dedupeKey) {
+                        if (seenStudentEnrollmentKeys.has(dedupeKey)) return;
+                        seenStudentEnrollmentKeys.add(dedupeKey);
+                    }
+
                     const gradeStr = e.grade_level || 'Grade Level Not Specified';
                     const strandStr = e.strand ? ` • ${e.strand}` : '';
                     const status = (e.status || 'Pending').toLowerCase();

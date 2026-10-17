@@ -49,7 +49,7 @@ body {
     width: 280px;
     background: #1B2A4A;
     color: #fff;
-    padding: 16px 14px;
+    padding: 16px 0 0 0;
     display: flex;
     flex-direction: column;
     position: fixed;
@@ -62,7 +62,11 @@ body {
 }
 
 .sidebar-header {
-    margin-bottom: 14px;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0 16px 14px 16px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 .logo {
@@ -109,66 +113,10 @@ body {
     color: rgba(255, 255, 255, 0.8);
 }
 
-/* Parent Profile */
+/* Parent Profile in Sidebar Footer is styled by css/sidebar.css */
 .parent-profile {
-    text-align: center;
-    padding: 10px 0 14px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    margin-bottom: 14px;
-}
-
-.parent-avatar {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background: #facc15;
-    margin: 0 auto 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    font-size: 26px;
-    font-weight: 700;
-    color: #1B2A4A;
-}
-
-.avatar-initial {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #facc15;
-    color: #1B2A4A;
-    font-size: 26px;
-    font-weight: 700;
-}
-
-.online-dot {
-    width: 14px;
-    height: 14px;
-    background: #22c55e;
-    border-radius: 50%;
-    border: 2px solid #1B2A4A;
-    position: absolute;
-    bottom: 0;
-    right: 0;
-}
-
-.parent-name {
-    font-weight: 600;
-    font-size: 16px;
-}
-
-.parent-role {
-    font-size: 12px;
-    opacity: 0.8;
-    margin-top: 2px;
-}
-
-.parent-role i {
-    margin-right: 4px;
+    margin: 0;
+    padding: 0;
 }
 
 .parent-child-badge {
@@ -197,6 +145,7 @@ body {
 /* ===== NAVIGATION ===== */
 .nav-menu {
     flex: 1;
+    padding: 0 14px;
 }
 
 .nav-section {

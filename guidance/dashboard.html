@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guidance Dashboard - HES, Hiraya Enrollment System</title>
+    <title>Guidance Dashboard -PLSNSH, Placido L. Señor National High School</title>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!-- Google Fonts -->
@@ -13,6 +13,8 @@
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/dashboard.css">
     <link rel="stylesheet" href="../css/chatbot.css">
+    <link rel="stylesheet" href="../css/sidebar.css">
+    <link rel="stylesheet" href="../css/dashboard_announcements.css">
 </head>
 
 <body>
@@ -33,15 +35,6 @@
                     <div class="logo-text">PLS<span>NSH</span></div>
                 </div>
                 <div class="school-badge">Placido L. Señor National High School</div>
-            </div>
-
-            <div class="counselor-profile">
-                <div class="counselor-avatar">
-                    <div class="avatar-initial" id="counselorAvatar">G</div>
-                    <div class="online-dot"></div>
-                </div>
-                <div class="counselor-name" id="counselorName">Guidance Counselor</div>
-                <div class="counselor-role"><i class="fas fa-heart-pulse"></i> Guidance Office</div>
             </div>
 
             <nav class="nav-menu">
@@ -69,14 +62,59 @@
                     <div class="nav-section-title">ACCOUNT</div>
                     <ul class="nav-items">
                         <li><a href="profile.html"><i class="fas fa-user-gear"></i> Profile</a></li>
-                        <li><a href="../auth/logout.html"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                        <li><a href="../auth/logout.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                        
                     </ul>
                 </div>
             </nav>
+                    <!-- Pinned Sidebar Footer -->
+            <div class="sidebar-footer">
+                <div class="counselor-profile">
+                    <div class="counselor-avatar">
+                        <div class="avatar-initial" id="counselorAvatar">G</div>
+                        <div class="online-dot"></div>
+                    </div>
+                    <div class="counselor-info">
+                        <div class="counselor-name" id="counselorName">Guidance Counselor</div>
+                        <div class="counselor-role"><i class="fas fa-heart-pulse"></i> Guidance Office</div>
+                    </div>
+                </div>
+            </div>
         </aside>
 
         <!-- Main Content -->
         <main class="main-content">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div>
+                    <h1>Guidance Dashboard</h1>
+                    <p class="subtitle">Overview of student disciplinary records, counseling progress, and school notices</p>
+                </div>
+                <div class="header-actions">
+                    <div class="notification-wrapper">
+                        <button type="button" class="notification-btn" id="notificationBtn" title="Announcements & Notifications">
+                            <i class="fas fa-bell"></i>
+                            <span class="notif-count empty" id="notifCount">0</span>
+                        </button>
+                        <div class="notification-dropdown" id="notificationDropdown">
+                            <div class="dropdown-header">
+                                <h4><i class="fas fa-bullhorn" style="color: #facc15;"></i> Announcements & Alerts</h4>
+                                <button type="button" id="markAllReadBtn" class="mark-all-read">Mark all as read</button>
+                            </div>
+                            <div class="dropdown-body" id="notificationList">
+                                <div class="empty-notifications">
+                                    <i class="fas fa-bell-slash"></i>
+                                    <p>No new notices yet</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="date-badge" id="currentDateDisplay">
+                        <i class="fas fa-calendar-alt"></i> Loading date...
+                    </div>
+                </div>
+            </div>
+
             <!-- Greeting Banner -->
             <div class="dashboard-greeting">
                 <div class="greeting-text">
@@ -177,9 +215,7 @@
                     </div>
                 </div>
 
-                <!-- Right: Upcoming Counseling & Quick Actions -->
                 <div style="display: flex; flex-direction: column; gap: 24px;">
-                    <!-- Upcoming Counseling Appointments -->
                     <div class="content-card" style="margin-bottom: 0;">
                         <div class="card-header-flex">
                             <h3><i class="fas fa-calendar-check"></i> Upcoming Counseling</h3>
@@ -192,7 +228,6 @@
                         </div>
                     </div>
 
-                    <!-- Quick Guidance Tools -->
                     <div class="content-card" style="margin-bottom: 0;">
                         <div class="card-header-flex">
                             <h3><i class="fas fa-bolt"></i> Quick Guidance Tools</h3>
@@ -227,6 +262,7 @@
 
     <!-- Scripts -->
     <script type="module" src="js/dashboard.js"></script>
+    <script type="module" src="../js/dashboard_announcements_notifier.js"></script>
 </body>
 
 </html>

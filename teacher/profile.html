@@ -1,17 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Profile - Teacher Dashboard | HES</title>
+    <title>My Profile - Teacher Dashboard | PLSNSH, Placido L. Señor National High School</title>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Profile CSS -->
     <link rel="stylesheet" href="css/profile.css">
+    <link rel="stylesheet" href="../css/sidebar.css">
     <link rel="stylesheet" href="../css/chatbot.css">
 </head>
+
 <body>
     <!-- Mobile Menu Toggle -->
     <div class="menu-toggle" id="menuToggle">
@@ -24,33 +27,32 @@
             <div class="sidebar-header">
                 <div class="logo">
                     <div class="logo-icon">
-                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
+                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo"
+                            onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
                     </div>
                     <div class="logo-text">PLS<span>NSH</span></div>
                 </div>
                 <div class="school-badge">Placido L. Señor National High School</div>
             </div>
 
-            <div class="teacher-profile">
-                <div class="teacher-avatar">
-                    <div class="avatar-initial" id="teacherInitial">T</div>
-                    <div class="online-dot"></div>
-                </div>
-                <div class="teacher-name" id="teacherName">Teacher</div>
-                <div class="teacher-role"><i class="fas fa-chalkboard-user"></i> Teacher</div>
-            </div>
-
             <nav class="nav-menu">
                 <div class="nav-section">
                     <div class="nav-section-title">MAIN MENU</div>
                     <ul class="nav-items">
-                        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
-                        <li><a href="attendance-face.html"><i class="fas fa-camera"></i> <span>Face Attendance</span></a></li>
-                        <li><a href="attendance-qr.html"><i class="fas fa-qrcode"></i> <span>Student QR Scanner</span></a></li>
+                        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a>
+                        </li>
+                        <li><a href="announcements.html"><i class="fas fa-bullhorn"></i> <span>Announcements</span></a>
+                        </li>
+                        <li><a href="attendance-face.html"><i class="fas fa-camera"></i> <span>Face
+                                    Attendance</span></a></li>
+                        <li><a href="attendance-qr.html"><i class="fas fa-qrcode"></i> <span>Student QR
+                                    Scanner</span></a></li>
                         <li><a href="classes.html"><i class="fas fa-users"></i> <span>My Classes</span></a></li>
-                        <li><a href="class-program.html"><i class="fas fa-calendar-alt"></i> <span>Class Program</span></a></li>
+                        <li><a href="class-program.html"><i class="fas fa-calendar-alt"></i> <span>Class
+                                    Program</span></a></li>
                         <li><a href="teacher-load.html"><i class="fas fa-clock"></i> <span>Teacher Load</span></a></li>
-                        <li><a href="assessments.html"><i class="fas fa-clipboard-list"></i> <span>Assessments</span></a></li>
+                        <li><a href="assessments.html"><i class="fas fa-clipboard-list"></i>
+                                <span>Assessments</span></a></li>
                         <li><a href="grades.html"><i class="fas fa-star"></i> <span>Grades</span></a></li>
                     </ul>
                 </div>
@@ -58,11 +60,27 @@
                 <div class="nav-section">
                     <div class="nav-section-title">ACCOUNT</div>
                     <ul class="nav-items">
-                        <li><a href="profile.html" class="active"><i class="fas fa-user-circle"></i> <span>My Profile</span></a></li>
-                        <li><a href="../auth/login.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+                        <li><a href="profile.html" class="active"><i class="fas fa-user-circle"></i> <span>My
+                                    Profile</span></a></li>
+                        <li><a href="../auth/login.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                        </li>
                     </ul>
                 </div>
             </nav>
+
+            <!-- Pinned Sidebar Footer -->
+            <div class="sidebar-footer">
+                <div class="teacher-profile">
+                    <div class="teacher-avatar">
+                        <div class="avatar-initial" id="teacherInitial">RQ</div>
+                        <div class="online-dot"></div>
+                    </div>
+                    <div class="teacher-info">
+                        <div class="teacher-name" id="teacherName">Ryan Quiroga</div>
+                        <div class="teacher-role"><i class="fas fa-chalkboard-user"></i> Teacher</div>
+                    </div>
+                </div>
+            </div>
         </aside>
 
         <!-- ===== MAIN CONTENT ===== -->
@@ -111,7 +129,8 @@
                             <div class="info-content">
                                 <div class="info-label">Email Address</div>
                                 <div class="info-value" id="profileEmail">teacher@hes.edu.ph</div>
-                                <span id="emailVerifiedBadge"><span class="verified-badge"><i class="fas fa-check-circle"></i> Verified</span></span>
+                                <span id="emailVerifiedBadge"><span class="verified-badge"><i
+                                            class="fas fa-check-circle"></i> Verified</span></span>
                             </div>
                         </div>
 
@@ -141,19 +160,26 @@
                             </div>
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <span class="doc-upload-count" id="teacherDocCount">0 Files</span>
-                                <button type="button" id="teacherUploadTriggerBtn" style="padding: 4px 10px; font-size: 11.5px; border-radius: 6px; background: var(--primary); color: #fff; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; font-weight: 500;">
+                                <button type="button" id="teacherUploadTriggerBtn"
+                                    style="padding: 4px 10px; font-size: 11.5px; border-radius: 6px; background: var(--primary); color: #fff; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; font-weight: 500;">
                                     <i class="fas fa-plus"></i> Upload
                                 </button>
-                                <input type="file" id="teacherDocFileInput" accept=".pdf,image/png,image/jpeg,image/webp" style="display: none;">
+                                <input type="file" id="teacherDocFileInput"
+                                    accept=".pdf,image/png,image/jpeg,image/webp" style="display: none;">
                             </div>
                         </div>
 
-                        <div id="teacherDocUploadForm" style="display: none; margin-bottom: 16px; background: #f8fafc; padding: 14px; border-radius: 10px; border: 1px solid #e2e8f0;">
-                            <div style="font-size: 13px; font-weight: 600; color: #0f172a; margin-bottom: 8px;">Selected: <span id="teacherDocSelectedName" style="color: var(--primary);"></span></div>
+                        <div id="teacherDocUploadForm"
+                            style="display: none; margin-bottom: 16px; background: #f8fafc; padding: 14px; border-radius: 10px; border: 1px solid #e2e8f0;">
+                            <div style="font-size: 13px; font-weight: 600; color: #0f172a; margin-bottom: 8px;">
+                                Selected: <span id="teacherDocSelectedName" style="color: var(--primary);"></span></div>
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
                                 <div>
-                                    <label style="font-size: 11px; font-weight: 600; color: #64748b; display: block; margin-bottom: 4px;">Credential Type</label>
-                                    <select id="teacherDocTypeSelect" style="width: 100%; padding: 7px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12.5px;">
+                                    <label
+                                        style="font-size: 11px; font-weight: 600; color: #64748b; display: block; margin-bottom: 4px;">Credential
+                                        Type</label>
+                                    <select id="teacherDocTypeSelect"
+                                        style="width: 100%; padding: 7px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12.5px;">
                                         <option value="PRC License ID">PRC Professional License</option>
                                         <option value="CSC Eligibility">CSC Eligibility / Board Rating</option>
                                         <option value="Diploma / Transcript">Bachelor / Master's Diploma</option>
@@ -163,13 +189,19 @@
                                     </select>
                                 </div>
                                 <div>
-                                    <label style="font-size: 11px; font-weight: 600; color: #64748b; display: block; margin-bottom: 4px;">Document Label</label>
-                                    <input type="text" id="teacherDocCustomTitle" placeholder="e.g. PRC License 2026" style="width: 100%; padding: 7px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12.5px;">
+                                    <label
+                                        style="font-size: 11px; font-weight: 600; color: #64748b; display: block; margin-bottom: 4px;">Document
+                                        Label</label>
+                                    <input type="text" id="teacherDocCustomTitle" placeholder="e.g. PRC License 2026"
+                                        style="width: 100%; padding: 7px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12.5px;">
                                 </div>
                             </div>
                             <div style="display: flex; gap: 8px; justify-content: flex-end;">
-                                <button type="button" class="btn-secondary" id="teacherDocCancelBtn" style="padding: 6px 14px; font-size: 12px; border-radius: 6px; cursor: pointer; background: #fff; border: 1px solid #cbd5e1;">Cancel</button>
-                                <button type="button" class="btn-primary" id="teacherDocSaveBtn" style="padding: 6px 16px; font-size: 12px; border-radius: 6px; background: var(--primary); color: #fff; border: none; cursor: pointer;"><i class="fas fa-upload"></i> Upload</button>
+                                <button type="button" class="btn-secondary" id="teacherDocCancelBtn"
+                                    style="padding: 6px 14px; font-size: 12px; border-radius: 6px; cursor: pointer; background: #fff; border: 1px solid #cbd5e1;">Cancel</button>
+                                <button type="button" class="btn-primary" id="teacherDocSaveBtn"
+                                    style="padding: 6px 16px; font-size: 12px; border-radius: 6px; background: var(--primary); color: #fff; border: none; cursor: pointer;"><i
+                                        class="fas fa-upload"></i> Upload</button>
                             </div>
                         </div>
 
@@ -194,7 +226,8 @@
                             </div>
                             <div class="verification-info">
                                 <p><i class="fas fa-info-circle"></i> Your email address has not been verified yet.</p>
-                                <p style="margin-top: 10px;">Verifying your email helps secure your account and ensures you receive important notifications.</p>
+                                <p style="margin-top: 10px;">Verifying your email helps secure your account and ensures
+                                    you receive important notifications.</p>
                                 <button id="verifyEmailBtn" class="btn-verify">
                                     <i class="fas fa-paper-plane"></i> Verify Email Now
                                 </button>
@@ -211,8 +244,10 @@
                         <form id="emailChangeForm">
                             <div class="form-group">
                                 <label>New Email Address</label>
-                                <input type="email" name="new_email" id="new_email" placeholder="Enter your new email address" required>
-                                <small><i class="fas fa-info-circle"></i> A verification code will be sent to the new email address for confirmation.</small>
+                                <input type="email" name="new_email" id="new_email"
+                                    placeholder="Enter your new email address" required>
+                                <small><i class="fas fa-info-circle"></i> A verification code will be sent to the new
+                                    email address for confirmation.</small>
                             </div>
                             <button type="submit" class="btn-verify">
                                 <i class="fas fa-paper-plane"></i> Send Verification Code
@@ -223,7 +258,7 @@
                     <!-- Professional Information -->
                     <div class="academic-card">
                         <h3><i class="fas fa-chalkboard-user"></i> Professional Information</h3>
-                        
+
                         <div class="academic-grid">
                             <div class="academic-item">
                                 <div class="academic-value" id="sectionsCount">0</div>
@@ -241,7 +276,8 @@
 
                         <div class="info-box">
                             <i class="fas fa-info-circle"></i>
-                            <p id="teacherSummary">You are currently teaching 0 subject(s) to 0 student(s) across 0 section(s).</p>
+                            <p id="teacherSummary">You are currently teaching 0 subject(s) to 0 student(s) across 0
+                                section(s).</p>
                         </div>
                     </div>
 
@@ -293,19 +329,30 @@
                             <form id="profileUpdateForm">
                                 <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
                                     <div class="form-group">
-                                        <label class="form-label" style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; color: #1e293b;">First Name <span class="required" style="color: #ef4444;">*</span></label>
-                                        <input type="text" name="first_name" id="editFirstname" placeholder="First Name" style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem;" required>
+                                        <label class="form-label"
+                                            style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; color: #1e293b;">First
+                                            Name <span class="required" style="color: #ef4444;">*</span></label>
+                                        <input type="text" name="first_name" id="editFirstname" placeholder="First Name"
+                                            style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem;"
+                                            required>
                                     </div>
                                     <div class="form-group">
-                                        <label class="form-label" style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; color: #1e293b;">Last Name <span class="required" style="color: #ef4444;">*</span></label>
-                                        <input type="text" name="last_name" id="editLastname" placeholder="Last Name" style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem;" required>
+                                        <label class="form-label"
+                                            style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; color: #1e293b;">Last
+                                            Name <span class="required" style="color: #ef4444;">*</span></label>
+                                        <input type="text" name="last_name" id="editLastname" placeholder="Last Name"
+                                            style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem;"
+                                            required>
                                     </div>
                                 </div>
 
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px;">
+                                <div
+                                    style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px;">
                                     <div class="form-group">
-                                        <label class="form-label" style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; color: #1e293b;">Gender</label>
-                                        <select name="gender" id="editGender" style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem; background: #fff;">
+                                        <label class="form-label"
+                                            style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; color: #1e293b;">Gender</label>
+                                        <select name="gender" id="editGender"
+                                            style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem; background: #fff;">
                                             <option value="">Select Gender</option>
                                             <option value="Male">Male</option>
                                             <option value="Female">Female</option>
@@ -313,26 +360,39 @@
                                         </select>
                                     </div>
                                     <div class="form-group">
-                                        <label class="form-label" style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; color: #1e293b;">Contact Number</label>
-                                        <input type="tel" name="phone" id="editPhone" placeholder="09XXXXXXXXX" style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem;">
+                                        <label class="form-label"
+                                            style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; color: #1e293b;">Contact
+                                            Number</label>
+                                        <input type="tel" name="phone" id="editPhone" placeholder="09XXXXXXXXX"
+                                            style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem;">
                                     </div>
                                 </div>
 
                                 <div class="form-group" style="margin-top: 14px;">
-                                    <label class="form-label" style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; color: #1e293b;">Complete Home Address</label>
-                                    <textarea name="address" id="editAddress" rows="2" placeholder="Barangay, City/Municipality, Province" style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem; resize: vertical;"></textarea>
+                                    <label class="form-label"
+                                        style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; color: #1e293b;">Complete
+                                        Home Address</label>
+                                    <textarea name="address" id="editAddress" rows="2"
+                                        placeholder="Barangay, City/Municipality, Province"
+                                        style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem; resize: vertical;"></textarea>
                                 </div>
 
                                 <div class="form-group" style="margin-top: 14px;">
-                                    <label class="form-label" style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; color: #1e293b;">Department / Specialization</label>
-                                    <input type="text" name="department" id="editDepartment" placeholder="e.g. Senior High School - STEM Faculty" style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem;">
+                                    <label class="form-label"
+                                        style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; color: #1e293b;">Department
+                                        / Specialization</label>
+                                    <input type="text" name="department" id="editDepartment"
+                                        placeholder="e.g. Senior High School - STEM Faculty"
+                                        style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem;">
                                 </div>
 
                                 <div class="account-info-actions">
-                                    <button type="button" class="btn-secondary" id="cancelTeacherEditBtn" style="padding: 9px 18px; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff; color: #475569; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                                    <button type="button" class="btn-secondary" id="cancelTeacherEditBtn"
+                                        style="padding: 9px 18px; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff; color: #475569; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
                                         <i class="fas fa-times"></i> Cancel
                                     </button>
-                                    <button type="submit" class="btn-submit" id="saveTeacherProfileBtn" style="padding: 9px 22px; background: var(--primary); color: #fff; border: none; border-radius: 8px; font-weight: 600; font-size: 0.92rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
+                                    <button type="submit" class="btn-submit" id="saveTeacherProfileBtn"
+                                        style="padding: 9px 22px; background: var(--primary); color: #fff; border: none; border-radius: 8px; font-weight: 600; font-size: 0.92rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
                                         <i class="fas fa-save"></i> Save Changes
                                     </button>
                                 </div>
@@ -343,7 +403,7 @@
                     <!-- Change Password Form -->
                     <div class="form-card">
                         <h3><i class="fas fa-lock"></i> Change Password</h3>
-                        
+
                         <div class="password-section">
                             <div class="password-header">
                                 <input type="checkbox" id="change_password_checkbox">
@@ -361,7 +421,7 @@
                                         <div class="form-group">
                                             <label>New Password <span class="required">*</span></label>
                                             <input type="password" name="new_password" id="new_password" disabled>
-                                            
+
                                             <!-- Password strength meter -->
                                             <div class="password-strength">
                                                 <div class="password-strength-bar">
@@ -372,30 +432,37 @@
                                                     <span>Enter new password</span>
                                                 </div>
                                             </div>
-                                            
+
                                             <!-- Password requirements checklist -->
                                             <div class="password-requirements" id="passwordRequirements">
                                                 <small><i class="fas fa-shield-alt"></i> Password must contain:</small>
                                                 <ul>
-                                                    <li id="req-length"><i class="fas fa-circle"></i> At least 8 characters</li>
-                                                    <li id="req-upper"><i class="fas fa-circle"></i> At least 1 uppercase letter (A-Z)</li>
-                                                    <li id="req-lower"><i class="fas fa-circle"></i> At least 1 lowercase letter (a-z)</li>
-                                                    <li id="req-number"><i class="fas fa-circle"></i> At least 1 number (0-9)</li>
-                                                    <li id="req-special"><i class="fas fa-circle"></i> At least 1 special character (!@#$%^&*)</li>
+                                                    <li id="req-length"><i class="fas fa-circle"></i> At least 8
+                                                        characters</li>
+                                                    <li id="req-upper"><i class="fas fa-circle"></i> At least 1
+                                                        uppercase letter (A-Z)</li>
+                                                    <li id="req-lower"><i class="fas fa-circle"></i> At least 1
+                                                        lowercase letter (a-z)</li>
+                                                    <li id="req-number"><i class="fas fa-circle"></i> At least 1 number
+                                                        (0-9)</li>
+                                                    <li id="req-special"><i class="fas fa-circle"></i> At least 1
+                                                        special character (!@#$%^&*)</li>
                                                 </ul>
                                             </div>
                                         </div>
 
                                         <div class="form-group">
                                             <label>Confirm Password <span class="required">*</span></label>
-                                            <input type="password" name="confirm_password" id="confirm_password" disabled>
+                                            <input type="password" name="confirm_password" id="confirm_password"
+                                                disabled>
                                             <div class="password-strength-text" id="passwordMatchText">
                                                 <i class="fas fa-info-circle"></i> Re-enter new password
                                             </div>
                                         </div>
                                     </div>
 
-                                    <button type="submit" name="change_password" class="btn-submit" id="changePasswordBtn" disabled>
+                                    <button type="submit" name="change_password" class="btn-submit"
+                                        id="changePasswordBtn" disabled>
                                         <i class="fas fa-key"></i> Change Password
                                     </button>
                                 </div>
@@ -420,7 +487,8 @@
                         <div class="avatar-initial" id="modalInitial">T</div>
                     </div>
                     <div class="file-input-wrapper">
-                        <input type="file" name="profile_picture" id="profile_picture" accept="image/jpeg,image/png,image/gif,image/webp" onchange="previewImage(this)">
+                        <input type="file" name="profile_picture" id="profile_picture"
+                            accept="image/jpeg,image/png,image/gif,image/webp" onchange="previewImage(this)">
                         <label for="profile_picture" class="file-input-label">
                             <i class="fas fa-upload"></i> Choose Image
                         </label>
@@ -430,7 +498,9 @@
                     </p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn-danger" onclick="removeProfilePic()" style="background:#ef4444;color:#fff;border:none;padding:10px 18px;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;"><i class="fas fa-trash"></i> Remove</button>
+                    <button type="button" class="btn-danger" onclick="removeProfilePic()"
+                        style="background:#ef4444;color:#fff;border:none;padding:10px 18px;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;"><i
+                            class="fas fa-trash"></i> Remove</button>
                     <button type="button" class="btn-secondary" onclick="closeImageModal()">Cancel</button>
                     <button type="submit" name="upload_profile_pic" class="btn-primary">Upload</button>
                 </div>
@@ -450,7 +520,8 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn-secondary" id="dismissDocPreviewBtn">Close</button>
-                <a href="#" id="docDownloadBtn" class="btn-primary" download style="background: var(--primary); color: #fff; text-decoration: none; padding: 10px 20px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px;">
+                <a href="#" id="docDownloadBtn" class="btn-primary" download
+                    style="background: var(--primary); color: #fff; text-decoration: none; padding: 10px 20px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px;">
                     <i class="fas fa-download"></i> Download
                 </a>
             </div>
@@ -462,4 +533,5 @@
     <script type="module" src="js/profile.js"></script>
     <script src="../js/chatbot.js"></script>
 </body>
+
 </html>

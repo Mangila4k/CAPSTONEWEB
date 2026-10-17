@@ -29,7 +29,6 @@ import { EmailNotificationService } from '../../js/email_service.js';
     const notificationList = document.getElementById('notificationList');
     const markAllReadBtn = document.getElementById('markAllReadBtn');
     const notifCount = document.getElementById('notifCount');
-    const pendingEnrollmentsBadge = document.getElementById('pendingEnrollmentsBadge');
 
     // Stats
     const totalStudentsEl = document.getElementById('totalStudents');
@@ -263,16 +262,25 @@ import { EmailNotificationService } from '../../js/email_service.js';
             };
             const icon = iconMap[type] || 'fa-bell';
             const timeAgo = formatTime(n.created_at);
+            const cat = window.RegistrarNotificationSync
+                ? window.RegistrarNotificationSync.getNotificationCategory(n)
+                : { id: (type.includes('enroll') ? 'enrollment' : 'general'), label: (type.includes('enroll') ? 'Enrollments' : 'Notice'), icon: icon };
+            const categoryHtml = window.RegistrarNotificationSync
+                ? window.RegistrarNotificationSync.renderCategoryTag(cat)
+                : `<span class="notif-category-tag tag-${cat.id}"><i class="fas ${cat.icon}"></i> ${cat.label}</span>`;
 
             return `
-                <div class="notif-item ${isUnread ? 'unread' : ''}" data-id="${n.id}">
+                <div class="notif-item ${isUnread ? 'unread' : ''}" data-id="${n.id}" data-category="${cat.id}">
                     <div class="notif-icon notif-${type}">
                         <i class="fas ${icon}"></i>
                     </div>
                     <div class="notif-content">
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 3px;">
+                            ${categoryHtml}
+                            <div class="notif-time" style="margin-top: 0;">${timeAgo}</div>
+                        </div>
                         <div class="notif-title">${n.title || 'Student Update'}</div>
                         <div class="notif-message">${n.message || ''}</div>
-                        <div class="notif-time">${timeAgo}</div>
                     </div>
                 </div>
             `;
@@ -281,8 +289,29 @@ import { EmailNotificationService } from '../../js/email_service.js';
         notificationList.querySelectorAll('.notif-item').forEach(item => {
             item.addEventListener('click', async () => {
                 const id = item.dataset.id;
+                const catId = item.dataset.category;
                 await supabase.from('notifications').update({ read: true, is_read: true }).eq('id', id);
                 item.classList.remove('unread');
+
+                // "If you see that it is their notification then the red number should disappear"
+                if (catId === 'requirement') {
+                    localStorage.setItem('hes_seen_requirements_at', String(Date.now()));
+                    document.querySelectorAll('#pendingRequirementsBadge').forEach(b => {
+                        b.style.setProperty('display', 'none', 'important');
+                        b.classList.add('hidden');
+                        b.setAttribute('data-count', '0');
+                        b.textContent = '';
+                    });
+                } else if (catId === 'enrollment') {
+                    localStorage.setItem('hes_seen_enrollments_at', String(Date.now()));
+                    document.querySelectorAll('#pendingEnrollmentsBadge').forEach(b => {
+                        b.style.setProperty('display', 'none', 'important');
+                        b.classList.add('hidden');
+                        b.setAttribute('data-count', '0');
+                        b.textContent = '';
+                    });
+                }
+
                 loadNotifications();
             });
         });
@@ -318,6 +347,16 @@ import { EmailNotificationService } from '../../js/email_service.js';
         markAllReadBtn.addEventListener('click', async () => {
             try {
                 await supabase.from('notifications').update({ read: true, is_read: true }).or('role.eq.registrar,role.is.null');
+                document.querySelectorAll('#pendingEnrollmentsBadge, #pendingRequirementsBadge').forEach(b => {
+                    b.style.setProperty('display', 'none', 'important');
+                    b.classList.add('hidden');
+                    b.setAttribute('data-count', '0');
+                    b.textContent = '';
+                });
+                localStorage.setItem('hes_seen_requirements_at', String(Date.now()));
+                localStorage.setItem('hes_seen_enrollments_at', String(Date.now()));
+                localStorage.removeItem('hes_pending_requirements_count');
+                localStorage.removeItem('hes_pending_enrollments_count');
                 loadNotifications();
             } catch(e) {}
         });
@@ -353,15 +392,17 @@ import { EmailNotificationService } from '../../js/email_service.js';
         }
 
         try {
-            // Fetch students, enrollments, and student users in parallel
+            // Fetch students, enrollments, student users, and sections in parallel
             const [
                 { data: studentsRows, error: sErr },
                 { data: enrollmentsRows, error: eErr },
-                { data: userRows, error: uErr }
+                { data: userRows, error: uErr },
+                { data: sectionsRows }
             ] = await Promise.all([
                 supabase.from('students').select('*').order('created_at', { ascending: false }),
                 supabase.from('enrollments').select('*').order('created_at', { ascending: false }),
-                supabase.from('users').select('*').eq('role', 'student')
+                supabase.from('users').select('*').eq('role', 'student'),
+                supabase.from('sections').select('id, name, grade_level, strand')
             ]);
 
             if (sErr) throw sErr;
@@ -369,6 +410,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
             const sList = studentsRows || [];
             const eList = enrollmentsRows || [];
             const uList = userRows || [];
+            const secMap = new Map((sectionsRows || []).map(sec => [sec.id, sec]));
 
             // Combine students into unique student profiles
             const combinedStudents = [];
@@ -432,10 +474,13 @@ import { EmailNotificationService } from '../../js/email_service.js';
                     contact_number: st.contact_number || 'N/A',
                     grade_level: gradeLevel,
                     strand: strand,
+                    section_id: st.section_id || null,
+                    section_name: st.section_id && secMap.has(st.section_id) ? secMap.get(st.section_id).name : null,
                     status: rawStatus,
                     student_type: studentType,
                     school_year: schoolYear,
                     previous_school: prevSchool,
+                    avatar_url: st.two_by_two_picture_url || st.avatar_url || (latestEnrollment ? latestEnrollment.two_by_two_picture_url : '') || null,
                     created_at: st.created_at || (latestEnrollment ? latestEnrollment.created_at : new Date().toISOString())
                 });
             });
@@ -480,6 +525,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
                         student_type: studentType,
                         school_year: e.last_school_year || '2026-2027',
                         previous_school: prevSchool,
+                        avatar_url: e.two_by_two_picture_url || null,
                         created_at: e.created_at || new Date().toISOString()
                     });
                 }
@@ -536,15 +582,6 @@ import { EmailNotificationService } from '../../js/email_service.js';
         if (badgeNew) badgeNew.textContent = `New: ${newSt}`;
         const badgeTransferee = document.getElementById('badgeTransferee');
         if (badgeTransferee) badgeTransferee.textContent = `Transferee: ${transSt}`;
-
-        if (pendingEnrollmentsBadge) {
-            if (pending > 0) {
-                pendingEnrollmentsBadge.textContent = pending;
-                pendingEnrollmentsBadge.style.display = 'inline-flex';
-            } else {
-                pendingEnrollmentsBadge.style.display = 'none';
-            }
-        }
     }
 
     // ============================================
@@ -593,6 +630,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
                 (s.lrn || '').toLowerCase().includes(searchVal) ||
                 (s.strand || '').toLowerCase().includes(searchVal) ||
                 (s.grade_level || '').toLowerCase().includes(searchVal) ||
+                (s.section_name || '').toLowerCase().includes(searchVal) ||
                 (s.school_year || '').toLowerCase().includes(searchVal)
             );
         }
@@ -657,7 +695,14 @@ import { EmailNotificationService } from '../../js/email_service.js';
                 <tr class="${rowClass}">
                     <td class="student-cell" data-label="Student">
                         <div class="student-info">
-                            <div class="student-avatar" style="background: ${grad}; color: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.12); border: 2px solid #fff;">${initial}</div>
+                            <div class="student-avatar" style="background: ${grad}; color: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.12); border: 2px solid #fff;" title="${s.fullname}">
+                                ${s.avatar_url ? `
+                                    <img src="${s.avatar_url}" alt="${s.fullname}" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
+                                    <span style="display:none;">${initial}</span>
+                                ` : `
+                                    <span>${initial}</span>
+                                `}
+                            </div>
                             <div class="student-details">
                                 <h4>${s.fullname}</h4>
                                 <span><i class="fas fa-envelope"></i> ${s.email}</span>
@@ -667,9 +712,17 @@ import { EmailNotificationService } from '../../js/email_service.js';
                     <td data-label="ID Number">
                         <span class="id-badge">${s.lrn}</span>
                     </td>
-                    <td data-label="Grade & Strand">
-                        <span class="grade-tag">${s.grade_level}</span>
-                        ${(parseInt((s.grade_level || '').replace(/\D/g, ''), 10) >= 11 && s.strand) ? `<span class="strand-tag">${s.strand}</span>` : ''}
+                    <td data-label="Grade & Section">
+                        <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
+                            <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                                <span class="grade-tag">${s.grade_level}</span>
+                                ${s.section_name 
+                                    ? `<span class="section-tag" style="background: #e0f2fe; color: #0284c7; font-weight: 600; font-size: 11px; padding: 2px 8px; border-radius: 9999px; border: 1px solid #bae6fd; display: inline-flex; align-items: center; gap: 4px;"><i class="fas fa-users" style="font-size: 9px;"></i> ${s.section_name}</span>`
+                                    : `<span style="font-size: 11px; color: #94a3b8; font-style: italic;">No Section</span>`
+                                }
+                            </div>
+                            ${(parseInt((s.grade_level || '').replace(/\D/g, ''), 10) >= 11 && s.strand) ? `<span class="strand-tag">${s.strand}</span>` : ''}
+                        </div>
                     </td>
                     <td data-label="Status">
                         ${statusBadgeHtml}

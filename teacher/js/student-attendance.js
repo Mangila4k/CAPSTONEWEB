@@ -90,44 +90,7 @@ import { supabase } from '../../supabase/config.js';
         { id: 'sec_g12_tvl_ict', name: 'TVL A - Lovelace', grade_level: 'Grade 12', year_level: 'Grade 12', strand: 'TVL-ICT', track: 'TVL' }
     ];
 
-    const DEFAULT_STUDENTS = [
-        // Grade 7 Diamond (JHS)
-        { id: 'stu_g7_1', full_name: 'Juan Dela Cruz', lrn: '109283746501', grade_level: 'Grade 7', section: 'Diamond', strand: 'JHS', gender: 'Male' },
-        { id: 'stu_g7_2', full_name: 'Maria Santos', lrn: '109283746502', grade_level: 'Grade 7', section: 'Diamond', strand: 'JHS', gender: 'Female' },
-        { id: 'stu_g7_3', full_name: 'Angelo Reyes', lrn: '109283746503', grade_level: 'Grade 7', section: 'Diamond', strand: 'JHS', gender: 'Male' },
-        
-        // Grade 8 Ruby (JHS)
-        { id: 'stu_g8_1', full_name: 'Gabriel Alcantara', lrn: '109283746504', grade_level: 'Grade 8', section: 'Ruby', strand: 'JHS', gender: 'Male' },
-        { id: 'stu_g8_2', full_name: 'Princess Mae Gomez', lrn: '109283746505', grade_level: 'Grade 8', section: 'Ruby', strand: 'JHS', gender: 'Female' },
-        
-        // Grade 9 Gold (JHS)
-        { id: 'stu_g9_1', full_name: 'Christian Bautista', lrn: '109283746506', grade_level: 'Grade 9', section: 'Gold', strand: 'JHS', gender: 'Male' },
-        { id: 'stu_g9_2', full_name: 'Samantha Nicole Perez', lrn: '109283746507', grade_level: 'Grade 9', section: 'Gold', strand: 'JHS', gender: 'Female' },
-        
-        // Grade 10 Rizal (JHS)
-        { id: 'stu_g10_1', full_name: 'Mark Anthony Ramos', lrn: '109283746508', grade_level: 'Grade 10', section: 'Rizal', strand: 'JHS', gender: 'Male' },
-        { id: 'stu_g10_2', full_name: 'Bea Patricia Lopez', lrn: '109283746509', grade_level: 'Grade 10', section: 'Rizal', strand: 'JHS', gender: 'Female' },
-        
-        // Grade 11 STEM A
-        { id: 'stu_g11_stem_1', full_name: 'Karl Matthew Sanchez', lrn: '109283746510', grade_level: 'Grade 11', section: 'STEM A - Newton', strand: 'STEM', gender: 'Male' },
-        { id: 'stu_g11_stem_2', full_name: 'Alyssa Joy Hernandez', lrn: '109283746511', grade_level: 'Grade 11', section: 'STEM A - Newton', strand: 'STEM', gender: 'Female' },
-        
-        // Grade 11 ABM A
-        { id: 'stu_g11_abm_1', full_name: 'Danilo Villanueva Jr.', lrn: '109283746512', grade_level: 'Grade 11', section: 'ABM A - Gates', strand: 'ABM', gender: 'Male' },
-        { id: 'stu_g11_abm_2', full_name: 'Chloe Isabella Diaz', lrn: '109283746513', grade_level: 'Grade 11', section: 'ABM A - Gates', strand: 'ABM', gender: 'Female' },
-        
-        // Grade 11 TVL-ICT
-        { id: 'stu_g11_tvl_1', full_name: 'Joshua Paul Garcia', lrn: '109283746514', grade_level: 'Grade 11', section: 'TVL A - Turing', strand: 'TVL-ICT', gender: 'Male' },
-        { id: 'stu_g11_tvl_2', full_name: 'Hazel Anne Castro', lrn: '109283746515', grade_level: 'Grade 11', section: 'TVL A - Turing', strand: 'TVL-ICT', gender: 'Female' },
-        
-        // Grade 12 STEM A
-        { id: 'stu_g12_stem_1', full_name: 'Raphael David Morales', lrn: '109283746516', grade_level: 'Grade 12', section: 'STEM A - Einstein', strand: 'STEM', gender: 'Male' },
-        { id: 'stu_g12_stem_2', full_name: 'Sophia Nicole Mendoza', lrn: '109283746517', grade_level: 'Grade 12', section: 'STEM A - Einstein', strand: 'STEM', gender: 'Female' },
-        
-        // Grade 12 HUMSS A
-        { id: 'stu_g12_humss_1', full_name: 'Elijah John Tolentino', lrn: '109283746518', grade_level: 'Grade 12', section: 'HUMSS A - Aristotle', strand: 'HUMSS', gender: 'Male' },
-        { id: 'stu_g12_humss_2', full_name: 'Katrina Mae Navarro', lrn: '109283746519', grade_level: 'Grade 12', section: 'HUMSS A - Aristotle', strand: 'HUMSS', gender: 'Female' }
-    ];
+    const DEFAULT_STUDENTS = [];
 
     // ============================================
     // AUTH & SESSION
@@ -322,7 +285,7 @@ import { supabase } from '../../supabase/config.js';
                     };
                 });
             } else {
-                loadedStudents = DEFAULT_STUDENTS;
+                loadedStudents = [];
             }
             allStudents = loadedStudents;
 
@@ -340,7 +303,7 @@ import { supabase } from '../../supabase/config.js';
         } catch (err) {
             console.error('Error loading roster:', err);
             allSections = DEFAULT_SECTIONS;
-            allStudents = DEFAULT_STUDENTS;
+            allStudents = [];
             populateSectionDropdown();
             handleDateChange();
         }

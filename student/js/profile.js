@@ -581,7 +581,7 @@ import { supabase } from '../../supabase/config.js';
                             first_name: firstName,
                             last_name: lastName,
                             gender: gender,
-                            birthdate: birthdate,
+                            date_of_birth: birthdate || null,
                             contact_number: phone,
                             address: address,
                             parent_name: parentName,
@@ -789,18 +789,40 @@ import { supabase } from '../../supabase/config.js';
 
             try {
                 // Verify current password against Supabase users table
-                const { data: userRecord, error: checkError } = await supabase
-                    .from('users')
-                    .select('id, password')
-                    .eq('id', sessionUser.uid)
-                    .maybeSingle();
+                const userId = sessionUser.id || sessionUser.uid;
+                let userRecord = null;
 
-                if (checkError) throw checkError;
+                if (userId) {
+                    const { data: byId, error: checkError } = await supabase
+                        .from('users')
+                        .select('id, password, email')
+                        .eq('id', userId)
+                        .maybeSingle();
+                    if (!checkError && byId) userRecord = byId;
+                }
 
-                if (userRecord && userRecord.password && userRecord.password !== current) {
+                if (!userRecord && sessionUser.email) {
+                    const { data: byEmail } = await supabase
+                        .from('users')
+                        .select('id, password, email')
+                        .ilike('email', sessionUser.email)
+                        .maybeSingle();
+                    if (byEmail) userRecord = byEmail;
+                }
+
+                // Verify current password (supports exact, trimmed, or case-insensitive initial last-name password)
+                const isCurrentMatch = userRecord && userRecord.password && (
+                    userRecord.password === current ||
+                    userRecord.password.trim() === current.trim() ||
+                    userRecord.password.trim().toLowerCase() === current.trim().toLowerCase()
+                );
+
+                if (userRecord && userRecord.password && !isCurrentMatch) {
                     showAlert('❌ Current password is incorrect', 'error');
                     return;
                 }
+
+                const targetUid = userRecord?.id || userId;
 
                 // Update password in Supabase
                 const { error: updateError } = await supabase
@@ -809,11 +831,17 @@ import { supabase } from '../../supabase/config.js';
                         password: newPwdValue,
                         updated_at: new Date().toISOString()
                     })
-                    .eq('id', sessionUser.uid);
+                    .eq('id', targetUid);
 
                 if (updateError) throw updateError;
                 
-                showAlert('✅ Password updated successfully!', 'success');
+                // Track that student has updated their initial password
+                if (sessionUser.email) {
+                    localStorage.setItem(`hes_password_changed_${sessionUser.email.toLowerCase()}`, 'true');
+                }
+                localStorage.setItem(`hes_password_changed_${targetUid}`, 'true');
+
+                showAlert('✅ Password updated successfully! Your account is now secured.', 'success');
                 
                 if (currentPwd) currentPwd.value = '';
                 if (newPwd) newPwd.value = '';

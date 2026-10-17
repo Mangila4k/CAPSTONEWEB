@@ -142,9 +142,24 @@ import { EmailNotificationService } from '../../js/email_service.js';
 
             console.log('✅ Found', usersData?.length || 0, 'users');
 
+            // STEP 2.5: Fetch sections table to resolve section_id
+            let sectionsMap = new Map();
+            try {
+                const { data: sectionsData } = await supabase
+                    .from('sections')
+                    .select('id, name, grade_level, strand');
+                if (sectionsData) {
+                    sectionsMap = new Map(sectionsData.map(sec => [sec.id, sec]));
+                }
+            } catch (secErr) {
+                console.warn('Could not load sections in student.js:', secErr);
+            }
+
             // STEP 3: Combine by user_id, student_id, or email
             allStudents = (studentsData || []).map(student => {
                 const user = (usersData || []).find(u => u.id === student.user_id || u.student_id === student.id || (u.email && student.email && u.email.toLowerCase() === student.email.toLowerCase()));
+                const secObj = student.section_id ? sectionsMap.get(student.section_id) : null;
+                const sectionName = secObj ? secObj.name : (student.section && student.section !== '—' ? student.section : '—');
 
                 return {
                     id: student.id,
@@ -154,11 +169,13 @@ import { EmailNotificationService } from '../../js/email_service.js';
                     lastName: student.last_name || user?.last_name || '',
                     email: student.email || user?.email || '—',
                     password: user?.password || student.last_name || '',
-                    grade: student.grade_level || student.year_level || 'Grade 11',
-                    strand: student.strand || '—',
-                    section: student.section || '—',
+                    grade: student.grade_level || student.year_level || secObj?.grade_level || '—',
+                    strand: student.strand || secObj?.strand || '—',
+                    section_id: student.section_id || null,
+                    section: sectionName,
                     gender: student.gender || '—',
                     student_type: student.student_type || 'New Student',
+                    avatar_url: student.two_by_two_picture_url || student.avatar_url || null,
                     status: student.status || 'Active'
                 };
             });
@@ -380,7 +397,14 @@ import { EmailNotificationService } from '../../js/email_service.js';
                     <td class="cell-center cell-index">${index + 1}</td>
                     <td class="cell-student">
                         <div class="student-cell">
-                            <div class="student-avatar" style="background: ${grad}">${initial}</div>
+                            <div class="student-avatar" style="background: ${grad}" title="${fullName}">
+                                ${s.avatar_url ? `
+                                    <img src="${s.avatar_url}" alt="${fullName}" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
+                                    <span style="display:none;">${initial}</span>
+                                ` : `
+                                    <span>${initial}</span>
+                                `}
+                            </div>
                             <div class="student-info-cell">
                                 <div class="student-name-row">
                                     <span class="student-full-name">${fullName}</span>

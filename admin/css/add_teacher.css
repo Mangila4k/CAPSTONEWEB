@@ -35,24 +35,56 @@
     color: #ef4444;
 }
 
+/* Centered Layout */
+.page-header {
+    max-width: 960px;
+    margin: 0 auto 28px auto;
+    width: 100%;
+}
+
+#alertContainer {
+    max-width: 960px;
+    margin: 0 auto;
+    width: 100%;
+}
+
 /* Info Box */
 .info-box {
     background: #e8edf5;
     border-left: 4px solid #1B2A4A;
     padding: 14px 18px;
     border-radius: 10px;
-    margin-bottom: 24px;
+    margin: 0 auto 24px auto;
     display: flex;
     align-items: center;
     gap: 14px;
     font-size: 14px;
     color: #1B2A4A;
+    max-width: 960px;
+    box-sizing: border-box;
+    width: 100%;
 }
 
 .info-box i {
     font-size: 20px;
     color: #1B2A4A;
     flex-shrink: 0;
+}
+
+.form-container {
+    max-width: 960px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.form-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 32px 36px;
+    border: 1px solid #e9edf4;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    width: 100%;
+    box-sizing: border-box;
 }
 
 /* Form Row */
@@ -67,7 +99,8 @@
     margin-bottom: 18px;
 }
 
-.form-group input {
+.form-group input,
+.form-group select {
     width: 100%;
     padding: 10px 14px;
     border: 1.5px solid #e2e8f0;
@@ -77,12 +110,21 @@
     transition: all 0.2s;
     background: #fff;
     color: #0f172a;
+    box-sizing: border-box;
 }
 
-.form-group input:focus {
+.form-group input:focus,
+.form-group select:focus {
     outline: none;
     border-color: #1B2A4A;
     box-shadow: 0 0 0 3px rgba(27, 42, 74, 0.1);
+}
+
+.form-group select:disabled {
+    background: #f1f5f9;
+    color: #94a3b8;
+    cursor: not-allowed;
+    border-color: #e2e8f0;
 }
 
 .form-hint {

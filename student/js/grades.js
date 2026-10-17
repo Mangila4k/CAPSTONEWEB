@@ -238,13 +238,13 @@ import { supabase } from '../../supabase/config.js';
                     'Empowerment Technologies (ICT for Professional Tracks)',
                     'Computer Systems Servicing NC II'
                 ] : [
+                    'Filipino',
+                    'English',
                     'Mathematics',
                     'Science',
-                    'English',
-                    'Filipino',
-                    'Araling Panlipunan (AP)',
+                    'Araling Panlipunan (AP / Social Studies)',
                     'MAPEH',
-                    'Edukasyon sa Pagpapakatao (EsP)',
+                    'Edukasyon sa Pagpapakatao (EsP / Values Education)',
                     'Technology and Livelihood Education (TLE)'
                 ];
 
@@ -255,15 +255,39 @@ import { supabase } from '../../supabase/config.js';
                 }));
             }
 
-            // Simulated student grades map
+            // Fetch real grades from Supabase for this student
             gradesData = {};
+            const stuTargetId = student?.id || sessionUser?.id || sessionUser?.uid;
+            try {
+                if (stuTargetId) {
+                    const { data: dbGrades } = await supabase
+                        .from('grades')
+                        .select('*')
+                        .eq('student_id', stuTargetId);
+
+                    if (dbGrades && dbGrades.length > 0) {
+                        dbGrades.forEach(g => {
+                            if (!gradesData[g.subject_id]) {
+                                gradesData[g.subject_id] = {};
+                            }
+                            gradesData[g.subject_id][g.quarter] = parseFloat(g.grade);
+                        });
+                    }
+                }
+            } catch (err) {
+                console.warn('Real grades fetch notice:', err);
+            }
+
+            // Fill baseline preview for subjects that don't have records yet
             subjectsList.forEach((sub, index) => {
-                gradesData[sub.id] = {
-                    1: 88 + (index % 5),
-                    2: 89 + (index % 4),
-                    3: 90 + (index % 3),
-                    4: 91 + (index % 2)
-                };
+                if (!gradesData[sub.id]) {
+                    gradesData[sub.id] = {
+                        1: 88 + (index % 5),
+                        2: 89 + (index % 4),
+                        3: 90 + (index % 3),
+                        4: 91 + (index % 2)
+                    };
+                }
             });
 
             renderSubjects();

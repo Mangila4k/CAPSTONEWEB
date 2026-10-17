@@ -1,10 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sections Management - HES, Hiraya Enrollment System</title>
+    <title>Sections Management - PLSNSH, Placido L. Señor National High School</title>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- Google Fonts -->
@@ -41,6 +41,7 @@
             gap: 4px;
         }
     </style>
+    <link rel="stylesheet" href="../css/sidebar.css">
 </head>
 
 <body>
@@ -61,15 +62,6 @@
                     <div class="logo-text">PLS<span>NSH</span></div>
                 </div>
                 <div class="school-badge">Placido L. Señor National High School</div>
-            </div>
-
-            <div class="admin-profile">
-                <div class="admin-avatar">
-                    <div class="avatar-initial" id="adminAvatar">A</div>
-                    <div class="online-dot"></div>
-                </div>
-                <div class="admin-name" id="adminName">Admin</div>
-                <div class="admin-role"><i class="fas fa-shield-alt"></i> Administrator</div>
             </div>
 
             <div class="nav-menu">
@@ -102,8 +94,23 @@
                     <div class="nav-section-title">ACCOUNT</div>
                     <ul class="nav-items">
                         <li><a href="profile.html"><i class="fas fa-user"></i> Profile</a></li>
-                        <li><a href="../auth/logout.html"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                        <li><a href="../auth/logout.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                        </li>
+
                     </ul>
+                </div>
+            </div>
+            <!-- Pinned Sidebar Footer -->
+            <div class="sidebar-footer">
+                <div class="admin-profile">
+                    <div class="admin-avatar">
+                        <div class="avatar-initial" id="adminAvatar">A</div>
+                        <div class="online-dot"></div>
+                    </div>
+                    <div class="admin-info">
+                        <div class="admin-name" id="adminName">Admin</div>
+                        <div class="admin-role"><i class="fas fa-shield-alt"></i> Administrator</div>
+                    </div>
                 </div>
             </div>
         </aside>
@@ -179,27 +186,21 @@
                     Section</button>
             </div>
 
-            <!-- Table -->
-            <div class="table-card">
-                <div class="table-header">
-                    <h3><i class="fas fa-layer-group"></i> Section List</h3>
-                    <span class="badge-count" id="recordCount">Total: 0 sections</span>
+            <!-- Section Boxes Header & Container -->
+            <div class="sections-group-header">
+                <div class="sections-group-title">
+                    <h3><i class="fas fa-boxes-stacked"></i> Sections by Year Level</h3>
+                    <p class="sections-group-desc">Classes organized and grouped into dedicated year level boxes</p>
                 </div>
-                <div class="table-container">
-                    <table class="sections-table" id="sectionsTable">
-                        <thead>
-                            <tr>
-                                <th>Section</th>
-                                <th>Grade Level</th>
-                                <th>Strand</th>
-                                <th>Adviser</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tableBody">
-                            <!-- Loaded by JavaScript -->
-                        </tbody>
-                    </table>
+                <span class="badge-count" id="recordCount">Total: 0 sections</span>
+            </div>
+
+            <div id="sectionsContainer" class="sections-grouped-container">
+                <div class="table-card loading-box">
+                    <div style="text-align: center; padding: 40px;">
+                        <i class="fas fa-spinner fa-spin" style="font-size: 28px; color: #1B2A4A;"></i>
+                        <p style="margin-top: 10px; color: #64748b;">Loading sections from database...</p>
+                    </div>
                 </div>
             </div>
         </main>
@@ -247,7 +248,7 @@
                     </div>
                     <div class="form-group">
                         <label>Class Adviser <span class="required">*</span></label>
-                        <input type="text" name="adviser_name" id="addAdviserName" placeholder="e.g., Maria Santos"
+                        <input type="text" name="adviser_name" id="addAdviserName" placeholder="Enter adviser name"
                             required>
                     </div>
                 </div>
@@ -301,7 +302,7 @@
                     </div>
                     <div class="form-group">
                         <label>Class Adviser <span class="required">*</span></label>
-                        <input type="text" name="adviser_name" id="editAdviserName" placeholder="e.g., Maria Santos"
+                        <input type="text" name="adviser_name" id="editAdviserName" placeholder="Enter adviser name"
                             required>
                     </div>
                 </div>

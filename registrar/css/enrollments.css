@@ -961,8 +961,8 @@ body {
 
 .student-avatar,
 .student-avatar-img {
-    width: 36px;
-    height: 36px;
+    width: 38px;
+    height: 38px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -970,14 +970,32 @@ body {
     font-weight: 700;
     font-size: 13px;
     flex-shrink: 0;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
+.student-avatar img,
 .student-avatar-img img {
-    width: 36px;
-    height: 36px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     border-radius: 50%;
     object-fit: cover;
+    display: block;
+    z-index: 1;
+}
+
+.student-avatar span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    position: relative;
+    z-index: 0;
 }
 
 .student-details h4 {
@@ -1242,98 +1260,190 @@ body {
     background: var(--primary-dark);
 }
 
-/* Action Buttons (Horizontal Sleek Toolbar) */
-.action-btns {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    flex-wrap: nowrap;
+/* Action Buttons & Manage Dropdown */
+.cell-actions,
+td[data-label="Actions"] {
+    position: relative;
+    overflow: visible !important;
 }
 
-.action-btn {
-    width: 30px;
-    height: 30px;
-    border-radius: 7px;
-    border: 1px solid transparent;
+.manage-dropdown {
+    position: relative;
+    display: inline-block;
+    text-align: left;
+}
+
+.btn-manage {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    gap: 6px;
+    background: #ffffff;
+    color: #1e293b;
+    border: 1px solid #cbd5e1;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 12.5px;
+    font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
-    text-decoration: none;
-    font-size: 12px;
-    box-sizing: border-box;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    white-space: nowrap;
+    user-select: none;
 }
 
-.action-btn.view {
-    background: #f0f9ff;
-    color: #0284c7;
-    border-color: #bae6fd;
-}
-
-.action-btn.view:hover {
-    background: #0284c7;
-    color: #ffffff;
-    border-color: #0284c7;
-    box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);
-    transform: translateY(-1px);
-}
-
-.action-btn.request-moral-enr-btn {
+.btn-manage:hover {
     background: #f8fafc;
+    border-color: #94a3b8;
+    color: #0f172a;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    transform: translateY(-1px);
+}
+
+.manage-dropdown.show .btn-manage {
+    background: #1B2A4A;
+    border-color: #1B2A4A;
+    color: #ffffff;
+    box-shadow: 0 4px 10px rgba(27, 42, 74, 0.25);
+}
+
+.btn-manage i.fa-chevron-down {
+    font-size: 9px;
+    color: #64748b;
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.manage-dropdown.show .btn-manage i.fa-chevron-down {
+    color: #ffffff;
+    transform: rotate(180deg);
+}
+
+.manage-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    min-width: 195px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.18), 0 8px 10px -6px rgba(15, 23, 42, 0.1);
+    padding: 6px;
+    z-index: 1050;
+    text-align: left;
+}
+
+.manage-dropdown.dropup .manage-menu {
+    top: auto;
+    bottom: calc(100% + 6px);
+}
+
+/* Open strictly on click (.show) */
+.manage-dropdown.show .manage-menu {
+    display: block;
+    animation: manageMenuFadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.manage-dropdown.dropup.show .manage-menu {
+    animation: manageMenuFadeInDropup 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes manageMenuFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-6px) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes manageMenuFadeInDropup {
+    from {
+        opacity: 0;
+        transform: translateY(6px) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.manage-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #334155;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.15s ease;
+    box-sizing: border-box;
+    white-space: nowrap;
+}
+
+.manage-item i {
+    width: 18px;
+    font-size: 13.5px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.manage-item:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.manage-item.view-item i {
+    color: #2563eb;
+}
+
+.manage-item.moral-item i {
     color: #0284c7;
-    border-color: #cbd5e1;
 }
 
-.action-btn.request-moral-enr-btn:hover {
-    background: #0b2b4a;
-    color: #ffffff;
-    border-color: #0b2b4a;
-    box-shadow: 0 2px 6px rgba(11, 43, 74, 0.25);
-    transform: translateY(-1px);
-}
-
-.action-btn.approve {
-    background: #ecfdf5;
+.manage-item.approve-item i {
     color: #10b981;
-    border-color: #a7f3d0;
 }
 
-.action-btn.approve:hover {
-    background: #10b981;
-    color: #ffffff;
-    border-color: #10b981;
-    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
-    transform: translateY(-1px);
-}
-
-.action-btn.reject {
-    background: #fff1f2;
-    color: #f43f5e;
-    border-color: #fecdd3;
-}
-
-.action-btn.reject:hover {
-    background: #f43f5e;
-    color: #ffffff;
-    border-color: #f43f5e;
-    box-shadow: 0 2px 6px rgba(244, 63, 94, 0.25);
-    transform: translateY(-1px);
-}
-
-.action-btn.delete {
-    background: #fef2f2;
+.manage-item.reject-item i {
     color: #ef4444;
-    border-color: #fecaca;
 }
 
-.action-btn.delete:hover {
-    background: #ef4444;
-    color: #ffffff;
-    border-color: #ef4444;
-    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.25);
-    transform: translateY(-1px);
+.manage-item.id-item i {
+    color: #c89b27;
+}
+
+.manage-item.delete-item {
+    color: #dc2626;
+}
+
+.manage-item.delete-item i {
+    color: #dc2626;
+}
+
+.manage-item.delete-item:hover {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.manage-divider {
+    height: 1px;
+    background: #e2e8f0;
+    margin: 5px 0;
+}
+
+tr.dropdown-open,
+tr:has(.manage-dropdown.show) {
+    position: relative;
+    z-index: 100 !important;
 }
 
 .data-table th:last-child,

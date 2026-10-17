@@ -1,9 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Profile - HES, Hiraya Enrollment System Parent Portal</title>
+    <title>My Profile - PLSNSH, Placido L. Señor National High School Parent Portal</title>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- Google Fonts -->
@@ -12,7 +13,9 @@
     <link rel="stylesheet" href="css/dashboard.css">
     <link rel="stylesheet" href="css/profile.css">
     <link rel="stylesheet" href="../css/chatbot.css">
+    <link rel="stylesheet" href="../css/sidebar.css">
 </head>
+
 <body>
     <!-- Mobile Menu Toggle -->
     <div class="menu-toggle" id="menuToggle">
@@ -25,23 +28,12 @@
             <div class="sidebar-header">
                 <div class="logo">
                     <div class="logo-icon">
-                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
+                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo"
+                            onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
                     </div>
                     <div class="logo-text">PLS<span>NSH</span></div>
                 </div>
                 <div class="school-badge">Placido L. Señor National High School</div>
-            </div>
-
-            <div class="parent-profile">
-                <div class="parent-avatar">
-                    <div class="avatar-initial" id="parentInitial">P</div>
-                    <div class="online-dot"></div>
-                </div>
-                <div class="parent-name" id="sidebarParentName">Parent</div>
-                <div class="parent-role"><i class="fas fa-user-friends"></i> Parent</div>
-                <div class="parent-child-badge" id="sidebarChildBadge" title="Linked Child">
-                    <i class="fas fa-child"></i> Student: <span id="sidebarChildName">Student</span>
-                </div>
             </div>
 
             <nav class="nav-menu">
@@ -58,10 +50,28 @@
                     <div class="nav-section-title">ACCOUNT</div>
                     <ul class="nav-items">
                         <li><a href="profile.html" class="active"><i class="fas fa-user"></i> Profile</a></li>
-                        <li><a href="../auth/logout.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                        <li><a href="../auth/logout.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                        </li>
+
                     </ul>
                 </div>
             </nav>
+            <!-- Pinned Sidebar Footer -->
+            <div class="sidebar-footer">
+                <div class="parent-profile">
+                    <div class="parent-avatar">
+                        <div class="avatar-initial" id="parentInitial">P</div>
+                        <div class="online-dot"></div>
+                    </div>
+                    <div class="parent-info">
+                        <div class="parent-name" id="sidebarParentName">Parent</div>
+                        <div class="parent-role"><i class="fas fa-user-friends"></i> Parent</div>
+                        <div class="parent-child-badge" id="sidebarChildBadge" title="Linked Child">
+                            <i class="fas fa-child"></i> Student: <span id="sidebarChildName">Student</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </aside>
 
         <!-- Main Content -->
@@ -112,7 +122,7 @@
                             <div class="info-content">
                                 <div class="info-label">Email Address</div>
                                 <div class="info-value" id="profileEmail">
-                                    parent@hiraya.edu.ph
+                                    —
                                 </div>
                             </div>
                         </div>
@@ -121,7 +131,7 @@
                             <div class="info-icon"><i class="fas fa-phone"></i></div>
                             <div class="info-content">
                                 <div class="info-label">Contact Number</div>
-                                <div class="info-value" id="profilePhone">09123456789</div>
+                                <div class="info-value" id="profilePhone">—</div>
                             </div>
                         </div>
 
@@ -203,19 +213,24 @@
                             <form id="profileForm">
                                 <div class="form-row">
                                     <div class="form-group">
-                                        <label for="firstNameInput">First Name <span class="required" style="color: #ef4444;">*</span></label>
-                                        <input type="text" id="firstNameInput" name="first_name" required style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem;">
+                                        <label for="firstNameInput">First Name <span class="required"
+                                                style="color: #ef4444;">*</span></label>
+                                        <input type="text" id="firstNameInput" name="first_name" required
+                                            style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem;">
                                     </div>
                                     <div class="form-group">
-                                        <label for="lastNameInput">Last Name <span class="required" style="color: #ef4444;">*</span></label>
-                                        <input type="text" id="lastNameInput" name="last_name" required style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem;">
+                                        <label for="lastNameInput">Last Name <span class="required"
+                                                style="color: #ef4444;">*</span></label>
+                                        <input type="text" id="lastNameInput" name="last_name" required
+                                            style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem;">
                                     </div>
                                 </div>
 
                                 <div class="form-row" style="margin-top: 14px;">
                                     <div class="form-group">
                                         <label for="genderInput">Gender</label>
-                                        <select id="genderInput" name="gender" style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem; background: #fff;">
+                                        <select id="genderInput" name="gender"
+                                            style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem; background: #fff;">
                                             <option value="">Select Gender</option>
                                             <option value="Male">Male</option>
                                             <option value="Female">Female</option>
@@ -224,7 +239,8 @@
                                     </div>
                                     <div class="form-group">
                                         <label for="relationInput">Relationship to Student</label>
-                                        <select id="relationInput" name="relation" style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem; background: #fff;">
+                                        <select id="relationInput" name="relation"
+                                            style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem; background: #fff;">
                                             <option value="Mother">Mother</option>
                                             <option value="Father">Father</option>
                                             <option value="Guardian">Guardian</option>
@@ -234,26 +250,34 @@
                                 </div>
 
                                 <div class="form-group" style="margin-top: 14px;">
-                                    <label for="emailInput">Email Address <span class="required" style="color: #ef4444;">*</span></label>
-                                    <input type="email" id="emailInput" name="email" required readonly style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem; background-color: #f8fafc; cursor: not-allowed; color: #64748b;">
-                                    <small style="color: #64748b; font-size: 0.78rem;">Email address is linked to your authentication account.</small>
+                                    <label for="emailInput">Email Address <span class="required"
+                                            style="color: #ef4444;">*</span></label>
+                                    <input type="email" id="emailInput" name="email" required readonly
+                                        style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem; background-color: #f8fafc; cursor: not-allowed; color: #64748b;">
+                                    <small style="color: #64748b; font-size: 0.78rem;">Email address is linked to your
+                                        authentication account.</small>
                                 </div>
 
                                 <div class="form-group" style="margin-top: 14px;">
                                     <label for="phoneInput">Contact Number</label>
-                                    <input type="text" id="phoneInput" name="phone" placeholder="09XXXXXXXXX" style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem;">
+                                    <input type="text" id="phoneInput" name="phone" placeholder="09XXXXXXXXX"
+                                        style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem;">
                                 </div>
 
                                 <div class="form-group" style="margin-top: 14px;">
                                     <label for="addressInput">Residential Address</label>
-                                    <textarea id="addressInput" name="address" rows="2" placeholder="Enter complete home address" style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem; resize: vertical;"></textarea>
+                                    <textarea id="addressInput" name="address" rows="2"
+                                        placeholder="Enter complete home address"
+                                        style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem; resize: vertical;"></textarea>
                                 </div>
 
                                 <div class="account-info-actions">
-                                    <button type="button" class="btn-secondary" id="cancelParentEditBtn" style="padding: 9px 18px; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff; color: #475569; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                                    <button type="button" class="btn-secondary" id="cancelParentEditBtn"
+                                        style="padding: 9px 18px; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff; color: #475569; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
                                         <i class="fas fa-times"></i> Cancel
                                     </button>
-                                    <button type="submit" class="btn-primary" id="saveProfileBtn" style="padding: 9px 22px; background: #0b2b4a; color: #fff; border: none; border-radius: 8px; font-weight: 600; font-size: 0.92rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
+                                    <button type="submit" class="btn-primary" id="saveProfileBtn"
+                                        style="padding: 9px 22px; background: #0b2b4a; color: #fff; border: none; border-radius: 8px; font-weight: 600; font-size: 0.92rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
                                         <i class="fas fa-save"></i> Save Changes
                                     </button>
                                 </div>
@@ -269,7 +293,8 @@
                         <form id="passwordForm">
                             <div class="form-group">
                                 <label for="currentPassword">Current Password <span class="required">*</span></label>
-                                <input type="password" id="currentPassword" required placeholder="Enter current password">
+                                <input type="password" id="currentPassword" required
+                                    placeholder="Enter current password">
                             </div>
 
                             <div class="form-group">
@@ -278,7 +303,8 @@
                             </div>
 
                             <div class="form-group">
-                                <label for="confirmPassword">Confirm New Password <span class="required">*</span></label>
+                                <label for="confirmPassword">Confirm New Password <span
+                                        class="required">*</span></label>
                                 <input type="password" id="confirmPassword" required placeholder="Repeat new password">
                             </div>
 
@@ -302,12 +328,14 @@
             <form id="uploadForm" enctype="multipart/form-data">
                 <div class="modal-body">
                     <div class="image-preview" id="imagePreview">
-                        <div style="width: 120px; height: 120px; background: #0b2b4a; display: flex; align-items: center; justify-content: center; color: #FFD700; font-size: 48px; font-weight: bold; border-radius: 50%; margin: 0 auto;">
+                        <div
+                            style="width: 120px; height: 120px; background: #0b2b4a; display: flex; align-items: center; justify-content: center; color: #FFD700; font-size: 48px; font-weight: bold; border-radius: 50%; margin: 0 auto;">
                             P
                         </div>
                     </div>
                     <div class="file-input-wrapper" style="margin-top: 15px; text-align: center;">
-                        <input type="file" name="profile_picture" id="profilePicture" accept="image/jpeg,image/png,image/gif,image/webp">
+                        <input type="file" name="profile_picture" id="profilePicture"
+                            accept="image/jpeg,image/png,image/gif,image/webp">
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -322,4 +350,5 @@
     <script type="module" src="js/profile.js"></script>
     <script src="../js/chatbot.js"></script>
 </body>
+
 </html>

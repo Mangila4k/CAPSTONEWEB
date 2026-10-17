@@ -319,20 +319,122 @@ if (studentTypeSelect) {
 }
 
 // ============================================================
-// LOAD EXISTING ENROLLMENT FROM SUPABASE
+// RENDER & LOAD EXISTING ENROLLMENT FROM SUPABASE
 // ============================================================
-async function loadExistingEnrollment() {
-    // Always ensure the enrollment form is visible directly
-    if (existingEnrollmentDiv) existingEnrollmentDiv.style.display = 'none';
-    if (enrollmentForm) enrollmentForm.style.display = 'block';
+function renderExistingEnrollmentCard(enr) {
+    if (!existingEnrollmentDiv || !enrollmentDisplay) return;
 
-    const userEmail = sessionUser?.email || '';
+    const rawStatus = (enr.status || 'pending').toLowerCase();
+    const isEnrolled = rawStatus === 'enrolled' || rawStatus === 'approved';
+    const statusText = isEnrolled ? 'OFFICIALLY ENROLLED' : (rawStatus === 'rejected' ? 'REJECTED' : 'PENDING REVIEW');
+    const badgeClass = isEnrolled ? 'status-approved' : (rawStatus === 'rejected' ? 'status-rejected' : 'status-pending');
+    const studentFullName = `${enr.first_name || ''} ${enr.last_name || ''}`.trim() || 'Student Applicant';
+    const strandText = enr.strand ? ` • ${enr.strand}` : '';
+    const dateFormatted = enr.created_at ? new Date(enr.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'Recently';
+
+    enrollmentDisplay.innerHTML = `
+        <div style="background: white; border-radius: 12px; padding: 22px; border: 1px solid #e2e8f0; margin-top: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.04);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;">
+                <span class="enrollment-badge ${badgeClass}" style="margin: 0; font-size: 13px; font-weight: 700; padding: 6px 16px; border-radius: 20px;">
+                    <i class="fas ${isEnrolled ? 'fa-check-circle' : 'fa-hourglass-half'}"></i> ${statusText}
+                </span>
+                <span style="font-size: 12px; color: #64748b;">
+                    <i class="fas fa-calendar"></i> Submitted: ${dateFormatted}
+                </span>
+            </div>
+            <div class="enrollment-details" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; font-size: 14px; color: #334155;">
+                <div>
+                    <span style="display: block; font-size: 12px; color: #64748b; font-weight: 600;">Student Name</span>
+                    <strong style="color: #0f172a; font-size: 15px;">${studentFullName}</strong>
+                </div>
+                <div>
+                    <span style="display: block; font-size: 12px; color: #64748b; font-weight: 600;">Grade & Track</span>
+                    <strong style="color: #0f172a; font-size: 15px;">${enr.grade_level || 'N/A'}${strandText}</strong>
+                </div>
+                <div>
+                    <span style="display: block; font-size: 12px; color: #64748b; font-weight: 600;">School Year</span>
+                    <strong>${enr.school_year || enr.last_school_year || '2026-2027'}</strong>
+                </div>
+                <div>
+                    <span style="display: block; font-size: 12px; color: #64748b; font-weight: 600;">Registered Email</span>
+                    <strong>${enr.email || 'N/A'}</strong>
+                </div>
+                ${enr.tracking_number ? `
+                <div style="grid-column: 1 / -1;">
+                    <span style="display: block; font-size: 12px; color: #64748b; font-weight: 600;">Reference Tracking #</span>
+                    <code style="background: #f1f5f9; padding: 4px 10px; border-radius: 6px; color: #0f172a; font-size: 13px; font-weight: 600;">${enr.tracking_number}</code>
+                </div>` : ''}
+            </div>
+
+            <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #f1f5f9; display: flex; gap: 12px; flex-wrap: wrap;">
+                ${isEnrolled ? `
+                    <a href="dashboard.html" class="btn btn-submit" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; padding: 10px 20px; font-size: 14px; background: #0b2b4a; color: #fff; border-radius: 8px; font-weight: 600;">
+                        <i class="fas fa-th-large"></i> Go to Student Dashboard
+                    </a>
+                ` : ''}
+                <a href="../auth/homepage.html" class="btn btn-prev" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; padding: 10px 20px; font-size: 14px; background: #f1f5f9; color: #334155; border-radius: 8px; font-weight: 600;">
+                    <i class="fas fa-home"></i> Back to Home
+                </a>
+            </div>
+        </div>
+    `;
+
+    if (existingEnrollmentDiv) {
+        existingEnrollmentDiv.style.display = 'block';
+        const h3 = existingEnrollmentDiv.querySelector('h3');
+        if (h3) {
+            h3.innerHTML = isEnrolled 
+                ? '<i class="fas fa-user-graduate" style="color: #10b981; margin-right: 8px;"></i> You are Already Officially Enrolled' 
+                : '<i class="fas fa-file-signature" style="color: #f59e0b; margin-right: 8px;"></i> Enrollment Application Already Submitted';
+        }
+        const noteP = existingEnrollmentDiv.querySelector('p');
+        if (noteP) {
+            noteP.textContent = isEnrolled
+                ? 'Your enrollment application has already been approved and registered. You cannot submit multiple enrollment copies.'
+                : 'You already have an enrollment application submitted and recorded in the system. You can only have one application copy.';
+        }
+    }
+    if (enrollmentForm) enrollmentForm.style.display = 'none';
+}
+
+async function loadExistingEnrollment(targetEmail = null) {
+    const userEmail = targetEmail || sessionUser?.email || document.getElementById('email')?.value.trim() || '';
     const userUid = sessionUser?.id || sessionUser?.uid || '';
+    const studentTableId = sessionUser?.studentTableId || sessionUser?.student_id || '';
 
-    // If guest / new student, keep the empty form ready for enrollment
-    if (!userEmail && !userUid) {
+    if (!userEmail && !userUid && !studentTableId) {
+        if (existingEnrollmentDiv) existingEnrollmentDiv.style.display = 'none';
+        if (enrollmentForm) enrollmentForm.style.display = 'block';
         return;
     }
+
+    try {
+        let query = supabase.from('enrollments').select('*');
+        if (userEmail) {
+            query = query.ilike('email', userEmail.trim());
+        } else if (studentTableId) {
+            query = query.eq('student_id', studentTableId);
+        } else if (userUid) {
+            query = query.or(`applicant_id.eq.${userUid},student_id.eq.${userUid}`);
+        }
+
+        const { data, error } = await query.order('created_at', { ascending: false }).limit(1);
+        if (!error && data && data.length > 0) {
+            const latestEnr = data[0];
+            const st = (latestEnr.status || '').toLowerCase();
+            // If already enrolled, approved, or pending, lock form and show existing card
+            if (st === 'enrolled' || st === 'approved' || st === 'pending') {
+                renderExistingEnrollmentCard(latestEnr);
+                return;
+            }
+        }
+    } catch(err) {
+        console.warn('Error checking existing enrollment:', err);
+    }
+
+    // Default to showing form if no active or pending enrollment found
+    if (existingEnrollmentDiv) existingEnrollmentDiv.style.display = 'none';
+    if (enrollmentForm) enrollmentForm.style.display = 'block';
 }
 
 // ============================================================
@@ -410,6 +512,32 @@ async function submitEnrollment(e) {
             return;
         }
 
+        // Prevent duplicate copies: A student can only have ONE enrollment record
+        try {
+            const { data: existingCheck } = await supabase
+                .from('enrollments')
+                .select('*')
+                .ilike('email', userEmail.trim())
+                .order('created_at', { ascending: false })
+                .limit(1);
+
+            if (existingCheck && existingCheck.length > 0) {
+                const cur = existingCheck[0];
+                const curStatus = (cur.status || '').toLowerCase();
+                if (curStatus === 'enrolled' || curStatus === 'approved' || curStatus === 'pending') {
+                    showAlert(`⚠️ You already have an enrollment record on file (Status: ${curStatus.toUpperCase()}). You can only have one copy.`, 'error');
+                    renderExistingEnrollmentCard(cur);
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<i class="fas fa-paper-plane" style="margin-right:8px;"></i> Submit Enrollment';
+                    }
+                    return;
+                }
+            }
+        } catch (checkErr) {
+            console.warn('Duplicate enrollment check warning:', checkErr);
+        }
+
         const dob = document.getElementById('dob')?.value || null;
         const ageVal = parseInt(document.getElementById('age')?.value, 10) || null;
         const birthplace = document.getElementById('birthplace')?.value.trim() || '';
@@ -432,9 +560,64 @@ async function submitEnrollment(e) {
         const enrolledStudentType = document.getElementById('student_type')?.value || studentType || (gradeName.includes('7') ? 'New Student' : 'Continuing');
         const previousSchool = document.getElementById('previousSchool')?.value.trim() || (enrolledStudentType === 'Transferee' ? 'Previous School' : 'Placido L. Señor National High School (PLSNHS)');
         const previousGrade = document.getElementById('previousGrade')?.value.trim() || 'N/A';
-        const studentId = sessionUser?.id || sessionUser?.uid || null;
+        // 1a. Resolve student_id to strictly satisfy FOREIGN KEY (student_id) REFERENCES students(id)
+        let resolvedStudentId = null;
+        const isValidUuid = (val) => typeof val === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val.trim());
 
-        // 1a. Read 2x2 picture as Data URL for official ID generation
+        // A. Check candidate student ID from sessionUser (studentTableId or student_id)
+        const candidateStudentId = sessionUser?.studentTableId || sessionUser?.student_id;
+        if (isValidUuid(candidateStudentId)) {
+            try {
+                const { data: stRow } = await supabase
+                    .from('students')
+                    .select('id')
+                    .eq('id', candidateStudentId.trim())
+                    .maybeSingle();
+                if (stRow && stRow.id) {
+                    resolvedStudentId = stRow.id;
+                }
+            } catch (err) {
+                console.warn('Candidate student_id check notice:', err);
+            }
+        }
+
+        // B. If not resolved, check if student already exists in students table by email
+        if (!resolvedStudentId && userEmail) {
+            try {
+                const { data: stByEmail } = await supabase
+                    .from('students')
+                    .select('id')
+                    .ilike('email', userEmail.trim())
+                    .limit(1);
+                if (stByEmail && stByEmail.length > 0) {
+                    resolvedStudentId = stByEmail[0].id;
+                }
+            } catch (err) {
+                console.warn('Student email lookup notice:', err);
+            }
+        }
+
+        // C. Check if sessionUser.id itself happens to exist in students table
+        const sessionUserId = sessionUser?.id || sessionUser?.uid;
+        if (!resolvedStudentId && isValidUuid(sessionUserId)) {
+            try {
+                const { data: stByUid } = await supabase
+                    .from('students')
+                    .select('id')
+                    .eq('id', sessionUserId.trim())
+                    .maybeSingle();
+                if (stByUid && stByUid.id) {
+                    resolvedStudentId = stByUid.id;
+                }
+            } catch (err) {
+                console.warn('Session UID student lookup notice:', err);
+            }
+        }
+
+        // Safe applicant_id for account linking (nullable UUID)
+        const applicantId = isValidUuid(sessionUserId) ? sessionUserId.trim() : null;
+
+        // 1b. Read 2x2 picture as Data URL for official ID generation
         let twoByTwoDataUrl = null;
         const picInputForDb = document.getElementById('two_by_two_picture');
         if (picInputForDb && picInputForDb.files && picInputForDb.files[0]) {
@@ -450,11 +633,12 @@ async function submitEnrollment(e) {
             }
         }
 
-        // 1. Insert enrollment in Supabase
+        // 1. Insert enrollment in Supabase (student_id is null if newly applying student)
         const { data: newEnr, error: enrError } = await supabase
             .from('enrollments')
             .insert([{
-                student_id: studentId,
+                student_id: resolvedStudentId || null,
+                applicant_id: applicantId,
                 email: userEmail,
                 first_name: firstName,
                 last_name: lastName,
@@ -494,8 +678,8 @@ async function submitEnrollment(e) {
 
         const createdEnrollmentId = (newEnr && newEnr[0]) ? newEnr[0].id : null;
         const studentFullName = `${firstName} ${lastName}`.trim() || 'Applicant';
-        const notifTitle = '📋 New Enrollment Submission';
-        const notifMessage = `New enrollment application from ${studentFullName} (${gradeName}${strand ? ' - ' + strand : ''}).`;
+        const notifTitle = `📋 New Enrollment: ${studentFullName}`;
+        const notifMessage = `New student ${studentFullName} has submitted an enrollment application for ${gradeName}${strand ? ' - ' + strand : ''}. Click to review complete information and credentials.`;
 
         // 1b. Save uploaded 2x2 picture to avatar & documents storage
         const twoByTwoInput = document.getElementById('two_by_two_picture');
@@ -565,7 +749,7 @@ async function submitEnrollment(e) {
             }
         }
 
-        // 2. Notify Admin and Registrar via notifications table in Supabase (only Admin and Registrar)
+        // 2. Notify Admin and Registrar via notifications table in Supabase
         try {
             await supabase
                 .from('notifications')
@@ -578,6 +762,7 @@ async function submitEnrollment(e) {
                         enrollment_id: createdEnrollmentId,
                         is_read: false,
                         read: false,
+                        priority: 'high',
                         created_at: new Date().toISOString()
                     },
                     {
@@ -588,6 +773,7 @@ async function submitEnrollment(e) {
                         enrollment_id: createdEnrollmentId,
                         is_read: false,
                         read: false,
+                        priority: 'high',
                         created_at: new Date().toISOString()
                     }
                 ]);
@@ -595,106 +781,36 @@ async function submitEnrollment(e) {
             console.warn('Notification insert warning:', notifErr);
         }
 
-        // 3. Dispatch storage event for instant cross-tab synchronization for both Admin and Registrar
+        // 3. Dispatch storage events for instant cross-tab synchronization for both Admin and Registrar
         try {
-            localStorage.setItem('hes_latest_notification', JSON.stringify({
+            const notifPayload = {
                 role: 'all',
                 roles: ['admin', 'registrar'],
                 title: notifTitle,
                 message: notifMessage,
                 type: 'new_enrollment',
                 enrollment_id: createdEnrollmentId,
+                enrollmentId: createdEnrollmentId,
+                student_name: studentFullName,
+                grade_level: gradeName,
                 timestamp: Date.now()
-            }));
-            localStorage.setItem('hes_admin_latest_notification', JSON.stringify({
-                role: 'admin',
-                roles: ['admin', 'registrar'],
-                title: notifTitle,
-                message: notifMessage,
-                type: 'new_enrollment',
-                enrollment_id: createdEnrollmentId,
-                timestamp: Date.now()
-            }));
+            };
+            localStorage.setItem('hes_latest_notification', JSON.stringify(notifPayload));
+            localStorage.setItem('hes_admin_latest_notification', JSON.stringify(notifPayload));
+            localStorage.setItem('hes_enrollment_updated', Date.now().toString());
         } catch(storageErr) {}
 
-        // 4. Prepare Gmail confirmation data & Show Confirmation Modal
-        const trackingRef = `HES-ENR-${(createdEnrollmentId ? createdEnrollmentId.toString().slice(0, 8) : Date.now().toString().slice(-6)).toUpperCase()}`;
-        const emailConfirmPayload = {
-            studentName: studentFullName,
-            firstName,
-            lastName,
-            email: userEmail,
-            gradeLevel: gradeName,
-            strand: strand || null,
-            studentType: enrolledStudentType,
-            schoolYear: schoolYear || '2026-2027',
-            trackingId: trackingRef
-        };
+        // 4. Submit Directly (Largo) - Do NOT show modal popup after submitting
+        showAlert('✅ Enrollment form submitted successfully! Your application is now directly on the Admin & Registrar dashboard for review and approval.', 'success');
 
-        const emailData = EmailNotificationService.buildEnrollmentConfirmationEmail(emailConfirmPayload);
-
-        const modal = document.getElementById('enrollmentConfirmationModal');
-        const trackingEl = document.getElementById('confirmTrackingId');
-        const nameEl = document.getElementById('confirmStudentName');
-        const emailEl = document.getElementById('confirmEmail');
-        const gradeEl = document.getElementById('confirmGradeStrand');
-        const syEl = document.getElementById('confirmSY');
-
-        if (trackingEl) trackingEl.textContent = trackingRef;
-        if (nameEl) nameEl.textContent = studentFullName;
-        if (emailEl) emailEl.textContent = userEmail;
-        if (gradeEl) gradeEl.textContent = `${gradeName}${strand ? ' - ' + strand : ''}`;
-        if (syEl) syEl.textContent = schoolYear || '2026-2027';
-
-        if (modal) {
-            modal.style.display = 'flex';
-        }
-
-        const gmailBtn = document.getElementById('sendEnrollmentGmailBtn');
-        const copyReceiptBtn = document.getElementById('copyEnrollmentReceiptBtn');
-        const mailtoBtn = document.getElementById('sendMailtoReceiptBtn');
-        const alertStaffBtn = document.getElementById('alertAdminRegistrarEmailBtn');
-        const adminRegEmailData = EmailNotificationService.buildNewEnrollmentAdminRegistrarAlertEmail(emailConfirmPayload);
-
-        if (alertStaffBtn) {
-            alertStaffBtn.onclick = () => {
-                EmailNotificationService.sendViaGmailWeb(adminRegEmailData);
-                showAlert('📧 Opening Gmail notice to Admin (admin@hiraya.edu.ph) & Registrar...', 'success');
-            };
-        }
-        const doneBtn = document.getElementById('doneEnrollmentBtn');
-
-        if (gmailBtn) {
-            gmailBtn.onclick = () => {
-                EmailNotificationService.sendViaGmailWeb(emailData);
-                showAlert(`📧 Opening Gmail compose for ${userEmail}...`, 'success');
-            };
-        }
-
-        if (copyReceiptBtn) {
-            copyReceiptBtn.onclick = async () => {
-                const ok = await EmailNotificationService.copyEmailText(emailData);
-                if (ok) showAlert('📋 Enrollment receipt copied to clipboard!', 'success');
-            };
-        }
-
-        if (mailtoBtn) {
-            mailtoBtn.onclick = () => {
-                EmailNotificationService.sendViaMailto(emailData);
-            };
-        }
-
-        if (doneBtn) {
-            doneBtn.onclick = () => {
-                if (sessionUser) {
-                    window.location.href = 'dashboard.html';
-                } else {
-                    window.location.href = '../auth/login.html';
-                }
-            };
-        }
-
-        showAlert('✅ Enrollment submitted successfully! You can send your confirmation receipt to Gmail.', 'success');
+        // Automatically redirect directly ("submit largo")
+        setTimeout(() => {
+            if (sessionUser && sessionUser.role === 'student' && (sessionUser.status === 'Enrolled' || sessionUser.status === 'approved')) {
+                window.location.href = 'dashboard.html';
+            } else {
+                window.location.href = '../auth/login.html';
+            }
+        }, 1500);
 
     } catch (error) {
         console.error('❌ Error submitting enrollment:', error);
@@ -731,6 +847,22 @@ if (backBtn) {
             window.location.href = 'dashboard.html';
         } else {
             window.location.href = '../auth/homepage.html';
+        }
+    });
+}
+
+const emailInputField = document.getElementById('email');
+if (emailInputField) {
+    emailInputField.addEventListener('blur', function() {
+        const val = this.value.trim();
+        if (val && val.includes('@')) {
+            loadExistingEnrollment(val);
+        }
+    });
+    emailInputField.addEventListener('change', function() {
+        const val = this.value.trim();
+        if (val && val.includes('@')) {
+            loadExistingEnrollment(val);
         }
     });
 }

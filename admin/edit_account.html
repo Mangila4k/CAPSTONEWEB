@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Account - HES, Hiraya Enrollment System</title>
+    <title>Edit Account - PLSNSH, Placido L. Señor National High School</title>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- Google Fonts -->
@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/edit_account.css">
     <link rel="stylesheet" href="../css/chatbot.css">
+    <link rel="stylesheet" href="../css/sidebar.css">
 </head>
 <body>
     <!-- Mobile Menu Toggle -->
@@ -29,15 +30,6 @@
                 <div class="logo-text">PLS<span>NSH</span></div>
             </div>
             <div class="school-badge">Placido L. Señor National High School</div>
-        </div>
-
-        <div class="admin-profile">
-            <div class="admin-avatar">
-                <div class="avatar-initial" id="adminAvatar">A</div>
-                <div class="online-dot"></div>
-            </div>
-            <div class="admin-name" id="adminName">Admin</div>
-            <div class="admin-role"><i class="fas fa-shield-alt"></i> Administrator</div>
         </div>
 
         <div class="nav-menu">
@@ -69,11 +61,25 @@
                 <div class="nav-section-title">ACCOUNT</div>
                 <ul class="nav-items">
                     <li><a href="profile.html"><i class="fas fa-user"></i> Profile</a></li>
-                    <li><a href="../auth/logout.html"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                        <li><a href="../auth/logout.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                    
                 </ul>
             </div>
         </div>
-    </aside>
+                <!-- Pinned Sidebar Footer -->
+            <div class="sidebar-footer">
+                <div class="admin-profile">
+                    <div class="admin-avatar">
+                        <div class="avatar-initial" id="adminAvatar">A</div>
+                        <div class="online-dot"></div>
+                    </div>
+                    <div class="admin-info">
+                        <div class="admin-name" id="adminName">Admin</div>
+                        <div class="admin-role"><i class="fas fa-shield-alt"></i> Administrator</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
 
     <!-- Main Content -->
     <main class="main-content">
@@ -99,12 +105,12 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label class="form-label">Full Name <span class="required">*</span></label>
-                            <input type="text" name="fullname" id="fullname" value="Maria Santos" required>
+                            <input type="text" name="fullname" id="fullname" placeholder="Enter full name" required>
                         </div>
 
                         <div class="form-group">
                             <label class="form-label">Email Address <span class="required">*</span></label>
-                            <input type="email" name="email" id="email" value="maria.santos@plshs.edu.ph" required>
+                            <input type="email" name="email" id="email" placeholder="user@example.com" required>
                         </div>
                     </div>
 
@@ -114,17 +120,17 @@
                             <select name="role" id="role">
                                 <option value="Admin">Administrator</option>
                                 <option value="Registrar">Registrar</option>
-                                <option value="Teacher" selected>Teacher</option>
+                                <option value="Teacher">Teacher</option>
                                 <option value="Student">Student</option>
                             </select>
                         </div>
 
                         <div class="form-group">
                             <label class="form-label">ID Number</label>
-                            <input type="text" name="id_number" id="id_number" placeholder="e.g., HES-TCH-000001" value="HES-TCH-000001">
+                            <input type="text" name="id_number" id="id_number" placeholder="Loading ID..." readonly disabled>
                             <div class="form-hint">
                                 <i class="fas fa-info-circle"></i>
-                                Optional - leave blank if no ID number
+                                Managed by system records
                             </div>
                         </div>
                     </div>
@@ -136,14 +142,14 @@
                             <h4>Live Preview</h4>
                         </div>
                         <div class="preview-content">
-                            <div class="preview-avatar" id="previewInitial">M</div>
+                            <div class="preview-avatar" id="previewInitial"><i class="fas fa-user"></i></div>
                             <div class="preview-details">
-                                <h5 id="previewName">Maria Santos</h5>
+                                <h5 id="previewName">User Name</h5>
                                 <div>
-                                    <span class="preview-role role-teacher" id="previewRole">Teacher</span>
+                                    <span class="preview-role role-student" id="previewRole">User</span>
                                 </div>
                                 <div class="preview-email" id="previewEmail">
-                                    <i class="fas fa-envelope"></i> maria.santos@plshs.edu.ph
+                                    <i class="fas fa-envelope"></i> —
                                 </div>
                             </div>
                         </div>
@@ -153,7 +159,7 @@
                         <button type="submit" name="update_account" class="btn-primary">
                             <i class="fas fa-save"></i> Update Account
                         </button>
-                        <a href="view_account.html?id=1" class="btn-secondary">
+                        <a id="cancelEditAccountBtn" href="manage_accounts.html" class="btn-secondary">
                             <i class="fas fa-times"></i> Cancel
                         </a>
                     </div>

@@ -1,18 +1,10 @@
-/**
- * Forgot Password - Interactive JavaScript with Supabase & Gmail Confirmation
- */
-
 import { supabase } from '../../supabase/config.js';
 import { EmailNotificationService } from '../../js/email_service.js';
 
-(function() {
+(function () {
     'use strict';
 
     console.log('🔑 Forgot Password with Gmail Confirmation ready');
-
-    // ============================================
-    // DOM ELEMENTS
-    // ============================================
 
     const forgotForm = document.getElementById('forgotForm');
     const submitBtn = document.getElementById('submitBtn');
@@ -35,12 +27,8 @@ import { EmailNotificationService } from '../../js/email_service.js';
     let activeResetSession = null;
     let activeEmailData = null;
 
-    // ============================================
-    // STEP 1: EMAIL LOOKUP & CODE GENERATION
-    // ============================================
-
     if (forgotForm) {
-        forgotForm.addEventListener('submit', async function(e) {
+        forgotForm.addEventListener('submit', async function (e) {
             e.preventDefault();
 
             const rawEmail = emailInput.value.trim();
@@ -91,7 +79,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
                                 role: 'student'
                             };
                         }
-                    } catch(stdErr) {}
+                    } catch (stdErr) { }
                 }
 
                 if (!matchedUser) {
@@ -125,7 +113,6 @@ import { EmailNotificationService } from '../../js/email_service.js';
                     resetCode: generatedCode
                 });
 
-                // 4. Update UI to Step 2
                 forgotForm.style.display = 'none';
                 if (verifyStep) verifyStep.style.display = 'block';
                 if (pageHeading) pageHeading.textContent = 'Enter Confirmation Code';
@@ -171,7 +158,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
                 try {
                     await navigator.clipboard.writeText(activeResetSession.code);
                     showAlert(`📋 Security Code (${activeResetSession.code}) copied to clipboard!`, 'success');
-                } catch(e) {
+                } catch (e) {
                     showAlert(`Code: ${activeResetSession.code}`, 'success');
                 }
             }
@@ -183,7 +170,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
     // ============================================
 
     if (resetPasswordForm) {
-        resetPasswordForm.addEventListener('submit', async function(e) {
+        resetPasswordForm.addEventListener('submit', async function (e) {
             e.preventDefault();
 
             const enteredCode = (codeInput?.value || '').trim();
@@ -193,7 +180,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
             if (!activeResetSession) {
                 const stored = sessionStorage.getItem('hes_pwd_reset');
                 if (stored) {
-                    try { activeResetSession = JSON.parse(stored); } catch(e) {}
+                    try { activeResetSession = JSON.parse(stored); } catch (e) { }
                 }
             }
 
@@ -254,7 +241,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
                         .from('students')
                         .update({ updated_at: new Date().toISOString() })
                         .ilike('email', activeResetSession.email);
-                } catch(e) {}
+                } catch (e) { }
 
                 sessionStorage.removeItem('hes_pwd_reset');
 
@@ -280,7 +267,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
     // ============================================
 
     if (emailInput) {
-        emailInput.addEventListener('input', function() {
+        emailInput.addEventListener('input', function () {
             const email = this.value.trim();
             const emailPattern = /^[^\s@]+@([^\s@.,]+\.)+[^\s@.,]{2,}$/;
             const existingError = this.parentElement.querySelector('.field-error');

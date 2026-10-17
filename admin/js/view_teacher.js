@@ -125,6 +125,11 @@ document.addEventListener('DOMContentLoaded', async function() {
             if (teacherRegistered) teacherRegistered.textContent = formatDate(createdAt);
             if (teacherDaysActive) teacherDaysActive.textContent = daysActive;
 
+            const editTeacherBtn = document.getElementById('editTeacherBtn');
+            if (editTeacherBtn) {
+                editTeacherBtn.href = `edit_teacher.html?id=${encodeURIComponent(teacherRecord?.id || userRecord?.id || teacherId)}`;
+            }
+
             // 2. Fetch assigned sections
             const teacherKey = teacherRecord?.id || teacherId;
             const userKey = userRecord?.id || teacherId;

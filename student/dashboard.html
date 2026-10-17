@@ -4,12 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Dashboard - HES, Hiraya Enrollment System</title>
+    <title>Student Dashboard - PLSNSH, Placido L. Señor National High School</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- STUDENT CSS - local -->
     <link rel="stylesheet" href="css/dashboard.css">
     <link rel="stylesheet" href="../css/chatbot.css">
+    <link rel="stylesheet" href="../css/sidebar.css">
+    <link rel="stylesheet" href="../css/dashboard_announcements.css">
 </head>
 
 <body>
@@ -22,18 +24,9 @@
                         <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo"
                             onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
                     </div>
-                    <div class="logo-text">PLS<span>NSH</span></div>
+                    <div class="logo-text">PLS<span>NHS</span></div>
                 </div>
                 <div class="school-badge">Placido L. Señor National High School</div>
-            </div>
-
-            <div class="student-profile">
-                <div class="student-avatar">
-                    <div class="avatar-initial" id="studentInitial">S</div>
-                    <div class="online-dot"></div>
-                </div>
-                <div class="student-name" id="studentName">Student</div>
-                <div class="student-role"><i class="fas fa-user-graduate"></i> Student</div>
             </div>
 
             <nav class="nav-menu">
@@ -43,11 +36,24 @@
                         <li><a href="dashboard.html" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
                         </li>
                         <li><a href="attendance.html"><i class="fas fa-calendar-check"></i> Attendance</a></li>
-                        <li><a href="schedule.html"><i class="fas fa-calendar-alt"></i> Class Program</a></li>
-                        <li><a href="assessments.html"><i class="fas fa-clipboard-list"></i> Assessments</a></li>
-                        <li><a href="grades.html"><i class="fas fa-star"></i> My Grades</a></li>
                         <li><a href="requirements.html"><i class="fas fa-file-alt"></i> Requirements</a></li>
-                        <li><a href="violations.html"><i class="fas fa-scale-balanced"></i> Guidance & Violations</a></li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">ACADEMICS</div>
+                    <ul class="nav-items">
+                        <li><a href="assessments.html"><i class="fas fa-clipboard-list"></i> Assessments</a></li>
+                        <li><a href="schedule.html"><i class="fas fa-calendar-alt"></i> Class Program</a></li>
+                        <li><a href="grades.html"><i class="fas fa-star"></i> My Grades</a></li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">DISCIPLINE & CONDUCT</div>
+                    <ul class="nav-items">
+                        <li><a href="violations.html"><i class="fas fa-scale-balanced"></i> Guidance & Violations</a>
+                        </li>
                     </ul>
                 </div>
 
@@ -57,9 +63,23 @@
                         <li><a href="profile.html"><i class="fas fa-user-circle"></i> My Profile</a></li>
                         <li><a href="../auth/login.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a>
                         </li>
+
                     </ul>
                 </div>
             </nav>
+            <!-- Pinned Sidebar Footer -->
+            <div class="sidebar-footer">
+                <div class="student-profile">
+                    <div class="student-avatar">
+                        <div class="avatar-initial" id="studentInitial">S</div>
+                        <div class="online-dot"></div>
+                    </div>
+                    <div class="student-info">
+                        <div class="student-name" id="studentName">Student</div>
+                        <div class="student-role"><i class="fas fa-user-graduate"></i> Student</div>
+                    </div>
+                </div>
+            </div>
         </aside>
 
         <main class="main-content">
@@ -90,10 +110,40 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Student Type Badge -->
-            <div class="student-type-badge" id="studentTypeBadge" style="background: #197e2f;">
-                <i class="fas fa-star"></i> New Student
+            <div id="passwordSecurityBanner"
+                style="display: none; background: #fffbeb; border: 1.5px solid #fde68a; border-left: 5px solid #f59e0b; border-radius: 12px; padding: 14px 18px; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                <div
+                    style="display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: flex-start; gap: 12px;">
+                        <div
+                            style="width: 38px; height: 38px; border-radius: 10px; background: #fef3c7; color: #d97706; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; box-shadow: 0 2px 4px rgba(217,119,6,0.15);">
+                            <i class="fas fa-key"></i>
+                        </div>
+                        <div>
+                            <h4
+                                style="margin: 0 0 4px; font-size: 14px; font-weight: 700; color: #92400e; display: flex; align-items: center; gap: 6px;">
+                                <span>Security Recommendation: Update Your Password</span>
+                                <span
+                                    style="background: #fde68a; color: #78350f; font-size: 10.5px; padding: 2px 8px; border-radius: 10px; font-weight: 700;">Initial
+                                    Login</span>
+                            </h4>
+                            <p style="margin: 0; font-size: 12.5px; color: #78350f; line-height: 1.5;">
+                                If you logged in with your initial default password (your Last Name), we strongly
+                                recommend changing it now to keep your student dashboard and academic records secure.
+                            </p>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-left: auto;">
+                        <a href="profile.html"
+                            style="padding: 8px 16px; border-radius: 8px; background: #d97706; color: #ffffff; text-decoration: none; font-size: 12.5px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(217,119,6,0.25); transition: background 0.2s;">
+                            <i class="fas fa-lock"></i> Change Password
+                        </a>
+                        <button type="button" id="dismissPwdBannerBtn" title="Dismiss"
+                            style="background: transparent; border: none; color: #92400e; cursor: pointer; font-size: 16px; padding: 6px; border-radius: 6px;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <!-- Student Type Information Card -->
@@ -104,7 +154,7 @@
                 <div class="student-type-info">
                     <h3 id="studentTypeTitle">New Student</h3>
                     <p id="studentTypeDesc">First time enrollee</p>
-                    <small><i class="fas fa-graduation-cap"></i> First time enrollment</small>
+                    <small id="studentTypeSub"><i class="fas fa-graduation-cap"></i> First time enrollment</small>
                 </div>
             </div>
 
@@ -181,14 +231,16 @@
                 </div>
 
                 <div class="action-card">
-                    <div class="action-icon" style="background: #e0f2fe; color: #0284c7;"><i class="fas fa-clipboard-list"></i></div>
+                    <div class="action-icon" style="background: #e0f2fe; color: #0284c7;"><i
+                            class="fas fa-clipboard-list"></i></div>
                     <h3>Assessments</h3>
                     <p>View classwork, pass your assignments & quizzes</p>
                     <a href="assessments.html" class="action-btn">Pass Work</a>
                 </div>
 
                 <div class="action-card">
-                    <div class="action-icon" style="background: #fef3c7; color: #b45309;"><i class="fas fa-scale-balanced"></i></div>
+                    <div class="action-icon" style="background: #fef3c7; color: #b45309;"><i
+                            class="fas fa-scale-balanced"></i></div>
                     <h3>Guidance & Conduct</h3>
                     <p>View your behavioral records, conduct status, and guidance history</p>
                     <a href="violations.html" class="action-btn">View Records</a>
@@ -232,7 +284,7 @@
                 <p>
                     <i class="fas fa-map-marker-alt"></i> PLACIDO L. SEÑOR NATIONAL HIGH SCHOOL<br>
                     Langtad, City of Naga, Cebu 6037<br>
-                    <i class="fas fa-phone"></i> (032) 123-4567 · <i class="fas fa-envelope"></i> info@plsshs.edu.ph
+                    <i class="fas fa-phone"></i> (032) 123-4567 · <i class="fas fa-envelope"></i> info@plsnhs.edu.ph
                 </p>
             </div>
         </main>
@@ -242,6 +294,7 @@
     <script src="js/student_avatar_sync.js"></script>
     <script type="module" src="js/dashboard.js"></script>
     <script src="../js/chatbot.js"></script>
+    <script type="module" src="../js/dashboard_announcements_notifier.js"></script>
 </body>
 
 </html>

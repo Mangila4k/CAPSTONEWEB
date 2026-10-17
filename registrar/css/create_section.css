@@ -230,8 +230,22 @@
     color: #1e293b;
 }
 
+.page-header {
+    max-width: 820px;
+    margin: 0 auto 28px auto;
+    width: 100%;
+}
+
+#alertContainer {
+    max-width: 820px;
+    margin: 0 auto;
+    width: 100%;
+}
+
 .form-container {
-    max-width: 680px;
+    max-width: 820px;
+    margin: 0 auto;
+    width: 100%;
 }
 
 .form-card {
@@ -240,4 +254,6 @@
     padding: 24px 28px;
     border: 1px solid #e2e8f0;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    width: 100%;
+    box-sizing: border-box;
 }

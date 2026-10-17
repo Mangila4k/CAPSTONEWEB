@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reports - Registrar Dashboard | PLS NHS</title>
+    <title>Reports - Registrar Dashboard | PLSNSH, Placido L. Señor National High School</title>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Google Fonts -->
@@ -12,6 +12,7 @@
     <!-- Reports CSS -->
     <link rel="stylesheet" href="css/reports.css">
     <link rel="stylesheet" href="../css/chatbot.css">
+    <link rel="stylesheet" href="../css/sidebar.css">
 </head>
 
 <body>
@@ -33,26 +34,16 @@
             <div class="school-badge">Placido L. Señor National High School</div>
         </div>
 
-        
-        <div class="admin-profile">
-            <div class="admin-avatar">
-                <div class="avatar-initial" id="adminInitial">JM</div>
-                <div class="online-dot"></div>
-            </div>
-            <div class="admin-name" id="adminName">Justine Mangila</div>
-            <div class="admin-role"><i class="fas fa-id-badge"></i> Registrar</div>
-        </div>
 
         <nav class="nav-menu">
             <div class="nav-section">
                 <div class="nav-section-title">MAIN MENU</div>
                 <ul class="nav-items">
                     <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-                    <li><a href="enrollments.html"><i class="fas fa-file-signature"></i> Enrollments <span
-                                class="nav-badge" id="pendingEnrollmentsBadge" style="display: none;">0</span></a></li>
+                    <li><a href="announcements.html"><i class="fas fa-bullhorn"></i> Announcements</a></li>
+                    <li><a href="enrollments.html"><i class="fas fa-file-signature"></i> Enrollments <span class="nav-badge hidden" id="pendingEnrollmentsBadge" data-count="0" style="display: none !important;"></span></a></li>
                     <li><a href="students.html"><i class="fas fa-user-graduate"></i> Students</a></li>
-<li><a href="requirements.html"><i class="fas fa-clipboard-check"></i> Requirements <span
-                                    class="nav-badge" id="pendingRequirementsBadge" style="display: none;">0</span></a></li>
+                    <li><a href="requirements.html"><i class="fas fa-clipboard-check"></i> Requirements <span class="nav-badge hidden" id="pendingRequirementsBadge" data-count="0" style="display: none !important;"></span></a></li>
                     <li><a href="generate_id.html"><i class="fas fa-id-card"></i> Student ID </a></li>
                     <li><a href="sections.html"><i class="fas fa-layer-group"></i> Sections</a></li>
                     <li><a href="reports.html" class="active"><i class="fas fa-chart-bar"></i> Reports</a></li>
@@ -64,9 +55,23 @@
                 <ul class="nav-items">
                     <li><a href="profile.html"><i class="fas fa-user"></i> Profile</a></li>
                     <li><a href="../auth/login.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+
                 </ul>
             </div>
         </nav>
+        <!-- Pinned Sidebar Footer -->
+        <div class="sidebar-footer">
+            <div class="admin-profile">
+                <div class="admin-avatar">
+                    <div class="avatar-initial" id="adminInitial">JM</div>
+                    <div class="online-dot"></div>
+                </div>
+                <div class="admin-info">
+                    <div class="admin-name" id="adminName">Justine Mangila</div>
+                    <div class="admin-role"><i class="fas fa-id-badge"></i> Registrar</div>
+                </div>
+            </div>
+        </div>
     </aside>
 
     <!-- ===== MAIN CONTENT ===== -->
@@ -204,7 +209,8 @@
             <div class="print-document-header" id="printDocumentHeader">
                 <div class="print-header-top">
                     <div class="print-logo print-logo-left">
-                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" onerror="this.src='../pictures/logo sa skwelahan.png'">
+                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo"
+                            onerror="this.src='../pictures/logo sa skwelahan.png'">
                     </div>
                     <div class="print-header-center">
                         <div class="deped-text">Republic of the Philippines</div>
@@ -215,14 +221,16 @@
                         <div class="office-name">OFFICE OF THE SCHOOL REGISTRAR</div>
                     </div>
                     <div class="print-logo print-logo-right">
-                        <img src="../pictures/logo sa skwelahan.jpg" alt="DepEd / School Seal" onerror="this.src='../pictures/logo sa skwelahan.png'">
+                        <img src="../pictures/logo sa skwelahan.jpg" alt="DepEd / School Seal"
+                            onerror="this.src='../pictures/logo sa skwelahan.png'">
                     </div>
                 </div>
                 <div class="print-header-divider"></div>
                 <div class="print-doc-meta">
                     <div class="print-doc-title">
                         <h2 id="printReportTitle">OFFICIAL ENROLLMENT SUMMARY REPORT</h2>
-                        <div class="print-doc-dept" id="printDocDept">Basic Education Department • Junior & Senior High School</div>
+                        <div class="print-doc-dept" id="printDocDept">Basic Education Department • Junior & Senior High
+                            School</div>
                     </div>
                     <div class="print-doc-details">
                         <div class="print-meta-item">
@@ -247,10 +255,12 @@
                     <button class="btn-export" id="exportExcelBtn">
                         <i class="fas fa-file-excel"></i> Export Excel
                     </button>
-                    <button class="btn-print btn-print-jhs" id="printJhsBtn" title="Print Junior High School Report on Long Paper (8.5 x 13 in)">
+                    <button class="btn-print btn-print-jhs" id="printJhsBtn"
+                        title="Print Junior High School Report on Long Paper (8.5 x 13 in)">
                         <i class="fas fa-school"></i> Print JHS Report
                     </button>
-                    <button class="btn-print btn-print-shs" id="printShsBtn" title="Print Senior High School Report on Long Paper (8.5 x 13 in)">
+                    <button class="btn-print btn-print-shs" id="printShsBtn"
+                        title="Print Senior High School Report on Long Paper (8.5 x 13 in)">
                         <i class="fas fa-graduation-cap"></i> Print SHS Report
                     </button>
                     <button class="btn-print btn-print-all" id="printBtn" title="Print All Records on Long Paper">
@@ -265,10 +275,12 @@
                     <i class="fas fa-layer-group"></i> All Levels <span class="tab-badge" id="badgeAllCount">0</span>
                 </button>
                 <button type="button" class="level-tab-btn" data-level="jhs" id="tabJhs">
-                    <i class="fas fa-school"></i> Junior High School (Grades 7–10) <span class="tab-badge" id="badgeJhsCount">0</span>
+                    <i class="fas fa-school"></i> Junior High School (Grades 7–10) <span class="tab-badge"
+                        id="badgeJhsCount">0</span>
                 </button>
                 <button type="button" class="level-tab-btn" data-level="shs" id="tabShs">
-                    <i class="fas fa-graduation-cap"></i> Senior High School (Grades 11–12) <span class="tab-badge" id="badgeShsCount">0</span>
+                    <i class="fas fa-graduation-cap"></i> Senior High School (Grades 11–12) <span class="tab-badge"
+                        id="badgeShsCount">0</span>
                 </button>
             </div>
 
@@ -325,7 +337,8 @@
                     </div>
                 </div>
                 <div class="print-footer-tag">
-                    <span>Hiraya Educational Management System • Placido L. Señor National High School • Official Institutional Document</span>
+                    <span>Hiraya Educational Management System • Placido L. Señor National High School • Official
+                        Institutional Document</span>
                 </div>
             </div>
         </div>

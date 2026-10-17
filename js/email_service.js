@@ -26,40 +26,41 @@ export const EmailNotificationService = {
         const cleanSY = schoolYear || '2026-2027';
 
         const loginUrl = getPortalLoginUrl();
-        const subject = `🎉 Welcome to PLS-NSHS! Your Student Portal Login Credentials`;
+        const subject = `🎉 Enrollment Approved! Your Student Portal Login Credentials`;
 
         const body = `Dear ${studentName || cleanFirst},
 
-Congratulations! Your enrollment application for ${cleanGrade}${cleanStrand} for School Year ${cleanSY} at Hiraya Enrollment System has been officially APPROVED.
+Congratulations! Your enrollment application for ${cleanGrade}${cleanStrand} for School Year ${cleanSY} at Placido L. Señor National High School has been reviewed and officially APPROVED by the Registrar & Administration.
 
-Your Student Portal account is now active. Please find your login credentials below:
+Your Student Portal account is now ready. Below are your official login credentials:
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🌐 STUDENT PORTAL LOGIN:
-Login Page: ${loginUrl}
+🌐 STUDENT PORTAL LOGIN CREDENTIALS:
+Login Portal: ${loginUrl}
 
-📧 Username (Registered Email):
+📧 Username (Your Gmail):
 ${email}
 
-🔑 Password (Your Last Name):
+🔑 Initial Password (Your Last Name):
 ${cleanLast}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-HOW TO ACCESS YOUR ACCOUNT:
-1. Visit the PLS-NSHS Student Portal login page: ${loginUrl}
-2. Enter your registered email as the Username: ${email}
+HOW TO ACCESS YOUR ACCOUNT & UPDATE YOUR PASSWORD:
+1. Open the Student Portal login page: ${loginUrl}
+2. Enter your registered Gmail address as the Username: ${email}
 3. Enter your Last Name as the Password: ${cleanLast} (Case-insensitive)
 4. Click LOGIN to access your Student Dashboard.
+5. SECURITY NOTICE: Upon your first login, please go to the "My Profile" tab to immediately update your password.
 
-Once logged in, you can view your Class Schedule, Grades, Attendance records, and School Announcements. You may also update your password anytime under the "My Profile" tab.
+Once logged in, you can view your official Class Schedule, Subjects, Grades, Attendance, and Announcements.
 
-If you have any questions or require assistance, please visit the Registrar's Office or reply directly to this email.
+If you have any questions or require assistance, please visit the Registrar's Office or Administration.
 
-Welcome to the  PLS-NSHS family!
+Welcome to the PLS-NSHS family!
 
 Sincerely,
-Office of the Registrar
-Hiraya Enrollment System
+Office of the Registrar & Administration
+Placido L. Señor National High School
 Langtad, City of Naga, Cebu
 `;
 
@@ -77,7 +78,7 @@ Langtad, City of Naga, Cebu
         /**
      * Constructs official New Enrollment Alert email sent to Admin & Registrar
      */
-    buildNewEnrollmentAdminRegistrarAlertEmail({ studentName, firstName, lastName, email, gradeLevel, strand, studentType, schoolYear, trackingId, createdAt }) {
+    buildNewEnrollmentAdminRegistrarAlertEmail({ studentName, firstName, lastName, email, gradeLevel, strand, studentType, schoolYear, trackingId, createdAt, enrollmentId }) {
         const cleanName = studentName || `${firstName || ''} ${lastName || ''}`.trim() || 'Applicant';
         const cleanGrade = gradeLevel || 'Junior/Senior High School';
         const cleanStrand = strand ? ` (${strand})` : '';
@@ -85,6 +86,7 @@ Langtad, City of Naga, Cebu
         const cleanType = studentType || 'New Student';
         const refNumber = trackingId || `HES-ENR-${Date.now().toString().slice(-6)}`;
         const dateStr = createdAt ? new Date(createdAt).toLocaleString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : new Date().toLocaleString('en-US');
+        const viewParam = enrollmentId ? `?id=${enrollmentId}` : '';
 
         const subject = `📋 [NEW ENROLLMENT] Application Received: ${cleanName} - Ref: ${refNumber}`;
 
@@ -104,13 +106,15 @@ A new student enrollment application has just been submitted via the Hiraya Enro
 • Status: Pending Registrar Verification
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-REQUIRED ACTIONS:
-1. Administrator: Review enrollment volume & analytics on the Admin Dashboard.
-2. Registrar: Evaluate submitted credentials and process admission in the Enrollments queue.
-
-PORTAL MANAGEMENT:
+DIRECT LINKS TO VIEW FULL STUDENT INFORMATION & CREDENTIALS:
+• Registrar Review Student Info: ${getPortalLoginUrl().replace('/auth/login.html', '/registrar/view_enrollment.html' + viewParam)}
+• Admin Review Student Info: ${getPortalLoginUrl().replace('/auth/login.html', '/admin/view_enrollment.html' + viewParam)}
+• Registrar Enrollments Queue: ${getPortalLoginUrl().replace('/auth/login.html', '/registrar/enrollments.html')}
 • Admin Dashboard: ${getPortalLoginUrl().replace('/auth/login.html', '/admin/dashboard.html')}
-• Registrar Enrollments: ${getPortalLoginUrl().replace('/auth/login.html', '/registrar/enrollments.html')}
+
+REQUIRED ACTIONS:
+1. Registrar: Review all student personal information, guardian details, and uploaded requirements (2x2 Picture, PSA Birth Certificate, Report Card, Good Moral) to verify and approve.
+2. Administrator: Monitor enrollment admissions and manage school account allocations.
 
 Sincerely,
 Hiraya Enrollment System (HES) Automated Dispatch
@@ -121,7 +125,7 @@ Langtad, City of Naga, Cebu, Philippines
         return {
             subject,
             body,
-            to: 'admin@hiraya.edu.ph, registrar@hes.edu.ph',
+            to: 'admin@hiraya.edu.ph, registrar@hiraya.edu.ph, info@PLSNHS.edu.ph',
             refNumber
         };
     },

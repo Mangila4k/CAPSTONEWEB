@@ -278,8 +278,12 @@ export const AnnouncementsService = {
             await supabase.from('notifications').insert([{
                 title: `📢 ${newAnnouncement.title}`,
                 message: newAnnouncement.content.substring(0, 180),
-                type: 'announcement',
+                type: newAnnouncement.category === 'meeting' ? 'meeting' : 'announcement',
                 role: targetRole,
+                announcement_id: String(newAnnouncement.id),
+                priority: newAnnouncement.priority || 'normal',
+                read: false,
+                is_read: false,
                 created_at: newAnnouncement.date_created
             }]);
         } catch(e) {}

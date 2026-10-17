@@ -19,8 +19,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Subject lists by grade level
     const juniorHighSubjects = [
-        'Mathematics', 'Science', 'English', 'Filipino', 'Araling Panlipunan', 
-        'MAPEH', 'Edukasyon sa Pagpapakatao', 'Technology and Livelihood Education'
+        'Filipino',
+        'English',
+        'Mathematics',
+        'Science',
+        'Araling Panlipunan (AP / Social Studies)',
+        'MAPEH',
+        'Edukasyon sa Pagpapakatao (EsP / Values Education)',
+        'Technology and Livelihood Education (TLE)'
     ];
     
     const seniorHighSubjects = [
@@ -351,6 +357,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 subjectName = subjectName.replace('Elective:', '').trim();
             }
 
+            // Generate standard code & description if not present
+            let autoCode = '';
+            const nLower = subjectName.toLowerCase();
+            if (nLower.includes('filipino')) autoCode = `FIL-${gradeNum}`;
+            else if (nLower.includes('english')) autoCode = `ENG-${gradeNum}`;
+            else if (nLower.includes('math')) autoCode = `MATH-${gradeNum}`;
+            else if (nLower.includes('science')) autoCode = `SCI-${gradeNum}`;
+            else if (nLower.includes('araling') || nLower.includes('panlipunan')) autoCode = `AP-${gradeNum}`;
+            else if (nLower.includes('mapeh')) autoCode = `MAPEH-${gradeNum}`;
+            else if (nLower.includes('esp') || nLower.includes('pagpapakatao')) autoCode = `ESP-${gradeNum}`;
+            else if (nLower.includes('tle') || nLower.includes('technology and livelihood')) autoCode = `TLE-${gradeNum}`;
+
+            let subjectDesc = `Grade ${gradeNum} ${subjectType} subject`;
+            if (nLower.includes('mapeh')) {
+                subjectDesc = 'Music, Arts, Physical Education (PE), and Health';
+            }
+
             const submitBtn = subjectForm.querySelector('button[type="submit"]');
             try {
                 if (submitBtn) submitBtn.disabled = true;
@@ -359,10 +382,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     .from('subjects')
                     .insert([{
                         name: subjectName,
+                        code: autoCode || null,
                         grade_level: String(gradeNum),
                         strand: strand,
                         subject_type: subjectType,
-                        description: `Grade ${gradeNum} ${subjectType} subject`
+                        description: subjectDesc
                     }])
                     .select();
 

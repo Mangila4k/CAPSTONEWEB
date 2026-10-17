@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add New Account - HES, Hiraya Enrollment System</title>
+    <title>Add New Account - PLSNSH, Placido L. Señor National High School</title>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- Google Fonts -->
@@ -12,7 +13,9 @@
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/add_account.css">
     <link rel="stylesheet" href="../css/chatbot.css">
+    <link rel="stylesheet" href="../css/sidebar.css">
 </head>
+
 <body>
     <!-- Mobile Menu Toggle -->
     <div class="menu-toggle" id="menuToggle">
@@ -25,20 +28,12 @@
             <div class="sidebar-header">
                 <div class="logo">
                     <div class="logo-icon">
-                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
+                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo"
+                            onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
                     </div>
                     <div class="logo-text">PLS<span>NSH</span></div>
                 </div>
                 <div class="school-badge">Placido L. Señor National High School</div>
-            </div>
-
-            <div class="admin-profile">
-                <div class="admin-avatar">
-                    <div class="avatar-initial" id="adminAvatar">A</div>
-                    <div class="online-dot"></div>
-                </div>
-                <div class="admin-name" id="adminName">Admin</div>
-                <div class="admin-role"><i class="fas fa-shield-alt"></i> Administrator</div>
             </div>
 
             <div class="nav-menu">
@@ -58,7 +53,8 @@
                     <div class="nav-section-title">COMMUNICATION & MANAGEMENT</div>
                     <ul class="nav-items">
                         <li><a href="announcements.html"><i class="fas fa-bullhorn"></i> Announcements</a></li>
-                        <li><a href="manage_accounts.html" class="active"><i class="fas fa-users-cog"></i> Accounts</a></li>
+                        <li><a href="manage_accounts.html" class="active"><i class="fas fa-users-cog"></i> Accounts</a>
+                        </li>
                         <li><a href="attendance.html"><i class="fas fa-calendar-check"></i> Attendance</a></li>
                         <li><a href="register_face.html"><i class="fas fa-camera"></i> Face Registration</a></li>
                         <li><a href="activities.html"><i class="fas fa-history"></i> Activities</a></li>
@@ -70,21 +66,37 @@
                     <div class="nav-section-title">ACCOUNT</div>
                     <ul class="nav-items">
                         <li><a href="profile.html"><i class="fas fa-user"></i> Profile</a></li>
-                        <li><a href="../auth/logout.html"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                        <li><a href="../auth/logout.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                        </li>
+
                     </ul>
+                </div>
+            </div>
+            <!-- Pinned Sidebar Footer -->
+            <div class="sidebar-footer">
+                <div class="admin-profile">
+                    <div class="admin-avatar">
+                        <div class="avatar-initial" id="adminAvatar">A</div>
+                        <div class="online-dot"></div>
+                    </div>
+                    <div class="admin-info">
+                        <div class="admin-name" id="adminName">Admin</div>
+                        <div class="admin-role"><i class="fas fa-shield-alt"></i> Administrator</div>
+                    </div>
                 </div>
             </div>
         </aside>
 
         <!-- Main Content -->
         <main class="main-content">
-            <div class="page-header">
-                <div>
-                    <h1>Add New Account</h1>
-                    <p class="subtitle">Create a new user account with role-based permissions and auto-generated ID</p>
+            <div class="form-page-wrapper">
+                <div class="page-header">
+                    <div>
+                        <h1>Add New Account</h1>
+                        <p class="subtitle">Create a new user account with role-based permissions and auto-generated ID</p>
+                    </div>
+                    <a href="manage_accounts.html" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Accounts</a>
                 </div>
-                <a href="manage_accounts.html" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Accounts</a>
-            </div>
 
             <!-- Alert Messages -->
             <div id="alertContainer"></div>
@@ -116,20 +128,12 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="fullname">Full Name <span>*</span></label>
-                                <input type="text" 
-                                       id="fullname" 
-                                       name="fullname" 
-                                       placeholder="e.g., Juan Dela Cruz" 
-                                       required>
+                                <input type="text" id="fullname" name="fullname" placeholder="Enter full name" required>
                             </div>
 
                             <div class="form-group">
                                 <label for="email">Email Address <span>*</span></label>
-                                <input type="email" 
-                                       id="email" 
-                                       name="email" 
-                                       placeholder="user@plshs.edu.ph" 
-                                       required>
+                                <input type="email" id="email" name="email" placeholder="user@plshs.edu.ph" required>
                             </div>
                         </div>
 
@@ -154,11 +158,8 @@
 
                             <div class="form-group">
                                 <label for="id_number_preview">ID Number (Auto-generated)</label>
-                                <input type="text" 
-                                       id="id_number_preview" 
-                                       class="id-preview" 
-                                       readonly 
-                                       placeholder="Will be auto-generated">
+                                <input type="text" id="id_number_preview" class="id-preview" readonly
+                                    placeholder="Will be auto-generated">
                             </div>
                         </div>
 
@@ -166,12 +167,10 @@
                             <div class="form-group">
                                 <label for="password">Password <span>*</span></label>
                                 <div class="input-wrapper">
-                                    <input type="password" 
-                                           id="password" 
-                                           name="password" 
-                                           placeholder="Create a strong password" 
-                                           required>
-                                    <button type="button" class="toggle-password" id="togglePasswordBtn" title="Toggle password visibility">
+                                    <input type="password" id="password" name="password"
+                                        placeholder="Create a strong password" required>
+                                    <button type="button" class="toggle-password" id="togglePasswordBtn"
+                                        title="Toggle password visibility">
                                         <i class="fas fa-eye"></i>
                                     </button>
                                 </div>
@@ -180,22 +179,112 @@
                                 </div>
                                 <div class="strength-text" id="strengthText">
                                     <i class="fas fa-info-circle"></i>
-                                    <span>Minimum 8 characters with uppercase, lowercase, number & special character</span>
+                                    <span>Minimum 8 characters with uppercase, lowercase, number & special
+                                        character</span>
                                 </div>
                             </div>
 
                             <div class="form-group">
                                 <label for="confirm_password">Confirm Password <span>*</span></label>
                                 <div class="input-wrapper">
-                                    <input type="password" 
-                                           id="confirm_password" 
-                                           name="confirm_password" 
-                                           placeholder="Re-enter your password" 
-                                           required>
+                                    <input type="password" id="confirm_password" name="confirm_password"
+                                        placeholder="Re-enter your password" required>
                                 </div>
                                 <div class="strength-text" id="passwordMatch">
                                     <i class="fas fa-info-circle"></i>
                                     <span>Re-enter your password</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Teacher Advisory Assignment Section (Visible when Role = Teacher) -->
+                        <div id="teacherAdvisorySection" style="display: none; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 20px 22px; margin-bottom: 22px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="width: 34px; height: 34px; border-radius: 8px; background: #e0e7ff; color: #4338ca; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+                                        <i class="fas fa-chalkboard-teacher"></i>
+                                    </div>
+                                    <div>
+                                        <h4 style="margin: 0; font-size: 14.5px; font-weight: 700; color: #1e293b;">Faculty Advisory Assignment</h4>
+                                        <p style="margin: 2px 0 0 0; font-size: 12px; color: #64748b;">Select the year level and section where this teacher will serve as Class Adviser</p>
+                                    </div>
+                                </div>
+                                <span style="background: #f1f5f9; color: #475569; font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 20px; border: 1px solid #cbd5e1;">Optional</span>
+                            </div>
+
+                            <div class="form-row" style="margin-bottom: 0;">
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label for="advisoryGradeLevel">Advisory Year Level</label>
+                                    <select name="advisory_grade_level" id="advisoryGradeLevel">
+                                        <option value="">-- No Advisory Class (Subject Teacher Only) --</option>
+                                        <option value="Grade 7">Grade 7 (Junior High School)</option>
+                                        <option value="Grade 8">Grade 8 (Junior High School)</option>
+                                        <option value="Grade 9">Grade 9 (Junior High School)</option>
+                                        <option value="Grade 10">Grade 10 (Junior High School)</option>
+                                        <option value="Grade 11">Grade 11 (Senior High School)</option>
+                                        <option value="Grade 12">Grade 12 (Senior High School)</option>
+                                    </select>
+                                    <div class="form-hint">
+                                        <i class="fas fa-filter"></i>
+                                        Filters the section list below
+                                    </div>
+                                </div>
+
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label for="advisorySection">Advisory Section</label>
+                                    <select name="advisory_section_id" id="advisorySection" disabled>
+                                        <option value="">-- Select Year Level First --</option>
+                                    </select>
+                                    <div class="form-hint" id="advisorySectionHint">
+                                        <i class="fas fa-info-circle"></i>
+                                        Select a year level to view sections
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Student Academic Placement Section (Visible when Role = Student) -->
+                        <div id="studentPlacementSection" style="display: none; background: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: 12px; padding: 20px 22px; margin-bottom: 22px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="width: 34px; height: 34px; border-radius: 8px; background: #dcfce7; color: #15803d; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+                                        <i class="fas fa-graduation-cap"></i>
+                                    </div>
+                                    <div>
+                                        <h4 style="margin: 0; font-size: 14.5px; font-weight: 700; color: #14532d;">Student Academic Placement</h4>
+                                        <p style="margin: 2px 0 0 0; font-size: 12px; color: #166534;">Select the year level and section to assign this student's class roster</p>
+                                    </div>
+                                </div>
+                                <span style="background: #ffffff; color: #15803d; font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 20px; border: 1px solid #86efac;">With Section</span>
+                            </div>
+
+                            <div class="form-row" style="margin-bottom: 0;">
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label for="studentGradeLevel">Year Level / Grade Level</label>
+                                    <select name="student_grade_level" id="studentGradeLevel">
+                                        <option value="">-- Select Year Level --</option>
+                                        <option value="Grade 7">Grade 7 (Junior High School)</option>
+                                        <option value="Grade 8">Grade 8 (Junior High School)</option>
+                                        <option value="Grade 9">Grade 9 (Junior High School)</option>
+                                        <option value="Grade 10">Grade 10 (Junior High School)</option>
+                                        <option value="Grade 11">Grade 11 (Senior High School)</option>
+                                        <option value="Grade 12">Grade 12 (Senior High School)</option>
+                                    </select>
+                                    <div class="form-hint">
+                                        <i class="fas fa-filter"></i>
+                                        Filters section list
+                                    </div>
+                                </div>
+
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label for="studentSectionSelect">Section</label>
+                                    <select name="student_section_id" id="studentSectionSelect" disabled>
+                                        <option value="">-- Select Year Level First --</option>
+                                    </select>
+                                    <div class="form-hint" id="studentSectionHint">
+                                        <i class="fas fa-info-circle"></i>
+                                        Select year level to load sections
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -216,6 +305,14 @@
                                         <i class="fas fa-id-card"></i>
                                         <span id="previewIDNumber">Will be auto-generated</span>
                                     </div>
+                                    <div class="preview-advisory" id="previewAdvisoryRow" style="display: none; font-size: 12px; color: #4338ca; margin-top: 6px;">
+                                        <i class="fas fa-chalkboard-teacher"></i>
+                                        <span id="previewAdvisoryText">Class Adviser: None</span>
+                                    </div>
+                                    <div class="preview-student-placement" id="previewStudentPlacementRow" style="display: none; font-size: 12px; color: #15803d; margin-top: 6px;">
+                                        <i class="fas fa-users-rectangle"></i>
+                                        <span id="previewStudentPlacementText">Section: Unassigned</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -231,6 +328,7 @@
                     </form>
                 </div>
             </div>
+            </div>
         </main>
     </div>
 
@@ -239,4 +337,5 @@
     <script type="module" src="js/add_account.js"></script>
     <script src="../js/chatbot.js"></script>
 </body>
+
 </html>

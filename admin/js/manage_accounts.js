@@ -212,10 +212,22 @@ document.addEventListener('DOMContentLoaded', async function() {
                         </span>
                     </td>
                     <td><i class="far fa-calendar"></i> ${formatDate(user.created_at)}</td>
-                    <td>
-                        <div class="action-btns">
-                            <button class="btn-approve" onclick="window.approveUser('${user.id}')"><i class="fas fa-check"></i> Approve</button>
-                            <button class="btn-reject" onclick="window.openRejectModal('${user.id}', '${user.fullname}')"><i class="fas fa-times"></i> Reject</button>
+                    <td class="cell-center cell-actions">
+                        <div class="manage-dropdown">
+                            <button type="button" class="btn-manage" aria-expanded="false" title="Manage Pending Account">
+                                <span>Manage</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <div class="manage-menu">
+                                <button type="button" class="manage-item approve-item" onclick="window.approveUser('${user.id}')" title="Approve Account">
+                                    <i class="fas fa-check-circle" style="color: #10b981;"></i>
+                                    <span>Approve Account</span>
+                                </button>
+                                <button type="button" class="manage-item reject-item" onclick="window.openRejectModal('${user.id}', '${user.fullname.replace(/'/g, "\\'")}')" title="Reject Account">
+                                    <i class="fas fa-times-circle" style="color: #ef4444;"></i>
+                                    <span>Reject Account</span>
+                                </button>
+                            </div>
                         </div>
                     </td>
                 </tr>
@@ -223,6 +235,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
 
         pendingTableBody.innerHTML = html;
+        bindManageDropdowns(pendingTableBody);
     }
 
     function renderUsers() {
@@ -281,11 +294,29 @@ document.addEventListener('DOMContentLoaded', async function() {
                     </td>
                     <td><span class="status-badge ${statusClass}">${user.status.charAt(0).toUpperCase() + user.status.slice(1)}</span></td>
                     <td><span class="activity-time"><i class="far fa-calendar"></i> ${formatDate(user.created_at)}</span></td>
-                    <td>
-                        <div class="action-btns">
-                            <a href="view_account.html?id=${user.id}" class="btn-view" title="View"><i class="fas fa-eye"></i></a>
-                            <a href="edit_account.html?id=${user.id}" class="btn-edit" title="Edit"><i class="fas fa-edit"></i></a>
-                            ${!isSelf ? `<button class="btn-delete" onclick="window.deleteUser('${user.id}')" title="Delete"><i class="fas fa-trash"></i></button>` : ''}
+                    <td class="cell-center cell-actions">
+                        <div class="manage-dropdown">
+                            <button type="button" class="btn-manage" aria-expanded="false" title="Manage Account">
+                                <span>Manage</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <div class="manage-menu">
+                                <a href="view_account.html?id=${user.id}" class="manage-item view-item" title="View Account">
+                                    <i class="fas fa-eye" style="color: #2563eb;"></i>
+                                    <span>View Account</span>
+                                </a>
+                                <a href="edit_account.html?id=${user.id}" class="manage-item edit-item" title="Edit Account">
+                                    <i class="fas fa-edit" style="color: #d97706;"></i>
+                                    <span>Edit Account</span>
+                                </a>
+                                ${!isSelf ? `
+                                    <div class="manage-divider"></div>
+                                    <button type="button" class="manage-item delete-item" onclick="window.deleteUser('${user.id}')" title="Delete Account">
+                                        <i class="fas fa-trash-alt" style="color: #dc2626;"></i>
+                                        <span>Delete Account</span>
+                                    </button>
+                                ` : ''}
+                            </div>
                         </div>
                     </td>
                 </tr>
@@ -293,6 +324,39 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
 
         usersTableBody.innerHTML = html;
+        bindManageDropdowns(usersTableBody);
+    }
+
+    function bindManageDropdowns(container) {
+        if (!container) return;
+        container.querySelectorAll('.btn-manage').forEach(btn => {
+            btn.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const dropdown = this.closest('.manage-dropdown');
+                const row = this.closest('tr');
+                const isOpen = dropdown.classList.contains('show');
+
+                document.querySelectorAll('.manage-dropdown.show').forEach(d => {
+                    d.classList.remove('show');
+                    d.classList.remove('dropup');
+                    const r = d.closest('tr');
+                    if (r) r.classList.remove('dropdown-open');
+                });
+
+                if (!isOpen) {
+                    const rect = this.getBoundingClientRect();
+                    const spaceBelow = window.innerHeight - rect.bottom;
+                    if (spaceBelow < 200) {
+                        dropdown.classList.add('dropup');
+                    } else {
+                        dropdown.classList.remove('dropup');
+                    }
+                    dropdown.classList.add('show');
+                    if (row) row.classList.add('dropdown-open');
+                }
+            });
+        });
     }
 
     // ===== GLOBALLY EXPOSED ACTIONS =====
@@ -367,6 +431,16 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     document.addEventListener('click', function(e) {
         if (e.target === rejectModal) window.closeRejectModal();
+
+        // Close open manage dropdowns when clicking outside
+        if (!e.target.closest('.manage-dropdown')) {
+            document.querySelectorAll('.manage-dropdown.show').forEach(d => {
+                d.classList.remove('show');
+                d.classList.remove('dropup');
+                const r = d.closest('tr');
+                if (r) r.classList.remove('dropdown-open');
+            });
+        }
     });
 
     // ===== MOBILE MENU =====

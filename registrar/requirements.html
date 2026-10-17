@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Requirements Tracker - Registrar | PLS-NSHS</title>
+    <title>Student Requirements Tracker - Registrar | PLSNSH, Placido L. Señor National High School</title>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Google Fonts -->
@@ -12,16 +12,15 @@
     <!-- CSS Files -->
     <link rel="stylesheet" href="css/requirements.css">
     <link rel="stylesheet" href="../css/chatbot.css">
+    <link rel="stylesheet" href="../css/sidebar.css">
 </head>
 
 <body>
-    <!-- Mobile Menu Toggle -->
     <div class="menu-toggle" id="menuToggle">
         <i class="fas fa-bars"></i>
     </div>
 
     <div class="app-container">
-        <!-- ===== SIDEBAR ===== -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="logo">
@@ -34,26 +33,18 @@
                 <div class="school-badge">Placido L. Señor National High School</div>
             </div>
 
-            
-        <div class="admin-profile">
-            <div class="admin-avatar">
-                <div class="avatar-initial" id="adminInitial">JM</div>
-                <div class="online-dot"></div>
-            </div>
-            <div class="admin-name" id="adminName">Justine Mangila</div>
-            <div class="admin-role"><i class="fas fa-id-badge"></i> Registrar</div>
-        </div>
 
-        <nav class="nav-menu">
+            <nav class="nav-menu">
                 <div class="nav-section">
                     <div class="nav-section-title">MAIN MENU</div>
                     <ul class="nav-items">
                         <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-                        <li><a href="enrollments.html"><i class="fas fa-file-signature"></i> Enrollments <span
-                                    class="nav-badge" id="pendingEnrollmentsBadge" style="display: none;">0</span></a></li>
+                        <li><a href="announcements.html"><i class="fas fa-bullhorn"></i> Announcements</a></li>
+                        <li><a href="enrollments.html"><i class="fas fa-file-signature"></i> Enrollments <span class="nav-badge hidden" id="pendingEnrollmentsBadge" data-count="0" style="display: none !important;"></span></a>
+                        </li>
                         <li><a href="students.html"><i class="fas fa-user-graduate"></i> Students</a></li>
-                        <li><a href="requirements.html" class="active"><i class="fas fa-clipboard-check"></i> Requirements <span
-                                    class="nav-badge" id="pendingRequirementsBadge" style="display: none;">0</span></a></li>
+                        <li><a href="requirements.html" class="active"><i class="fas fa-clipboard-check"></i>
+                                Requirements <span class="nav-badge hidden" id="pendingRequirementsBadge" data-count="0" style="display: none !important;"></span></a></li>
                         <li><a href="generate_id.html"><i class="fas fa-id-card"></i> Student ID</a></li>
                         <li><a href="sections.html"><i class="fas fa-layer-group"></i> Sections</a></li>
                         <li><a href="reports.html"><i class="fas fa-chart-bar"></i> Reports</a></li>
@@ -64,10 +55,25 @@
                     <div class="nav-section-title">ACCOUNT</div>
                     <ul class="nav-items">
                         <li><a href="profile.html"><i class="fas fa-user"></i> Profile</a></li>
-                        <li><a href="../auth/login.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                        <li><a href="../auth/login.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                        </li>
+
                     </ul>
                 </div>
             </nav>
+            <!-- Pinned Sidebar Footer -->
+            <div class="sidebar-footer">
+                <div class="admin-profile">
+                    <div class="admin-avatar">
+                        <div class="avatar-initial" id="adminInitial">JM</div>
+                        <div class="online-dot"></div>
+                    </div>
+                    <div class="admin-info">
+                        <div class="admin-name" id="adminName">Justine Mangila</div>
+                        <div class="admin-role"><i class="fas fa-id-badge"></i> Registrar</div>
+                    </div>
+                </div>
+            </div>
         </aside>
 
         <!-- ===== MAIN CONTENT ===== -->
@@ -79,10 +85,30 @@
                     <p>Track student document submissions, verify credentials, and follow up on missing requirements</p>
                 </div>
                 <div class="header-actions">
-                    <button type="button" class="btn-header btn-header-outline" id="printReportBtn" title="Print Requirements Summary">
+                    <div class="notification-wrapper">
+                        <button type="button" class="notification-btn" id="notificationBtn" title="Notifications">
+                            <i class="fas fa-bell"></i>
+                            <span class="notif-count" id="notifCount" style="display: none;">0</span>
+                        </button>
+                        <div class="notification-dropdown" id="notificationDropdown">
+                            <div class="dropdown-header">
+                                <h4>Notifications</h4>
+                                <button type="button" id="markAllReadBtn" class="mark-all-read">Mark all as read</button>
+                            </div>
+                            <div class="dropdown-body" id="notificationList">
+                                <div class="empty-notifications">
+                                    <i class="fas fa-bell-slash"></i>
+                                    <p>No notifications yet</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-header btn-header-outline" id="printReportBtn"
+                        title="Print Requirements Summary">
                         <i class="fas fa-print"></i> Print Report
                     </button>
-                    <button type="button" class="btn-header btn-header-primary" id="bulkRemindBtn" title="Send notice to all students with missing requirements">
+                    <button type="button" class="btn-header btn-header-primary" id="bulkRemindBtn"
+                        title="Send notice to all students with missing requirements">
                         <i class="fas fa-paper-plane"></i> Bulk Remind Incomplete
                     </button>
                 </div>
@@ -149,13 +175,16 @@
                 <div class="level-tabs-bar">
                     <div class="level-pills">
                         <button type="button" class="level-pill active" data-level="all">
-                            <i class="fas fa-border-all"></i> All Levels <span class="level-badge" id="badgeCountAll">0</span>
+                            <i class="fas fa-border-all"></i> All Levels <span class="level-badge"
+                                id="badgeCountAll">0</span>
                         </button>
                         <button type="button" class="level-pill" data-level="jhs">
-                            <i class="fas fa-school"></i> Junior High <span class="level-badge" id="badgeCountJhs">0</span>
+                            <i class="fas fa-school"></i> Junior High <span class="level-badge"
+                                id="badgeCountJhs">0</span>
                         </button>
                         <button type="button" class="level-pill" data-level="shs">
-                            <i class="fas fa-graduation-cap"></i> Senior High <span class="level-badge" id="badgeCountShs">0</span>
+                            <i class="fas fa-graduation-cap"></i> Senior High <span class="level-badge"
+                                id="badgeCountShs">0</span>
                         </button>
                     </div>
 
@@ -178,7 +207,8 @@
                 <div class="toolbar-container">
                     <div class="search-box">
                         <i class="fas fa-search"></i>
-                        <input type="text" class="search-input" id="reqSearchInput" placeholder="Search by student name, LRN, or email...">
+                        <input type="text" class="search-input" id="reqSearchInput"
+                            placeholder="Search by student name, LRN, or email...">
                     </div>
 
                     <div class="filters-group">
@@ -209,7 +239,8 @@
                             <option value="form_137">Missing Form 137 (Transferees)</option>
                         </select>
 
-                        <button type="button" class="btn-filter-reset" id="resetFiltersBtn" title="Reset all active filters">
+                        <button type="button" class="btn-filter-reset" id="resetFiltersBtn"
+                            title="Reset all active filters">
                             <i class="fas fa-undo"></i> Reset
                         </button>
 
@@ -235,7 +266,8 @@
                         <tbody id="requirementsTableBody">
                             <tr>
                                 <td colspan="6" style="text-align: center; padding: 40px;">
-                                    <i class="fas fa-spinner fa-spin" style="font-size: 26px; color: #0b2b4a; margin-bottom: 10px;"></i>
+                                    <i class="fas fa-spinner fa-spin"
+                                        style="font-size: 26px; color: #0b2b4a; margin-bottom: 10px;"></i>
                                     <p style="color: #64748b; margin: 0;">Loading requirements tracking data...</p>
                                 </td>
                             </tr>
@@ -259,13 +291,16 @@
                 <div class="modal-student-banner">
                     <div class="modal-student-avatar" id="modalStudentAvatar">S</div>
                     <div>
-                        <h4 style="font-size: 16px; font-weight: 800; color: #0b2b4a; margin-bottom: 2px;" id="modalStudentName">Student Name</h4>
-                        <p style="font-size: 12.5px; color: #64748b; margin-bottom: 8px;" id="modalStudentSub">Grade Level • LRN</p>
+                        <h4 style="font-size: 16px; font-weight: 800; color: #0b2b4a; margin-bottom: 2px;"
+                            id="modalStudentName">Student Name</h4>
+                        <p style="font-size: 12.5px; color: #64748b; margin-bottom: 8px;" id="modalStudentSub">Grade
+                            Level • LRN</p>
                         <div id="modalOverallStatus"></div>
                     </div>
                 </div>
 
-                <h4 style="font-size: 13.5px; font-weight: 700; color: #334155; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                <h4
+                    style="font-size: 13.5px; font-weight: 700; color: #334155; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
                     <i class="fas fa-list-check"></i> Document Submission Checklist
                 </h4>
 
@@ -291,27 +326,42 @@
                 </button>
             </div>
             <div class="modal-body">
-                <div style="background: #fffbeb; border: 1px solid #fef3c7; border-radius: 12px; padding: 14px 16px; margin-bottom: 18px;">
-                    <div style="font-size: 13px; font-weight: 700; color: #92400e; margin-bottom: 4px;">Recipient Student:</div>
-                    <div style="font-size: 14px; font-weight: 800; color: #0b2b4a;" id="noticeStudentName">Student Name</div>
-                    <div style="font-size: 12px; color: #64748b; margin-top: 2px;" id="noticeStudentEmail">email@example.com</div>
+                <div
+                    style="background: #fffbeb; border: 1px solid #fef3c7; border-radius: 12px; padding: 14px 16px; margin-bottom: 18px;">
+                    <div style="font-size: 13px; font-weight: 700; color: #92400e; margin-bottom: 4px;">Recipient
+                        Student:</div>
+                    <div style="font-size: 14px; font-weight: 800; color: #0b2b4a;" id="noticeStudentName">Student Name
+                    </div>
+                    <div style="font-size: 12px; color: #64748b; margin-top: 2px;" id="noticeStudentEmail">
+                        email@example.com</div>
                 </div>
 
                 <div style="margin-bottom: 14px;">
-                    <label style="display: block; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px;">Pending Requirement(s):</label>
-                    <ul id="noticeMissingList" style="list-style: none; display: flex; flex-direction: column; gap: 4px; font-size: 12.5px; font-weight: 600; color: #b91c1c;"></ul>
+                    <label
+                        style="display: block; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px;">Pending
+                        Requirement(s):</label>
+                    <ul id="noticeMissingList"
+                        style="list-style: none; display: flex; flex-direction: column; gap: 4px; font-size: 12.5px; font-weight: 600; color: #b91c1c;">
+                    </ul>
                 </div>
 
                 <div style="margin-bottom: 14px;">
-                    <label style="display: block; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px;">Notice Subject:</label>
-                    <input type="text" id="noticeSubjectInput" class="search-input" style="padding-left: 14px;" value="⚠️ Important: Incomplete Enrollment Requirements">
+                    <label
+                        style="display: block; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px;">Notice
+                        Subject:</label>
+                    <input type="text" id="noticeSubjectInput" class="search-input" style="padding-left: 14px;"
+                        value="⚠️ Important: Incomplete Enrollment Requirements">
                 </div>
 
                 <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px;">Notice Message:</label>
-                    <textarea id="noticeMessageInput" class="search-input" style="padding: 10px 14px; height: 110px; resize: vertical; line-height: 1.5; font-family: inherit; font-size: 12.5px;"></textarea>
+                    <label
+                        style="display: block; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px;">Notice
+                        Message:</label>
+                    <textarea id="noticeMessageInput" class="search-input"
+                        style="padding: 10px 14px; height: 110px; resize: vertical; line-height: 1.5; font-family: inherit; font-size: 12.5px;"></textarea>
                     <p style="font-size: 11px; color: #64748b; margin-top: 6px;">
-                        <i class="fas fa-info-circle"></i> This notice will appear on the student's dashboard and can also be opened directly in Gmail compose.
+                        <i class="fas fa-info-circle"></i> This notice will appear on the student's dashboard and can
+                        also be opened directly in Gmail compose.
                     </p>
                 </div>
             </div>

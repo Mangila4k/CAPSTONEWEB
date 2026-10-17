@@ -20,11 +20,18 @@ import { supabase } from '../../supabase/config.js';
 
     // Requirement elements
     const requirementsList = document.getElementById('requirementsList');
-    const progressFill = document.getElementById('progressFill');
-    const progressPercentage = document.getElementById('progressPercentage');
     const submittedCount = document.getElementById('submittedCount');
     const missingCount = document.getElementById('missingCount');
     const totalCount = document.getElementById('totalCount');
+
+    // Class info elements (matches report card / grades.js)
+    const gradeDisplay = document.getElementById('gradeDisplay');
+    const sectionDisplay = document.getElementById('sectionDisplay');
+    const strandDisplay = document.getElementById('strandDisplay');
+    const statusDisplay = document.getElementById('statusDisplay');
+    const schoolYearDisplay = document.getElementById('schoolYearDisplay');
+    const classInfoCard = document.getElementById('classInfoCard');
+    const statsContainer = document.getElementById('statsContainer');
 
     // Modal elements
     const uploadModal = document.getElementById('uploadModal');
@@ -50,6 +57,7 @@ import { supabase } from '../../supabase/config.js';
     const requirementDefs = [
         {
             key: 'two_by_two_picture',
+            code: 'REQ-1',
             title: '2x2 ID Picture (White Background)',
             description: 'Recent 2x2 colored ID picture taken in formal attire with plain white background.',
             required: true,
@@ -57,6 +65,7 @@ import { supabase } from '../../supabase/config.js';
         },
         {
             key: 'psa_birth',
+            code: 'REQ-2',
             title: 'PSA Official Birth Certificate',
             description: 'Original or clear photocopy of Philippine Statistics Authority (PSA) Birth Certificate.',
             required: true,
@@ -64,13 +73,15 @@ import { supabase } from '../../supabase/config.js';
         },
         {
             key: 'report_card',
-            title: 'Report Card',
+            code: 'REQ-3',
+            title: 'Report Card (Form 138)',
             description: 'Original Report Card from previous grade level signed by the Principal.',
             required: true,
             dbField: 'form_138_url'
         },
         {
             key: 'good_moral',
+            code: 'REQ-4',
             title: 'Certificate of Good Moral Character',
             description: 'Official Certificate of Good Moral Character issued by previous school.',
             required: true,
@@ -204,33 +215,40 @@ import { supabase } from '../../supabase/config.js';
 
             const reqContent = document.getElementById('requirementsContent');
             const noEnrollCard = document.getElementById('noEnrollmentCard');
-            const enrollStatusBadge = document.getElementById('enrollmentStatusBadge');
-            const enrollGrade = document.getElementById('enrollmentGrade');
-            const studentTypeBadge = document.getElementById('studentTypeBadge');
-            const approvedBadge = document.getElementById('approvedBadge');
 
             if (reqContent) reqContent.style.display = 'block';
             if (noEnrollCard) noEnrollCard.style.display = 'none';
+            if (classInfoCard) classInfoCard.style.display = 'flex';
+            if (statsContainer) statsContainer.style.display = 'grid';
 
-            if (enrollGrade) {
-                enrollGrade.textContent = enrollment?.grade_level || studentRow?.grade_level || 'Grade 11';
-            }
-
+            const grade = enrollment?.grade_level || enrollment?.grade || studentRow?.grade_level || 'Grade 11';
+            const strand = enrollment?.strand || studentRow?.strand || 'TVL-ICT';
             const rawSt = (enrollment?.status || studentRow?.status || 'pending').toLowerCase();
             const isEnrolled = rawSt === 'enrolled' || rawSt === 'approved';
+            const statusText = isEnrolled ? 'Enrolled' : (rawSt === 'rejected' ? 'Rejected' : 'Pending');
+            const sy = enrollment?.school_year || enrollment?.last_school_year || '2025-2026';
 
-            if (enrollStatusBadge) {
-                enrollStatusBadge.textContent = isEnrolled ? 'Enrolled' : (rawSt === 'rejected' ? 'Rejected' : 'Pending');
-                enrollStatusBadge.className = `status-badge ${isEnrolled ? 'status-approved' : (rawSt === 'rejected' ? 'status-rejected' : 'status-pending')}`;
-                if (isEnrolled) {
-                    enrollStatusBadge.style.background = '#dcfce7';
-                    enrollStatusBadge.style.color = '#15803d';
-                }
+            // Resolve Section Name
+            let sectionName = studentRow?.section || enrollment?.section || null;
+            const targetSecId = studentRow?.section_id || enrollment?.section_id;
+            if (targetSecId) {
+                try {
+                    const { data: secRow } = await supabase
+                        .from('sections')
+                        .select('name')
+                        .eq('id', targetSecId)
+                        .maybeSingle();
+                    if (secRow && secRow.name) {
+                        sectionName = secRow.name;
+                    }
+                } catch(secErr) {}
             }
 
-            if (approvedBadge) {
-                approvedBadge.style.display = isEnrolled ? 'inline-flex' : 'none';
-            }
+            if (gradeDisplay) gradeDisplay.textContent = grade;
+            if (sectionDisplay) sectionDisplay.textContent = sectionName || 'Unassigned';
+            if (strandDisplay) strandDisplay.textContent = strand;
+            if (statusDisplay) statusDisplay.textContent = statusText;
+            if (schoolYearDisplay) schoolYearDisplay.textContent = sy;
 
             const isTransfereeStudent = String(enrollment?.student_type || studentRow?.student_type || '').toLowerCase().includes('transfer') || String(enrollment?.student_type || studentRow?.student_type || '').toLowerCase().includes('different');
 
@@ -353,55 +371,72 @@ import { supabase } from '../../supabase/config.js';
     // ============================================
     // RENDER REQUIREMENTS LIST
     // ============================================
+    // RENDER REQUIREMENTS LIST (REPORT CARD THEMED)
+    // ============================================
 
     function renderRequirements() {
         if (!requirementsList) return;
         requirementsList.innerHTML = '';
 
-        requirementsData.forEach(item => {
-            const itemDiv = document.createElement('div');
-            itemDiv.className = `requirement-item ${item.isSubmitted ? 'submitted' : 'missing'}`;
+        if (requirementsData.length === 0) {
+            requirementsList.innerHTML = `
+                <div class="no-data" style="grid-column: 1/-1; padding: 30px; text-align: center; color: var(--gray-400);">
+                    <i class="fas fa-file-alt" style="font-size: 2rem; margin-bottom: 0.5rem; display: block;"></i>
+                    <p>No requirements listed for your enrollment status.</p>
+                </div>
+            `;
+            return;
+        }
 
-            const statusClass = item.status === 'Verified' ? 'badge-verified' : 
-                               item.status === 'Under Review' ? 'badge-review' : 'badge-missing';
-            const statusIcon = item.status === 'Verified' ? '<i class="fas fa-check-circle"></i>' : 
-                              item.status === 'Under Review' ? '<i class="fas fa-clock"></i>' : '<i class="fas fa-circle-exclamation"></i>';
+        requirementsData.forEach((item, index) => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'subject-item';
+
+            const reqCode = item.code || `REQ-${index + 1}`;
+            const isVerified = item.status === 'Verified';
+            const isReview = item.status === 'Under Review';
+            const statusClass = isVerified ? 'status-verified' : (isReview ? 'status-review' : 'status-missing');
+            const statusIcon = isVerified ? '<i class="fas fa-check-circle"></i>' : (isReview ? '<i class="fas fa-clock"></i>' : '<i class="fas fa-circle-exclamation"></i>');
+
+            let actionHtml = '';
+            if (item.isSubmitted && item.fileUrl) {
+                actionHtml = `
+                    <div class="req-actions-pill">
+                        <a href="${item.fileUrl}" target="_blank" class="view-grade-btn" title="View Document">
+                            <i class="fas fa-eye"></i> View
+                        </a>
+                        <button type="button" class="view-grade-btn btn-reupload-icon" data-key="${item.key}" data-label="${item.title}" title="Re-upload Document">
+                            <i class="fas fa-arrow-rotate-right"></i>
+                        </button>
+                    </div>
+                `;
+            } else {
+                actionHtml = `
+                    <button type="button" class="view-grade-btn btn-upload-req" data-key="${item.key}" data-label="${item.title}">
+                        <i class="fas fa-cloud-arrow-up"></i> Upload
+                    </button>
+                `;
+            }
 
             itemDiv.innerHTML = `
-                <div class="req-icon ${item.isSubmitted ? 'submitted' : 'missing'}">
-                    <i class="fas ${item.isSubmitted ? 'fa-file-circle-check' : 'fa-file-arrow-up'}"></i>
-                </div>
-                <div class="req-content">
-                    <div class="req-header">
-                        <h4 class="req-title">${item.title}</h4>
-                        <span class="req-badge ${statusClass}">${statusIcon} <span>${item.status}</span></span>
-                        ${item.isRequested ? `<span class="req-badge badge-gm-urgent"><i class="fas fa-bell"></i> Requested by Registrar</span>` : ''}
+                <div class="subject-info">
+                    <h4>${item.title}</h4>
+                    <div class="req-meta">
+                        <span class="req-code">${reqCode}</span>
+                        <span class="req-status-pill ${statusClass}">${statusIcon} <span>${item.status}</span></span>
+                        ${item.isRequested ? `<span class="req-status-pill status-urgent"><i class="fas fa-bell"></i> Requested</span>` : ''}
                     </div>
-                    <p class="req-desc">${item.description}</p>
-                    ${item.fileUrl ? `
-                        <div class="req-file-preview">
-                            <a href="${item.fileUrl}" target="_blank" class="file-link" title="Open submitted document">
-                                <i class="fas fa-paperclip"></i>
-                                <span>View Submitted Document</span>
-                                <i class="fas fa-arrow-up-right-from-square file-link-ext"></i>
-                            </a>
-                        </div>
-                    ` : ''}
                 </div>
-                <div class="req-actions">
-                    <button type="button" class="btn-upload-req ${item.isSubmitted ? 'btn-upload-reupload' : 'btn-upload-primary'}" data-key="${item.key}" data-label="${item.title}">
-                        <i class="fas ${item.isSubmitted ? 'fa-arrow-rotate-right' : 'fa-cloud-arrow-up'}"></i>
-                        <span>${item.isSubmitted ? 'Re-upload' : 'Upload'}</span>
-                    </button>
-                </div>
+                ${actionHtml}
             `;
 
             requirementsList.appendChild(itemDiv);
         });
 
         // Attach upload button events
-        document.querySelectorAll('.btn-upload-req').forEach(btn => {
-            btn.addEventListener('click', function() {
+        document.querySelectorAll('.btn-upload-req, .btn-reupload-icon').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
                 const key = this.dataset.key;
                 const label = this.dataset.label;
                 openUploadModal(key, label);
@@ -417,13 +452,10 @@ import { supabase } from '../../supabase/config.js';
         const total = requirementsData.length;
         const submitted = requirementsData.filter(r => r.isSubmitted).length;
         const missing = total - submitted;
-        const percent = total > 0 ? Math.round((submitted / total) * 100) : 0;
 
         if (totalCount) totalCount.textContent = total;
         if (submittedCount) submittedCount.textContent = submitted;
         if (missingCount) missingCount.textContent = missing;
-        if (progressPercentage) progressPercentage.textContent = `${percent}%`;
-        if (progressFill) progressFill.style.width = `${percent}%`;
     }
 
     // ============================================
@@ -441,6 +473,9 @@ import { supabase } from '../../supabase/config.js';
     function closeUploadModal() {
         if (uploadModal) uploadModal.style.display = 'none';
     }
+
+    window.openUploadModal = openUploadModal;
+    window.closeUploadModal = closeUploadModal;
 
     const closeModalBtn = document.querySelector('.close-modal');
     if (closeModalBtn) closeModalBtn.addEventListener('click', closeUploadModal);
@@ -538,6 +573,13 @@ import { supabase } from '../../supabase/config.js';
         alertDiv.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> <span>${message}</span>`;
         alertContainer.appendChild(alertDiv);
         setTimeout(() => alertDiv.remove(), 4000);
+    }
+
+    // Set current date badge
+    const dateBadge = document.querySelector('.date-badge');
+    if (dateBadge) {
+        const now = new Date();
+        dateBadge.innerHTML = `<i class="fas fa-calendar-alt"></i> ${now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`;
     }
 
     // Initialize
