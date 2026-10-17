@@ -207,8 +207,8 @@
                     <!-- Image Container -->
                     <div style="height: 300px; position: relative; background: #0d112d;">
                         
-                        <!-- The Image (contain mode shows the whole picture) -->
-                        <img src="${act.image_url}" alt="${act.title}" style="width: 100%; height: 100%; object-fit: contain; transition: transform 0.4s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                        <!-- The Image (changed to object-fit: cover so it fills the box) -->
+                        <img src="${act.image_url}" alt="${act.title}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
                         
                         <!-- Top-Right Text Overlay with dark gradient for readability -->
                         <div style="position: absolute; top: 0; right: 0; padding: 1.5rem; background: linear-gradient(to bottom left, rgba(13, 17, 50, 0.85) 0%, rgba(13, 17, 50, 0.2) 60%, transparent 100%); border-bottom-left-radius: 30px; pointer-events: none; z-index: 2; max-width: 80%;">
