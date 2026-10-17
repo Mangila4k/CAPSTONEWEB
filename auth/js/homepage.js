@@ -29,86 +29,7 @@
         contact: document.getElementById('page-contact')
     };
 
-    function switchGradeTab(targetGrade) {
-        const pills = document.querySelectorAll('.grade-tab-pill');
-        const panes = {
-            grade7: document.getElementById('pane-grade7'),
-            grade8: document.getElementById('pane-grade8'),
-            grade9: document.getElementById('pane-grade9'),
-            grade10: document.getElementById('pane-grade10'),
-            grade11: document.getElementById('pane-grade11'),
-            grade12: document.getElementById('pane-grade12')
-        };
-
-        pills.forEach(p => {
-            if (p.dataset.gradeTarget === targetGrade) {
-                p.classList.add('active');
-            } else {
-                p.classList.remove('active');
-            }
-        });
-
-        if (targetGrade === 'all') {
-            Object.values(panes).forEach(pane => {
-                if (pane) pane.classList.add('active');
-            });
-        } else {
-            Object.entries(panes).forEach(([key, pane]) => {
-                if (!pane) return;
-                if (key === targetGrade) {
-                    pane.classList.add('active');
-                } else {
-                    pane.classList.remove('active');
-                }
-            });
-        }
-    }
-
-    // Tab Pill Click Events
-    document.querySelectorAll('.grade-tab-pill').forEach(pill => {
-        pill.addEventListener('click', function () {
-            const target = this.dataset.gradeTarget;
-            switchGradeTab(target);
-        });
-    });
-
     function navigateTo(pageId) {
-        if (pageId === 'sections' || pageId === 'grade7' || pageId === 'grade8' || pageId === 'grade9' || pageId === 'grade10' || pageId === 'grade11' || pageId === 'grade12') {
-            Object.values(pages).forEach(page => {
-                if (page) page.classList.remove('active');
-            });
-            if (pages.home) pages.home.classList.add('active');
-
-            document.querySelectorAll('.nav-links a[data-page], .footer-col a[data-page]').forEach(link => {
-                link.classList.remove('active');
-                if (link.dataset.page === 'sections' || link.dataset.page === pageId) {
-                    link.classList.add('active');
-                }
-            });
-
-            if (pageId === 'grade12') {
-                switchGradeTab('grade12');
-            } else if (pageId === 'grade11') {
-                switchGradeTab('grade11');
-            } else if (pageId === 'grade10') {
-                switchGradeTab('grade10');
-            } else if (pageId === 'grade9') {
-                switchGradeTab('grade9');
-            } else if (pageId === 'grade8') {
-                switchGradeTab('grade8');
-            } else if (pageId === 'grade7') {
-                switchGradeTab('grade7');
-            }
-
-            const sectionsEl = document.getElementById('sections') || document.getElementById('grade7');
-            if (sectionsEl) {
-                setTimeout(() => {
-                    sectionsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }, 100);
-            }
-            return;
-        }
-
         Object.values(pages).forEach(page => {
             if (page) page.classList.remove('active');
         });
@@ -128,13 +49,11 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    const validSpecialPages = ['sections', 'grade7', 'grade8', 'grade9', 'grade10', 'grade11', 'grade12'];
-
     document.querySelectorAll('.nav-links a[data-page], .footer-col a[data-page]').forEach(link => {
         link.addEventListener('click', function (e) {
             e.preventDefault();
             const page = this.dataset.page;
-            if (page && (pages[page] || validSpecialPages.includes(page))) {
+            if (page && pages[page]) {
                 navigateTo(page);
             }
         });
@@ -142,38 +61,13 @@
 
     function handleHashNavigation() {
         const hash = (window.location.hash || '').replace('#', '');
-        if (hash && (pages[hash] || validSpecialPages.includes(hash))) {
+        if (hash && pages[hash]) {
             navigateTo(hash);
         }
     }
 
     window.addEventListener('hashchange', handleHashNavigation);
     handleHashNavigation();
-
-    // Section Search & Filter for Grade 7 & Grade 8
-    document.querySelectorAll('.grade-filter-input').forEach(input => {
-        input.addEventListener('input', function () {
-            const query = this.value.toLowerCase().trim();
-            const tableId = this.dataset.table;
-            const rows = document.querySelectorAll(`#${tableId} tr`);
-            rows.forEach(row => {
-                const text = row.textContent.toLowerCase();
-                row.style.display = text.includes(query) ? '' : 'none';
-            });
-        });
-    });
-
-    const grade7SearchInput = document.getElementById('grade7SearchInput');
-    if (grade7SearchInput) {
-        grade7SearchInput.addEventListener('input', function () {
-            const query = this.value.toLowerCase().trim();
-            const rows = document.querySelectorAll('#grade7TableBody tr');
-            rows.forEach(row => {
-                const text = row.textContent.toLowerCase();
-                row.style.display = text.includes(query) ? '' : 'none';
-            });
-        });
-    }
 
 
     function animateStats() {
