@@ -205,17 +205,23 @@
                 <div class="activity-home-card" style="width: 100%; max-width: 400px; background: rgba(26, 34, 90, 0.85); border-radius: 20px; overflow: hidden; border: 1px solid rgba(191, 219, 254, 0.25); box-shadow: 0 10px 30px rgba(10, 14, 42, 0.3); display: flex; flex-direction: column; transition: transform 0.3s ease, box-shadow 0.3s ease;">
                     
                     <!-- Image Container -->
-                    <div style="height: 300px; position: relative; background: #0d112d;">
+                    <div style="height: 320px; position: relative; background: #0d112d;">
                         
-                        <!-- The Image (changed to object-fit: cover so it fills the box) -->
+                        <!-- The Image -->
                         <img src="${act.image_url}" alt="${act.title}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
                         
-                        <!-- Top-Right Text Overlay with dark gradient for readability -->
-                        <div style="position: absolute; top: 0; right: 0; padding: 1.5rem; background: linear-gradient(to bottom left, rgba(13, 17, 50, 0.85) 0%, rgba(13, 17, 50, 0.2) 60%, transparent 100%); border-bottom-left-radius: 30px; pointer-events: none; z-index: 2; max-width: 80%;">
-                            <!-- THIS IS WHERE THE TITLE FROM THE DASHBOARD GOES -->
+                        <!-- Dark Gradient Overlay (Top-Right for Title) -->
+                        <div style="position: absolute; top: 0; right: 0; padding: 1.5rem; background: linear-gradient(to bottom left, rgba(13, 17, 50, 0.9) 0%, rgba(13, 17, 50, 0.3) 60%, transparent 100%); border-bottom-left-radius: 30px; pointer-events: none; z-index: 2; max-width: 80%;">
                             <h3 style="margin: 0; font-size: 1.6rem; font-weight: 900; color: #ffffff; line-height: 1.2; text-shadow: 0 2px 10px rgba(0,0,0,0.8); text-align: right; word-wrap: break-word;">
                                 ${act.title}
                             </h3>
+                        </div>
+
+                        <!-- Dark Gradient Overlay (Bottom for Description) -->
+                        <div style="position: absolute; bottom: 0; left: 0; right: 0; padding: 1.5rem; background: linear-gradient(to top, rgba(13, 17, 50, 0.95) 0%, rgba(13, 17, 50, 0.5) 60%, transparent 100%); pointer-events: none; z-index: 2;">
+                            <p style="margin: 0; font-size: 0.85rem; color: #e2e8f0; line-height: 1.4; text-shadow: 0 1px 4px rgba(0,0,0,0.8); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                                ${act.description || 'No description provided.'}
+                            </p>
                         </div>
 
                         <!-- Date Badge (Top Left) -->
