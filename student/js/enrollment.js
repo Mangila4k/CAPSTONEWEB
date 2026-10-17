@@ -1,6 +1,10 @@
 /**
  * Student Enrollment Form - Supabase Integration
  * HES - HES, Hiraya Enrollment System
+ *
+ * FIXED: All 6 requirement files are now uploaded to Supabase Storage
+ *        and their public URLs are saved to the `enrollments` table
+ *        in the correct columns (form_137_url, report_card_url, etc.)
  */
 
 import { supabase } from '../../supabase/config.js';
@@ -422,7 +426,6 @@ async function loadExistingEnrollment(targetEmail = null) {
         if (!error && data && data.length > 0) {
             const latestEnr = data[0];
             const st = (latestEnr.status || '').toLowerCase();
-            // If already enrolled, approved, or pending, lock form and show existing card
             if (st === 'enrolled' || st === 'approved' || st === 'pending') {
                 renderExistingEnrollmentCard(latestEnr);
                 return;
@@ -432,9 +435,41 @@ async function loadExistingEnrollment(targetEmail = null) {
         console.warn('Error checking existing enrollment:', err);
     }
 
-    // Default to showing form if no active or pending enrollment found
     if (existingEnrollmentDiv) existingEnrollmentDiv.style.display = 'none';
     if (enrollmentForm) enrollmentForm.style.display = 'block';
+}
+
+// ============================================================
+// HELPER — Upload one requirement file to Supabase Storage
+// ============================================================
+async function uploadRequirementFile(inputId, labelKey, bucket, folder, safeEmail, tsBase) {
+    const input = document.getElementById(inputId);
+    if (!input || !input.files || !input.files[0]) return null;
+
+    const file = input.files[0];
+    const ext = (file.name.split('.').pop() || 'bin').toLowerCase();
+    const path = `${folder}/${safeEmail}_${labelKey}_${tsBase}.${ext}`;
+
+    try {
+        const { error: upErr } = await supabase.storage
+            .from(bucket)
+            .upload(path, file, {
+                cacheControl: '3600',
+                upsert: true,
+                contentType: file.type || undefined
+            });
+
+        if (upErr) {
+            console.warn(`⚠️ Upload failed for ${labelKey}:`, upErr.message);
+            return null;
+        }
+
+        const { data: pub } = supabase.storage.from(bucket).getPublicUrl(path);
+        return pub?.publicUrl || null;
+    } catch (err) {
+        console.warn(`⚠️ Upload exception for ${labelKey}:`, err);
+        return null;
+    }
 }
 
 // ============================================================
@@ -560,11 +595,13 @@ async function submitEnrollment(e) {
         const enrolledStudentType = document.getElementById('student_type')?.value || studentType || (gradeName.includes('7') ? 'New Student' : 'Continuing');
         const previousSchool = document.getElementById('previousSchool')?.value.trim() || (enrolledStudentType === 'Transferee' ? 'Previous School' : 'Placido L. Señor National High School (PLSNHS)');
         const previousGrade = document.getElementById('previousGrade')?.value.trim() || 'N/A';
-        // 1a. Resolve student_id to strictly satisfy FOREIGN KEY (student_id) REFERENCES students(id)
+
+        // ============================================================
+        // 1a. Resolve student_id (FOREIGN KEY → students.id)
+        // ============================================================
         let resolvedStudentId = null;
         const isValidUuid = (val) => typeof val === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val.trim());
 
-        // A. Check candidate student ID from sessionUser (studentTableId or student_id)
         const candidateStudentId = sessionUser?.studentTableId || sessionUser?.student_id;
         if (isValidUuid(candidateStudentId)) {
             try {
@@ -573,15 +610,12 @@ async function submitEnrollment(e) {
                     .select('id')
                     .eq('id', candidateStudentId.trim())
                     .maybeSingle();
-                if (stRow && stRow.id) {
-                    resolvedStudentId = stRow.id;
-                }
+                if (stRow && stRow.id) resolvedStudentId = stRow.id;
             } catch (err) {
                 console.warn('Candidate student_id check notice:', err);
             }
         }
 
-        // B. If not resolved, check if student already exists in students table by email
         if (!resolvedStudentId && userEmail) {
             try {
                 const { data: stByEmail } = await supabase
@@ -589,15 +623,12 @@ async function submitEnrollment(e) {
                     .select('id')
                     .ilike('email', userEmail.trim())
                     .limit(1);
-                if (stByEmail && stByEmail.length > 0) {
-                    resolvedStudentId = stByEmail[0].id;
-                }
+                if (stByEmail && stByEmail.length > 0) resolvedStudentId = stByEmail[0].id;
             } catch (err) {
                 console.warn('Student email lookup notice:', err);
             }
         }
 
-        // C. Check if sessionUser.id itself happens to exist in students table
         const sessionUserId = sessionUser?.id || sessionUser?.uid;
         if (!resolvedStudentId && isValidUuid(sessionUserId)) {
             try {
@@ -606,34 +637,46 @@ async function submitEnrollment(e) {
                     .select('id')
                     .eq('id', sessionUserId.trim())
                     .maybeSingle();
-                if (stByUid && stByUid.id) {
-                    resolvedStudentId = stByUid.id;
-                }
+                if (stByUid && stByUid.id) resolvedStudentId = stByUid.id;
             } catch (err) {
                 console.warn('Session UID student lookup notice:', err);
             }
         }
 
-        // Safe applicant_id for account linking (nullable UUID)
         const applicantId = isValidUuid(sessionUserId) ? sessionUserId.trim() : null;
 
-        // 1b. Read 2x2 picture as Data URL for official ID generation
-        let twoByTwoDataUrl = null;
-        const picInputForDb = document.getElementById('two_by_two_picture');
-        if (picInputForDb && picInputForDb.files && picInputForDb.files[0]) {
-            try {
-                twoByTwoDataUrl = await new Promise((resolve) => {
-                    const r = new FileReader();
-                    r.onload = (e) => resolve(e.target.result);
-                    r.onerror = () => resolve(null);
-                    r.readAsDataURL(picInputForDb.files[0]);
-                });
-            } catch(e) {
-                console.warn('Could not encode 2x2 picture:', e);
-            }
-        }
+        // ============================================================
+        // 1b. UPLOAD ALL REQUIREMENT FILES TO SUPABASE STORAGE
+        //     → returns public URL per field (or null if not uploaded)
+        // ============================================================
 
-        // 1. Insert enrollment in Supabase (student_id is null if newly applying student)
+        const BUCKET = 'student_documents';
+        const FOLDER = 'student_requirements';
+        const safeEmail = userEmail.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        const tsBase = Date.now();
+
+        showAlert('📤 Uploading your documents to secure storage...', 'info');
+
+        const [
+            twoByTwoUrl,
+            form137Url,
+            reportCardUrl,
+            certCompletionUrl,
+            psaBirthCertUrl,
+            goodMoralCertUrl
+        ] = await Promise.all([
+            uploadRequirementFile('two_by_two_picture',        'two_by_two_picture',        BUCKET, FOLDER, safeEmail, tsBase),
+            uploadRequirementFile('form_137',                  'form_137',                  BUCKET, FOLDER, safeEmail, tsBase),
+            uploadRequirementFile('report_card',               'report_card',               BUCKET, FOLDER, safeEmail, tsBase),
+            uploadRequirementFile('certificate_of_completion', 'certificate_of_completion', BUCKET, FOLDER, safeEmail, tsBase),
+            uploadRequirementFile('psa_birth_cert',            'psa_birth_cert',            BUCKET, FOLDER, safeEmail, tsBase),
+            uploadRequirementFile('good_moral_cert',           'good_moral_cert',           BUCKET, FOLDER, safeEmail, tsBase)
+        ]);
+
+        // ============================================================
+        // 1c. INSERT ENROLLMENT — saving ALL requirement URLs
+        // ============================================================
+
         const { data: newEnr, error: enrError } = await supabase
             .from('enrollments')
             .insert([{
@@ -667,8 +710,15 @@ async function submitEnrollment(e) {
                 previous_school: previousSchool,
                 previous_grade: previousGrade,
                 last_school_year: schoolYear,
+                school_year: schoolYear,
                 status: 'pending',
-                two_by_two_picture_url: twoByTwoDataUrl,
+                // ✅ ALL requirement URLs saved to enrollments table:
+                two_by_two_picture_url:         twoByTwoUrl,
+                form_137_url:                   form137Url,
+                report_card_url:                reportCardUrl,
+                certificate_of_completion_url:  certCompletionUrl,
+                psa_birth_cert_url:             psaBirthCertUrl,
+                good_moral_cert_url:            goodMoralCertUrl,
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString()
             }])
@@ -681,7 +731,10 @@ async function submitEnrollment(e) {
         const notifTitle = `📋 New Enrollment: ${studentFullName}`;
         const notifMessage = `New student ${studentFullName} has submitted an enrollment application for ${gradeName}${strand ? ' - ' + strand : ''}. Click to review complete information and credentials.`;
 
-        // 1b. Save uploaded 2x2 picture to avatar & documents storage
+        // ============================================================
+        // 1d. Cache 2x2 picture as base64 for local avatar display
+        //     (secondary — the URL was already saved above)
+        // ============================================================
         const twoByTwoInput = document.getElementById('two_by_two_picture');
         if (twoByTwoInput && twoByTwoInput.files && twoByTwoInput.files[0]) {
             try {
@@ -690,66 +743,22 @@ async function submitEnrollment(e) {
                 reader.onload = function(evt) {
                     const dataUrl = evt.target.result;
                     if (dataUrl) {
-                        localStorage.setItem('hes_student_avatar', dataUrl);
-                        let curDocs = [];
                         try {
-                            const saved = localStorage.getItem('hes_student_documents');
-                            if (saved) curDocs = JSON.parse(saved);
-                        } catch(e) {}
-                        curDocs = curDocs.filter(d => d.type !== '2x2 ID Picture');
-                        curDocs.unshift({
-                            id: 'sdoc_2x2_' + Date.now(),
-                            title: '2x2 ID Picture for Official School ID (White Background)',
-                            type: '2x2 ID Picture',
-                            filename: picFile.name,
-                            size: Math.round(picFile.size / 1024) + ' KB',
-                            date: new Date().toISOString().split('T')[0],
-                            format: 'img',
-                            status: 'Pending Verification',
-                            dataUrl: dataUrl
-                        });
-                        localStorage.setItem('hes_student_documents', JSON.stringify(curDocs));
+                            localStorage.setItem('hes_student_avatar', dataUrl);
+                        } catch(e) {
+                            console.warn('Avatar cache too large, skipping:', e);
+                        }
                     }
                 };
                 reader.readAsDataURL(picFile);
-            } catch(picErr) {
-                console.warn('2x2 picture save notice:', picErr);
+            } catch (picErr) {
+                console.warn('2x2 picture avatar cache notice:', picErr);
             }
         }
 
-        // 1c. Save uploaded Report Card / Form 138 if provided
-        const rcInput = document.getElementById('report_card') || document.getElementById('form_138');
-        if (rcInput && rcInput.files && rcInput.files[0]) {
-            try {
-                const rcFile = rcInput.files[0];
-                const isTransDoc = rcInput.id === 'report_card';
-                const docType = isTransDoc ? 'Report Card' : 'Form 138 / Report Card';
-                const docTitle = isTransDoc ? 'Report Card' : 'Form 138 (Report Card)';
-                const isPdf = rcFile.name.toLowerCase().endsWith('.pdf');
-                let curDocs = [];
-                try {
-                    const saved = localStorage.getItem('hes_student_documents');
-                    if (saved) curDocs = JSON.parse(saved);
-                } catch(e) {}
-                curDocs = curDocs.filter(d => d.type !== 'Report Card' && d.type !== 'Form 138 / Report Card');
-                curDocs.unshift({
-                    id: 'sdoc_rc_' + Date.now(),
-                    title: docTitle,
-                    type: docType,
-                    filename: rcFile.name,
-                    size: Math.round(rcFile.size / 1024) + ' KB',
-                    date: new Date().toISOString().split('T')[0],
-                    format: isPdf ? 'pdf' : 'img',
-                    status: 'Pending Verification',
-                    dataUrl: null
-                });
-                localStorage.setItem('hes_student_documents', JSON.stringify(curDocs));
-            } catch(rcErr) {
-                console.warn('Report card save notice:', rcErr);
-            }
-        }
-
-        // 2. Notify Admin and Registrar via notifications table in Supabase
+        // ============================================================
+        // 2. Notify Admin and Registrar
+        // ============================================================
         try {
             await supabase
                 .from('notifications')
@@ -777,11 +786,13 @@ async function submitEnrollment(e) {
                         created_at: new Date().toISOString()
                     }
                 ]);
-        } catch(notifErr) {
+        } catch (notifErr) {
             console.warn('Notification insert warning:', notifErr);
         }
 
-        // 3. Dispatch storage events for instant cross-tab synchronization for both Admin and Registrar
+        // ============================================================
+        // 3. Cross-tab storage events
+        // ============================================================
         try {
             const notifPayload = {
                 role: 'all',
@@ -798,12 +809,13 @@ async function submitEnrollment(e) {
             localStorage.setItem('hes_latest_notification', JSON.stringify(notifPayload));
             localStorage.setItem('hes_admin_latest_notification', JSON.stringify(notifPayload));
             localStorage.setItem('hes_enrollment_updated', Date.now().toString());
-        } catch(storageErr) {}
+        } catch (storageErr) {}
 
-        // 4. Submit Directly (Largo) - Do NOT show modal popup after submitting
-        showAlert('✅ Enrollment form submitted successfully! Your application is now directly on the Admin & Registrar dashboard for review and approval.', 'success');
+        // ============================================================
+        // 4. Success + redirect
+        // ============================================================
+        showAlert('✅ Enrollment form submitted successfully! Your application is now on the Admin & Registrar dashboard for review and approval.', 'success');
 
-        // Automatically redirect directly ("submit largo")
         setTimeout(() => {
             if (sessionUser && sessionUser.role === 'student' && (sessionUser.status === 'Enrolled' || sessionUser.status === 'approved')) {
                 window.location.href = 'dashboard.html';

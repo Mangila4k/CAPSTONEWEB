@@ -1,5 +1,6 @@
 /**
  * HES Admin - View Enrollment Details (Supabase Dynamic Integration)
+ * Requirements read STRICTLY from ENROLLMENTS table.
  */
 
 import { supabase } from '../../supabase/config.js';
@@ -142,7 +143,6 @@ import { EmailNotificationService } from '../../js/email_service.js';
                     } catch(e) {}
                 }
             } else if (targetId) {
-                // Not a UUID: maybe it's an email or LRN
                 try {
                     const { data: eList } = await supabase
                         .from('enrollments')
@@ -154,7 +154,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
                 } catch(e) {}
             }
 
-            // Fallback: If not found or no ID provided, fetch latest enrollment from Supabase
+            // Fallback: latest enrollment
             if (!enr) {
                 try {
                     const { data: fallbackList } = await supabase
@@ -287,32 +287,8 @@ import { EmailNotificationService } from '../../js/email_service.js';
                 } catch(e) {}
             }
 
-            // 7. Fetch Documents attached
-            let docRecord = null;
-            try {
-                if (enr.id) {
-                    const { data: dData } = await supabase
-                        .from('documents')
-                        .select('*')
-                        .eq('enrollment_id', enr.id)
-                        .maybeSingle();
-                    if (dData) docRecord = dData;
-                }
-            } catch(e) {}
-
-            let sDocs = [];
-            try {
-                if (student?.id) {
-                    const { data: sdData } = await supabase
-                        .from('student_documents')
-                        .select('*')
-                        .eq('student_id', student.id);
-                    if (sdData) sDocs = sdData;
-                }
-            } catch(e) {}
-
-            // Compute Requirements
-            buildRequirementsList(student, enr, docRecord, sDocs);
+            // 7. Compute Requirements — STRICTLY FROM ENROLLMENTS TABLE
+            buildRequirementsList(enr);
 
             // Render all UI components
             renderStudentInfo();
@@ -332,20 +308,34 @@ import { EmailNotificationService } from '../../js/email_service.js';
     }
 
     // ============================================
-    // BUILD REQUIREMENTS DATA
+    // BUILD REQUIREMENTS DATA — STRICTLY FROM ENROLLMENTS TABLE
     // ============================================
 
-    function buildRequirementsList(student, enr, doc, sDocs = []) {
+    function buildRequirementsList(enr) {
         submittedRequirements = [];
         missingRequirements = [];
 
-        const isTransferee = String(enr?.student_type || student?.student_type || enr?.previous_school || '').toLowerCase().includes('transfer');
-        const isSeniorHigh = String(enr?.grade_level || student?.grade_level || '').includes('11') || String(enr?.grade_level || student?.grade_level || '').includes('12');
+        if (!enr) return;
 
-        const docsArray = Array.isArray(sDocs) ? sDocs : [];
+        const rawStudentType = String(enr.student_type || '').toLowerCase();
+        const isTransferee =
+            rawStudentType.includes('transfer') ||
+            rawStudentType.includes('different') ||
+            rawStudentType.includes('transferee');
 
-        // 1. Report Card / Form 138 (Required)
-        const form138Url = student?.form_138_url || doc?.report_card || doc?.form_138 || docsArray.find(d => d.document_type === 'form_138' || d.document_type === 'report_card' || (d.title && d.title.toLowerCase().includes('report card')))?.file_url;
+        const gradeLevelStr = String(enr.grade_level || '');
+        const isSeniorHigh =
+            gradeLevelStr.includes('11') ||
+            gradeLevelStr.includes('12');
+
+        // Helper: treat null/undefined/empty strings as "missing"
+        const has = (v) => typeof v === 'string' && v.trim().length > 0;
+
+        // 1. Report Card / Form 138 — required for ALL grade levels
+        const form138Url = has(enr.form_138_url) ? enr.form_138_url
+                         : has(enr.report_card_url) ? enr.report_card_url
+                         : null;
+
         if (form138Url) {
             submittedRequirements.push({
                 name: 'Report Card (Form 138)',
@@ -362,8 +352,9 @@ import { EmailNotificationService } from '../../js/email_service.js';
             });
         }
 
-        // 2. PSA Birth Certificate (Required)
-        const psaUrl = student?.psa_birth_url || doc?.birth_certificate || doc?.psa || docsArray.find(d => d.document_type === 'psa' || d.document_type === 'birth_certificate')?.file_url;
+        // 2. PSA Birth Certificate — required for ALL grade levels
+        const psaUrl = has(enr.psa_birth_cert_url) ? enr.psa_birth_cert_url : null;
+
         if (psaUrl) {
             submittedRequirements.push({
                 name: 'PSA Birth Certificate',
@@ -380,8 +371,9 @@ import { EmailNotificationService } from '../../js/email_service.js';
             });
         }
 
-        // 3. Good Moral Certificate (Required)
-        const goodMoralUrl = student?.good_moral_url || doc?.good_moral || enr?.good_moral_url || docsArray.find(d => d.document_type === 'good_moral')?.file_url;
+        // 3. Good Moral Certificate — required for ALL grade levels
+        const goodMoralUrl = has(enr.good_moral_cert_url) ? enr.good_moral_cert_url : null;
+
         if (goodMoralUrl) {
             submittedRequirements.push({
                 name: 'Good Moral Certificate',
@@ -398,8 +390,9 @@ import { EmailNotificationService } from '../../js/email_service.js';
             });
         }
 
-        // 4. 2x2 ID Picture (Required)
-        const twoByTwoUrl = student?.two_by_two_picture_url || student?.avatar_url || doc?.two_by_two_picture || doc?.id_picture || docsArray.find(d => d.document_type === 'two_by_two_picture' || (d.title && d.title.includes('2x2')))?.file_url;
+        // 4. 2x2 ID Picture — required for ALL grade levels
+        const twoByTwoUrl = has(enr.two_by_two_picture_url) ? enr.two_by_two_picture_url : null;
+
         if (twoByTwoUrl) {
             submittedRequirements.push({
                 name: '2x2 ID Picture (White Background)',
@@ -416,9 +409,10 @@ import { EmailNotificationService } from '../../js/email_service.js';
             });
         }
 
-        // 5. Form 137 (Required if Transferee)
+        // 5. Form 137 — required ONLY for transferees
         if (isTransferee) {
-            const form137Url = student?.form_137_url || doc?.form_137 || docsArray.find(d => d.document_type === 'form_137' || (d.title && d.title.toLowerCase().includes('form 137')) || (d.title && d.title.toLowerCase().includes('permanent record')))?.file_url;
+            const form137Url = has(enr.form_137_url) ? enr.form_137_url : null;
+
             if (form137Url) {
                 submittedRequirements.push({
                     name: 'Form 137 (Permanent Record)',
@@ -436,9 +430,10 @@ import { EmailNotificationService } from '../../js/email_service.js';
             }
         }
 
-        // 6. Junior High Certificate of Completion (for Senior High)
+        // 6. JHS Certificate of Completion
+        const jhsCertUrl = has(enr.certificate_of_completion_url) ? enr.certificate_of_completion_url : null;
+
         if (isSeniorHigh) {
-            const jhsCertUrl = student?.jhs_certificate_url || doc?.jhs_certificate || docsArray.find(d => d.document_type === 'jhs_certificate' || (d.title && d.title.toLowerCase().includes('completion')))?.file_url;
             if (jhsCertUrl) {
                 submittedRequirements.push({
                     name: 'JHS Certificate of Completion',
@@ -454,6 +449,13 @@ import { EmailNotificationService } from '../../js/email_service.js';
                     file_path: null
                 });
             }
+        } else if (jhsCertUrl) {
+            submittedRequirements.push({
+                name: 'JHS Certificate of Completion',
+                is_required: false,
+                can_be_followed: false,
+                file_path: jhsCertUrl
+            });
         }
     }
 
@@ -522,7 +524,6 @@ import { EmailNotificationService } from '../../js/email_service.js';
             statusClass = 'rejected';
         }
 
-        // Student Type
         const rawStudentType = enr.student_type || student.student_type || (gradeLevel.includes('7') ? 'New Student' : 'Continuing');
         const typeMap = {
             'new': 'New Student (From Elementary)',
@@ -533,32 +534,23 @@ import { EmailNotificationService } from '../../js/email_service.js';
         };
         const studentType = typeMap[rawStudentType] || rawStudentType;
 
-        // Previous School
         const rawPrevSchool = (enr.previous_school || student.previous_school || '').trim();
         const prevSchool = (rawPrevSchool && rawPrevSchool !== 'N/A') ? rawPrevSchool : 'Placido L. Señor National High School (PLSNHS)';
 
-        // Previous Grade
-        const rawPrevGrade = (enr.previous_grade || student.previous_grade || '').trim();
-        const prevGrade = (rawPrevGrade && rawPrevGrade !== 'N/A') ? rawPrevGrade : '—';
-
-        // General Average
         const rawGpa = (enr.general_average || student.general_average || '').toString().trim();
         const gpa = (rawGpa && rawGpa !== 'N/A') ? rawGpa : '—';
 
-        // Personal Details
         const rawDob = enr.date_of_birth || enr.dob || student.date_of_birth || student.birth_date;
         const birthDate = rawDob ? formatDate(rawDob) : '—';
         const gender = enr.gender || student.gender || '—';
         const contactNum = enr.contact_number || enr.guardian_contact || student.contact_number || student.phone || '—';
 
-        // Address
         let fullAddress = enr.address || student.address || enr.guardian_address;
         if (!fullAddress && (addr.barangay || addr.city)) {
             fullAddress = [addr.street, addr.barangay, addr.city, addr.province, addr.zip_code].filter(Boolean).join(', ');
         }
         if (!fullAddress) fullAddress = '—';
 
-        // Guardian
         const parentName = enr.guardian_name || enr.mother_name || enr.father_name || par.guardian_name || par.father_name || par.mother_name || student.parent_name || '—';
         const parentContact = enr.guardian_contact || par.guardian_contact || par.father_contact || par.mother_contact || student.parent_contact || contactNum;
         const relationship = enr.guardian_relationship || par.guardian_relationship || 'Parent / Guardian';
@@ -666,7 +658,6 @@ import { EmailNotificationService } from '../../js/email_service.js';
 
         let html = '';
 
-        // Submitted Requirements
         if (submittedRequirements.length > 0) {
             html += `
                 <div class="requirements-grid submitted-grid">
@@ -691,7 +682,10 @@ import { EmailNotificationService } from '../../js/email_service.js';
                                 </div>
                                 ${req.file_path ? `
                                     <div class="requirement-actions">
-                                        <button class="btn-view-file" onclick="window.viewFile('${encodeURI(req.file_path)}', '${encodeURIComponent(req.name)}')" style="display: inline-flex; align-items: center; gap: 4px; padding: 5px 12px; border-radius: 6px; background: #0b2b4a; color: #FFD700; border: none; cursor: pointer; font-size: 0.82rem; font-weight: 600;">
+                                        <button class="btn-view-file"
+                                                data-file-path="${String(req.file_path).replace(/"/g, '&quot;')}"
+                                                data-req-name="${String(req.name).replace(/"/g, '&quot;')}"
+                                                style="display: inline-flex; align-items: center; gap: 4px; padding: 5px 12px; border-radius: 6px; background: #0b2b4a; color: #FFD700; border: none; cursor: pointer; font-size: 0.82rem; font-weight: 600;">
                                             <i class="fas fa-eye"></i> View File
                                         </button>
                                     </div>
@@ -703,7 +697,6 @@ import { EmailNotificationService } from '../../js/email_service.js';
             `;
         }
 
-        // Missing Requirements
         if (missingRequirements.length > 0) {
             html += `
                 <div class="requirements-grid missing-grid" style="margin-top: 15px;">
@@ -727,7 +720,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
                                     </div>
                                 </div>
                                 <div class="requirement-actions">
-                                    <button class="btn-notify" onclick="window.notifyRequirement('${req.name.replace(/'/g, "\\'")}')" style="display: inline-flex; align-items: center; gap: 4px; padding: 5px 12px; border-radius: 6px; background: #fff; color: #0b2b4a; border: 1px solid #0b2b4a; cursor: pointer; font-size: 0.82rem; font-weight: 600;">
+                                    <button class="btn-notify" data-req-name="${String(req.name).replace(/"/g, '&quot;')}" style="display: inline-flex; align-items: center; gap: 4px; padding: 5px 12px; border-radius: 6px; background: #fff; color: #0b2b4a; border: 1px solid #0b2b4a; cursor: pointer; font-size: 0.82rem; font-weight: 600;">
                                         <i class="fas fa-bell"></i> Notify
                                     </button>
                                 </div>
@@ -743,6 +736,18 @@ import { EmailNotificationService } from '../../js/email_service.js';
         }
 
         requirementsContainer.innerHTML = html;
+
+        // Attach event listeners (safe for base64 data-URIs)
+        requirementsContainer.querySelectorAll('.btn-view-file').forEach(btn => {
+            btn.addEventListener('click', function () {
+                window.viewFile(this.dataset.filePath, this.dataset.reqName);
+            });
+        });
+        requirementsContainer.querySelectorAll('.btn-notify').forEach(btn => {
+            btn.addEventListener('click', function () {
+                window.notifyRequirement(this.dataset.reqName);
+            });
+        });
     }
 
     // ============================================
@@ -797,7 +802,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
     }
 
     // ============================================
-    // FILE PREVIEW MODAL
+    // FILE PREVIEW MODAL — HANDLES base64 & URLs
     // ============================================
 
     window.viewFile = function(filePath, reqName) {
@@ -806,21 +811,38 @@ import { EmailNotificationService } from '../../js/email_service.js';
             return;
         }
 
-        const decodedPath = decodeURI(filePath);
-        const name = reqName ? decodeURIComponent(reqName) : 'Document';
+        // 🔥 FIX: Do NOT decodeURIComponent standard web URLs (http/https)
+        // Decoding it breaks the Supabase Storage URL (which has %2F for slashes)
+        const isDataUri = /^data:/i.test(filePath);
+        let finalPath = filePath;
+        
+        if (!isDataUri && !filePath.startsWith('http')) {
+            try {
+                finalPath = decodeURIComponent(filePath);
+            } catch {
+                finalPath = filePath;
+            }
+        }
+
+        const name = reqName ? String(reqName) : 'Document';
 
         if (modalFileName) modalFileName.textContent = name;
         if (downloadFileBtn) {
-            downloadFileBtn.href = decodedPath;
+            downloadFileBtn.href = finalPath;
             downloadFileBtn.target = '_blank';
         }
 
         if (modalBody) {
-            const isImage = /\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i.test(decodedPath);
+            // 🔥 FIX: Better image detection
+            const isImage =
+                isDataUri ||
+                finalPath.startsWith('http') || 
+                /\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i.test(finalPath);
+
             if (isImage) {
                 modalBody.innerHTML = `
                     <div style="text-align: center; padding: 10px;">
-                        <img src="${decodedPath}" alt="${name}" style="max-width: 100%; max-height: 450px; border-radius: 8px; object-fit: contain; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        <img src="${finalPath}" alt="${name}" style="max-width: 100%; max-height: 450px; border-radius: 8px; object-fit: contain; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\\'padding:20px;color:#dc2626;text-align:center;\\'><i class=\\'fas fa-file-pdf\\' style=\\'font-size:54px;margin-bottom:12px;\\'></i><br>Preview not available. Click Download to open.</div>'">
                     </div>
                 `;
             } else {
@@ -828,7 +850,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
                     <div style="text-align: center; padding: 30px;">
                         <i class="fas fa-file-pdf" style="font-size: 54px; color: #dc2626; margin-bottom: 12px;"></i>
                         <p style="font-size: 15px; font-weight: 600; color: #1e293b;">${name}</p>
-                        <a href="${decodedPath}" target="_blank" style="display: inline-block; margin-top: 10px; padding: 8px 18px; border-radius: 8px; background: #0b2b4a; color: #FFD700; text-decoration: none; font-weight: 600;">
+                        <a href="${finalPath}" target="_blank" style="display: inline-block; margin-top: 10px; padding: 8px 18px; border-radius: 8px; background: #0b2b4a; color: #FFD700; text-decoration: none; font-weight: 600;">
                             <i class="fas fa-external-link-alt"></i> Open Document in New Tab
                         </a>
                     </div>
@@ -843,19 +865,15 @@ import { EmailNotificationService } from '../../js/email_service.js';
         if (filePreviewModal) filePreviewModal.classList.remove('show');
     };
 
-    // Notify Missing Requirement
     window.notifyRequirement = async function(requirementName) {
         const student = currentStudent;
         const enr = currentEnrollment;
         const sName = student ? `${student.first_name || ''} ${student.last_name || ''}`.trim() : (enr ? `${enr.first_name || ''} ${enr.last_name || ''}`.trim() : 'Student');
 
-        if (!confirm(`Send notification to ${sName} regarding missing requirement "${requirementName}"?`)) {
-            return;
-        }
+        if (!confirm(`Send notification to ${sName} regarding missing requirement "${requirementName}"?`)) return;
 
         try {
             const targetId = student?.user_id || student?.id || enr?.student_id || enr?.user_id || null;
-            const targetStudentId = student?.id || enr?.student_id || null;
             const targetEmail = student?.email || enr?.email || null;
             const notifMsg = `Notice for ${sName}: Please submit your "${requirementName}" to finalize your enrollment application.`;
 
@@ -869,23 +887,6 @@ import { EmailNotificationService } from '../../js/email_service.js';
                 is_read: false,
                 created_at: new Date().toISOString()
             }]);
-
-            if (targetId) {
-                try {
-                    const k = `hes_notifications_${targetId}`;
-                    const raw = localStorage.getItem(k);
-                    let list = raw ? JSON.parse(raw) : [];
-                    list.unshift({
-                        id: 'notif_' + Date.now(),
-                        type: 'reminder',
-                        title: 'Missing Requirement Notice',
-                        message: notifMsg,
-                        time: 'Just now',
-                        read: false
-                    });
-                    localStorage.setItem(k, JSON.stringify(list.slice(0, 30)));
-                } catch(e) {}
-            }
 
             showAlert(`✅ In-app notification for "${requirementName}" posted to ${sName}'s dashboard!`, 'success');
 
@@ -992,7 +993,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
     }
 
     // ============================================
-    // APPROVE & REJECT ACTIONS (SUPABASE DYNAMIC)
+    // APPROVE & REJECT ACTIONS
     // ============================================
 
     function updateActionButtons() {
@@ -1014,12 +1015,9 @@ import { EmailNotificationService } from '../../js/email_service.js';
             statusBadge.style.color = isEnrolled ? '#065f46' : (isRejected ? '#991b1b' : '#92400e');
         }
 
-        if (btnApprove) {
-            btnApprove.style.display = isEnrolled ? 'none' : 'inline-flex';
-        }
-        if (btnReject) {
-            btnReject.style.display = isRejected ? 'none' : 'inline-flex';
-        }
+        if (btnApprove) btnApprove.style.display = isEnrolled ? 'none' : 'inline-flex';
+        if (btnReject) btnReject.style.display = isRejected ? 'none' : 'inline-flex';
+
         if (adminGenBtn) {
             if (isEnrolled && enr) {
                 adminGenBtn.style.display = 'inline-flex';
@@ -1064,7 +1062,6 @@ import { EmailNotificationService } from '../../js/email_service.js';
 
             let studentUserId = null;
 
-            // 1. Provision / Update user in public.users table (Username = Email, Password = Last Name)
             if (email) {
                 const { data: existingUsers } = await supabase
                     .from('users')
@@ -1103,7 +1100,6 @@ import { EmailNotificationService } from '../../js/email_service.js';
                 }
             }
 
-            // 2. Update / create students table
             let studentTableId = enr.student_id || student?.id;
             const studentPayload = {
                 first_name: firstName,
@@ -1123,35 +1119,25 @@ import { EmailNotificationService } from '../../js/email_service.js';
             };
 
             if (studentTableId) {
-                await supabase
-                    .from('students')
-                    .update(studentPayload)
-                    .eq('id', studentTableId);
+                await supabase.from('students').update(studentPayload).eq('id', studentTableId);
             } else if (email) {
                 studentPayload.created_at = new Date().toISOString();
                 const { data: createdStudent } = await supabase
-                    .from('students')
-                    .insert([studentPayload])
-                    .select();
+                    .from('students').insert([studentPayload]).select();
 
                 if (createdStudent && createdStudent.length > 0) {
                     studentTableId = createdStudent[0].id;
                 }
             }
 
-            // Link student_id in users
             if (studentUserId && studentTableId) {
                 try {
-                    await supabase
-                        .from('users')
-                        .update({ student_id: studentTableId })
-                        .eq('id', studentUserId);
+                    await supabase.from('users').update({ student_id: studentTableId }).eq('id', studentUserId);
                 } catch (uErr) {
                     console.warn('Users update notice:', uErr);
                 }
             }
 
-            // Update enrollments record
             await supabase
                 .from('enrollments')
                 .update({
@@ -1164,7 +1150,6 @@ import { EmailNotificationService } from '../../js/email_service.js';
             currentEnrollment.status = 'enrolled';
             if (studentTableId) currentEnrollment.student_id = studentTableId;
 
-            // In-app notification
             const credsMsg = `Congratulations ${firstName}! Your enrollment application for ${gradeName} (${strand || 'General'}) S.Y. ${enr.school_year || '2026-2027'} has been approved by the Administration.\n\nYour Student Portal Login Credentials:\n• Username (Gmail): ${email}\n• Initial Password: ${lastName}\n\nYou can now log in to the HES Student Portal. Upon your first login, please visit "My Profile" to update your password.`;
 
             const targetStudentId = studentUserId || studentTableId || null;
@@ -1192,7 +1177,6 @@ import { EmailNotificationService } from '../../js/email_service.js';
                 studentId: studentTableId || studentUserId
             };
 
-            // Trigger Gmail dispatch with pre-filled credentials
             try {
                 await EmailNotificationService.sendCredentialsEmail({
                     ...credsPayload,
@@ -1265,15 +1249,10 @@ import { EmailNotificationService } from '../../js/email_service.js';
     if (btnApprove) btnApprove.addEventListener('click', handleApproveEnrollment);
     if (btnReject) btnReject.addEventListener('click', handleRejectEnrollment);
 
-    // Close modal on background click
     document.addEventListener('click', function(e) {
-        if (e.target === filePreviewModal) {
-            window.closeFileModal();
-        }
+        if (e.target === filePreviewModal) window.closeFileModal();
         const credModal = document.getElementById('credentialsModal');
-        if (e.target === credModal) {
-            window.closeCredentialsModal();
-        }
+        if (e.target === credModal) window.closeCredentialsModal();
     });
 
     // ============================================

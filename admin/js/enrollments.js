@@ -1,5 +1,6 @@
 /**
  * HES Admin - Enrollments Management (Supabase Dynamic Integration)
+ * Requirements read STRICTLY from ENROLLMENTS table.
  */
 
 import { supabase } from '../../supabase/config.js';
@@ -93,6 +94,80 @@ import { EmailNotificationService } from '../../js/email_service.js';
     }
 
     // ============================================
+    // REQUIREMENTS HELPER — STRICTLY FROM ENROLLMENTS TABLE
+    // ============================================
+
+    function computeEnrollmentRequirements(enr) {
+        const submitted = [];
+        const missing = [];
+
+        if (!enr) {
+            return { submitted, missing, isComplete: false };
+        }
+
+        const rawStudentType = String(enr.student_type || '').toLowerCase();
+        const isTransferee =
+            rawStudentType.includes('transfer') ||
+            rawStudentType.includes('different') ||
+            rawStudentType.includes('transferee');
+
+        const gradeLevelStr = String(enr.grade_level || '');
+        const isSeniorHigh =
+            gradeLevelStr.includes('11') ||
+            gradeLevelStr.includes('12');
+
+        const has = (v) => typeof v === 'string' && v.trim().length > 0;
+
+        // 1. Report Card / Form 138 (required for all)
+        if (has(enr.form_138_url) || has(enr.report_card_url)) {
+            submitted.push('Report Card (Form 138)');
+        } else {
+            missing.push('Report Card (Form 138)');
+        }
+
+        // 2. PSA Birth Certificate (required for all)
+        if (has(enr.psa_birth_cert_url)) {
+            submitted.push('PSA Birth Certificate');
+        } else {
+            missing.push('PSA Birth Certificate');
+        }
+
+        // 3. Good Moral Certificate (required for all)
+        if (has(enr.good_moral_cert_url)) {
+            submitted.push('Good Moral Certificate');
+        } else {
+            missing.push('Good Moral Certificate');
+        }
+
+        // 4. 2x2 ID Picture (required for all)
+        if (has(enr.two_by_two_picture_url)) {
+            submitted.push('2x2 ID Picture (White Background)');
+        } else {
+            missing.push('2x2 ID Picture (White Background)');
+        }
+
+        // 5. Form 137 (transferees only)
+        if (isTransferee) {
+            if (has(enr.form_137_url)) {
+                submitted.push('Form 137 (Permanent Record)');
+            } else {
+                missing.push('Form 137 (Permanent Record)');
+            }
+        }
+
+        // 6. JHS Certificate of Completion
+        //    - SHS (11/12): optional/followable → NOT counted as blocking missing
+        //    - JHS (7-10): only shown if present, NOT counted as missing
+        if (has(enr.certificate_of_completion_url)) {
+            submitted.push('JHS Certificate of Completion');
+        }
+
+        const isComplete = missing.length === 0;
+
+        return { submitted, missing, isComplete };
+    }
+
+    // ============================================
     // LOAD ENROLLMENTS FROM SUPABASE
     // ============================================
 
@@ -121,7 +196,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
                 console.warn('Enrollments fetch error:', e);
             }
 
-            // 2. Fetch Students
+            // 2. Fetch Students (for name/email/LRN enrichment only — NOT for requirements)
             let studentsData = [];
             try {
                 const { data: sData, error: sErr } = await supabase
@@ -132,26 +207,13 @@ import { EmailNotificationService } from '../../js/email_service.js';
                 console.warn('Students fetch error:', e);
             }
 
-            // 3. Fetch Users
+            // 3. Fetch Users (for user_id linking only)
             let usersData = [];
             try {
                 const { data: uData } = await supabase
                     .from('users')
-                    .select('id, first_name, last_name, email, role');
+                    .select('id, first_name, last_name, email, role, student_id');
                 if (uData) usersData = uData;
-            } catch (e) { }
-
-            // 4. Fetch Documents
-            let documentsData = [];
-            try {
-                const { data: dData } = await supabase.from('documents').select('*');
-                if (dData) documentsData = dData;
-            } catch (e) { }
-
-            let studentDocumentsData = [];
-            try {
-                const { data: sdData } = await supabase.from('student_documents').select('*');
-                if (sdData) studentDocumentsData = sdData;
             } catch (e) { }
 
             // Combine and Normalize Enrollments
@@ -163,8 +225,6 @@ import { EmailNotificationService } from '../../js/email_service.js';
             enrollmentsData.forEach(enr => {
                 const student = studentsData.find(s => s.id === enr.student_id || (s.email && enr.email && s.email.toLowerCase() === enr.email.toLowerCase())) || {};
                 const user = usersData.find(u => u.id === student.user_id || u.student_id === student.id || (u.email && enr.email && u.email.toLowerCase() === enr.email.toLowerCase())) || {};
-                const doc = documentsData.find(d => d.enrollment_id === enr.id) || {};
-                const sDocs = studentDocumentsData.filter(d => d.student_id === student.id);
 
                 const email = (enr.email || student.email || user.email || '').trim().toLowerCase();
                 const dedupeKey = email || (student.id ? `sid_${student.id}` : enr.id);
@@ -191,86 +251,39 @@ import { EmailNotificationService } from '../../js/email_service.js';
                 else if (rawStatus === 'rejected') status = 'Rejected';
                 else status = 'Pending';
 
-                // Check missing documents
-                const isTransferee = String(enr.student_type || student.student_type || '').toLowerCase().includes('transfer') || String(enr.student_type || student.student_type || '').toLowerCase().includes('different');
-                const hasForm138 = Boolean(student.form_138_url || doc.report_card || sDocs.some(d => d.document_type === 'form_138' || d.document_type === 'report_card' || (d.title && d.title.toLowerCase().includes('report card'))));
-                const hasPsa = Boolean(student.psa_birth_url || doc.birth_certificate || sDocs.some(d => d.document_type === 'psa' || d.document_type === 'birth_certificate'));
-                const hasGoodMoral = Boolean(student.good_moral_url || doc.good_moral || sDocs.some(d => d.document_type === 'good_moral'));
-                const has2x2 = Boolean(student.two_by_two_picture_url || student.avatar_url || sDocs.some(d => d.document_type === 'two_by_two_picture' || (d.title && d.title.includes('2x2'))));
-
-                const missingList = [];
-                if (!has2x2) missingList.push('2x2 ID Picture');
-                if (!hasForm138) missingList.push('Report Card');
-                if (!hasPsa) missingList.push('PSA Birth Certificate');
-                if (!hasGoodMoral) missingList.push('Good Moral Certificate');
-
-                const isComplete = (student.documents_status || '').toLowerCase() === 'complete' || missingList.length === 0;
+                // ===== REQUIREMENTS: STRICTLY FROM ENROLLMENTS TABLE =====
+                const { submitted, missing, isComplete } = computeEnrollmentRequirements(enr);
 
                 items.push({
                     id: enr.id,
                     student_id: student.id || enr.student_id,
                     user_id: user.id || null,
+                    first_name: fName,
+                    last_name: lName,
+                    middle_name: enr.middle_name || student.middle_name || null,
+                    lrn: student.lrn || enr.lrn || null,
+                    date_of_birth: enr.date_of_birth || enr.dob || student.date_of_birth || null,
+                    contact_number: enr.contact_number || enr.guardian_contact || student.contact_number || null,
+                    two_by_two_picture_url: enr.two_by_two_picture_url || null,
                     fullname: fullName,
                     email: displayEmail,
                     id_number: lrn !== 'Not assigned' ? lrn : null,
                     grade_name: gradeLevel,
+                    grade_level: gradeLevel,
                     strand: strand,
                     school_year: schoolYear,
                     status: status,
                     created_at: enr.created_at || new Date().toISOString(),
-                    has_missing: !isComplete && missingList.length > 0,
-                    missing_count: isComplete ? 0 : missingList.length,
-                    missing_list: isComplete ? [] : missingList
+                    has_missing: !isComplete && missing.length > 0,
+                    missing_count: isComplete ? 0 : missing.length,
+                    missing_list: isComplete ? [] : missing,
+                    submitted_list: submitted
                 });
             });
 
-            // Include any registered students who do not yet have an enrollment row
-            studentsData.forEach(student => {
-                const sEmail = (student.email || '').trim().toLowerCase();
-                const dedupeKey = sEmail || `sid_${student.id}`;
-                if (student.id && !seenStudentIds.has(student.id) && !seenEnrollmentKeys.has(dedupeKey)) {
-                    seenEnrollmentKeys.add(dedupeKey);
-                    const user = usersData.find(u => u.student_id === student.id || (u.email && student.email && u.email.toLowerCase() === student.email.toLowerCase())) || {};
-                    const fName = (student.first_name || user.first_name || '').trim();
-                    const lName = (student.last_name || user.last_name || '').trim();
-                    const fullName = `${fName} ${lName}`.trim() || 'Student Applicant';
-                    const email = student.email || user.email || '—';
-                    const lrn = student.lrn || 'Not assigned';
-                    const gradeLevel = student.grade_level || 'Grade 11';
-                    const strand = student.strand || (gradeLevel.includes('11') || gradeLevel.includes('12') ? 'TVL-ICT' : '');
-
-                    const isTransferee = String(student.student_type || '').toLowerCase().includes('transfer') || String(student.student_type || '').toLowerCase().includes('different');
-                    const hasForm138 = Boolean(student.form_138_url);
-                    const hasPsa = Boolean(student.psa_birth_url);
-                    const hasGoodMoral = Boolean(student.good_moral_url);
-                    const has2x2 = Boolean(student.two_by_two_picture_url || student.avatar_url);
-
-                    const missingList = [];
-                    if (!has2x2) missingList.push('2x2 ID Picture');
-                    if (!hasForm138) missingList.push('Report Card');
-                    if (!hasPsa) missingList.push('PSA Birth Certificate');
-                    if (!hasGoodMoral) missingList.push('Good Moral Certificate');
-
-                    const isComplete = (student.documents_status || '').toLowerCase() === 'complete' || missingList.length === 0;
-
-                    items.push({
-                        id: student.id,
-                        student_id: student.id,
-                        user_id: user.id || null,
-                        fullname: fullName,
-                        email: email,
-                        id_number: lrn !== 'Not assigned' ? lrn : null,
-                        grade_name: gradeLevel,
-                        strand: strand,
-                        school_year: '2025-2026',
-                        status: student.documents_status === 'complete' ? 'Enrolled' : 'Pending',
-                        created_at: student.created_at || new Date().toISOString(),
-                        has_missing: !isComplete && missingList.length > 0,
-                        missing_count: isComplete ? 0 : missingList.length,
-                        missing_list: isComplete ? [] : missingList
-                    });
-                }
-            });
+            // NOTE: Students without an enrollment row are intentionally EXCLUDED here.
+            // If you want to show them, add them with has_missing=false and a
+            // "No enrollment form" flag — but they have no requirements to display.
 
             // Sort newest first
             items.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
@@ -361,7 +374,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
             const formattedDate = isNaN(dateObj.getTime()) ? '—' : dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
             const initial = enrollment.fullname.charAt(0).toUpperCase();
 
-            // Requirements badge
+            // Requirements badge — driven entirely by enrollments table
             let requirementsHtml = '';
             if (enrollment.has_missing && enrollment.status === 'Pending') {
                 requirementsHtml = `
@@ -370,11 +383,11 @@ import { EmailNotificationService } from '../../js/email_service.js';
                             <i class="fas fa-exclamation-triangle"></i> ${enrollment.missing_count} missing
                         </span>
                         <button class="btn-notify-missing" 
-                                data-student-name="${enrollment.fullname}"
+                                data-student-name="${enrollment.fullname.replace(/"/g, '&quot;')}"
                                 data-user-id="${enrollment.user_id || ''}"
                                 data-student-id="${enrollment.student_id || enrollment.id || ''}"
-                                data-email="${enrollment.email || ''}"
-                                data-missing-list='${JSON.stringify(enrollment.missing_list)}'
+                                data-email="${(enrollment.email || '').replace(/"/g, '&quot;')}"
+                                data-missing-list="${JSON.stringify(enrollment.missing_list).replace(/"/g, '&quot;')}"
                                 style="background: #0b2b4a; color: #FFD700; border: none; padding: 3px 8px; border-radius: 6px; font-size: 11px; cursor: pointer;">
                             <i class="fas fa-bell"></i> Notify
                         </button>
@@ -445,6 +458,9 @@ import { EmailNotificationService } from '../../js/email_service.js';
                 </div>
             `;
 
+            const gradeNum = parseInt(String(enrollment.grade_level || '').replace(/\D/g, ''), 10);
+            const showStrand = gradeNum >= 11 && enrollment.strand;
+
             html += `
                 <tr>
                     <td>
@@ -461,7 +477,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
                     </td>
                     <td>
                         <span class="grade-tag" style="font-weight: 600;">${enrollment.grade_name}</span>
-                        ${(parseInt((enrollment.grade_level || '').replace(/\D/g, ''), 10) >= 11 && enrollment.strand) ? `<span class="strand-tag" style="display: inline-block; margin-left: 4px; padding: 2px 6px; border-radius: 4px; background: #e0f2fe; color: #0369a1; font-size: 11px; font-weight: 600;">${enrollment.strand}</span>` : ''}
+                        ${showStrand ? `<span class="strand-tag" style="display: inline-block; margin-left: 4px; padding: 2px 6px; border-radius: 4px; background: #e0f2fe; color: #0369a1; font-size: 11px; font-weight: 600;">${enrollment.strand}</span>` : ''}
                     </td>
                     <td><span class="grade-tag">${enrollment.school_year}</span></td>
                     <td><span class="badge ${statusClass}">${enrollment.status}</span></td>
@@ -476,7 +492,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
 
         tableBody.innerHTML = html;
 
-        // Manage Dropdown Toggles and Hover / Dropup Detection
+        // Manage Dropdown Toggles
         tableBody.querySelectorAll('.btn-manage').forEach(btn => {
             btn.addEventListener('click', function (e) {
                 e.preventDefault();
@@ -485,7 +501,6 @@ import { EmailNotificationService } from '../../js/email_service.js';
                 const row = this.closest('tr');
                 const isOpen = dropdown.classList.contains('show');
 
-                // Close all open dropdowns
                 document.querySelectorAll('.manage-dropdown.show').forEach(d => {
                     d.classList.remove('show');
                     d.classList.remove('dropup');
@@ -507,7 +522,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
             });
         });
 
-        // Attach Notify Click Handlers
+        // Notify Click Handlers
         document.querySelectorAll('.btn-notify-missing').forEach(btn => {
             btn.addEventListener('click', function (e) {
                 e.stopPropagation();
@@ -515,13 +530,18 @@ import { EmailNotificationService } from '../../js/email_service.js';
                 const userId = this.dataset.userId;
                 const studentId = this.dataset.studentId;
                 const email = this.dataset.email;
-                const missingList = JSON.parse(this.dataset.missingList || '[]');
+                let missingList = [];
+                try {
+                    missingList = JSON.parse(this.dataset.missingList || '[]');
+                } catch {
+                    missingList = [];
+                }
                 notifyMissing(studentName, missingList, userId, studentId, email);
             });
         });
     }
 
-    // Close any open dropdowns when clicking anywhere outside
+    // Close dropdowns when clicking anywhere outside
     document.addEventListener('click', function (e) {
         if (!e.target.closest('.manage-dropdown')) {
             document.querySelectorAll('.manage-dropdown.show').forEach(d => {
@@ -534,7 +554,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
     });
 
     // ============================================
-    // SUPABASE ACTIONS (APPROVE, REJECT, PENDING, DELETE)
+    // SUPABASE ACTIONS
     // ============================================
 
     window.approveEnrollment = async function (id) {
@@ -545,14 +565,11 @@ import { EmailNotificationService } from '../../js/email_service.js';
             ? `⚠️ Notice: ${item.fullname || 'This student'} still has missing requirements.\n\nDo you want to proceed with APPROVING this enrollment and generating student login credentials?`
             : `Are you sure you want to APPROVE enrollment for ${item.fullname}?`;
 
-        if (!confirm(confirmMsg)) {
-            return;
-        }
+        if (!confirm(confirmMsg)) return;
 
         try {
             showAlert('Processing enrollment approval & account provisioning...', 'info');
 
-            // 1. Extract student credentials info
             const email = (item.email || '').trim().toLowerCase();
             let lastName = (item.last_name || '').trim();
             let firstName = (item.first_name || '').trim();
@@ -568,7 +585,6 @@ import { EmailNotificationService } from '../../js/email_service.js';
 
             let studentUserId = null;
 
-            // 2. Provision / Update user in public.users table (Username = Email, Password = Last Name)
             if (email) {
                 const { data: existingUsers } = await supabase
                     .from('users')
@@ -580,7 +596,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
                     await supabase
                         .from('users')
                         .update({
-                            password: lastName, // Password is Last Name
+                            password: lastName,
                             role: 'student',
                             first_name: firstName || existingUsers[0].first_name,
                             last_name: lastName || existingUsers[0].last_name,
@@ -592,7 +608,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
                         .from('users')
                         .insert([{
                             email: email,
-                            password: lastName, // Password is Last Name
+                            password: lastName,
                             role: 'student',
                             first_name: firstName,
                             last_name: lastName,
@@ -607,7 +623,6 @@ import { EmailNotificationService } from '../../js/email_service.js';
                 }
             }
 
-            // 3. Update / create students table with safe non-null defaults & 2x2 picture
             let studentTableId = item.student_id;
             const studentPayload = {
                 first_name: firstName,
@@ -617,8 +632,8 @@ import { EmailNotificationService } from '../../js/email_service.js';
                 grade_level: gradeName,
                 strand: strand || null,
                 lrn: item.lrn || item.id_number || ('141525' + String(Date.now()).slice(-6)),
-                date_of_birth: item.date_of_birth || item.dob || '2008-01-01',
-                contact_number: item.contact_number || item.guardian_contact || '09000000000',
+                date_of_birth: item.date_of_birth || '2008-01-01',
+                contact_number: item.contact_number || '09000000000',
                 enrollment_id: id,
                 two_by_two_picture_url: item.two_by_two_picture_url || null,
                 avatar_url: item.two_by_two_picture_url || null,
@@ -627,16 +642,11 @@ import { EmailNotificationService } from '../../js/email_service.js';
             };
 
             if (studentTableId) {
-                await supabase
-                    .from('students')
-                    .update(studentPayload)
-                    .eq('id', studentTableId);
+                await supabase.from('students').update(studentPayload).eq('id', studentTableId);
             } else if (email) {
                 studentPayload.created_at = new Date().toISOString();
                 const { data: createdStudent, error: sErr } = await supabase
-                    .from('students')
-                    .insert([studentPayload])
-                    .select();
+                    .from('students').insert([studentPayload]).select();
 
                 if (createdStudent && createdStudent.length > 0) {
                     studentTableId = createdStudent[0].id;
@@ -645,13 +655,9 @@ import { EmailNotificationService } from '../../js/email_service.js';
                 }
             }
 
-            // Link student_id in users if not linked
             if (studentUserId && studentTableId) {
                 try {
-                    await supabase
-                        .from('users')
-                        .update({ student_id: studentTableId })
-                        .eq('id', studentUserId);
+                    await supabase.from('users').update({ student_id: studentTableId }).eq('id', studentUserId);
                 } catch (uErr) {
                     console.warn('Users update notice:', uErr);
                 }
@@ -712,7 +718,6 @@ import { EmailNotificationService } from '../../js/email_service.js';
         }
     };
 
-
     let activeCredentialsData = null;
 
     function showCredentialsModal(creds) {
@@ -731,9 +736,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
             genIdBtn.href = `generate_id.html?enrollment_id=${creds.enrollmentId || ''}&id=${creds.studentId || ''}&email=${encodeURIComponent(creds.email || '')}`;
         }
 
-        if (credModal) {
-            credModal.style.display = 'flex';
-        }
+        if (credModal) credModal.style.display = 'flex';
     }
 
     function closeCredentialsModal() {
@@ -832,7 +835,6 @@ import { EmailNotificationService } from '../../js/email_service.js';
                 window.closeRejectModal();
                 showAlert('Processing enrollment rejection...', 'info');
 
-                // 1. Update enrollments table
                 await supabase
                     .from('enrollments')
                     .update({
@@ -841,7 +843,6 @@ import { EmailNotificationService } from '../../js/email_service.js';
                     })
                     .eq('id', id);
 
-                // 2. Insert notification
                 try {
                     const targetId = item?.user_id || item?.student_id || item?.id || null;
                     const rejMsg = `Notice for ${studentName}: Your enrollment application was not approved. Reason: ${reason}`;
@@ -856,23 +857,6 @@ import { EmailNotificationService } from '../../js/email_service.js';
                         is_read: false,
                         created_at: new Date().toISOString()
                     }]);
-
-                    if (targetId) {
-                        try {
-                            const k = `hes_notifications_${targetId}`;
-                            const raw = localStorage.getItem(k);
-                            let list = raw ? JSON.parse(raw) : [];
-                            list.unshift({
-                                id: 'notif_' + Date.now(),
-                                type: 'alert',
-                                title: 'Enrollment Application Update',
-                                message: rejMsg,
-                                time: 'Just now',
-                                read: false
-                            });
-                            localStorage.setItem(k, JSON.stringify(list.slice(0, 30)));
-                        } catch (e) { }
-                    }
                 } catch (nErr) { }
 
                 showAlert(`✅ Enrollment for ${studentName} has been rejected. Notification sent.`, 'success');
@@ -889,9 +873,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
         const item = rawEnrollments.find(e => String(e.id) === String(id));
         if (!item) return;
 
-        if (!confirm(`Revert enrollment status to Pending for ${item.fullname}?`)) {
-            return;
-        }
+        if (!confirm(`Revert enrollment status to Pending for ${item.fullname}?`)) return;
 
         try {
             await supabase
@@ -958,23 +940,6 @@ import { EmailNotificationService } from '../../js/email_service.js';
                 is_read: false,
                 created_at: new Date().toISOString()
             }]);
-
-            if (targetId) {
-                try {
-                    const k = `hes_notifications_${targetId}`;
-                    const raw = localStorage.getItem(k);
-                    let list = raw ? JSON.parse(raw) : [];
-                    list.unshift({
-                        id: 'notif_' + Date.now(),
-                        type: 'reminder',
-                        title: 'Missing Enrollment Documents',
-                        message: notifMsg,
-                        time: 'Just now',
-                        read: false
-                    });
-                    localStorage.setItem(k, JSON.stringify(list.slice(0, 30)));
-                } catch (e) { }
-            }
 
             showAlert(`✅ Notification sent successfully to ${studentName}!`, 'success');
         } catch (error) {
@@ -1084,7 +1049,6 @@ import { EmailNotificationService } from '../../js/email_service.js';
             console.warn('Realtime subscription notice in admin enrollments:', err);
         }
 
-        // Cross-tab synchronization
         window.addEventListener('storage', (e) => {
             if ((e.key === 'hes_latest_notification' || e.key === 'hes_admin_latest_notification') && e.newValue) {
                 try {
