@@ -94,11 +94,40 @@ import { EmailNotificationService } from '../../js/email_service.js';
     });
 
     // ============================================
-    // STATE
+    // STATE & YEAR LEVEL HELPERS
     // ============================================
 
     let allStudents = [];
     let filteredStudents = [];
+    let selectedLevel = 'all'; // 'all', 'jhs', 'shs'
+    let selectedGrade = 'all'; // 'all', 'Grade 7', 'Grade 8', etc.
+
+    function getSchoolLevel(gradeName) {
+        if (!gradeName || gradeName === '—' || gradeName === 'Unassigned') return 'other';
+        const num = parseInt(String(gradeName).replace(/\D/g, ''), 10);
+        if (isNaN(num)) return 'other';
+        return num >= 11 ? 'shs' : 'jhs';
+    }
+
+    function getGradeNumber(gradeName) {
+        if (!gradeName || gradeName === '—' || gradeName === 'Unassigned') return 999;
+        const num = parseInt(String(gradeName).replace(/\D/g, ''), 10);
+        return isNaN(num) ? 999 : num;
+    }
+
+    function updateLevelBadges() {
+        const allCount = allStudents.length;
+        const jhsCount = allStudents.filter(s => getSchoolLevel(s.grade) === 'jhs').length;
+        const shsCount = allStudents.filter(s => getSchoolLevel(s.grade) === 'shs').length;
+
+        const badgeAll = document.getElementById('badgeAllCount');
+        const badgeJhs = document.getElementById('badgeJhsCount');
+        const badgeShs = document.getElementById('badgeShsCount');
+
+        if (badgeAll) badgeAll.textContent = allCount;
+        if (badgeJhs) badgeJhs.textContent = jhsCount;
+        if (badgeShs) badgeShs.textContent = shsCount;
+    }
 
     // ============================================
     // LOAD STUDENTS FROM SUPABASE
@@ -229,10 +258,11 @@ import { EmailNotificationService } from '../../js/email_service.js';
     }
 
     // ============================================
-    // RENDER GRADE SUMMARY (WHOLE SCHOOL BY YEAR)
+    // RENDER GRADE SUMMARY / BADGES
     // ============================================
 
     function renderGradeSummary() {
+<<<<<<< HEAD
         if (!gradeSummary) return;
 
         const activeGrade = filterGrade ? filterGrade.value : '';
@@ -269,6 +299,9 @@ import { EmailNotificationService } from '../../js/email_service.js';
                 applyFilters();
             });
         });
+=======
+        updateLevelBadges();
+>>>>>>> b239393 (pacheckkocole)
     }
 
     // ============================================
@@ -295,23 +328,45 @@ import { EmailNotificationService } from '../../js/email_service.js';
                 email.includes(search) ||
                 secName.includes(search);
 
-            const matchGrade = !grade || s.grade === grade;
-            const matchSection = !section || s.section === section;
+            if (!matchSearch) return false;
 
-            let matchStrand = true;
+            // Macro Level filter (JHS vs SHS)
+            if (selectedLevel === 'jhs' && getSchoolLevel(s.grade) !== 'jhs') return false;
+            if (selectedLevel === 'shs' && getSchoolLevel(s.grade) !== 'shs') return false;
+
+            // Specific Grade Level filter (via Pill or Select)
+            if (selectedGrade && selectedGrade !== 'all') {
+                if (selectedGrade === 'Unassigned') {
+                    if (s.grade && s.grade !== '—' && s.grade.toLowerCase() !== 'unassigned') return false;
+                } else {
+                    const sNum = selectedGrade.replace(/\D/g, '');
+                    const iNum = (s.grade || '').replace(/\D/g, '');
+                    if (sNum && iNum) {
+                        if (sNum !== iNum) return false;
+                    } else if (s.grade !== selectedGrade) {
+                        return false;
+                    }
+                }
+            } else if (grade) {
+                if (s.grade !== grade) return false;
+            }
+
+            if (section && s.section !== section) return false;
+
             if (strand) {
                 if (strand === 'JHS') {
-                    matchStrand = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10'].includes(s.grade) || s.strand === '—' || !s.strand;
-                } else {
-                    matchStrand = (s.strand || '').toUpperCase().includes(strand.toUpperCase());
+                    const isJHS = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10'].includes(s.grade) || s.strand === '—' || !s.strand;
+                    if (!isJHS) return false;
+                } else if (!(s.strand || '').toUpperCase().includes(strand.toUpperCase())) {
+                    return false;
                 }
             }
 
-            const matchStatus = !status || s.status.toLowerCase() === status.toLowerCase();
+            if (status && s.status.toLowerCase() !== status.toLowerCase()) return false;
 
-            let matchStudentType = true;
             if (studentType) {
                 const sType = String(s.student_type || '').toLowerCase();
+<<<<<<< HEAD
                 if (studentType === 'Transferee') {
                     matchStudentType = sType.includes('transfer');
                 } else if (studentType === 'New Student') {
@@ -319,16 +374,21 @@ import { EmailNotificationService } from '../../js/email_service.js';
                 } else if (studentType === 'Repeater') {
                     matchStudentType = sType.includes('repeater');
                 }
+=======
+                if (studentType === 'Transferee' && !sType.includes('transfer')) return false;
+                if (studentType === 'New Student' && sType.includes('transfer')) return false;
+>>>>>>> b239393 (pacheckkocole)
             }
 
-            return matchSearch && matchGrade && matchSection && matchStrand && matchStatus && matchStudentType;
+            return true;
         });
 
+        updateLevelBadges();
         renderTable();
     }
 
     // ============================================
-    // RENDER TABLE
+    // RENDER TABLE (GROUPED BY YEAR LEVEL)
     // ============================================
 
     function renderTable() {
@@ -355,12 +415,17 @@ import { EmailNotificationService } from '../../js/email_service.js';
             'linear-gradient(135deg, #0d9488, #06b6d4)'
         ];
 
-        tableBody.innerHTML = filteredStudents.map((s, index) => {
-            const initial = (s.firstName || 'S').charAt(0).toUpperCase();
-            const fullName = `${s.firstName} ${s.lastName}`.trim() || 'Unknown';
-            const grad = avatarGradients[index % avatarGradients.length];
-            const isSHS = ['Grade 11', 'Grade 12'].includes(s.grade);
+        // Sort students by natural academic year level order (Grade 7 -> 12 -> Unassigned), then by student name
+        const sortedStudents = [...filteredStudents].sort((a, b) => {
+            const gA = getGradeNumber(a.grade);
+            const gB = getGradeNumber(b.grade);
+            if (gA !== gB) return gA - gB;
+            const nameA = `${a.firstName} ${a.lastName}`.trim().toLowerCase();
+            const nameB = `${b.firstName} ${b.lastName}`.trim().toLowerCase();
+            return nameA.localeCompare(nameB);
+        });
 
+<<<<<<< HEAD
             const strandKey = (s.strand || '').toUpperCase();
             let strandClass = 'strand-general';
             if (strandKey.includes('TVL') || strandKey.includes('ICT')) strandClass = 'strand-ict';
@@ -368,10 +433,20 @@ import { EmailNotificationService } from '../../js/email_service.js';
             else if (strandKey.includes('HUMSS')) strandClass = 'strand-humss';
             else if (strandKey.includes('GAS')) strandClass = 'strand-gas';
             else if (strandKey.includes('ABM')) strandClass = 'strand-abm';
+=======
+        // Group students by Year Level
+        const groups = {};
+        sortedStudents.forEach(s => {
+            const gKey = (s.grade && s.grade !== '—' && s.grade.toLowerCase() !== 'unassigned') ? s.grade : 'Unassigned Year Level';
+            if (!groups[gKey]) groups[gKey] = [];
+            groups[gKey].push(s);
+        });
+>>>>>>> b239393 (pacheckkocole)
 
-            const strandDisplay = s.strand && s.strand !== '—' ? s.strand : (isSHS ? 'Unspecified' : 'General');
-            const strandBadge = `<span class="strand-chip ${strandClass}">${strandDisplay}</span>`;
+        let runningIndex = 1;
+        let html = '';
 
+<<<<<<< HEAD
             const sTypeRaw = String(s.student_type || '').toLowerCase();
             let typeBadge = '';
             if (sTypeRaw.includes('transfer')) {
@@ -482,11 +557,155 @@ import { EmailNotificationService } from '../../js/email_service.js';
                                     <span>Delete Student</span>
                                 </button>
                             </div>
+=======
+        Object.keys(groups).forEach(gradeKey => {
+            const groupStudents = groups[gradeKey];
+            const schoolLvl = getSchoolLevel(gradeKey);
+            const isShs = schoolLvl === 'shs';
+            const isJhs = schoolLvl === 'jhs';
+            const subLabel = isShs ? 'Senior High School' : (isJhs ? 'Junior High School' : 'Pending Placement');
+            const iconClass = isShs ? 'shs' : (isJhs ? 'jhs' : 'other');
+            const iconFa = isShs ? 'fa-graduation-cap' : (isJhs ? 'fa-school' : 'fa-circle-question');
+
+            // Year Level Section Header Row
+            html += `
+                <tr class="year-group-row">
+                    <td colspan="9">
+                        <div class="year-group-header">
+                            <div class="year-group-title">
+                                <span class="year-group-icon ${iconClass}"><i class="fas ${iconFa}"></i></span>
+                                <div class="year-group-text">
+                                    <span class="year-group-name">${gradeKey}</span>
+                                    <span class="year-group-sub">• ${subLabel}</span>
+                                </div>
+                            </div>
+                            <span class="year-group-badge">${groupStudents.length} ${groupStudents.length === 1 ? 'Student' : 'Students'}</span>
+>>>>>>> b239393 (pacheckkocole)
                         </div>
                     </td>
                 </tr>
             `;
-        }).join('');
+
+            groupStudents.forEach(s => {
+                const initial = (s.firstName || 'S').charAt(0).toUpperCase();
+                const fullName = `${s.firstName} ${s.lastName}`.trim() || 'Unknown';
+                const grad = avatarGradients[(runningIndex - 1) % avatarGradients.length];
+                const isSHS = ['Grade 11', 'Grade 12'].includes(s.grade);
+
+                // Strand styling
+                const strandKey = (s.strand || '').toUpperCase();
+                let strandClass = 'strand-general';
+                if (strandKey.includes('TVL') || strandKey.includes('ICT')) strandClass = 'strand-ict';
+                else if (strandKey.includes('STEM')) strandClass = 'strand-stem';
+                else if (strandKey.includes('HUMSS')) strandClass = 'strand-humss';
+                else if (strandKey.includes('GAS')) strandClass = 'strand-gas';
+                else if (strandKey.includes('ABM')) strandClass = 'strand-abm';
+
+                const strandDisplay = s.strand && s.strand !== '—' ? s.strand : (isSHS ? 'Unspecified' : 'General');
+                const strandBadge = `<span class="strand-chip ${strandClass}">${strandDisplay}</span>`;
+
+                // Student Type Badge
+                const isTransferee = String(s.student_type || '').toLowerCase().includes('transfer');
+                const typeBadge = isTransferee 
+                    ? `<span class="student-type-pill pill-transferee" title="Transferee Student"><i class="fas fa-right-left"></i> Transferee</span>`
+                    : `<span class="student-type-pill pill-new" title="New Enrolled Student"><i class="fas fa-sparkles"></i> New</span>`;
+
+                // Gender icon & label
+                const isMale = (s.gender || '').toLowerCase() === 'male';
+                const isFemale = (s.gender || '').toLowerCase() === 'female';
+                const genderIcon = isMale ? 'fa-mars' : (isFemale ? 'fa-venus' : 'fa-circle-user');
+                const genderClass = isMale ? 'gender-male' : (isFemale ? 'gender-female' : 'gender-neutral');
+
+                // Status Badge
+                const isActive = (s.status || 'Active').toLowerCase() === 'active';
+                const statusBadge = `
+                    <span class="student-status-pill ${isActive ? 'status-active' : 'status-inactive'}">
+                        <span class="status-dot"></span>
+                        ${s.status || 'Active'}
+                    </span>
+                `;
+
+                html += `
+                    <tr class="student-row" data-id="${s.id}">
+                        <td class="cell-center cell-index">${runningIndex++}</td>
+                        <td class="cell-student">
+                            <div class="student-cell">
+                                <div class="student-avatar" style="background: ${grad}" title="${fullName}">
+                                    ${s.avatar_url ? `
+                                        <img src="${s.avatar_url}" alt="${fullName}" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
+                                        <span style="display:none;">${initial}</span>
+                                    ` : `
+                                        <span>${initial}</span>
+                                    `}
+                                </div>
+                                <div class="student-info-cell">
+                                    <div class="student-name-row">
+                                        <span class="student-full-name">${fullName}</span>
+                                        ${typeBadge}
+                                    </div>
+                                    <div class="student-sub-row">
+                                        <span class="student-gender-chip ${genderClass}">
+                                            <i class="fas ${genderIcon}"></i> ${s.gender || '—'}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="cell-center cell-lrn">
+                            <span class="lrn-code-pill" title="LRN: ${s.lrn || 'None'}">
+                                ${s.lrn && s.lrn !== '—' ? s.lrn : '<span class="text-muted">—</span>'}
+                            </span>
+                        </td>
+                        <td class="cell-center cell-grade">
+                            <span class="grade-pill grade-${(s.grade || '').toLowerCase().replace(/\s+/g, '-')}">
+                                ${s.grade || '—'}
+                            </span>
+                        </td>
+                        <td class="cell-center cell-section">
+                            ${s.section && s.section !== '—' 
+                                ? `<span class="section-pill"><i class="fas fa-users"></i> ${s.section}</span>` 
+                                : `<span class="section-pill unassigned">—</span>`}
+                        </td>
+                        <td class="cell-center cell-strand">${strandBadge}</td>
+                        <td class="cell-email">
+                            ${s.email && s.email !== '—' 
+                                ? `<a href="mailto:${s.email}" class="student-email-link" title="${s.email}"><i class="far fa-envelope"></i> <span>${s.email}</span></a>` 
+                                : `<span class="text-muted">—</span>`}
+                        </td>
+                        <td class="cell-center cell-status">${statusBadge}</td>
+                        <td class="cell-center cell-actions">
+                            <div class="manage-dropdown">
+                                <button type="button" class="btn-manage" aria-expanded="false" title="Manage Student Record">
+                                    <span>Manage</span>
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="manage-menu">
+                                    <a href="view_student.html?id=${s.id}" class="manage-item view-item" title="View Student Profile">
+                                        <i class="fas fa-eye"></i>
+                                        <span>View Profile</span>
+                                    </a>
+                                    <a href="edit_student.html?id=${s.id}" class="manage-item edit-item" title="Edit Student Record">
+                                        <i class="fas fa-pen-to-square"></i>
+                                        <span>Edit Record</span>
+                                    </a>
+                                    <button type="button" class="manage-item gmail-item notify-gmail" data-id="${s.id}" title="Send Login Credentials to Student's Gmail">
+                                        <i class="fab fa-google"></i>
+                                        <span>Send to Gmail</span>
+                                    </button>
+                                    <div class="manage-divider"></div>
+                                    <button type="button" class="manage-item delete-item delete" data-id="${s.id}" title="Delete Student Record">
+                                        <i class="fas fa-trash-can"></i>
+                                        <span>Delete Student</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        });
+
+        tableBody.innerHTML = html;
 
         if (recordCount) {
             recordCount.textContent = `Showing ${filteredStudents.length} of ${allStudents.length} records`;
@@ -965,10 +1184,71 @@ import { EmailNotificationService } from '../../js/email_service.js';
 
     if (searchInput) searchInput.addEventListener('input', applyFilters);
 
+    // Setup Level Navigation Tabs (All, Junior High, Senior High)
+    document.querySelectorAll('.level-tab-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            document.querySelectorAll('.level-tab-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            selectedLevel = this.dataset.level || 'all';
+
+            // Reset grade pill
+            document.querySelectorAll('.grade-pill-tag').forEach(p => p.classList.remove('active'));
+            const allPill = document.querySelector('.grade-pill-tag[data-grade="all"]');
+            if (allPill) allPill.classList.add('active');
+            selectedGrade = 'all';
+            if (filterGrade) filterGrade.value = '';
+
+            populateSectionFilter();
+            applyFilters();
+        });
+    });
+
+    // Setup Fast Grade Pills (All, Grade 7, Grade 8, etc.)
+    document.querySelectorAll('.grade-pill-tag').forEach(pill => {
+        pill.addEventListener('click', function () {
+            document.querySelectorAll('.grade-pill-tag').forEach(p => p.classList.remove('active'));
+            this.classList.add('active');
+            selectedGrade = this.dataset.grade || 'all';
+
+            if (selectedGrade === 'all') {
+                if (filterGrade) filterGrade.value = '';
+            } else {
+                if (filterGrade) filterGrade.value = selectedGrade;
+                const targetLvl = getSchoolLevel(selectedGrade);
+                document.querySelectorAll('.level-tab-btn').forEach(b => {
+                    b.classList.toggle('active', b.dataset.level === targetLvl);
+                });
+                selectedLevel = targetLvl;
+            }
+
+            populateSectionFilter();
+            applyFilters();
+        });
+    });
+
     if (filterGrade) {
         filterGrade.addEventListener('change', function() {
+            const val = this.value;
+            selectedGrade = val || 'all';
+
+            document.querySelectorAll('.grade-pill-tag').forEach(p => {
+                p.classList.toggle('active', (val ? p.dataset.grade === val : p.dataset.grade === 'all'));
+            });
+
+            if (val) {
+                const targetLvl = getSchoolLevel(val);
+                document.querySelectorAll('.level-tab-btn').forEach(b => {
+                    b.classList.toggle('active', b.dataset.level === targetLvl);
+                });
+                selectedLevel = targetLvl;
+            } else {
+                document.querySelectorAll('.level-tab-btn').forEach(b => {
+                    b.classList.toggle('active', b.dataset.level === 'all');
+                });
+                selectedLevel = 'all';
+            }
+
             populateSectionFilter();
-            renderGradeSummary();
             applyFilters();
         });
     }

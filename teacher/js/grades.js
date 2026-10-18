@@ -1192,6 +1192,52 @@ import { supabase } from '../../supabase/config.js';
                 showAlert('success', `✅ Successfully saved ${rowsToUpsert.length} calculated grades to the database!`);
                 console.log('✅ Upserted grades:', rowsToUpsert.length);
 
+                // Send notifications to students regarding the updated grades
+                try {
+                    const subObj = allSubjects.find(s => s.id === selectedSubjectId);
+                    const subjectName = subObj ? subObj.name : 'Subject';
+                    const uniqueStudentIds = [...new Set(rowsToUpsert.map(r => r.student_id))];
+                    const gradeNotifs = [];
+
+                    for (const sId of uniqueStudentIds) {
+                        const student = studentsList.find(s => s.id === sId);
+                        if (!student) continue;
+
+                        let studentAuthId = student.user_id || null;
+                        if (!studentAuthId && student.email) {
+                            try {
+                                const { data: uData } = await supabase.from('users').select('id').eq('email', student.email.toLowerCase()).maybeSingle();
+                                if (uData?.id) studentAuthId = uData.id;
+                            } catch (_) {}
+                        }
+
+                        const notifObj = {
+                            user_id: student.id,
+                            role: 'student',
+                            title: `📊 Grade Updated: ${subjectName}`,
+                            message: `Your grade for ${subjectName} (${selectedQuarter}${getOrdinalSuffix(selectedQuarter)} Quarter, S.Y. ${selectedSchoolYear}) has been submitted by your teacher.`,
+                            type: 'grade',
+                            read: false,
+                            is_read: false,
+                            created_at: new Date().toISOString()
+                        };
+                        gradeNotifs.push(notifObj);
+
+                        if (studentAuthId && studentAuthId !== student.id) {
+                            gradeNotifs.push({
+                                ...notifObj,
+                                user_id: studentAuthId
+                            });
+                        }
+                    }
+
+                    if (gradeNotifs.length > 0) {
+                        await supabase.from('notifications').insert(gradeNotifs);
+                    }
+                } catch (notifErr) {
+                    console.warn('Student grade notifications warning:', notifErr);
+                }
+
                 // Reload existing grades from database to refresh cache
                 await loadExistingGrades();
                 initScoresCache();

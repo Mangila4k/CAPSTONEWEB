@@ -455,13 +455,48 @@
             </div>
         </div>
 
-        <!-- All Users Activity -->
-        <div class="card">
-            <div class="card-header">
-                <h3><i class="fas fa-users"></i> All Users Activity</h3>
-                <span class="badge-count" id="usersCount">0 users</span>
+        <!-- All Users Activity (Grouped by Role) -->
+        <div class="card all-users-card">
+            <div class="card-header" style="flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                    <h3><i class="fas fa-users-gear" style="color: #1B2A4A;"></i> All Users Activity</h3>
+                    <span class="badge-count" id="usersCount">0 users</span>
+                </div>
+                <div class="users-header-search" style="display: flex; align-items: center; gap: 8px;">
+                    <div class="search-box" style="position: relative; display: flex; align-items: center;">
+                        <i class="fas fa-search" style="position: absolute; left: 12px; color: #94a3b8; font-size: 13px;"></i>
+                        <input type="text" id="usersSearchInput" placeholder="Search by name, email, or role..." 
+                            style="padding: 7px 14px 7px 34px; border: 1px solid #e2e8f0; border-radius: 20px; font-size: 13px; outline: none; width: 250px; transition: all 0.2s;" />
+                    </div>
+                </div>
             </div>
-            <div class="table-container">
+
+            <!-- Role Filter Pills Bar -->
+            <div class="role-pills-bar" id="rolePillsBar">
+                <button type="button" class="role-pill active" data-role="all">
+                    <i class="fas fa-layer-group"></i> All Roles <span class="pill-count" id="countAllRoles">0</span>
+                </button>
+                <button type="button" class="role-pill" data-role="student">
+                    <i class="fas fa-user-graduate"></i> Students <span class="pill-count" id="countStudents">0</span>
+                </button>
+                <button type="button" class="role-pill" data-role="teacher">
+                    <i class="fas fa-chalkboard-user"></i> Teachers <span class="pill-count" id="countTeachers">0</span>
+                </button>
+                <button type="button" class="role-pill" data-role="guidance">
+                    <i class="fas fa-compass"></i> Guidance <span class="pill-count" id="countGuidance">0</span>
+                </button>
+                <button type="button" class="role-pill" data-role="admin">
+                    <i class="fas fa-shield-alt"></i> Admins <span class="pill-count" id="countAdmins">0</span>
+                </button>
+                <button type="button" class="role-pill" data-role="registrar">
+                    <i class="fas fa-file-invoice"></i> Registrar <span class="pill-count" id="countRegistrar">0</span>
+                </button>
+                <button type="button" class="role-pill" data-role="parent">
+                    <i class="fas fa-hands-holding-child"></i> Parents <span class="pill-count" id="countParents">0</span>
+                </button>
+            </div>
+
+            <div class="table-container" id="usersContainer">
                 <table class="data-table" id="usersTable">
                     <thead>
                         <tr>
@@ -575,6 +610,9 @@
             </div>
             <div class="modal-footer notif-modal-footer">
                 <button type="button" class="btn-cancel" id="dismissNotifModalBtn">Close</button>
+                <button type="button" class="btn-secondary" id="modalToggleUnreadBtn" style="padding: 9px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; border: 1px solid #cbd5e1; background: #f8fafc; color: #334155; display: inline-flex; align-items: center; gap: 6px;">
+                    <i class="fas fa-envelope"></i> <span>Mark as Unread</span>
+                </button>
                 <a href="#" class="btn-primary notif-action-btn" id="modalNotifActionLink">
                     <span>Go to Related Page</span> <i class="fas fa-arrow-right"></i>
                 </a>

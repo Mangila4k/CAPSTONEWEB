@@ -177,6 +177,7 @@ import { supabase } from '../../supabase/config.js';
             }
 
             // 3. Fetch Attendance for these students
+            // 3. Fetch Attendance for these students from Supabase & Shared Stores
             let attendanceLogs = [];
             try {
                 if (studentIds.length > 0) {
@@ -191,26 +192,113 @@ import { supabase } from '../../supabase/config.js';
                 console.warn('Attendance query warning:', err);
             }
 
-            // 4. Fetch Subjects
-            let subjectsList = [];
+            // Load shared teacher-scanned attendance records for children
             try {
-                const { data: subData } = await supabase.from('subjects').select('*');
-                if (subData) subjectsList = subData;
-            } catch (err) {}
+                const sharedList = [];
+                const norm = v => (v || '').toString().toLowerCase().trim();
+                const childIdSet = new Set(studentIds.map(norm));
+                const childLrnSet = new Set(students.map(s => norm(s.lrn)).filter(Boolean));
+                const childNameSet = new Set(students.map(s => norm(s.full_name || `${s.first_name || ''} ${s.last_name || ''}`)).filter(Boolean));
 
-            function isWeekend(dateStr) {
-                if (!dateStr) return false;
-                try {
-                    const d = new Date(dateStr + 'T00:00:00');
-                    const day = d.getDay();
-                    return day === 0 || day === 6;
-                } catch {
+                function matchesChild(rec) {
+                    if (!rec) return false;
+                    const rId = norm(rec.student_id || rec.studentId || rec.id);
+                    const rLrn = norm(rec.lrn);
+                    const rName = norm(rec.student_name || rec.name || rec.studentName || rec.full_name);
+
+                    if (rId && childIdSet.has(rId)) return true;
+                    if (rLrn && childLrnSet.has(rLrn)) return true;
+                    if (rName) {
+                        for (const cName of childNameSet) {
+                            if (!cName) continue;
+                            if (rName === cName || rName.includes(cName) || cName.includes(rName)) return true;
+                            const parts = cName.split(/\s+/).filter(Boolean);
+                            if (parts.length >= 2) {
+                                const flipped = `${parts[parts.length - 1]}, ${parts.slice(0, -1).join(' ')}`;
+                                const reversed = `${parts[parts.length - 1]} ${parts.slice(0, -1).join(' ')}`;
+                                if (rName.includes(flipped) || flipped.includes(rName) || rName.includes(reversed)) return true;
+                            }
+                        }
+                    }
                     return false;
                 }
-            }
 
-            // Strictly filter out any weekend attendance records
-            attendanceLogs = attendanceLogs.filter(a => !isWeekend(a.date));
+                const centralRaw = localStorage.getItem('hes_attendance_records');
+                if (centralRaw) {
+                    const list = JSON.parse(centralRaw);
+                    if (Array.isArray(list)) list.forEach(r => { if (matchesChild(r)) sharedList.push(r); });
+                }
+
+                const hesStuRaw = localStorage.getItem('hes_student_attendance');
+                if (hesStuRaw) {
+                    const list = JSON.parse(hesStuRaw);
+                    if (Array.isArray(list)) list.forEach(r => { if (matchesChild(r)) sharedList.push(r); });
+                }
+
+                students.forEach(s => {
+                    const sName = norm(s.full_name || `${s.first_name || ''} ${s.last_name || ''}`);
+                    [norm(s.id), norm(s.lrn), sName].filter(Boolean).forEach(key => {
+                        const direct = localStorage.getItem(`hes_student_attendance_${key}`);
+                        if (direct) {
+                            const dObj = JSON.parse(direct);
+                            if (Array.isArray(dObj)) dObj.forEach(r => { if (matchesChild(r) || !r.student_id) sharedList.push(r); });
+                            else if (dObj && typeof dObj === 'object') {
+                                if (matchesChild(dObj) || !dObj.student_id) sharedList.push(dObj);
+                            }
+                        }
+                    });
+                });
+
+                for (let i = 0; i < localStorage.length; i++) {
+                    const k = localStorage.key(i);
+                    if (k && (k.startsWith('hes_qr_scans_') || k === 'todayScans')) {
+                        const sData = JSON.parse(localStorage.getItem(k) || '[]');
+                        if (Array.isArray(sData)) {
+                            sData.forEach(r => {
+                                if (matchesChild(r)) {
+                                    sharedList.push({
+                                        id: r.id,
+                                        student_id: r.studentId || r.student_id,
+                                        lrn: r.lrn,
+                                        student_name: r.name || r.student_name,
+                                        date: r.date,
+                                        status: r.status,
+                                        time_in: r.time || r.time_in,
+                                        remarks: r.remarks || (r.status === 'Late' ? 'Late arrival recorded via QR Scanner' : 'On-time QR scan')
+                                    });
+                                }
+                            });
+                        }
+                    }
+                }
+
+                // Merge into attendanceLogs map
+                const map = new Map();
+                attendanceLogs.forEach(r => {
+                    if (r?.date) {
+                        const clean = (r.status || 'present').charAt(0).toUpperCase() + (r.status || 'present').slice(1).toLowerCase();
+                        map.set(`${r.student_id}_${r.date}`, { ...r, status: clean, time_in: r.time_in || r.timeIn || null });
+                    }
+                });
+                sharedList.forEach(r => {
+                    if (r?.date) {
+                        const stuId = r.student_id || r.studentId || studentIds[0];
+                        const clean = (r.status || 'Present').charAt(0).toUpperCase() + (r.status || 'Present').slice(1).toLowerCase();
+                        const key = `${stuId}_${r.date}`;
+                        const existing = map.get(key) || {};
+                        map.set(key, {
+                            ...existing,
+                            ...r,
+                            student_id: stuId,
+                            status: clean,
+                            time_in: r.time_in || r.time || existing.time_in || null,
+                            remarks: r.remarks || existing.remarks || ''
+                        });
+                    }
+                });
+
+                attendanceLogs = Array.from(map.values()).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+            } catch (e) {}
 
             // Calculate and Render
             const enrichedChildren = enrichChildrenData(students, enrollments, attendanceLogs);
@@ -228,7 +316,7 @@ import { supabase } from '../../supabase/config.js';
 
             updateStats(enrichedChildren, attendanceLogs);
             renderChildrenGrid(enrichedChildren);
-            renderRecentGrades(enrichedChildren, subjectsList);
+            renderRecentGrades(enrichedChildren, subjectsList, gradesRecords);
             renderEnrollmentStatus(enrichedChildren, enrollments);
 
         } catch (error) {
@@ -253,16 +341,16 @@ import { supabase } from '../../supabase/config.js';
             const schoolYear = studentEnr?.school_year || studentEnr?.schoolYear || '2025-2026';
             const lrn = student.lrn || studentEnr?.lrn || '109876543201';
 
-            // Calculate student attendance
+            // Calculate student attendance from actual logs
             const myAtt = attendanceLogs.filter(a => a.student_id === student.id || a.lrn === lrn);
-            let attRate = 94; // realistic baseline
+            let attRate = null;
             if (myAtt.length > 0) {
                 const present = myAtt.filter(a => ['present', 'late', 'excused'].includes((a.status || '').toLowerCase())).length;
                 attRate = Math.round((present / myAtt.length) * 100);
             }
 
-            // Student Average Grade
-            let average = studentEnr?.general_average ? parseFloat(studentEnr.general_average) : 89.5;
+            // Student Average Grade from official records
+            let average = studentEnr?.general_average ? parseFloat(studentEnr.general_average) : null;
 
             return {
                 id: student.id,
@@ -286,22 +374,24 @@ import { supabase } from '../../supabase/config.js';
         const total = children.length;
         const enrolled = children.filter(c => ['enrolled', 'approved'].includes(c.status.toLowerCase())).length;
         
-        let avgGradeVal = 0;
-        if (total > 0) {
-            const sumGrade = children.reduce((acc, c) => acc + c.average_grade, 0);
-            avgGradeVal = (sumGrade / total).toFixed(2);
+        const childrenWithGrade = children.filter(c => c.average_grade !== null && !isNaN(c.average_grade));
+        let avgGradeVal = '--%';
+        if (childrenWithGrade.length > 0) {
+            const sumGrade = childrenWithGrade.reduce((acc, c) => acc + c.average_grade, 0);
+            avgGradeVal = `${(sumGrade / childrenWithGrade.length).toFixed(2)}%`;
         }
 
-        let overallAtt = 0;
-        if (total > 0) {
-            const sumAtt = children.reduce((acc, c) => acc + c.attendance, 0);
-            overallAtt = Math.round(sumAtt / total);
+        const childrenWithAtt = children.filter(c => c.attendance !== null && !isNaN(c.attendance));
+        let overallAtt = '--%';
+        if (childrenWithAtt.length > 0) {
+            const sumAtt = childrenWithAtt.reduce((acc, c) => acc + c.attendance, 0);
+            overallAtt = `${Math.round(sumAtt / childrenWithAtt.length)}%`;
         }
 
         if (childrenCount) childrenCount.textContent = total;
         if (enrolledCount) enrolledCount.textContent = enrolled;
-        if (avgGrade) avgGrade.textContent = `${avgGradeVal}%`;
-        if (attendanceRate) attendanceRate.textContent = `${overallAtt}%`;
+        if (avgGrade) avgGrade.textContent = avgGradeVal;
+        if (attendanceRate) attendanceRate.textContent = overallAtt;
     }
 
     // ============================================
@@ -325,39 +415,52 @@ import { supabase } from '../../supabase/config.js';
             const initial = child.name.charAt(0).toUpperCase();
             const statusLower = child.status.toLowerCase();
             const isApproved = statusLower === 'enrolled' || statusLower === 'approved';
-            const badgeClass = isApproved ? 'status-approved' : (statusLower === 'pending' ? 'status-pending' : 'status-rejected');
+            const badgeClass = isApproved ? 'status-enrolled' : 'status-pending';
 
             return `
                 <div class="child-card">
                     <div class="child-card-header">
-                        <div class="child-avatar">${initial}</div>
-                        <div class="child-info">
-                            <h4>${child.name}</h4>
-                            <div class="child-grade">${child.grade_level} (${child.strand})</div>
+                        <div class="child-card-profile">
+                            <div class="child-avatar-wrap">
+                                <div class="child-avatar">${initial}</div>
+                                <div class="child-avatar-status"></div>
+                            </div>
+                            <div class="child-info">
+                                <h4>${child.name}</h4>
+                                <div class="child-class-pill"><i class="fas fa-school"></i> ${child.grade_level} (${child.strand})</div>
+                            </div>
+                        </div>
+                        <span class="child-status-badge ${badgeClass}">
+                            <i class="fas ${isApproved ? 'fa-check-circle' : 'fa-clock'}"></i> ${child.status}
+                        </span>
+                    </div>
+
+                    <div class="child-metrics-grid">
+                        <div class="child-metric-box">
+                            <div class="metric-caption"><i class="fas fa-id-card text-primary"></i> LRN</div>
+                            <div class="metric-val">${child.lrn}</div>
+                        </div>
+                        <div class="child-metric-box">
+                            <div class="metric-caption"><i class="fas fa-calendar-alt text-primary"></i> School Year</div>
+                            <div class="metric-val">S.Y. ${child.school_year}</div>
+                        </div>
+                        <div class="child-metric-box">
+                            <div class="metric-caption"><i class="fas fa-star text-warning"></i> General Average</div>
+                            <div class="metric-val highlight-amber">${child.average_grade !== null ? child.average_grade + '%' : '—'}</div>
+                        </div>
+                        <div class="child-metric-box">
+                            <div class="metric-caption"><i class="fas fa-user-check text-success"></i> Attendance Standing</div>
+                            <div class="metric-val highlight-green">${child.attendance !== null ? child.attendance + '%' : '—'}</div>
                         </div>
                     </div>
-                    <div class="child-details">
-                        <div class="child-detail-item">
-                            <i class="fas fa-id-card text-primary"></i>
-                            LRN: <strong>${child.lrn}</strong>
-                        </div>
-                        <div class="child-detail-item">
-                            <i class="fas fa-calendar-alt text-primary"></i>
-                            S.Y. ${child.school_year}
-                        </div>
-                        <div class="child-detail-item">
-                            <i class="fas fa-star text-warning"></i>
-                            General Average: <strong>${child.average_grade}%</strong>
-                        </div>
-                        <div class="child-detail-item">
-                            <i class="fas fa-user-check text-success"></i>
-                            Attendance Standing: <strong>${child.attendance}%</strong>
-                        </div>
-                        <div class="child-detail-item" style="margin-top: 6px;">
-                            <span class="status-badge ${badgeClass}" style="padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 0.8rem;">
-                                <i class="fas ${isApproved ? 'fa-check-circle' : 'fa-clock'}"></i> ${child.status}
-                            </span>
-                        </div>
+
+                    <div class="child-actions-row">
+                        <a href="grades.html" class="child-action-btn btn-primary">
+                            <i class="fas fa-file-invoice"></i> View Report Card
+                        </a>
+                        <a href="attendance.html" class="child-action-btn btn-outline">
+                            <i class="fas fa-calendar-check"></i> Attendance Record
+                        </a>
                     </div>
                 </div>
             `;
@@ -368,14 +471,14 @@ import { supabase } from '../../supabase/config.js';
     // RENDER RECENT GRADES
     // ============================================
 
-    function renderRecentGrades(children, subjectsList) {
+    function renderRecentGrades(children, subjectsList, gradesRecords = []) {
         if (!gradesBody) return;
 
         if (children.length === 0) {
             gradesBody.innerHTML = `
                 <tr>
-                    <td colspan="6" style="text-align: center; padding: 30px; color: #94a3b8;">
-                        <i class="fas fa-star" style="font-size: 2rem; margin-bottom: 8px;"></i>
+                    <td colspan="6" style="text-align: center; padding: 36px; color: #94a3b8;">
+                        <i class="fas fa-award" style="font-size: 2rem; margin-bottom: 8px;"></i>
                         <p>No academic records available.</p>
                     </td>
                 </tr>
@@ -383,38 +486,83 @@ import { supabase } from '../../supabase/config.js';
             return;
         }
 
-        const sampleSubjects = subjectsList.length > 0 ? subjectsList.slice(0, 5) : [
-            { name: 'Core Mathematics' },
-            { name: 'General Science' },
-            { name: 'Oral Communication' },
-            { name: 'Empowerment Technologies' },
-            { name: 'Physical Education' }
-        ];
-
         let html = '';
-        children.forEach(child => {
-            sampleSubjects.forEach((sub, idx) => {
-                const gradeVal = (86 + (idx * 3) + (child.name.length % 5));
-                const isPassed = gradeVal >= 75;
-                const remarks = isPassed ? 'Passed' : 'Needs Review';
-                const statusClass = isPassed ? 'color: #10b981; font-weight: 600;' : 'color: #ef4444; font-weight: 600;';
 
-                html += `
-                    <tr>
-                        <td><strong>${child.name}</strong></td>
-                        <td>${sub.name}</td>
-                        <td>1st Quarter</td>
-                        <td><strong style="color: #0b2b4a;">${gradeVal}%</strong></td>
-                        <td>${remarks}</td>
-                        <td>
-                            <span style="${statusClass}">
-                                <i class="fas ${isPassed ? 'fa-check-circle' : 'fa-times-circle'}"></i> ${isPassed ? 'Passed' : 'Failed'}
-                            </span>
-                        </td>
-                    </tr>
-                `;
-            });
+        children.forEach(child => {
+            // Find real grades for this child
+            const childGrades = gradesRecords.filter(g => g.student_id === child.id);
+
+            // If authentic grades exist in database
+            if (childGrades.length > 0) {
+                childGrades.forEach(gradeObj => {
+                    const subjectName = gradeObj.subjects?.name || 'Academic Subject';
+                    const subjectCode = gradeObj.subjects?.code || 'CORE';
+                    const quarterStr = gradeObj.quarter 
+                        ? `${gradeObj.quarter}${gradeObj.quarter == 1 ? 'st' : gradeObj.quarter == 2 ? 'nd' : gradeObj.quarter == 3 ? 'rd' : 'th'} Quarter` 
+                        : (gradeObj.subjects?.quarter || '1st Quarter');
+                    
+                    const score = parseFloat(gradeObj.grade) || 0;
+                    const isPassed = score >= 75;
+                    
+                    let descriptor = 'Passed';
+                    let pillClass = 'grade-pass';
+                    if (score >= 98) {
+                        descriptor = 'With Highest Honors';
+                        pillClass = 'grade-highest';
+                    } else if (score >= 95) {
+                        descriptor = 'With High Honors';
+                        pillClass = 'grade-highest';
+                    } else if (score >= 90) {
+                        descriptor = 'With Honors';
+                        pillClass = 'grade-high';
+                    } else if (score >= 85) {
+                        descriptor = 'Very Satisfactory';
+                        pillClass = 'grade-pass';
+                    } else if (score >= 80) {
+                        descriptor = 'Satisfactory';
+                        pillClass = 'grade-pass';
+                    } else if (score >= 75) {
+                        descriptor = 'Fairly Satisfactory';
+                        pillClass = 'grade-pass';
+                    } else {
+                        descriptor = 'Did Not Meet Expectations';
+                        pillClass = 'grade-fail';
+                    }
+
+                    html += `
+                        <tr>
+                            <td><strong>${child.name}</strong></td>
+                            <td>
+                                <div class="subject-cell">
+                                    <span class="subject-name">${subjectName}</span>
+                                    <span class="subject-code"><i class="fas fa-tag"></i> ${subjectCode}</span>
+                                </div>
+                            </td>
+                            <td><span class="quarter-pill">${quarterStr}</span></td>
+                            <td><span class="grade-score-pill ${pillClass}">${score.toFixed(0)}%</span></td>
+                            <td><span class="descriptor-text">${descriptor}</span></td>
+                            <td>
+                                ${isPassed 
+                                    ? '<span class="status-pass-badge"><i class="fas fa-check-circle"></i> Passed</span>' 
+                                    : '<span class="status-fail-badge"><i class="fas fa-times-circle"></i> Failed</span>'}
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
         });
+
+        if (!html) {
+            gradesBody.innerHTML = `
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 36px; color: #94a3b8;">
+                        <i class="fas fa-award" style="font-size: 2rem; margin-bottom: 8px;"></i>
+                        <p>No academic grade records logged yet.</p>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
 
         gradesBody.innerHTML = html;
     }
@@ -440,20 +588,25 @@ import { supabase } from '../../supabase/config.js';
             const initial = child.name.charAt(0).toUpperCase();
             const statusLower = child.status.toLowerCase();
             const isApproved = statusLower === 'enrolled' || statusLower === 'approved';
-            const badgeStyle = isApproved ? 'background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0;' : 'background: #fef3c7; color: #92400e; border: 1px solid #fde68a;';
 
             return `
-                <div class="enrollment-item" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; border-bottom: 1px solid #f1f5f9;">
-                    <div class="enrollment-item-left" style="display: flex; align-items: center; gap: 12px;">
-                        <div class="child-avatar-small" style="width: 40px; height: 40px; border-radius: 50%; background: #0b2b4a; color: #FFD700; display: flex; align-items: center; justify-content: center; font-weight: 700;">${initial}</div>
+                <div class="enrollment-item">
+                    <div class="enrollment-item-left">
+                        <div class="enrollment-avatar">${initial}</div>
                         <div class="enrollment-info">
-                            <h4 style="margin: 0; font-size: 0.95rem; color: #1e293b;">${child.name}</h4>
-                            <span style="font-size: 0.8rem; color: #64748b;">${child.grade_level} • S.Y. ${child.school_year}</span>
+                            <h4>${child.name}</h4>
+                            <div class="enrollment-meta">
+                                <span class="enrollment-meta-item"><i class="fas fa-id-card"></i> LRN: <strong>${child.lrn}</strong></span>
+                                <span class="enrollment-meta-item">•</span>
+                                <span class="enrollment-meta-item"><i class="fas fa-graduation-cap"></i> ${child.grade_level} (${child.strand})</span>
+                                <span class="enrollment-meta-item">•</span>
+                                <span class="enrollment-meta-item"><i class="fas fa-calendar-alt"></i> S.Y. ${child.school_year}</span>
+                            </div>
                         </div>
                     </div>
-                    <div>
-                        <span style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; ${badgeStyle}">
-                            <i class="fas ${isApproved ? 'fa-check-circle' : 'fa-clock'}"></i> ${child.status}
+                    <div class="enrollment-item-right">
+                        <span class="verified-enrolled-pill">
+                            <i class="fas ${isApproved ? 'fa-check-circle' : 'fa-clock'}"></i> Officially ${child.status}
                         </span>
                     </div>
                 </div>
@@ -477,6 +630,23 @@ import { supabase } from '../../supabase/config.js';
                 sidebar.classList.remove('active');
             }
         }
+    });
+
+    // Live attendance listener for real-time dashboard updates
+    window.addEventListener('storage', function(e) {
+        if (!e.key || 
+            e.key === 'hes_latest_attendance_event' || 
+            e.key === 'hes_attendance_records' || 
+            e.key === 'hes_student_attendance' || 
+            e.key.startsWith('hes_qr_scans_') || 
+            e.key.startsWith('hes_student_attendance_')) {
+            console.log('🔄 Live attendance event detected, refreshing parent dashboard...');
+            loadDashboardData();
+        }
+    });
+
+    window.addEventListener('focus', function() {
+        loadDashboardData();
     });
 
     // ============================================

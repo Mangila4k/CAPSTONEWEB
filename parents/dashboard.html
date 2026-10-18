@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -80,13 +80,14 @@
         <main class="main-content">
             <!-- Header -->
             <div class="page-header">
-                <div>
+                <div class="page-header-title">
                     <h1>Parents Dashboard</h1>
-                    <p class="subtitle">Welcome back, <span id="parentName">Parent</span>! Monitoring: <strong
-                            id="dashboardChildName" style="color: #0B4F2E;">Loading student...</strong></p>
+                    <p class="subtitle">Welcome back, <span id="parentName">Parent</span>! Monitoring: <span class="monitoring-pill"><i class="fas fa-user-graduate"></i> <strong id="dashboardChildName">Loading student...</strong></span></p>
                 </div>
-                <div class="date-badge" id="currentDateDisplay">
-                    <i class="fas fa-calendar-alt"></i> Loading date...
+                <div class="header-actions">
+                    <div class="date-badge" id="currentDateDisplay">
+                        <i class="fas fa-calendar-alt"></i> Loading date...
+                    </div>
                 </div>
             </div>
 
@@ -95,37 +96,49 @@
 
             <!-- Quick Stats -->
             <div class="stats-grid">
-                <div class="stat-card">
+                <div class="stat-card stat-card-children">
                     <div class="stat-header">
-                        <h3>Children</h3>
+                        <span class="stat-title">Children</span>
                         <div class="stat-icon"><i class="fas fa-child"></i></div>
                     </div>
                     <div class="stat-number" id="childrenCount">0</div>
-                    <div class="stat-label">Total registered children</div>
+                    <div class="stat-footer">
+                        <span class="stat-label">Total registered children</span>
+                        <span class="stat-badge"><i class="fas fa-users"></i> Linked</span>
+                    </div>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card stat-card-enrolled">
                     <div class="stat-header">
-                        <h3>Enrolled</h3>
+                        <span class="stat-title">Enrolled</span>
                         <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
                     </div>
                     <div class="stat-number" id="enrolledCount">0</div>
-                    <div class="stat-label">Currently enrolled</div>
+                    <div class="stat-footer">
+                        <span class="stat-label">Currently enrolled</span>
+                        <span class="stat-badge status-good"><i class="fas fa-graduation-cap"></i> Active</span>
+                    </div>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card stat-card-grade">
                     <div class="stat-header">
-                        <h3>Average Grade</h3>
+                        <span class="stat-title">Average Grade</span>
                         <div class="stat-icon"><i class="fas fa-star"></i></div>
                     </div>
                     <div class="stat-number" id="avgGrade">0.00%</div>
-                    <div class="stat-label">Overall academic standing</div>
+                    <div class="stat-footer">
+                        <span class="stat-label">Overall academic standing</span>
+                        <span class="stat-badge status-accent"><i class="fas fa-award"></i> Standing</span>
+                    </div>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card stat-card-attendance">
                     <div class="stat-header">
-                        <h3>Attendance Rate</h3>
+                        <span class="stat-title">Attendance Rate</span>
                         <div class="stat-icon"><i class="fas fa-user-check"></i></div>
                     </div>
                     <div class="stat-number" id="attendanceRate">0%</div>
-                    <div class="stat-label">Overall attendance standing</div>
+                    <div class="stat-footer">
+                        <span class="stat-label">Overall attendance standing</span>
+                        <span class="stat-badge status-teal"><i class="fas fa-calendar-check"></i> Verified</span>
+                    </div>
                 </div>
             </div>
 
@@ -143,7 +156,8 @@
 
             <!-- Recent Grades -->
             <div class="section-title">
-                <h2><i class="fas fa-star"></i> Academic Performance</h2>
+                <h2><i class="fas fa-award"></i> Academic Performance</h2>
+                <a href="grades.html" class="section-action-link"><i class="fas fa-chart-line"></i> View Full Grades <i class="fas fa-arrow-right"></i></a>
             </div>
 
             <div class="grades-table-container">
@@ -151,10 +165,10 @@
                     <thead>
                         <tr>
                             <th>Student</th>
-                            <th>Subject</th>
+                            <th>Subject & Code</th>
                             <th>Quarter</th>
-                            <th>Grade</th>
-                            <th>Remarks</th>
+                            <th>Numerical Grade</th>
+                            <th>Descriptive Rating</th>
                             <th>Status</th>
                         </tr>
                     </thead>
@@ -171,6 +185,7 @@
             <!-- Enrollment Status -->
             <div class="section-title">
                 <h2><i class="fas fa-file-signature"></i> Official Enrollment Status</h2>
+                <span class="deped-verified-badge"><i class="fas fa-shield-alt"></i> DepEd Verified Record</span>
             </div>
 
             <div class="enrollment-card">

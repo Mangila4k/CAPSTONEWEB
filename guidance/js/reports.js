@@ -56,6 +56,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     const reportMajorCount = document.getElementById('reportMajorCount');
     const reportResolvedRate = document.getElementById('reportResolvedRate');
     const reportTableBody = document.getElementById('reportTableBody');
+    const matrixSearchInput = document.getElementById('matrixSearchInput');
+    const matrixCategoryFilter = document.getElementById('matrixCategoryFilter');
     const btnExportCSV = document.getElementById('btnExportCSV');
     const btnPrintReport = document.getElementById('btnPrintReport');
     const btnPrintSchoolBondPaper = document.getElementById('btnPrintSchoolBondPaper');
@@ -103,6 +105,14 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     if (sigCounselorName) sigCounselorName.textContent = displayName;
     if (sigSchoolCounselor) sigSchoolCounselor.textContent = displayName;
+
+    // Set Current Date in Date Badge (Mirroring Dashboard)
+    const dateBadge = document.querySelector('.date-badge, #currentDateDisplay, #dateBadge');
+    if (dateBadge) {
+        const now = new Date();
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        dateBadge.innerHTML = `<i class="fas fa-calendar-alt"></i> ${now.toLocaleDateString('en-US', options)}`;
+    }
 
     // ============================================
     // TAB NAVIGATION HANDLERS
@@ -178,6 +188,9 @@ document.addEventListener('DOMContentLoaded', async function() {
         if (reportMajorCount) reportMajorCount.textContent = major;
         if (reportResolvedRate) reportResolvedRate.textContent = `${rate}%`;
 
+        const severityCenterTotal = document.getElementById('severityCenterTotal');
+        if (severityCenterTotal) severityCenterTotal.textContent = total;
+
         // Bond Paper Printable KPIs & Metadata Sync
         if (paperKpiTotal) paperKpiTotal.textContent = total;
         if (paperKpiMinor) paperKpiMinor.textContent = minor;
@@ -191,6 +204,9 @@ document.addEventListener('DOMContentLoaded', async function() {
         const minor = allViolations.filter(v => (v.violation_category || '').toLowerCase() === 'minor').length;
         const major = allViolations.filter(v => (v.violation_category || '').toLowerCase() === 'major').length;
 
+        const severityCenterTotal = document.getElementById('severityCenterTotal');
+        if (severityCenterTotal) severityCenterTotal.textContent = (minor + major);
+
         const severityCtx = document.getElementById('severityChart');
         if (severityCtx) {
             if (severityChartInstance) severityChartInstance.destroy();
@@ -201,8 +217,9 @@ document.addEventListener('DOMContentLoaded', async function() {
                     datasets: [{
                         data: [minor, major],
                         backgroundColor: ['#f59e0b', '#ef4444'],
-                        borderWidth: 2,
-                        borderColor: '#ffffff'
+                        borderWidth: 3,
+                        borderColor: '#ffffff',
+                        hoverOffset: 6
                     }]
                 },
                 options: {
@@ -211,10 +228,23 @@ document.addEventListener('DOMContentLoaded', async function() {
                     plugins: {
                         legend: {
                             position: 'bottom',
-                            labels: { font: { family: 'Inter', size: 12 } }
+                            labels: {
+                                font: { family: 'Inter', size: 12, weight: '600' },
+                                color: '#334155',
+                                padding: 16,
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: '#1B2A4A',
+                            titleFont: { family: 'Inter', size: 13, weight: '700' },
+                            bodyFont: { family: 'Inter', size: 12 },
+                            padding: 10,
+                            cornerRadius: 8
                         }
                     },
-                    cutout: '65%'
+                    cutout: '72%'
                 }
             });
         }
@@ -227,6 +257,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         const offenseCtx = document.getElementById('offenseLevelChart');
         if (offenseCtx) {
             if (offenseChartInstance) offenseChartInstance.destroy();
+            const maxVal = Math.max(off1, off2, off3, off4);
             offenseChartInstance = new Chart(offenseCtx, {
                 type: 'bar',
                 data: {
@@ -235,19 +266,45 @@ document.addEventListener('DOMContentLoaded', async function() {
                         label: 'Number of Incidents',
                         data: [off1, off2, off3, off4],
                         backgroundColor: ['#0284c7', '#f59e0b', '#ea580c', '#ef4444'],
-                        borderRadius: 6
+                        borderRadius: 6,
+                        borderSkipped: false,
+                        maxBarThickness: 38
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { display: false }
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#1B2A4A',
+                            titleFont: { family: 'Inter', size: 13, weight: '700' },
+                            bodyFont: { family: 'Inter', size: 12 },
+                            padding: 10,
+                            cornerRadius: 8
+                        }
                     },
                     scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: {
+                                font: { family: 'Inter', size: 12, weight: '600' },
+                                color: '#475569'
+                            }
+                        },
                         y: {
                             beginAtZero: true,
-                            ticks: { precision: 0 }
+                            suggestedMax: Math.max(2, maxVal + 1),
+                            ticks: {
+                                precision: 0,
+                                font: { family: 'Inter', size: 11 },
+                                color: '#64748b',
+                                stepSize: 1
+                            },
+                            grid: {
+                                color: 'rgba(226, 232, 240, 0.6)',
+                                drawBorder: false
+                            }
                         }
                     }
                 }
@@ -258,33 +315,79 @@ document.addEventListener('DOMContentLoaded', async function() {
     function renderWholeSchoolTable() {
         if (!reportTableBody) return;
 
-        if (allViolations.length === 0) {
+        const query = matrixSearchInput ? matrixSearchInput.value.toLowerCase().trim() : '';
+        const catFilter = matrixCategoryFilter ? matrixCategoryFilter.value : 'all';
+
+        let list = allViolations;
+        if (catFilter !== 'all') {
+            list = list.filter(v => (v.violation_category || '').toLowerCase() === catFilter);
+        }
+        if (query) {
+            list = list.filter(v => {
+                const sName = (v.student_name || '').toLowerCase();
+                const lrn = (v.lrn || '').toLowerCase();
+                const vType = (v.violation_type || v.violation_title || '').toLowerCase();
+                const strand = (v.strand || '').toLowerCase();
+                return sName.includes(query) || lrn.includes(query) || vType.includes(query) || strand.includes(query);
+            });
+        }
+
+        if (list.length === 0) {
             reportTableBody.innerHTML = `
-                <tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 30px;">No violation reports found.</td></tr>
+                <tr>
+                    <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 42px 20px;">
+                        <i class="fas fa-folder-open" style="font-size: 32px; color: #cbd5e1; display: block; margin-bottom: 10px;"></i>
+                        <strong style="color: #334155; font-size: 14px;">No matching discipline records found</strong>
+                        <p style="font-size: 12.5px; margin: 4px 0 0; color: #94a3b8;">Try clearing the search or category filter.</p>
+                    </td>
+                </tr>
             `;
             return;
         }
 
-        reportTableBody.innerHTML = allViolations.map(v => {
+        reportTableBody.innerHTML = list.map(v => {
             const dateStr = v.incident_date ? new Date(v.incident_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A';
             const isMajor = (v.violation_category || '').toLowerCase() === 'major';
             const catBadge = isMajor 
-                ? `<span class="badge badge-major" style="background:#fee2e2;color:#991b1b;padding:3px 8px;border-radius:10px;font-size:11px;font-weight:700;">Major</span>`
-                : `<span class="badge badge-minor" style="background:#fef3c7;color:#92400e;padding:3px 8px;border-radius:10px;font-size:11px;font-weight:700;">Minor</span>`;
+                ? `<span class="badge-cat-major"><i class="fas fa-circle-exclamation"></i> Major</span>`
+                : `<span class="badge-cat-minor"><i class="fas fa-triangle-exclamation"></i> Minor</span>`;
+
+            const rawStatus = (v.status || 'Reported').trim();
+            const statusLow = rawStatus.toLowerCase();
+            let statusBadge = `<span class="badge-status-reported"><i class="fas fa-flag"></i> ${rawStatus}</span>`;
+            if (statusLow.includes('counseling')) {
+                statusBadge = `<span class="badge-status-counseling"><i class="fas fa-calendar-check"></i> ${rawStatus}</span>`;
+            } else if (statusLow.includes('resolve') || statusLow.includes('closed')) {
+                statusBadge = `<span class="badge-status-resolved"><i class="fas fa-circle-check"></i> ${rawStatus}</span>`;
+            } else if (statusLow.includes('progress') || statusLow.includes('investigat')) {
+                statusBadge = `<span class="badge-status-progress"><i class="fas fa-clock"></i> ${rawStatus}</span>`;
+            }
+
+            const initial = ((v.student_name || 'S').trim()[0] || 'S').toUpperCase();
 
             return `
                 <tr>
-                    <td>${dateStr}</td>
-                    <td><strong>${v.student_name}</strong></td>
-                    <td>${v.lrn || 'N/A'}</td>
-                    <td>${v.grade_level || 'Grade 11'} (${v.strand || 'TVL'})</td>
+                    <td>
+                        <div class="date-cell">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>${dateStr}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="student-name-cell">
+                            <span class="avatar-pill">${initial}</span>
+                            <span class="name-text">${v.student_name || 'Learner'}</span>
+                        </div>
+                    </td>
+                    <td><span class="lrn-tag">${v.lrn || 'N/A'}</span></td>
+                    <td><span class="grade-strand-tag">${v.grade_level || 'Grade 11'} (${v.strand || 'TVL'})</span></td>
                     <td>${catBadge}</td>
-                    <td>${v.violation_type || v.violation_title}</td>
-                    <td>${v.action_taken || 'Guidance Counseling'}</td>
-                    <td><span class="badge" style="background:#ecfdf5;color:#065f46;padding:3px 8px;border-radius:10px;font-size:11px;font-weight:700;">${v.status || 'Reported'}</span></td>
+                    <td><strong style="color: #1e293b;">${v.violation_type || v.violation_title || 'Infraction'}</strong></td>
+                    <td style="color: #475569;">${v.action_taken || 'Guidance Counseling'}</td>
+                    <td>${statusBadge}</td>
                     <td style="text-align: right;">
                         <button type="button" class="btn-print-row-student" data-student-id="${v.student_id || ''}" data-student-name="${(v.student_name || '').replace(/"/g, '&quot;')}" data-lrn="${v.lrn || ''}" title="Print official report for this student on bond paper">
-                            <i class="fas fa-print"></i> Print by Student
+                            <i class="fas fa-print"></i> Print
                         </button>
                     </td>
                 </tr>
@@ -798,6 +901,19 @@ document.addEventListener('DOMContentLoaded', async function() {
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+        });
+    }
+
+    // Matrix Table Search & Category Filter Listeners
+    if (matrixSearchInput) {
+        matrixSearchInput.addEventListener('input', () => {
+            renderWholeSchoolTable();
+        });
+    }
+
+    if (matrixCategoryFilter) {
+        matrixCategoryFilter.addEventListener('change', () => {
+            renderWholeSchoolTable();
         });
     }
 

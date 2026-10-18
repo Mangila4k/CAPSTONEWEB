@@ -216,7 +216,9 @@ document.addEventListener('DOMContentLoaded', async function() {
                                 <i class="fas fa-check"></i>
                             </button>
                         ` : `
-                            <span title="Notification is closed" style="color: #10b981; font-size: 13px; padding: 6px;"><i class="fas fa-check-double"></i></span>
+                            <button type="button" class="mark-unread-btn" data-id="${notif.id}" title="Return to unread" style="background: none; border: 1px solid #cbd5e1; border-radius: 6px; padding: 3px 6px; color: #64748b; cursor: pointer; font-size: 11px;">
+                                <i class="fas fa-arrow-rotate-left"></i>
+                            </button>
                         `}
                     </div>
                 </div>
@@ -228,7 +230,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         // Click on entire notification item to OPEN DETAIL MODAL
         notificationList.querySelectorAll('.notif-item').forEach(item => {
             item.addEventListener('click', function(e) {
-                if (e.target.closest('.mark-read-btn')) return;
+                if (e.target.closest('.mark-read-btn') || e.target.closest('.mark-unread-btn')) return;
                 const id = this.dataset.id;
                 openNotificationDetailModal(id);
             });
@@ -240,6 +242,15 @@ document.addEventListener('DOMContentLoaded', async function() {
                 e.stopPropagation();
                 const id = this.dataset.id;
                 markNotificationRead(id);
+            });
+        });
+
+        // Click on return to unread button
+        notificationList.querySelectorAll('.mark-unread-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const id = this.dataset.id;
+                markNotificationUnread(id);
             });
         });
     }
@@ -330,6 +341,29 @@ document.addEventListener('DOMContentLoaded', async function() {
         if (notificationDetailModal) {
             notificationDetailModal.style.display = 'flex';
             notificationDetailModal.classList.add('active');
+
+            const modalToggleUnreadBtn = document.getElementById('modalToggleUnreadBtn');
+            if (modalToggleUnreadBtn) {
+                modalToggleUnreadBtn.innerHTML = '<i class="fas fa-envelope"></i> <span>Mark as Unread</span>';
+                modalToggleUnreadBtn.onclick = async () => {
+                    const wasClosed = Boolean(notif.is_read || notif.read);
+                    if (wasClosed) {
+                        await markNotificationUnread(notif.id);
+                        if (modalNotifStatusBadge) {
+                            modalNotifStatusBadge.innerHTML = '<i class="fas fa-bell"></i> Unread';
+                            modalNotifStatusBadge.className = 'notif-read-status';
+                        }
+                        modalToggleUnreadBtn.innerHTML = '<i class="fas fa-check"></i> <span>Mark as Closed</span>';
+                    } else {
+                        await markNotificationRead(notif.id);
+                        if (modalNotifStatusBadge) {
+                            modalNotifStatusBadge.innerHTML = '<i class="fas fa-check-circle"></i> Closed';
+                            modalNotifStatusBadge.className = 'notif-read-status closed';
+                        }
+                        modalToggleUnreadBtn.innerHTML = '<i class="fas fa-envelope"></i> <span>Mark as Unread</span>';
+                    }
+                };
+            }
         }
     }
 
@@ -338,11 +372,27 @@ document.addEventListener('DOMContentLoaded', async function() {
         const notif = dashboardData.notifications.find(n => String(n.id) === String(id));
         if (notif) {
             notif.is_read = true;
+            notif.read = true;
             renderNotifications();
             try {
                 await supabase.from('notifications').update({ read: true, is_read: true }).eq('id', notif.id);
             } catch (e) {
                 console.warn('Error marking notification read in DB:', e);
+            }
+        }
+    }
+
+    // Mark single notification as unread
+    async function markNotificationUnread(id) {
+        const notif = dashboardData.notifications.find(n => String(n.id) === String(id));
+        if (notif) {
+            notif.is_read = false;
+            notif.read = false;
+            renderNotifications();
+            try {
+                await supabase.from('notifications').update({ read: false, is_read: false }).eq('id', notif.id);
+            } catch (e) {
+                console.warn('Error marking notification unread in DB:', e);
             }
         }
     }
@@ -1016,48 +1066,312 @@ document.addEventListener('DOMContentLoaded', async function() {
         tbody.innerHTML = html;
     }
 
-    // Render all users table
-    function renderUsers() {
-        const tbody = document.getElementById('usersBody');
-        if (!tbody) return;
-        const users = dashboardData.allUsers;
+    // ===== ALL USERS ACTIVITY (BY ROLE) =====
+    let activeUsersRole = 'all';
+    let usersSearchQuery = '';
+    let usersListenersAttached = false;
 
-        if (users.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" class="empty-state" style="text-align: center; padding: 24px; color: #64748b;"><p>No user accounts found in database</p></td></tr>`;
+    const roleDefinitions = {
+        student: {
+            title: 'Students',
+            singular: 'Student',
+            icon: 'fa-user-graduate',
+            colorClass: 'role-student',
+            accentColor: '#2563eb',
+            gradient: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)'
+        },
+        teacher: {
+            title: 'Teachers',
+            singular: 'Teacher',
+            icon: 'fa-chalkboard-user',
+            colorClass: 'role-teacher',
+            accentColor: '#059669',
+            gradient: 'linear-gradient(135deg, #10b981 0%, #047857 100%)'
+        },
+        guidance: {
+            title: 'Guidance Counselors',
+            singular: 'Guidance',
+            icon: 'fa-compass',
+            colorClass: 'role-guidance',
+            accentColor: '#7c3aed',
+            gradient: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)'
+        },
+        admin: {
+            title: 'Administrators',
+            singular: 'Admin',
+            icon: 'fa-shield-alt',
+            colorClass: 'role-admin',
+            accentColor: '#dc2626',
+            gradient: 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)'
+        },
+        registrar: {
+            title: 'Registrars',
+            singular: 'Registrar',
+            icon: 'fa-file-invoice',
+            colorClass: 'role-registrar',
+            accentColor: '#d97706',
+            gradient: 'linear-gradient(135deg, #f59e0b 0%, #b45309 100%)'
+        },
+        parent: {
+            title: 'Parents & Guardians',
+            singular: 'Parent',
+            icon: 'fa-hands-holding-child',
+            colorClass: 'role-parent',
+            accentColor: '#ea580c',
+            gradient: 'linear-gradient(135deg, #f97316 0%, #c2410c 100%)'
+        }
+    };
+
+    const roleOrder = ['student', 'teacher', 'guidance', 'admin', 'registrar', 'parent'];
+
+    function setupUsersRoleListeners() {
+        if (usersListenersAttached) return;
+        usersListenersAttached = true;
+
+        const rolePills = document.querySelectorAll('.role-pill');
+        rolePills.forEach(pill => {
+            pill.addEventListener('click', function() {
+                rolePills.forEach(p => p.classList.remove('active'));
+                this.classList.add('active');
+                activeUsersRole = this.dataset.role || 'all';
+                renderUsers();
+            });
+        });
+
+        const searchInput = document.getElementById('usersSearchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', function(e) {
+                usersSearchQuery = e.target.value;
+                renderUsers();
+            });
+        }
+    }
+
+    function updateRolePillCounts() {
+        const users = dashboardData.allUsers || [];
+        const setPill = (id, count) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = count;
+        };
+
+        setPill('countAllRoles', users.length);
+        setPill('countStudents', users.filter(u => (u.role || '').toLowerCase() === 'student').length);
+        setPill('countTeachers', users.filter(u => (u.role || '').toLowerCase() === 'teacher').length);
+        setPill('countGuidance', users.filter(u => (u.role || '').toLowerCase() === 'guidance').length);
+        setPill('countAdmins', users.filter(u => (u.role || '').toLowerCase() === 'admin').length);
+        setPill('countRegistrar', users.filter(u => (u.role || '').toLowerCase() === 'registrar').length);
+        setPill('countParents', users.filter(u => (u.role || '').toLowerCase() === 'parent').length);
+    }
+
+    // Render users organized by role
+    function renderUsers() {
+        setupUsersRoleListeners();
+        updateRolePillCounts();
+
+        const container = document.getElementById('usersContainer');
+        const countBadge = document.getElementById('usersCount');
+        if (!container) return;
+
+        const allUsers = dashboardData.allUsers || [];
+        if (allUsers.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state" style="text-align: center; padding: 36px 20px; color: #64748b;">
+                    <i class="fas fa-users-slash" style="font-size: 36px; color: #cbd5e1; margin-bottom: 10px;"></i>
+                    <p style="font-weight: 500;">No user accounts found in database</p>
+                </div>
+            `;
+            if (countBadge) countBadge.textContent = '0 users';
             return;
         }
 
-        let html = '';
-        users.forEach(user => {
-            const initial = user.fullname.charAt(0).toUpperCase();
-            const registeredDate = new Date(user.registered_date).toLocaleDateString('en-US', {
-                month: 'short', day: 'numeric', year: 'numeric'
-            });
-            const lastActivity = new Date(user.last_activity).toLocaleString('en-US', {
-                month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit'
-            });
+        // Filter users
+        const q = (usersSearchQuery || '').trim().toLowerCase();
+        const filteredUsers = allUsers.filter(u => {
+            const roleKey = (u.role || '').toLowerCase();
+            const matchesRole = activeUsersRole === 'all' || roleKey === activeUsersRole;
+            if (!matchesRole) return false;
 
-            html += `
+            if (q) {
+                const name = (u.fullname || '').toLowerCase();
+                const email = (u.email || '').toLowerCase();
+                const role = (u.role || '').toLowerCase();
+                return name.includes(q) || email.includes(q) || role.includes(q);
+            }
+            return true;
+        });
+
+        // Update count badge
+        if (countBadge) {
+            if (activeUsersRole === 'all') {
+                countBadge.textContent = q ? `${filteredUsers.length} of ${allUsers.length} users` : `${allUsers.length} users`;
+            } else {
+                const cfg = roleDefinitions[activeUsersRole];
+                const label = cfg ? cfg.title : activeUsersRole;
+                countBadge.textContent = `${filteredUsers.length} ${label}`;
+            }
+        }
+
+        if (filteredUsers.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state" style="text-align: center; padding: 36px 20px; color: #64748b;">
+                    <i class="fas fa-search" style="font-size: 32px; color: #cbd5e1; margin-bottom: 10px;"></i>
+                    <p style="font-weight: 500;">No users found matching "${usersSearchQuery || activeUsersRole}"</p>
+                </div>
+            `;
+            return;
+        }
+
+        const renderUserRow = (user) => {
+            const roleKey = (user.role || '').toLowerCase();
+            const cfg = roleDefinitions[roleKey] || {
+                colorClass: `role-${roleKey}`,
+                gradient: 'linear-gradient(135deg, #1B2A4A, #334155)',
+                accentColor: '#1B2A4A'
+            };
+            const initial = (user.fullname || 'U').charAt(0).toUpperCase();
+            const registeredDate = user.registered_date ? new Date(user.registered_date).toLocaleDateString('en-US', {
+                month: 'short', day: 'numeric', year: 'numeric'
+            }) : '—';
+            const lastActivity = user.last_activity ? new Date(user.last_activity).toLocaleString('en-US', {
+                month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit'
+            }) : '—';
+            const notifCount = user.notification_count || 0;
+
+            return `
                 <tr>
                     <td>
                         <div class="user-info">
-                            <div class="user-avatar">${initial}</div>
+                            <div class="user-avatar" style="background: ${cfg.gradient}; color: #fff; font-weight: 700;">${initial}</div>
                             <div class="user-details">
                                 <strong>${user.fullname}</strong>
                                 <small>${user.email}</small>
                             </div>
                         </div>
                     </td>
-                    <td><span class="role-badge ${(user.role || '').toLowerCase()}">${user.role}</span></td>
-                    <td><span class="status-badge status-${user.status}">${user.status}</span></td>
+                    <td><span class="role-badge ${cfg.colorClass || ('role-' + roleKey)}">${user.role}</span></td>
+                    <td><span class="status-badge status-${user.status || 'active'}">${user.status || 'active'}</span></td>
                     <td>${registeredDate}</td>
-                    <td><span class="notif-count-badge">${user.notification_count} notifications</span></td>
+                    <td><span class="notif-count-badge">${notifCount} ${notifCount === 1 ? 'notification' : 'notifications'}</span></td>
                     <td>${lastActivity}</td>
                 </tr>
             `;
+        };
+
+        // Specific Role Selected
+        if (activeUsersRole !== 'all') {
+            const cfg = roleDefinitions[activeUsersRole] || {
+                title: activeUsersRole.charAt(0).toUpperCase() + activeUsersRole.slice(1),
+                icon: 'fa-user',
+                gradient: 'linear-gradient(135deg, #1B2A4A, #334155)',
+                accentColor: '#1B2A4A'
+            };
+
+            container.innerHTML = `
+                <div class="role-group-section">
+                    <div class="role-group-header">
+                        <div class="role-group-title-wrap">
+                            <div class="role-group-icon" style="background: ${cfg.gradient};">
+                                <i class="fas ${cfg.icon}"></i>
+                            </div>
+                            <h4 class="role-group-name">${cfg.title}</h4>
+                            <span class="role-group-count">${filteredUsers.length} ${filteredUsers.length === 1 ? 'user' : 'users'}</span>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                    <th>Registered</th>
+                                    <th>Notifications</th>
+                                    <th>Last Activity</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${filteredUsers.map(renderUserRow).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
+        // VIEWING ALL ROLES: Grouped by Role
+        const groupedMap = new Map();
+        roleOrder.forEach(r => groupedMap.set(r, []));
+
+        filteredUsers.forEach(u => {
+            const r = (u.role || 'other').toLowerCase();
+            if (!groupedMap.has(r)) {
+                groupedMap.set(r, []);
+            }
+            groupedMap.get(r).push(u);
         });
 
-        tbody.innerHTML = html;
+        let html = '';
+        for (const [roleKey, groupUsers] of groupedMap.entries()) {
+            if (groupUsers.length === 0) continue;
+
+            const cfg = roleDefinitions[roleKey] || {
+                title: roleKey.charAt(0).toUpperCase() + roleKey.slice(1) + 's',
+                icon: 'fa-users',
+                gradient: 'linear-gradient(135deg, #1B2A4A, #334155)',
+                accentColor: '#1B2A4A'
+            };
+
+            html += `
+                <div class="role-group-section">
+                    <div class="role-group-header">
+                        <div class="role-group-title-wrap">
+                            <div class="role-group-icon" style="background: ${cfg.gradient};">
+                                <i class="fas ${cfg.icon}"></i>
+                            </div>
+                            <h4 class="role-group-name">${cfg.title}</h4>
+                            <span class="role-group-count">${groupUsers.length} ${groupUsers.length === 1 ? 'user' : 'users'}</span>
+                        </div>
+                        <button type="button" class="btn-focus-role" data-target-role="${roleKey}" style="background: none; border: none; font-size: 12px; color: ${cfg.accentColor}; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                            <span>Filter Only ${cfg.title}</span> <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                    <th>Registered</th>
+                                    <th>Notifications</th>
+                                    <th>Last Activity</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${groupUsers.map(renderUserRow).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        container.innerHTML = html;
+
+        // Attach "Filter Only [Role]" click handlers
+        container.querySelectorAll('.btn-focus-role').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const target = this.dataset.targetRole;
+                if (target) {
+                    activeUsersRole = target;
+                    document.querySelectorAll('.role-pill').forEach(p => {
+                        p.classList.toggle('active', p.dataset.role === target);
+                    });
+                    renderUsers();
+                }
+            });
+        });
     }
 
     // Initialize enrollment chart

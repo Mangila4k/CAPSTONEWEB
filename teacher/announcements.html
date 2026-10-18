@@ -67,11 +67,11 @@
             <div class="sidebar-footer">
                 <div class="teacher-profile">
                     <div class="teacher-avatar">
-                        <div class="avatar-initial" id="teacherInitial">RQ</div>
+                        <div class="avatar-initial" id="teacherInitial">--</div>
                         <div class="online-dot"></div>
                     </div>
                     <div class="teacher-info">
-                        <div class="teacher-name" id="teacherName">Ryan Quiroga</div>
+                        <div class="teacher-name" id="teacherName">Teacher</div>
                         <div class="teacher-role"><i class="fas fa-chalkboard-user"></i> Teacher</div>
                     </div>
                 </div>
@@ -84,15 +84,24 @@
             <div class="page-header">
                 <div class="header-left">
                     <h1><i class="fas fa-bullhorn" style="color: var(--accent);"></i> Announcements & Meetings</h1>
-                    <p>Filter announcements, faculty meetings, and parent-teacher conferences</p>
+                    <p>Official bulletins from Admin & Registrar, plus homeroom parent-teacher conferences and student advisories</p>
                 </div>
                 <div class="header-actions">
                     <button class="btn-post-announcement" id="openPostModalBtn">
-                        <i class="fas fa-plus-circle"></i> Post Advisory Notice
+                        <i class="fas fa-calendar-plus"></i> Post Homeroom / Child Notice
                     </button>
                     <div class="date-badge" id="currentDateBadge">
                         <i class="fas fa-calendar-alt"></i> Loading...
                     </div>
+                </div>
+            </div>
+
+            <!-- Institutional Announcement Policy Banner -->
+            <div class="policy-notice-banner"
+                style="background: rgba(37,99,235,0.06); border: 1px solid rgba(37,99,235,0.22); border-radius: 10px; padding: 12px 18px; margin-bottom: 22px; display: flex; align-items: center; gap: 14px;">
+                <i class="fas fa-shield-halved" style="color: #2563eb; font-size: 1.4rem; flex-shrink: 0;"></i>
+                <div style="font-size: 0.86rem; color: #1e293b; line-height: 1.45;">
+                    <strong style="color: #0b2b4a;">Institutional Announcement Policy:</strong> General and campus-wide announcements are officially posted by the <strong>School Admin</strong> or <strong>Registrar's Office</strong>. Faculty members may only schedule <strong>Homeroom Parent-Teacher Meetings</strong> or post direct <strong>Child / Student Consultations</strong> for their assigned learners.
                 </div>
             </div>
 
@@ -108,35 +117,36 @@
                     </div>
                 </div>
 
-                <div class="anc-stat-card" id="cardTeacherMeetingsFilter" style="cursor: pointer;"
-                    title="Click to view Teacher Meetings">
+                <div class="anc-stat-card" id="cardAdminNoticesFilter" style="cursor: pointer;"
+                    title="Click to view Official Admin / Registrar Notices">
                     <div class="stat-icon-wrapper bg-purple">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="stat-meta">
+                        <span class="stat-count" id="statAdminNotices">0</span>
+                        <span class="stat-title">Admin & Registrar Bulletins</span>
+                    </div>
+                </div>
+
+                <div class="anc-stat-card" id="cardHomeroomMeetingsFilter" style="cursor: pointer;"
+                    title="Click to view Homeroom Parent-Teacher Meetings">
+                    <div class="stat-icon-wrapper bg-emerald">
                         <i class="fas fa-chalkboard-teacher"></i>
                     </div>
                     <div class="stat-meta">
-                        <span class="stat-count" id="statFacultyMeetings">0</span>
-                        <span class="stat-title">Faculty Meetings</span>
+                        <span class="stat-count" id="statHomeroomMeetings">0</span>
+                        <span class="stat-title">Homeroom PTC Meetings</span>
                     </div>
                 </div>
 
-                <div class="anc-stat-card" id="cardPtaMeetingsFilter" style="cursor: pointer;"
-                    title="Click to view Parent-Teacher Meetings">
-                    <div class="stat-icon-wrapper bg-emerald">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <div class="stat-meta">
-                        <span class="stat-count" id="statPtaMeetings">0</span>
-                        <span class="stat-title">Parent-Teacher (PTA)</span>
-                    </div>
-                </div>
-
-                <div class="anc-stat-card">
+                <div class="anc-stat-card" id="cardChildNoticesFilter" style="cursor: pointer;"
+                    title="Click to view Child / Student Advisories">
                     <div class="stat-icon-wrapper bg-amber">
-                        <i class="fas fa-check-double"></i>
+                        <i class="fas fa-user-graduate"></i>
                     </div>
                     <div class="stat-meta">
-                        <span class="stat-count" id="statPendingRsvps">0</span>
-                        <span class="stat-title">Pending RSVPs</span>
+                        <span class="stat-count" id="statChildNotices">0</span>
+                        <span class="stat-title">Child / Student Advisories</span>
                     </div>
                 </div>
             </div>
@@ -147,14 +157,14 @@
                     <button class="tab-btn active" data-filter="all">
                         <i class="fas fa-border-all"></i> All Notices
                     </button>
-                    <button class="tab-btn" data-filter="teacher_meetings">
-                        <i class="fas fa-chalkboard-teacher"></i> Teacher / Faculty Meetings
+                    <button class="tab-btn" data-filter="admin_registrar">
+                        <i class="fas fa-shield-alt"></i> Admin & Registrar Official
                     </button>
-                    <button class="tab-btn" data-filter="parent_meetings">
-                        <i class="fas fa-people-arrows"></i> Parent-Teacher (PTA)
+                    <button class="tab-btn" data-filter="homeroom_meeting">
+                        <i class="fas fa-chalkboard-teacher"></i> Homeroom Meetings (PTC)
                     </button>
-                    <button class="tab-btn" data-filter="general">
-                        <i class="fas fa-info-circle"></i> General Updates
+                    <button class="tab-btn" data-filter="child_consultation">
+                        <i class="fas fa-user-graduate"></i> Child / Student Advisories
                     </button>
                     <button class="tab-btn" data-filter="urgent">
                         <i class="fas fa-exclamation-triangle"></i> Urgent
@@ -164,15 +174,14 @@
                 <div class="filter-controls">
                     <div class="search-input-wrap">
                         <i class="fas fa-search"></i>
-                        <input type="text" id="announcementSearch" placeholder="Search meetings, agenda, venue...">
+                        <input type="text" id="announcementSearch" placeholder="Search notices, section, child, venue...">
                     </div>
 
-                    <select id="meetingTypeFilter" class="custom-select" title="Choose meeting type">
-                        <option value="all">All Meeting Types</option>
-                        <option value="faculty_meeting">Faculty & Staff Meeting</option>
-                        <option value="pta_assembly">PTA General Assembly</option>
-                        <option value="homeroom_meeting">Homeroom Parent-Teacher</option>
-                        <option value="general_meeting">General Meeting</option>
+                    <select id="meetingTypeFilter" class="custom-select" title="Choose notice type">
+                        <option value="all">All Notice Types</option>
+                        <option value="admin_registrar">Admin & Registrar Bulletins</option>
+                        <option value="homeroom_meeting">Homeroom Parent-Teacher (PTC)</option>
+                        <option value="child_consultation">Child / Student Consultation</option>
                     </select>
 
                     <select id="rsvpStatusFilter" class="custom-select" title="Filter by your RSVP">
@@ -203,47 +212,55 @@
         <div class="modal-container">
             <div class="modal-header">
                 <div class="modal-title">
-                    <i class="fas fa-bullhorn text-accent"></i>
-                    <h3>Post Advisory Announcement / Meeting Notice</h3>
+                    <i class="fas fa-chalkboard-user text-accent"></i>
+                    <h3>Post Homeroom Meeting / Child Consultation Notice</h3>
                 </div>
                 <button class="modal-close" id="closePostModalBtn">&times;</button>
             </div>
             <form id="postAnnouncementForm">
                 <div class="modal-body">
-                    <div class="form-group">
-                        <label for="postTitle">Announcement / Meeting Title <span class="req">*</span></label>
-                        <input type="text" id="postTitle" class="form-input"
-                            placeholder="e.g. Homeroom Parent-Teacher Consultation (Grade 7 - Diamond)" required>
+                    <!-- Policy notice inside modal -->
+                    <div
+                        style="background: #f8fafc; border-left: 4px solid #2563eb; padding: 10px 14px; border-radius: 6px; margin-bottom: 16px; font-size: 12.5px; color: #475569; line-height: 1.45;">
+                        <strong style="color: #0b2b4a;"><i class="fas fa-info-circle"></i> Faculty Announcement Policy:</strong> General school-wide announcements can only be posted by the Admin or Registrar. Faculty members may strictly schedule <strong>Homeroom Meetings</strong> or post advisories regarding their <strong>advised child / student</strong>.
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="postTargetAudience">Target Audience <span class="req">*</span></label>
-                            <select id="postTargetAudience" class="form-input" required>
-                                <option value="parents">Class Parents / Guardians</option>
-                                <option value="parent_teacher_meeting">Parent-Teacher Meeting (Joint)</option>
-                                <option value="teachers">Fellow Faculty / Department</option>
-                                <option value="all">Entire School</option>
+                            <label for="postMeetingType">Notice Category <span class="req">*</span></label>
+                            <select id="postMeetingType" class="form-input" required>
+                                <option value="homeroom_meeting" selected>👥 Homeroom Parent-Teacher Meeting (PTC)</option>
+                                <option value="child_consultation">🎓 Student / Child Academic & Attendance Advisory</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="postMeetingType">Meeting Type</label>
-                            <select id="postMeetingType" class="form-input">
-                                <option value="none">General Notice (No Meeting)</option>
-                                <option value="homeroom_meeting" selected>Homeroom Parent-Teacher Conference</option>
-                                <option value="faculty_meeting">Faculty / Departmental Meeting</option>
-                                <option value="pta_assembly">PTA General Assembly</option>
+                            <label for="postTargetAudience">Target Audience <span class="req">*</span></label>
+                            <select id="postTargetAudience" class="form-input" required>
+                                <option value="parents" selected>Class Parents & Guardians (Homeroom)</option>
+                                <option value="parent_teacher_meeting">Specific Student / Child's Parents</option>
                             </select>
                         </div>
                     </div>
 
+                    <div class="form-group">
+                        <label for="postSectionChild"><i class="fas fa-users-rectangle"></i> Advised Homeroom Section or Child's Name <span class="req">*</span></label>
+                        <input type="text" id="postSectionChild" class="form-input"
+                            placeholder="e.g. Grade 11 - Almario (or Student: April Sellar)" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="postTitle">Meeting / Consultation Title <span class="req">*</span></label>
+                        <input type="text" id="postTitle" class="form-input"
+                            placeholder="e.g. 1st Quarter Homeroom Parent-Teacher Consultation (Grade 11 - Almario)" required>
+                    </div>
+
                     <div class="form-row meeting-fields" id="meetingFieldsContainer">
                         <div class="form-group">
-                            <label for="postMeetingDate"><i class="fas fa-calendar-alt"></i> Meeting Date</label>
+                            <label for="postMeetingDate"><i class="fas fa-calendar-alt"></i> Meeting / Consultation Date</label>
                             <input type="date" id="postMeetingDate" class="form-input">
                         </div>
                         <div class="form-group">
-                            <label for="postMeetingTime"><i class="fas fa-clock"></i> Meeting Time</label>
+                            <label for="postMeetingTime"><i class="fas fa-clock"></i> Scheduled Time</label>
                             <input type="text" id="postMeetingTime" class="form-input"
                                 placeholder="e.g. 01:00 PM - 03:00 PM">
                         </div>
@@ -253,20 +270,19 @@
                         <div class="form-group">
                             <label for="postVenue"><i class="fas fa-map-marker-alt"></i> Venue / Room</label>
                             <input type="text" id="postVenue" class="form-input"
-                                placeholder="e.g. Room 204 / Campus Auditorium">
+                                placeholder="e.g. Room 201 / Advisory Classroom">
                         </div>
                         <div class="form-group">
-                            <label for="postMeetingLink"><i class="fas fa-video"></i> Google Meet / Online Link
-                                (Optional)</label>
+                            <label for="postMeetingLink"><i class="fas fa-video"></i> Google Meet / Online Link (Optional)</label>
                             <input type="url" id="postMeetingLink" class="form-input"
                                 placeholder="https://meet.google.com/xxx-xxxx-xxx">
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label for="postContent">Description / Details <span class="req">*</span></label>
+                        <label for="postContent">Meeting Agenda / Consultation Details <span class="req">*</span></label>
                         <textarea id="postContent" class="form-input" rows="4"
-                            placeholder="Enter detailed agenda points, reminders, and preparation requirements..."
+                            placeholder="Enter detailed agenda points, reminders, student progress discussion topics, or consultation guidelines..."
                             required></textarea>
                     </div>
 
@@ -282,7 +298,7 @@
                         <div class="form-group checkbox-group">
                             <label class="custom-checkbox-label">
                                 <input type="checkbox" id="postRequiresRsvp" checked>
-                                <span>Require RSVP / Attendance Confirmation</span>
+                                <span>Require Parent RSVP / Confirmation</span>
                             </label>
                         </div>
                     </div>

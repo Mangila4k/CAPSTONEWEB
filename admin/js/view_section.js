@@ -88,8 +88,9 @@ document.addEventListener('DOMContentLoaded', async function() {
             if (secError || !section) throw new Error('Section not found');
             sectionData = section;
 
-            // Resolve adviser name
-            let adviserName = 'Not Assigned';
+            // Resolve adviser name automatically
+            let adviserName = (section.adviser_name || '').trim();
+
             if (section.adviser_id) {
                 // Check teachers table
                 const { data: teacher } = await supabase
@@ -103,10 +104,67 @@ document.addEventListener('DOMContentLoaded', async function() {
                     .maybeSingle();
 
                 if (teacher && teacher.users) {
-                    adviserName = `${teacher.users.first_name || ''} ${teacher.users.last_name || ''}`.trim() || teacher.users.email;
+                    const fullName = `${teacher.users.first_name || ''} ${teacher.users.last_name || ''}`.trim() || teacher.users.email;
+                    if (fullName) adviserName = fullName;
+                }
+            } else if (adviserName && adviserName.toLowerCase() !== 'not assigned') {
+                // If section has adviser_name stored (e.g., "Mrs. Tapasao"), try to auto-match and link to teachers/users
+                try {
+                    const cleanedSearch = adviserName.replace(/^(mr\.|mrs\.|ms\.|dr\.|prof\.)\s*/i, '').trim().toLowerCase();
+                    if (cleanedSearch.length >= 2) {
+                        const { data: allTeachers } = await supabase
+                            .from('teachers')
+                            .select(`
+                                id,
+                                user_id,
+                                users:user_id (first_name, last_name, email)
+                            `);
+
+                        if (allTeachers && allTeachers.length > 0) {
+                            const matched = allTeachers.find(t => {
+                                if (!t.users) return false;
+                                const fName = (t.users.first_name || '').toLowerCase();
+                                const lName = (t.users.last_name || '').toLowerCase();
+                                const fullName = `${fName} ${lName}`.trim();
+                                return (lName && (lName.includes(cleanedSearch) || cleanedSearch.includes(lName))) ||
+                                       (fullName && (fullName.includes(cleanedSearch) || cleanedSearch.includes(fullName)));
+                            });
+
+                            if (matched) {
+                                // Auto-link adviser_id in background
+                                supabase
+                                    .from('sections')
+                                    .update({ adviser_id: matched.id })
+                                    .eq('id', section.id)
+                                    .then(() => console.log('Auto-linked section adviser_id successfully'))
+                                    .catch(err => console.warn('Could not auto-update section adviser_id:', err));
+
+                                if (matched.users) {
+                                    const matchedFullName = `${matched.users.first_name || ''} ${matched.users.last_name || ''}`.trim();
+                                    if (matchedFullName) {
+                                        const honorificMatch = adviserName.match(/^(mr\.|mrs\.|ms\.|dr\.|prof\.)\s*/i);
+                                        const honorific = honorificMatch ? honorificMatch[0] : '';
+                                        adviserName = honorific ? `${honorific}${matchedFullName}` : matchedFullName;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch (autoErr) {
+                    console.warn('Teacher auto-match warning:', autoErr);
                 }
             }
+
+            if (!adviserName) {
+                adviserName = 'Not Assigned';
+            }
             sectionData.adviser_name = adviserName;
+
+            // Link edit button if present
+            const editBtn = document.getElementById('editSectionBtn');
+            if (editBtn && section.id) {
+                editBtn.href = `sections.html?edit=${section.id}`;
+            }
 
             // 2. Fetch Enrolled Students
             const { data: students, error: stuError } = await supabase
@@ -155,7 +213,15 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         if (sectionTitle) sectionTitle.textContent = sectionData.name || 'Section';
         if (sectionGrade) sectionGrade.textContent = sectionData.grade_level || 'Grade Level';
-        if (sectionAdviser) sectionAdviser.textContent = sectionData.adviser_name || 'Not Assigned';
+        
+        if (sectionAdviser) {
+            const adv = (sectionData.adviser_name || '').trim();
+            if (adv && adv.toLowerCase() !== 'not assigned' && adv !== '—') {
+                sectionAdviser.innerHTML = `<span style="font-weight: 700; color: #1e3a8a;">${adv}</span>`;
+            } else {
+                sectionAdviser.innerHTML = `<span style="color: #94a3b8; font-style: italic;">Not Assigned</span>`;
+            }
+        }
         
         const totalStu = enrolledStudents.length;
         const totalSub = sectionSchedules.length;

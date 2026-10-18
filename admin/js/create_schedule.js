@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             sectionData = sec;
 
             // Resolve adviser
-            let adviserName = 'Not Assigned';
+            let adviserName = (sec.adviser_name || '').trim();
             if (sec.adviser_id) {
                 const { data: tData } = await supabase
                     .from('teachers')
@@ -113,8 +113,12 @@ document.addEventListener('DOMContentLoaded', async function() {
                     .maybeSingle();
 
                 if (tData && tData.users) {
-                    adviserName = `${tData.users.first_name || ''} ${tData.users.last_name || ''}`.trim() || tData.users.email;
+                    const resolved = `${tData.users.first_name || ''} ${tData.users.last_name || ''}`.trim() || tData.users.email;
+                    if (resolved) adviserName = resolved;
                 }
+            }
+            if (!adviserName) {
+                adviserName = 'Not Assigned';
             }
             sectionData.adviser_name = adviserName;
 

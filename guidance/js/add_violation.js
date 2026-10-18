@@ -40,6 +40,11 @@ document.addEventListener('DOMContentLoaded', async function() {
     const studentLRN = document.getElementById('studentLRN');
     const studentGrade = document.getElementById('studentGrade');
     const studentStrand = document.getElementById('studentStrand');
+    const studentSection = document.getElementById('studentSection');
+    const studentAdviser = document.getElementById('studentAdviser');
+    const btnAttachAdviserAsReporter = document.getElementById('btnAttachAdviserAsReporter');
+    const teacherSelector = document.getElementById('teacherSelector');
+    const reporterId = document.getElementById('reporterId');
     const violationCategory = document.getElementById('violationCategory');
     const violationType = document.getElementById('violationType');
     const offenseLevel = document.getElementById('offenseLevel');
@@ -64,6 +69,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (incidentDate) incidentDate.value = new Date().toISOString().split('T')[0];
 
     let studentsList = [];
+    let sectionsList = [];
+    let teachersList = [];
 
     const minorOptions = [
         'Dress Code / Improper Uniform / Haircut',
@@ -120,56 +127,187 @@ document.addEventListener('DOMContentLoaded', async function() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // 2. Load Students from Supabase
+    // 2. Load Students, Sections, and Teachers from Supabase
     async function loadStudents() {
         try {
-            const { data, error } = await supabase
-                .from('students')
-                .select('*')
-                .order('last_name', { ascending: true });
+            // Fetch students, sections, and teachers concurrently
+            const [studentsRes, sectionsRes, teachersRes] = await Promise.all([
+                supabase.from('students').select('*').order('last_name', { ascending: true }),
+                supabase.from('sections').select('*'),
+                supabase.from('users').select('id, first_name, last_name, email').eq('role', 'teacher')
+            ]);
 
-            if (error) throw error;
-            studentsList = data || [];
+            studentsList = studentsRes.data || [];
+            sectionsList = sectionsRes.data || [];
+            teachersList = teachersRes.data || [];
 
+            // Map each student's section name and adviser name
+            studentsList.forEach(s => {
+                const sec = sectionsList.find(secItem => secItem.id === s.section_id);
+                s.sectionName = sec ? sec.name : (s.section || '');
+                s.adviserName = sec ? (sec.adviser_name || '') : '';
+                s.adviserId = sec ? (sec.adviser_id || '') : '';
+            });
+
+            // Populate Student Directory Dropdown
             if (studentsList.length === 0) {
                 studentSelect.innerHTML = `<option value="">No enrolled students found</option>`;
-                return;
+            } else {
+                studentSelect.innerHTML = `
+                    <option value="">-- Choose Student from Directory (${studentsList.length} students) --</option>
+                    ${studentsList.map(s => {
+                        const name = `${s.last_name || ''}, ${s.first_name || ''}`.trim() || 'Unnamed';
+                        const gradeStr = s.grade_level || 'Grade 11';
+                        const secStr = s.sectionName ? ` · ${s.sectionName}` : '';
+                        const strandStr = s.strand ? ` (${s.strand})` : '';
+                        return `<option value="${s.id}">${name} (LRN: ${s.lrn || 'N/A'}) - ${gradeStr}${secStr}${strandStr}</option>`;
+                    }).join('')}
+                `;
             }
 
-            studentSelect.innerHTML = `
-                <option value="">-- Choose Student from Directory (${studentsList.length} students) --</option>
-                ${studentsList.map(s => {
-                    const name = `${s.last_name || ''}, ${s.first_name || ''}`.trim() || 'Unnamed';
-                    const gradeStr = s.grade_level || 'Grade 11';
-                    const strandStr = s.strand || 'TVL';
-                    return `<option value="${s.id}">${name} (LRN: ${s.lrn || 'N/A'}) - ${gradeStr} ${strandStr}</option>`;
-                }).join('')}
-            `;
+            // Populate Teacher Selector Dropdown
+            populateTeacherSelector();
 
-            // Check URL query parameters for pre-selected student
+            // Check URL query parameters for pre-selected student or reporting teacher
             const urlParams = new URLSearchParams(window.location.search);
             const preStudentId = urlParams.get('student_id');
+            const preTeacherName = urlParams.get('teacher_name') || urlParams.get('reported_by');
+            const preRole = urlParams.get('role');
+            const preTeacherId = urlParams.get('teacher_id');
+
             if (preStudentId) {
                 studentSelect.value = preStudentId;
                 handleStudentChange(preStudentId);
             }
 
+            if (preTeacherName) {
+                if (reportedByName) reportedByName.value = preTeacherName;
+                if (reporterRole) reporterRole.value = preRole || 'Teacher';
+                if (reporterId && preTeacherId) reporterId.value = preTeacherId;
+                if (teacherSelector) {
+                    for (const opt of teacherSelector.options) {
+                        if (opt.dataset && opt.dataset.name && opt.dataset.name.toLowerCase() === preTeacherName.toLowerCase()) {
+                            opt.selected = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
         } catch (err) {
-            console.error('Error loading students:', err);
-            showAlert('Failed to load students directory: ' + err.message, 'error');
+            console.error('Error loading directory data:', err);
+            showAlert('Failed to load students and faculty directory: ' + err.message, 'error');
         }
+    }
+
+    function populateTeacherSelector() {
+        if (!teacherSelector) return;
+
+        let optionsHtml = `<option value="">-- Choose Teacher or Faculty Member to Attach --</option>`;
+
+        // 1. Registered Teachers from Users
+        if (teachersList.length > 0) {
+            optionsHtml += `<optgroup label="Registered Teachers & Faculty">`;
+            teachersList.forEach(t => {
+                const tName = `${t.first_name || ''} ${t.last_name || ''}`.trim() || t.email;
+                optionsHtml += `<option value="user_${t.id}" data-name="${tName}" data-id="${t.id}" data-role="Teacher">👩‍🏫 ${tName} (Faculty)</option>`;
+            });
+            optionsHtml += `</optgroup>`;
+        }
+
+        // 2. Section Advisers from Sections
+        const uniqueAdvisers = [];
+        sectionsList.forEach(sec => {
+            if (sec.adviser_name && !uniqueAdvisers.some(a => a.name.toLowerCase() === sec.adviser_name.toLowerCase())) {
+                uniqueAdvisers.push({
+                    name: sec.adviser_name,
+                    section: sec.name,
+                    grade: sec.grade_level,
+                    id: sec.adviser_id || ''
+                });
+            }
+        });
+
+        if (uniqueAdvisers.length > 0) {
+            optionsHtml += `<optgroup label="Class Advisers (By Section)">`;
+            uniqueAdvisers.forEach(adv => {
+                optionsHtml += `<option value="adviser_${adv.name}" data-name="${adv.name}" data-id="${adv.id}" data-role="Adviser">📋 ${adv.name} (Adviser - ${adv.section})</option>`;
+            });
+            optionsHtml += `</optgroup>`;
+        }
+
+        // 3. Guidance Office
+        optionsHtml += `
+            <optgroup label="Guidance Office">
+                <option value="guidance_self" data-name="${displayName}" data-role="Guidance Counselor" selected>🛡️ ${displayName} (Guidance Counselor)</option>
+            </optgroup>
+            <optgroup label="Other">
+                <option value="custom" data-role="Staff">✏️ Other / Type Custom Name</option>
+            </optgroup>
+        `;
+
+        teacherSelector.innerHTML = optionsHtml;
+    }
+
+    // Teacher Selector Event Binding
+    if (teacherSelector) {
+        teacherSelector.addEventListener('change', function() {
+            const selectedOpt = teacherSelector.options[teacherSelector.selectedIndex];
+            if (!selectedOpt) return;
+
+            if (selectedOpt.value === 'custom') {
+                if (reportedByName) {
+                    reportedByName.value = '';
+                    reportedByName.focus();
+                }
+                if (reporterRole) reporterRole.value = 'Teacher';
+                if (reporterId) reporterId.value = '';
+            } else if (selectedOpt.dataset && selectedOpt.dataset.name) {
+                if (reportedByName) reportedByName.value = selectedOpt.dataset.name;
+                if (reporterRole) reporterRole.value = selectedOpt.dataset.role || 'Teacher';
+                if (reporterId) reporterId.value = selectedOpt.dataset.id || '';
+            }
+        });
     }
 
     function handleStudentChange(studentId) {
         const student = studentsList.find(s => s.id === studentId);
         if (student) {
-            studentLRN.value = student.lrn || 'N/A';
-            studentGrade.value = student.grade_level || 'Grade 11';
-            studentStrand.value = student.strand || 'TVL-ICT';
+            if (studentLRN) studentLRN.value = student.lrn || 'N/A';
+            if (studentGrade) studentGrade.value = student.grade_level || 'Grade 11';
+            if (studentStrand) studentStrand.value = student.strand || 'TVL-ICT';
+            if (studentSection) studentSection.value = student.sectionName || 'General';
+            if (studentAdviser) studentAdviser.value = student.adviserName || 'Not Assigned';
+
+            // Show quick button to attach adviser if adviser exists
+            if (btnAttachAdviserAsReporter) {
+                if (student.adviserName) {
+                    btnAttachAdviserAsReporter.style.display = 'inline-flex';
+                    btnAttachAdviserAsReporter.innerHTML = `<i class="fas fa-paperclip"></i> Attach ${student.adviserName}`;
+                    btnAttachAdviserAsReporter.onclick = () => {
+                        if (reportedByName) reportedByName.value = student.adviserName;
+                        if (reporterRole) reporterRole.value = 'Adviser';
+                        if (reporterId) reporterId.value = student.adviserId || '';
+                        if (teacherSelector) {
+                            for (const opt of teacherSelector.options) {
+                                if (opt.dataset && opt.dataset.name && opt.dataset.name.toLowerCase() === student.adviserName.toLowerCase()) {
+                                    opt.selected = true;
+                                    break;
+                                }
+                            }
+                        }
+                    };
+                } else {
+                    btnAttachAdviserAsReporter.style.display = 'none';
+                }
+            }
         } else {
-            studentLRN.value = '';
-            studentGrade.value = '';
-            studentStrand.value = '';
+            if (studentLRN) studentLRN.value = '';
+            if (studentGrade) studentGrade.value = '';
+            if (studentStrand) studentStrand.value = '';
+            if (studentSection) studentSection.value = '';
+            if (studentAdviser) studentAdviser.value = '';
+            if (btnAttachAdviserAsReporter) btnAttachAdviserAsReporter.style.display = 'none';
         }
     }
 
@@ -201,18 +339,22 @@ document.addEventListener('DOMContentLoaded', async function() {
             const locVal = incidentLocation.value;
             const descVal = incidentDescription.value.trim();
             const witVal = witnesses.value.trim();
-            const repName = reportedByName.value.trim();
-            const repRole = reporterRole.value;
+            const repName = (reportedByName.value || '').trim() || displayName;
+            const repRole = reporterRole.value || 'Teacher';
+            const repId = reporterId ? reporterId.value : null;
             const actTaken = actionTaken.value;
             const sancDet = sanctionDetails.value.trim();
             const isParentNotified = notifyParentCheck.checked;
             const shouldAutoSchedule = autoScheduleCounseling.checked;
 
+            // Resolved section name
+            const resolvedSection = student.sectionName || (studentSection ? studentSection.value : '') || 'General';
+
             submitViolationBtn.disabled = true;
             submitViolationBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Submitting Incident Report...`;
 
             try {
-                // 1. Insert Violation Record
+                // 1. Insert Violation Record with Attached Teacher & Section
                 const { data: newViolation, error: vError } = await supabase
                     .from('student_violations')
                     .insert([{
@@ -221,7 +363,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                         student_name: fullName,
                         grade_level: student.grade_level || 'Grade 11',
                         strand: student.strand || 'TVL',
-                        section: student.section_id || 'Section 1',
+                        section: resolvedSection,
                         violation_title: title,
                         violation_category: cat,
                         violation_type: type,
@@ -231,6 +373,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                         incident_location: locVal,
                         reported_by: repName,
                         reporter_role: repRole,
+                        reporter_id: repId,
                         description: descVal,
                         witnesses: witVal,
                         action_taken: actTaken,
@@ -245,7 +388,44 @@ document.addEventListener('DOMContentLoaded', async function() {
 
                 if (vError) throw vError;
 
-                // 2. If Parent Notification is checked, send notification
+                // 2. Notify Student regarding the incident report
+                try {
+                    let studentAuthId = null;
+                    if (student.email) {
+                        const { data: uData } = await supabase.from('users').select('id').eq('email', student.email.toLowerCase()).maybeSingle();
+                        if (uData?.id) studentAuthId = uData.id;
+                    }
+
+                    const studentNotifs = [{
+                        user_id: student.id,
+                        role: 'student',
+                        title: `⚠️ Guidance Incident Notice: ${type}`,
+                        message: `An incident report (${cat} - ${offLvl}) has been logged by the Guidance Office. Action: ${actTaken || 'For review'}. Please coordinate with the Guidance Office.`,
+                        type: 'guidance',
+                        read: false,
+                        is_read: false,
+                        created_at: new Date().toISOString()
+                    }];
+
+                    if (studentAuthId && studentAuthId !== student.id) {
+                        studentNotifs.push({
+                            user_id: studentAuthId,
+                            role: 'student',
+                            title: `⚠️ Guidance Incident Notice: ${type}`,
+                            message: `An incident report (${cat} - ${offLvl}) has been logged by the Guidance Office. Action: ${actTaken || 'For review'}. Please coordinate with the Guidance Office.`,
+                            type: 'guidance',
+                            read: false,
+                            is_read: false,
+                            created_at: new Date().toISOString()
+                        });
+                    }
+
+                    await supabase.from('notifications').insert(studentNotifs);
+                } catch (stNotifErr) {
+                    console.warn('Student incident notification warning:', stNotifErr);
+                }
+
+                // If Parent Notification is checked, send notification to parent
                 if (isParentNotified) {
                     try {
                         await supabase
@@ -255,14 +435,16 @@ document.addEventListener('DOMContentLoaded', async function() {
                                 title: `⚠️ Guidance Notice: Disciplinary Incident Report (${fullName})`,
                                 message: `An official incident report has been logged regarding ${type} (${offLvl}). Prescribed action: ${actTaken}. Please check the Guidance portal for details.`,
                                 type: 'violation_notice',
-                                is_read: false
+                                read: false,
+                                is_read: false,
+                                created_at: new Date().toISOString()
                             }]);
                     } catch (notifErr) {
                         console.warn('Parent notification warning:', notifErr);
                     }
                 }
 
-                // 3. If Auto Schedule Counseling is checked, insert into counseling_sessions
+                // 3. If Auto Schedule Counseling is checked, insert into counseling_sessions and notify student
                 if (shouldAutoSchedule) {
                     try {
                         const nextSessionDate = new Date(Date.now() + 86400000 * 2).toISOString().split('T')[0];
@@ -282,6 +464,36 @@ document.addEventListener('DOMContentLoaded', async function() {
                                 notes: `Incident description: ${descVal}`,
                                 status: 'Scheduled'
                             }]);
+
+                        // Notify student of counseling session
+                        let studentAuthId = null;
+                        if (student.email) {
+                            const { data: uData } = await supabase.from('users').select('id').eq('email', student.email.toLowerCase()).maybeSingle();
+                            if (uData?.id) studentAuthId = uData.id;
+                        }
+                        const counselNotifs = [{
+                            user_id: student.id,
+                            role: 'student',
+                            title: `🗓️ Guidance Counseling Session Scheduled`,
+                            message: `A counseling session has been scheduled with Counselor ${displayName} on ${nextSessionDate} at 10:00 AM regarding ${type}.`,
+                            type: 'guidance',
+                            read: false,
+                            is_read: false,
+                            created_at: new Date().toISOString()
+                        }];
+                        if (studentAuthId && studentAuthId !== student.id) {
+                            counselNotifs.push({
+                                user_id: studentAuthId,
+                                role: 'student',
+                                title: `🗓️ Guidance Counseling Session Scheduled`,
+                                message: `A counseling session has been scheduled with Counselor ${displayName} on ${nextSessionDate} at 10:00 AM regarding ${type}.`,
+                                type: 'guidance',
+                                read: false,
+                                is_read: false,
+                                created_at: new Date().toISOString()
+                            });
+                        }
+                        await supabase.from('notifications').insert(counselNotifs);
                     } catch (counselErr) {
                         console.warn('Auto counseling schedule warning:', counselErr);
                     }

@@ -784,31 +784,21 @@ import { supabase } from '../../supabase/config.js';
                     const timeIn = att.timeIn || '07:30 AM';
                     const remarks = att.remarks || (status === 'Late' ? 'Late arrival' : (status === 'Absent' ? 'Unexcused absence' : 'On time'));
 
-                    // Attendance row
+                    // Clean Supabase Attendance row
                     attendanceUpserts.push({
                         student_id: student.id,
-                        lrn: student.lrn,
-                        student_name: student.full_name,
-                        grade_level: student.grade_level,
-                        section: student.section,
-                        strand: student.strand,
                         date: chosenDate,
-                        status: status,
+                        status: (status || 'present').toLowerCase(),
                         time_in: timeIn,
-                        remarks: remarks,
-                        recorded_by: teacherId,
-                        teacher_name: displayName,
-                        updated_at: new Date().toISOString()
+                        remarks: remarks
                     });
 
-                    // Student Notification
+                    // Student Notification for Supabase (valid schema columns)
                     const notifTitle = `Attendance: Marked as ${status}`;
                     const notifMsg = `Teacher ${displayName} recorded your attendance as "${status}" for ${chosenDate} (Time: ${timeIn}). Remarks: ${remarks}.`;
 
                     notificationInserts.push({
-                        user_id: student.id,
-                        student_id: student.id,
-                        recipient_email: student.email || null,
+                        user_id: student.user_id || student.id,
                         role: 'student',
                         title: notifTitle,
                         message: notifMsg,
@@ -838,7 +828,56 @@ import { supabase } from '../../supabase/config.js';
                     } catch(e) {}
                 });
 
-                // 1. Upsert attendance to Supabase
+                // 1. Update shared unified attendance stores for Student & Parent portals
+                try {
+                    const rawCentral = localStorage.getItem('hes_attendance_records');
+                    let centralRecords = rawCentral ? JSON.parse(rawCentral) : [];
+
+                    filteredStudents.forEach(student => {
+                        const studentId = student.id || student.lrn;
+                        const att = studentAttendanceMap[studentId] || { status: 'Present', timeIn: '07:30 AM', remarks: '' };
+                        const status = att.status || 'Present';
+                        const timeIn = att.timeIn || '07:30 AM';
+                        const remarks = att.remarks || (status === 'Late' ? 'Late arrival' : (status === 'Absent' ? 'Unexcused absence' : 'On time'));
+
+                        const uRec = {
+                            id: 'att_' + Date.now() + '_' + student.id,
+                            student_id: student.id,
+                            studentId: student.id,
+                            lrn: student.lrn,
+                            student_name: student.full_name,
+                            name: student.full_name,
+                            grade_level: student.grade_level,
+                            section: student.section,
+                            strand: student.strand,
+                            date: chosenDate,
+                            status: status,
+                            time_in: timeIn,
+                            remarks: remarks,
+                            recorded_by: teacherId,
+                            teacher_name: displayName,
+                            updated_at: new Date().toISOString()
+                        };
+
+                        centralRecords = centralRecords.filter(r => !( (r.student_id === student.id || (r.lrn && r.lrn === student.lrn)) && r.date === chosenDate ));
+                        centralRecords.unshift(uRec);
+
+                        if (student.id) localStorage.setItem(`hes_student_attendance_${student.id}`, JSON.stringify(uRec));
+                        if (student.lrn) localStorage.setItem(`hes_student_attendance_${student.lrn}`, JSON.stringify(uRec));
+                    });
+
+                    localStorage.setItem('hes_attendance_records', JSON.stringify(centralRecords.slice(0, 1000)));
+
+                    // Broadcast cross-tab attendance event
+                    localStorage.setItem('hes_latest_attendance_event', JSON.stringify({
+                        date: chosenDate,
+                        timestamp: Date.now()
+                    }));
+                } catch (stErr) {
+                    console.warn('Central store update notice:', stErr);
+                }
+
+                // 2. Upsert attendance to Supabase
                 try {
                     await supabase
                         .from('attendance')
@@ -847,7 +886,7 @@ import { supabase } from '../../supabase/config.js';
                     console.warn('Supabase attendance upsert notice:', err);
                 }
 
-                // 2. Insert notifications to Supabase
+                // 3. Insert notifications to Supabase
                 try {
                     await supabase
                         .from('notifications')
@@ -856,7 +895,7 @@ import { supabase } from '../../supabase/config.js';
                     console.warn('Supabase notification insert notice:', err);
                 }
 
-                // 3. Save to local attendance cache
+                // 4. Save to local attendance cache
                 localStorage.setItem(`hes_student_attendance_${chosenDate}`, JSON.stringify(studentAttendanceMap));
 
                 showAlert(`🎉 Attendance successfully saved! Notifications sent to all ${filteredStudents.length} students.`, 'success');

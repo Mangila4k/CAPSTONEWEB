@@ -278,18 +278,6 @@ import { supabase } from '../../supabase/config.js';
                 console.warn('Real grades fetch notice:', err);
             }
 
-            // Fill baseline preview for subjects that don't have records yet
-            subjectsList.forEach((sub, index) => {
-                if (!gradesData[sub.id]) {
-                    gradesData[sub.id] = {
-                        1: 88 + (index % 5),
-                        2: 89 + (index % 4),
-                        3: 90 + (index % 3),
-                        4: 91 + (index % 2)
-                    };
-                }
-            });
-
             renderSubjects();
 
             if (noGradesMsg) noGradesMsg.style.display = 'none';

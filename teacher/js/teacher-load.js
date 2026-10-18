@@ -262,7 +262,7 @@ import { supabase } from '../../supabase/config.js';
             if (teachingLoadTableBody) {
                 teachingLoadTableBody.innerHTML = `
                     <tr>
-                        <td colspan="8" style="text-align: center; padding: 32px; color: #ef4444;">
+                        <td colspan="7" style="text-align: center; padding: 32px; color: #ef4444;">
                             <i class="fas fa-exclamation-triangle"></i> Error loading official teacher load.
                         </td>
                     </tr>
@@ -433,7 +433,7 @@ import { supabase } from '../../supabase/config.js';
         if (filtered.length === 0) {
             teachingLoadTableBody.innerHTML = `
                 <tr>
-                    <td colspan="8" style="text-align: center; padding: 40px 20px; color: var(--gray-500);">
+                    <td colspan="7" style="text-align: center; padding: 40px 20px; color: var(--gray-500);">
                         <div style="font-size: 2.2rem; color: var(--gray-300); margin-bottom: 8px;">
                             <i class="fas fa-calendar-times"></i>
                         </div>
@@ -456,7 +456,13 @@ import { supabase } from '../../supabase/config.js';
             return a.start_time.localeCompare(b.start_time);
         });
 
-        teachingLoadTableBody.innerHTML = filtered.map((item, idx) => `
+        teachingLoadTableBody.innerHTML = filtered.map((item, idx) => {
+            let gradeText = (item.grade_level || '').toString().trim();
+            if (gradeText && !gradeText.toLowerCase().startsWith('grade')) {
+                gradeText = `Grade ${gradeText}`;
+            }
+
+            return `
             <tr>
                 <td style="font-weight: 700; color: var(--gray-400);">${idx + 1}</td>
                 <td>
@@ -464,8 +470,7 @@ import { supabase } from '../../supabase/config.js';
                     ${item.subject_code ? `<span class="badge" style="background: rgba(11,43,74,0.08); color: var(--primary); font-size: 0.72rem; padding: 2px 6px; border-radius: 4px;">${item.subject_code}</span>` : ''}
                 </td>
                 <td>
-                    <div style="font-weight: 600; color: var(--gray-800);">${item.section_name}</div>
-                    ${item.grade_level ? `<div style="font-size: 0.78rem; color: var(--gray-500);">Grade ${item.grade_level}</div>` : ''}
+                    <div style="font-weight: 600; color: var(--gray-800);">${gradeText || '—'}</div>
                 </td>
                 <td>
                     <span class="badge" style="background: var(--gray-100); color: var(--primary); font-weight: 600; padding: 4px 10px; border-radius: 6px;">
@@ -476,16 +481,14 @@ import { supabase } from '../../supabase/config.js';
                     <div style="font-weight: 600; color: var(--primary);"><i class="far fa-clock text-primary"></i> ${item.time_formatted}</div>
                 </td>
                 <td>
-                    <span><i class="fas fa-door-open text-primary"></i> ${item.room}</span>
-                </td>
-                <td>
-                    <span style="font-weight: 700; color: var(--gray-700);">${item.duration_minutes} mins</span>
+                    <span style="font-weight: 600; color: var(--gray-800);"><i class="fas fa-users-rectangle text-primary"></i> ${item.section_name || '—'}</span>
                 </td>
                 <td>
                     <span class="admin-verified-badge"><i class="fas fa-check-circle"></i> Assigned</span>
                 </td>
             </tr>
-        `).join('');
+            `;
+        }).join('');
     }
 
     // ===== RENDER VISUAL TIMETABLE GRID =====

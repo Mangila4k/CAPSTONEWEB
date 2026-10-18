@@ -197,18 +197,21 @@ import { supabase } from '../../supabase/config.js';
                 console.warn('Real grades fetch for parents error:', err);
             }
 
-            // 4. Build Academic Grades Structure for each child
+            // 4. Build Academic Grades Structure for each child (AUTHENTIC DATA ONLY - NO SYNTHETIC GRADES)
             dynamicGradesData = registeredChildren.map((child, cIdx) => {
                 const studentSubjects = subjectsList.slice(0, 8).map((sub, sIdx) => {
                     const gradeKey = `${child.id}_${sub.id}`;
                     const realScores = dbGradesMap[gradeKey];
 
-                    const baseGrade = 87 + ((sIdx * 2 + cIdx * 3 + child.name.length) % 8);
-                    const q1 = realScores && realScores[1] !== undefined ? realScores[1] : Math.min(98, baseGrade + (sIdx % 3));
-                    const q2 = realScores && realScores[2] !== undefined ? realScores[2] : Math.min(98, baseGrade + 1);
-                    const q3 = realScores && realScores[3] !== undefined ? realScores[3] : Math.min(98, baseGrade + 2);
-                    const q4 = realScores && realScores[4] !== undefined ? realScores[4] : Math.min(98, baseGrade + 1);
-                    const final = parseFloat(((q1 + q2 + q3 + q4) / 4).toFixed(2));
+                    const q1 = realScores && realScores[1] !== undefined ? realScores[1] : null;
+                    const q2 = realScores && realScores[2] !== undefined ? realScores[2] : null;
+                    const q3 = realScores && realScores[3] !== undefined ? realScores[3] : null;
+                    const q4 = realScores && realScores[4] !== undefined ? realScores[4] : null;
+
+                    const validQuarters = [q1, q2, q3, q4].filter(q => q !== null && !isNaN(q));
+                    const final = validQuarters.length > 0
+                        ? parseFloat((validQuarters.reduce((a, b) => a + b, 0) / validQuarters.length).toFixed(2))
+                        : null;
 
                     return {
                         name: sub.name || 'Subject',
@@ -220,12 +223,18 @@ import { supabase } from '../../supabase/config.js';
                     };
                 });
 
-                const sumFinal = studentSubjects.reduce((sum, s) => sum + s.final, 0);
-                const average = parseFloat((sumFinal / studentSubjects.length).toFixed(2));
+                const evaluatedSubjects = studentSubjects.filter(s => s.final !== null);
+                const average = evaluatedSubjects.length > 0
+                    ? parseFloat((evaluatedSubjects.reduce((sum, s) => sum + s.final, 0) / evaluatedSubjects.length).toFixed(2))
+                    : null;
 
-                let honor = 'Consistent Passing';
-                if (average >= 95) honor = 'With High Honors';
-                else if (average >= 90) honor = 'With Honors';
+                let honor = 'No distinctions recorded';
+                if (average !== null) {
+                    if (average >= 95) honor = 'With High Honors';
+                    else if (average >= 90) honor = 'With Honors';
+                    else if (average >= 75) honor = 'Passing Standing';
+                    else honor = 'Needs Remediation';
+                }
 
                 return {
                     student_id: child.id,
@@ -299,25 +308,31 @@ import { supabase } from '../../supabase/config.js';
         }
 
         let totalAverage = 0;
+        let avgCount = 0;
         let totalPassed = 0;
         let totalFailed = 0;
         let honorCount = 0;
 
         data.forEach(student => {
-            totalAverage += student.average;
+            if (student.average !== null && !isNaN(student.average)) {
+                totalAverage += student.average;
+                avgCount++;
+            }
             student.subjects.forEach(sub => {
-                if (sub.final >= 75) totalPassed++;
-                else totalFailed++;
+                if (sub.final !== null) {
+                    if (sub.final >= 75) totalPassed++;
+                    else totalFailed++;
+                }
             });
-            if (student.honor.includes('Honors')) honorCount++;
+            if (student.honor && student.honor.includes('Honors')) honorCount++;
         });
 
-        const avgDisplay = data.length > 0 ? (totalAverage / data.length).toFixed(2) : '0.00';
+        const avgDisplay = avgCount > 0 ? (totalAverage / avgCount).toFixed(2) + '%' : '--%';
 
         gradesStats.innerHTML = `
             <div class="stat-card">
                 <div class="stat-icon average"><i class="fas fa-chart-line"></i></div>
-                <div class="stat-number">${avgDisplay}%</div>
+                <div class="stat-number">${avgDisplay}</div>
                 <div class="stat-label">Overall Average</div>
             </div>
             <div class="stat-card">
@@ -373,22 +388,23 @@ import { supabase } from '../../supabase/config.js';
 
             student.subjects.forEach(sub => {
                 totalSubjectCount++;
-                const isPassed = sub.final >= 75;
-                const gradeStyle = isPassed ? 'color: #0b2b4a; font-weight: 700;' : 'color: #ef4444; font-weight: 700;';
+                const hasFinal = sub.final !== null;
+                const isPassed = hasFinal && sub.final >= 75;
+                const gradeStyle = hasFinal ? (isPassed ? 'color: #0b2b4a; font-weight: 700;' : 'color: #ef4444; font-weight: 700;') : 'color: #94a3b8; font-weight: 500;';
 
                 html += `
                     <tr>
                         <td class="subject-cell" style="font-weight: 500; color: #1e293b;">${sub.name}</td>
-                        <td class="grade-cell" style="text-align: center;">${sub.q1}</td>
-                        <td class="grade-cell" style="text-align: center;">${sub.q2}</td>
-                        <td class="grade-cell" style="text-align: center;">${sub.q3}</td>
-                        <td class="grade-cell" style="text-align: center;">${sub.q4}</td>
-                        <td class="grade-cell" style="text-align: center; ${gradeStyle}">${sub.final}</td>
+                        <td class="grade-cell" style="text-align: center;">${sub.q1 !== null ? sub.q1 : '—'}</td>
+                        <td class="grade-cell" style="text-align: center;">${sub.q2 !== null ? sub.q2 : '—'}</td>
+                        <td class="grade-cell" style="text-align: center;">${sub.q3 !== null ? sub.q3 : '—'}</td>
+                        <td class="grade-cell" style="text-align: center;">${sub.q4 !== null ? sub.q4 : '—'}</td>
+                        <td class="grade-cell" style="text-align: center; ${gradeStyle}">${sub.final !== null ? sub.final : '—'}</td>
                         <td class="grade-cell" style="text-align: center;">
-                            ${isPassed ? 
+                            ${hasFinal ? (isPassed ? 
                                 '<span style="color: #10b981; font-weight: 600;"><i class="fas fa-check-circle"></i> Passed</span>' : 
                                 '<span style="color: #ef4444; font-weight: 600;"><i class="fas fa-times-circle"></i> Failed</span>'
-                            }
+                            ) : '<span style="color: #94a3b8; font-weight: 500;">Pending</span>'}
                         </td>
                     </tr>
                 `;
@@ -401,10 +417,10 @@ import { supabase } from '../../supabase/config.js';
                         General Average:
                     </td>
                     <td style="text-align: center; color: #0B4F2E; font-size: 1rem;">
-                        ${student.average}%
+                        ${student.average !== null ? student.average + '%' : '—'}
                     </td>
                     <td style="text-align: center;">
-                        <span style="display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 0.78rem; font-weight: 600; background: #d1fae5; color: #065f46;">
+                        <span style="display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 0.78rem; font-weight: 600; background: #e2e8f0; color: #334155;">
                             ${student.honor}
                         </span>
                     </td>
@@ -430,18 +446,19 @@ import { supabase } from '../../supabase/config.js';
         }
 
         summaryCards.innerHTML = data.map(student => {
-            const passed = student.subjects.filter(s => s.final >= 75).length;
+            const passed = student.subjects.filter(s => s.final !== null && s.final >= 75).length;
+            const gradedCount = student.subjects.filter(s => s.final !== null).length;
             const total = student.subjects.length;
 
             return `
                 <div class="summary-card" style="background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                    <div class="summary-value" style="font-size: 1.6rem; font-weight: 800; color: #0b2b4a;">${student.average}%</div>
+                    <div class="summary-value" style="font-size: 1.6rem; font-weight: 800; color: #0b2b4a;">${student.average !== null ? student.average + '%' : '—'}</div>
                     <div class="summary-label" style="font-size: 1rem; font-weight: 700; color: #1e293b; margin-top: 2px;">${student.student_name}</div>
                     <div style="font-size: 0.85rem; color: #64748b; margin-top: 4px;">
-                        Passed: <strong>${passed} of ${total} Subjects</strong> (${student.grade_level})
+                        Passed: <strong>${passed} of ${gradedCount} Graded</strong> (${student.grade_level})
                     </div>
                     <div style="margin-top: 8px;">
-                        <span style="display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; background: #fef3c7; color: #92400e;">
+                        <span style="display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; background: #f1f5f9; color: #475569;">
                             <i class="fas fa-medal"></i> ${student.honor}
                         </span>
                     </div>

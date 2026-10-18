@@ -34,7 +34,9 @@ import { supabase } from '../../supabase/config.js';
     const rateProgressFill = document.getElementById('rateProgressFill');
     const rateLabel = document.getElementById('rateLabel');
     const presentDaysCount = document.getElementById('presentDaysCount');
+    const presentDetailLabel = document.getElementById('presentDetailLabel');
     const lateDaysCount = document.getElementById('lateDaysCount');
+    const lateDetailLabel = document.getElementById('lateDetailLabel');
     const absentDaysCount = document.getElementById('absentDaysCount');
     const absentDetailLabel = document.getElementById('absentDetailLabel');
 
@@ -122,6 +124,8 @@ import { supabase } from '../../supabase/config.js';
             year: 'numeric'
         });
     }
+
+    // Preserved shared attendance stores across portals
 
     // ============================================
     // LOGOUT
@@ -266,25 +270,141 @@ import { supabase } from '../../supabase/config.js';
             // Populate Student Dropdown
             populateStudentDropdown(registeredChildren);
 
-            // 3. Fetch Attendance records from Supabase
+            // 3. Fetch Attendance records from Supabase & Teacher Shared Stores
             let records = [];
             try {
                 if (studentIds.length > 0) {
-                    const { data: attData } = await supabase
+                    const { data: attData, error: attErr } = await supabase
                         .from('attendance')
                         .select('*')
                         .in('student_id', studentIds)
                         .order('date', { ascending: false });
-                    if (attData && attData.length > 0) {
-                        records = attData;
+                    if (!attErr && Array.isArray(attData) && attData.length > 0) {
+                        records = attData.map(r => {
+                            const child = registeredChildren.find(c => String(c.id) === String(r.student_id));
+                            return {
+                                ...r,
+                                student_name: child?.name || 'Student',
+                                grade: child?.grade || '',
+                                lrn: child?.lrn || ''
+                            };
+                        });
                     }
                 }
-            } catch(e) {}
-
-            // If empty, generate realistic attendance records for each child
-            if (records.length === 0) {
-                records = generateRealisticAttendanceForChildren(registeredChildren);
+            } catch(e) {
+                console.warn('Attendance database query notice:', e);
             }
+
+            // Load shared teacher-scanned attendance records for children
+            try {
+                const sharedList = [];
+                const norm = v => (v || '').toString().toLowerCase().trim();
+                const childIdSet = new Set(registeredChildren.map(c => norm(c.id)));
+                const childLrnSet = new Set(registeredChildren.map(c => norm(c.lrn)).filter(Boolean));
+                const childNameSet = new Set(registeredChildren.map(c => norm(c.name)).filter(Boolean));
+
+                function matchesChild(rec) {
+                    if (!rec) return false;
+                    const rId = norm(rec.student_id || rec.studentId || rec.id);
+                    const rLrn = norm(rec.lrn);
+                    const rName = norm(rec.student_name || rec.name || rec.studentName || rec.full_name);
+
+                    if (rId && childIdSet.has(rId)) return true;
+                    if (rLrn && childLrnSet.has(rLrn)) return true;
+                    if (rName) {
+                        for (const cName of childNameSet) {
+                            if (!cName) continue;
+                            if (rName === cName || rName.includes(cName) || cName.includes(rName)) return true;
+                            const parts = cName.split(/\s+/).filter(Boolean);
+                            if (parts.length >= 2) {
+                                const flipped = `${parts[parts.length - 1]}, ${parts.slice(0, -1).join(' ')}`;
+                                const reversed = `${parts[parts.length - 1]} ${parts.slice(0, -1).join(' ')}`;
+                                if (rName.includes(flipped) || flipped.includes(rName) || rName.includes(reversed)) return true;
+                            }
+                        }
+                    }
+                    return false;
+                }
+
+                const centralRaw = localStorage.getItem('hes_attendance_records');
+                if (centralRaw) {
+                    const list = JSON.parse(centralRaw);
+                    if (Array.isArray(list)) list.forEach(r => { if (matchesChild(r)) sharedList.push(r); });
+                }
+
+                const hesStuRaw = localStorage.getItem('hes_student_attendance');
+                if (hesStuRaw) {
+                    const list = JSON.parse(hesStuRaw);
+                    if (Array.isArray(list)) list.forEach(r => { if (matchesChild(r)) sharedList.push(r); });
+                }
+
+                registeredChildren.forEach(c => {
+                    [norm(c.id), norm(c.lrn), norm(c.name)].filter(Boolean).forEach(key => {
+                        const direct = localStorage.getItem(`hes_student_attendance_${key}`);
+                        if (direct) {
+                            const dObj = JSON.parse(direct);
+                            if (Array.isArray(dObj)) dObj.forEach(r => { if (matchesChild(r) || !r.student_id) sharedList.push(r); });
+                            else if (dObj && typeof dObj === 'object') {
+                                if (matchesChild(dObj) || !dObj.student_id) sharedList.push(dObj);
+                            }
+                        }
+                    });
+                });
+
+                for (let i = 0; i < localStorage.length; i++) {
+                    const k = localStorage.key(i);
+                    if (k && (k.startsWith('hes_qr_scans_') || k === 'todayScans')) {
+                        const sData = JSON.parse(localStorage.getItem(k) || '[]');
+                        if (Array.isArray(sData)) {
+                            sData.forEach(r => {
+                                if (matchesChild(r)) {
+                                    sharedList.push({
+                                        id: r.id,
+                                        student_id: r.studentId || r.student_id,
+                                        lrn: r.lrn,
+                                        student_name: r.name || r.student_name,
+                                        date: r.date,
+                                        status: r.status,
+                                        time_in: r.time || r.time_in,
+                                        remarks: r.remarks || (r.status === 'Late' ? 'Late arrival recorded via QR Scanner' : 'On-time QR scan')
+                                    });
+                                }
+                            });
+                        }
+                    }
+                }
+
+                // Merge into records map
+                const map = new Map();
+                records.forEach(r => {
+                    if (r?.date) {
+                        const clean = (r.status || 'present').charAt(0).toUpperCase() + (r.status || 'present').slice(1).toLowerCase();
+                        map.set(`${r.student_id}_${r.date}`, { ...r, status: clean, time_in: r.time_in || r.timeIn || null });
+                    }
+                });
+                sharedList.forEach(r => {
+                    if (r?.date) {
+                        const stuId = r.student_id || r.studentId || registeredChildren[0]?.id;
+                        const child = registeredChildren.find(c => String(c.id) === String(stuId) || (c.lrn && String(c.lrn) === String(r.lrn)));
+                        const clean = (r.status || 'Present').charAt(0).toUpperCase() + (r.status || 'Present').slice(1).toLowerCase();
+                        const key = `${child?.id || stuId}_${r.date}`;
+                        const existing = map.get(key) || {};
+                        map.set(key, {
+                            ...existing,
+                            ...r,
+                            student_id: child?.id || stuId,
+                            student_name: child?.name || r.student_name || r.name || 'Student',
+                            grade: child?.grade || r.grade_level || '',
+                            lrn: child?.lrn || r.lrn || '',
+                            status: clean,
+                            time_in: r.time_in || r.time || existing.time_in || null,
+                            remarks: r.remarks || existing.remarks || ''
+                        });
+                    }
+                });
+
+                records = Array.from(map.values()).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+            } catch (e) {}
 
             const childNames = registeredChildren.map(c => c.name).join(', ') || 'No registered children';
             const attendanceChildBanner = document.getElementById('attendanceChildBanner');
@@ -297,7 +417,7 @@ import { supabase } from '../../supabase/config.js';
                 localStorage.setItem('hes_parent_child_name', childNames);
             }
 
-            rawAttendanceRecords = records.filter(r => !isWeekend(r.date));
+            rawAttendanceRecords = records;
             updateChildInfoCard();
             applyFilters();
 
@@ -316,7 +436,7 @@ import { supabase } from '../../supabase/config.js';
 
         let optionsHtml = '<option value="all">All Children</option>';
         children.forEach(c => {
-            optionsHtml += `<option value="${c.id}">${c.name} (${c.grade} - ${c.strand})</option>`;
+            optionsHtml += `<option value="${c.id}">${c.name} (${c.grade || '—'} - ${c.strand || '—'})</option>`;
         });
         studentFilter.innerHTML = optionsHtml;
     }
@@ -333,10 +453,10 @@ import { supabase } from '../../supabase/config.js';
             const firstChild = registeredChildren[0];
             const childNames = registeredChildren.map(c => c.name).join(', ');
             if (studentNameDisplay) studentNameDisplay.textContent = registeredChildren.length > 0 ? childNames : 'All Children';
-            if (lrnDisplay) lrnDisplay.textContent = firstChild?.lrn || 'Multiple';
-            if (gradeDisplay) gradeDisplay.textContent = firstChild?.grade || 'Grade 11';
-            if (strandDisplay) strandDisplay.textContent = firstChild?.strand || 'TVL-ICT';
-            if (statusDisplay) statusDisplay.textContent = 'Enrolled';
+            if (lrnDisplay) lrnDisplay.textContent = firstChild?.lrn || (registeredChildren.length > 1 ? 'Multiple' : '—');
+            if (gradeDisplay) gradeDisplay.textContent = firstChild?.grade || '—';
+            if (strandDisplay) strandDisplay.textContent = firstChild?.strand || '—';
+            if (statusDisplay) statusDisplay.textContent = firstChild?.status || 'Enrolled';
             if (schoolYearDisplay) schoolYearDisplay.textContent = firstChild?.schoolYear || '2025-2026';
             if (attendanceChildBanner && childNames) attendanceChildBanner.textContent = childNames;
             if (todayDateSubtitle) {
@@ -347,100 +467,17 @@ import { supabase } from '../../supabase/config.js';
             const child = registeredChildren.find(c => String(c.id) === String(selId));
             if (child) {
                 if (studentNameDisplay) studentNameDisplay.textContent = child.name;
-                if (lrnDisplay) lrnDisplay.textContent = child.lrn;
-                if (gradeDisplay) gradeDisplay.textContent = child.grade;
-                if (strandDisplay) strandDisplay.textContent = child.strand;
-                if (statusDisplay) statusDisplay.textContent = child.status;
-                if (schoolYearDisplay) schoolYearDisplay.textContent = child.schoolYear;
+                if (lrnDisplay) lrnDisplay.textContent = child.lrn || '—';
+                if (gradeDisplay) gradeDisplay.textContent = child.grade || '—';
+                if (strandDisplay) strandDisplay.textContent = child.strand || '—';
+                if (statusDisplay) statusDisplay.textContent = child.status || 'Enrolled';
+                if (schoolYearDisplay) schoolYearDisplay.textContent = child.schoolYear || '2025-2026';
                 if (attendanceChildBanner) attendanceChildBanner.textContent = child.name;
                 if (todayDateSubtitle) {
                     todayDateSubtitle.textContent = `${child.name} • ${today.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`;
                 }
             }
         }
-    }
-
-    // ============================================
-    // GENERATE REALISTIC ATTENDANCE RECORDS
-    // ============================================
-
-    function generateRealisticAttendanceForChildren(children) {
-        const logs = [];
-        const todayObj = new Date();
-        const todayStr = todayObj.toISOString().split('T')[0];
-        const schoolDaysToGenerate = 30; // 30 records matching screenshot
-
-        children.forEach((child, childIdx) => {
-            let count = 0;
-            let dayOffset = 0;
-
-            while (count < schoolDaysToGenerate && dayOffset < 60) {
-                const d = new Date(todayObj);
-                d.setDate(todayObj.getDate() - dayOffset);
-                dayOffset++;
-
-                const dayOfWeek = d.getDay();
-                if (dayOfWeek === 0 || dayOfWeek === 6) continue;
-
-                const dateStr = d.toISOString().split('T')[0];
-                const hash = (d.getFullYear() * 1000 + (d.getMonth() + 1) * 100 + d.getDate() + (child.name.charCodeAt(0) || 7) + childIdx);
-                const roll = hash % 100;
-
-                let status = 'Present';
-                let timeIn = '07:36 AM';
-                let timeOut = '04:30 PM';
-                let remarks = 'On time';
-
-                if (dateStr === todayStr && dayOfWeek !== 0 && dayOfWeek !== 6) {
-                    timeIn = '07:36 AM';
-                    timeOut = '04:30 PM';
-                    status = 'Present';
-                    remarks = 'On time';
-                } else if (roll < 8) {
-                    status = 'Late';
-                    const min = 10 + (hash % 20);
-                    timeIn = `08:${min < 10 ? '0' + min : min} AM`;
-                    timeOut = '04:30 PM';
-                    remarks = 'Traffic along South Road';
-                } else if (roll < 12) {
-                    status = 'Excused';
-                    timeIn = '—';
-                    timeOut = '—';
-                    remarks = 'Medical appointment / Note verified';
-                } else if (roll === 13) {
-                    status = 'Absent';
-                    timeIn = '—';
-                    timeOut = '—';
-                    remarks = 'Unexcused absence';
-                } else {
-                    const min = 26 + (hash % 10);
-                    timeIn = `07:${min} AM`;
-                    timeOut = '04:30 PM';
-                    status = 'Present';
-                    remarks = 'On time';
-                }
-
-                logs.push({
-                    id: `ATT-${child.id}-${dateStr}`,
-                    student_id: child.id,
-                    student_name: child.name,
-                    date: dateStr,
-                    time_in: timeIn,
-                    time_out: timeOut,
-                    timeIn: timeIn,
-                    timeOut: timeOut,
-                    status: status,
-                    remarks: remarks,
-                    grade: child.grade,
-                    lrn: child.lrn
-                });
-
-                count++;
-            }
-        });
-
-        logs.sort((a, b) => new Date(b.date) - new Date(a.date));
-        return logs;
     }
 
     // ============================================
@@ -456,9 +493,6 @@ import { supabase } from '../../supabase/config.js';
         const currentMonthIdx = new Date().getMonth();
 
         filteredRecords = rawAttendanceRecords.filter(record => {
-            // Strictly exclude any weekend records (Saturday / Sunday)
-            if (isWeekend(record.date)) return false;
-
             // Student Filter
             if (selStudent !== 'all' && String(record.student_id) !== String(selStudent)) {
                 return false;
@@ -503,50 +537,94 @@ import { supabase } from '../../supabase/config.js';
 
     function renderStats(records) {
         if (!records || records.length === 0) {
-            if (attendanceRate) attendanceRate.textContent = '0%';
+            if (attendanceRate) attendanceRate.textContent = '--%';
             if (rateProgressFill) rateProgressFill.style.width = '0%';
+            if (rateLabel) rateLabel.innerHTML = '<i class="fas fa-calendar-times" style="color: #64748b;"></i> No records yet';
             if (presentDaysCount) presentDaysCount.textContent = '0';
+            if (presentDetailLabel) presentDetailLabel.innerHTML = '<i class="fas fa-calendar-times"></i> 0 days attended';
             if (lateDaysCount) lateDaysCount.textContent = '0';
+            if (lateDetailLabel) lateDetailLabel.innerHTML = '<i class="fas fa-check-circle text-success"></i> No tardy records';
             if (absentDaysCount) absentDaysCount.textContent = '0';
             if (absentDetailLabel) absentDetailLabel.innerHTML = '<i class="fas fa-info-circle"></i> 0 Absent / 0 Excused';
             return;
         }
 
         const totalDays = records.length;
-        let presentCount = 0;
+        let onTimeCount = 0;
         let lateCount = 0;
         let absentCount = 0;
         let excusedCount = 0;
 
         records.forEach(r => {
-            const st = (r.status || '').toLowerCase();
-            if (st === 'present') presentCount++;
+            const st = (r.status || '').toLowerCase().trim();
+            if (st === 'present') onTimeCount++;
             else if (st === 'late') lateCount++;
             else if (st === 'absent') absentCount++;
             else if (st === 'excused') excusedCount++;
         });
 
-        const attendedDays = presentCount + lateCount + excusedCount;
-        const rate = totalDays > 0 ? ((attendedDays / totalDays) * 100).toFixed(1) : 0;
+        // DepEd SF2 Standard: Total Days in Attendance = On-Time Present + Late (Tardy) Arrivals
+        const totalPresentDays = onTimeCount + lateCount;
+        const attendedDays = totalPresentDays + excusedCount;
+        const rate = totalDays > 0 ? ((attendedDays / totalDays) * 100).toFixed(1) : '0.0';
 
         if (attendanceRate) attendanceRate.textContent = `${rate}%`;
-        if (rateProgressFill) rateProgressFill.style.width = `${Math.min(100, Math.max(0, rate))}%`;
+        if (rateProgressFill) rateProgressFill.style.width = `${Math.min(100, Math.max(0, parseFloat(rate)))}%`;
 
         if (rateLabel) {
             if (rate >= 95) {
-                rateLabel.innerHTML = `<i class="fas fa-check-double text-success"></i> Outstanding Attendance (${attendedDays}/${totalDays} days)`;
-            } else if (rate >= 85) {
-                rateLabel.innerHTML = `<i class="fas fa-check text-success"></i> Good Attendance Standing (${attendedDays}/${totalDays} days)`;
+                if (lateCount === 0) {
+                    rateLabel.innerHTML = `<i class="fas fa-check-double text-success"></i> Outstanding Attendance (${attendedDays}/${totalDays} days)`;
+                } else if (onTimeCount === 0) {
+                    rateLabel.innerHTML = `<i class="fas fa-clock text-warning"></i> 100% Attended (${lateCount} late arrival${lateCount > 1 ? 's' : ''})`;
+                } else {
+                    rateLabel.innerHTML = `<i class="fas fa-check-double text-success"></i> ${rate}% Attendance (${attendedDays}/${totalDays} days, ${lateCount} late)`;
+                }
+            } else if (rate >= 80) {
+                if (lateCount > 0) {
+                    rateLabel.innerHTML = `<i class="fas fa-check text-info"></i> Good Attendance (${attendedDays}/${totalDays} days, ${lateCount} late)`;
+                } else {
+                    rateLabel.innerHTML = `<i class="fas fa-check text-info"></i> Good Attendance Standing (${attendedDays}/${totalDays} days)`;
+                }
             } else {
                 rateLabel.innerHTML = `<i class="fas fa-exclamation-circle text-danger"></i> Needs Improvement (${attendedDays}/${totalDays} days)`;
             }
         }
 
-        if (presentDaysCount) presentDaysCount.textContent = presentCount;
+        // Present Days card: Total days present in class
+        if (presentDaysCount) presentDaysCount.textContent = totalPresentDays;
+        if (presentDetailLabel) {
+            if (totalPresentDays === 0) {
+                presentDetailLabel.innerHTML = `<i class="fas fa-calendar-times"></i> 0 days in attendance`;
+            } else if (lateCount === 0) {
+                presentDetailLabel.innerHTML = `<i class="fas fa-calendar-check text-success"></i> ${onTimeCount} on-time & marked present`;
+            } else if (onTimeCount === 0) {
+                presentDetailLabel.innerHTML = `<i class="fas fa-clock text-warning"></i> 0 on-time • ${lateCount} late arrival${lateCount > 1 ? 's' : ''}`;
+            } else {
+                presentDetailLabel.innerHTML = `<i class="fas fa-calendar-check text-success"></i> ${onTimeCount} on-time • ${lateCount} late`;
+            }
+        }
+
+        // Late Arrivals card: Dynamic tardy count & descriptive label
         if (lateDaysCount) lateDaysCount.textContent = lateCount;
+        if (lateDetailLabel) {
+            if (lateCount === 0) {
+                lateDetailLabel.innerHTML = `<i class="fas fa-check-circle text-success"></i> No tardy records`;
+            } else if (lateCount === 1) {
+                lateDetailLabel.innerHTML = `<i class="fas fa-clock text-warning"></i> 1 late arrival recorded`;
+            } else {
+                lateDetailLabel.innerHTML = `<i class="fas fa-clock text-warning"></i> ${lateCount} late arrivals recorded`;
+            }
+        }
+
+        // Absences & Excused card
         if (absentDaysCount) absentDaysCount.textContent = absentCount + excusedCount;
         if (absentDetailLabel) {
-            absentDetailLabel.innerHTML = `<i class="fas fa-info-circle"></i> ${absentCount} Absent / ${excusedCount} Excused`;
+            if (absentCount === 0 && excusedCount === 0) {
+                absentDetailLabel.innerHTML = `<i class="fas fa-shield-alt text-success"></i> 0 Absent / 0 Excused`;
+            } else {
+                absentDetailLabel.innerHTML = `<i class="fas fa-info-circle"></i> ${absentCount} Absent / ${excusedCount} Excused`;
+            }
         }
     }
 
@@ -557,7 +635,40 @@ import { supabase } from '../../supabase/config.js';
     function renderTodayHighlight(records) {
         const now = new Date();
         const isWeekend = now.getDay() === 0 || now.getDay() === 6;
+        const todayStr = now.toISOString().split('T')[0];
+        const todayRecord = records.find(r => r.date === todayStr);
 
+        // 1. If today has an authentic attendance log for this child, display it immediately!
+        if (todayRecord) {
+            const status = todayRecord.status || 'Present';
+            const stLower = status.toLowerCase();
+            let badgeClass = 'status-present';
+            let icon = 'fa-check-circle';
+
+            if (stLower === 'late') {
+                badgeClass = 'status-late';
+                icon = 'fa-clock';
+            } else if (stLower === 'absent') {
+                badgeClass = 'status-absent';
+                icon = 'fa-times-circle';
+            } else if (stLower === 'excused') {
+                badgeClass = 'status-excused';
+                icon = 'fa-file-medical';
+            }
+
+            if (todayStatusBadgeContainer) {
+                todayStatusBadgeContainer.innerHTML = `<span class="status-badge ${badgeClass}"><i class="fas ${icon}"></i> ${status}</span>`;
+            }
+
+            if (todayStandingText) todayStandingText.textContent = status;
+            if (todayStandingSub) todayStandingSub.textContent = todayRecord.time_in ? `Scanned / Logged at ${todayRecord.time_in}` : 'Official DepEd attendance log';
+            if (todaySessionValue) todaySessionValue.textContent = todayRecord.student_name || 'Your Child';
+            if (todaySessionSub) todaySessionSub.textContent = todayRecord.teacher_name ? `Recorded by Teacher ${todayRecord.teacher_name}` : 'Recorded by Class Adviser';
+            if (todayRemarks) todayRemarks.textContent = todayRecord.remarks || (stLower === 'late' ? 'Late arrival recorded.' : 'Present in class.');
+            return;
+        }
+
+        // 2. Only if no attendance was recorded today, check weekend
         if (isWeekend) {
             if (todayStatusBadgeContainer) {
                 todayStatusBadgeContainer.innerHTML = `<span class="status-badge status-weekend" style="background: #e0f2fe; color: #0369a1; font-weight: 600; padding: 6px 14px; border-radius: 20px; border: 1px solid #bae6fd;"><i class="fas fa-calendar-times"></i> Weekend (No Classes)</span>`;
@@ -570,20 +681,15 @@ import { supabase } from '../../supabase/config.js';
             return;
         }
 
-        const todayStr = now.toISOString().split('T')[0];
-        const todayRecord = records.find(r => r.date === todayStr);
-
-        if (!todayRecord) {
-            if (todayStatusBadgeContainer) {
-                todayStatusBadgeContainer.innerHTML = `<span class="status-badge status-pending"><i class="fas fa-clock"></i> Not Yet Recorded Today</span>`;
-            }
-            if (todayStandingText) todayStandingText.textContent = 'Not Yet Recorded';
-            if (todayStandingSub) todayStandingSub.textContent = 'Awaiting adviser roll call';
-            if (todaySessionValue) todaySessionValue.textContent = 'Regular School Day';
-            if (todaySessionSub) todaySessionSub.textContent = 'Morning & Afternoon Classes';
-            if (todayRemarks) todayRemarks.textContent = 'Attendance has not been recorded by the teacher for today yet.';
-            return;
+        if (todayStatusBadgeContainer) {
+            todayStatusBadgeContainer.innerHTML = `<span class="status-badge status-pending"><i class="fas fa-clock"></i> Not Yet Recorded Today</span>`;
         }
+        if (todayStandingText) todayStandingText.textContent = 'Not Yet Recorded';
+        if (todayStandingSub) todayStandingSub.textContent = 'Awaiting adviser roll call';
+        if (todaySessionValue) todaySessionValue.textContent = 'Regular School Day';
+        if (todaySessionSub) todaySessionSub.textContent = 'Morning & Afternoon Classes';
+        if (todayRemarks) todayRemarks.textContent = 'Attendance has not been recorded by the teacher for today yet.';
+        return;
 
         const status = todayRecord.status || 'Present';
         const stLower = status.toLowerCase();
@@ -665,7 +771,11 @@ import { supabase } from '../../supabase/config.js';
                 icon = 'fa-file-medical';
             }
 
-            const remarksFmt = item.remarks ? item.remarks : (stLower === 'present' ? 'On time' : '—');
+            const teacherNote = item.teacher_name 
+                ? `<div style="font-size: 11px; color: #0284c7; margin-top: 4px; font-weight: 500;"><i class="fas fa-chalkboard-teacher"></i> Recorded by: Teacher ${item.teacher_name}</div>` 
+                : `<div style="font-size: 11px; color: #64748b; margin-top: 4px;"><i class="fas fa-user-check"></i> Recorded with Teacher</div>`;
+            const baseRemarks = item.remarks ? item.remarks : (stLower === 'present' ? 'On time' : '—');
+            const remarksFmt = `<div>${baseRemarks}</div>${teacherNote}`;
 
             return `
                 <tr>
@@ -747,6 +857,23 @@ import { supabase } from '../../supabase/config.js';
     if (exportAttendanceBtn) {
         exportAttendanceBtn.addEventListener('click', exportToCSV);
     }
+
+    // Dynamic real-time sync: when teacher scans QR or marks attendance in any tab
+    window.addEventListener('storage', (e) => {
+        if (!e.key || 
+            e.key === 'hes_latest_attendance_event' || 
+            e.key === 'hes_attendance_records' || 
+            e.key === 'hes_student_attendance' || 
+            e.key.startsWith('hes_qr_scans_') || 
+            e.key.startsWith('hes_student_attendance_')) {
+            console.log('🔄 Live attendance event detected, refreshing parent attendance view...');
+            loadAttendanceRecords();
+        }
+    });
+
+    window.addEventListener('focus', () => {
+        loadAttendanceRecords();
+    });
 
     // Init
     loadAttendanceModule();

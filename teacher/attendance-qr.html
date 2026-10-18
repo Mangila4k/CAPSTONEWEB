@@ -43,6 +43,7 @@
                                     Attendance</span></a></li>
                         <li><a href="attendance-qr.html" class="active"><i class="fas fa-qrcode"></i> <span>Student QR
                                     Scanner</span></a></li>
+                        <li><a href="student-attendance.html"><i class="fas fa-clipboard-user"></i> <span>Attendance Sheet</span></a></li>
                         <li><a href="classes.html"><i class="fas fa-users"></i> <span>My Classes</span></a></li>
                         <li><a href="class-program.html"><i class="fas fa-calendar-alt"></i> <span>Class
                                     Program</span></a></li>
@@ -67,11 +68,11 @@
             <div class="sidebar-footer">
                 <div class="teacher-profile">
                     <div class="teacher-avatar">
-                        <div class="avatar-initial" id="teacherInitial">RQ</div>
+                        <div class="avatar-initial" id="teacherInitial">--</div>
                         <div class="online-dot"></div>
                     </div>
                     <div class="teacher-info">
-                        <div class="teacher-name" id="teacherName">Ryan Quiroga</div>
+                        <div class="teacher-name" id="teacherName">Teacher</div>
                         <div class="teacher-role"><i class="fas fa-chalkboard-user"></i> Teacher</div>
                     </div>
                 </div>
@@ -117,6 +118,16 @@
                         <label for="sectionFilterSelect"><i class="fas fa-users-rectangle"></i> Filter Section</label>
                         <select id="sectionFilterSelect" class="config-select">
                             <option value="">All Students (Campus-wide / All Sections)</option>
+                        </select>
+                    </div>
+
+                    <!-- Marking Status Policy -->
+                    <div class="config-item">
+                        <label for="scanStatusMode"><i class="fas fa-user-check"></i> Marking Policy</label>
+                        <select id="scanStatusMode" class="config-select">
+                            <option value="present" selected>✅ Mark Present (On-Time)</option>
+                            <option value="auto">⏰ Auto (Cutoff Time)</option>
+                            <option value="late">⚠️ Mark Late (Tardy)</option>
                         </select>
                     </div>
 
@@ -304,62 +315,251 @@
                         </div>
                     </div>
 
-                    <!-- Live Scanned Roster Feed Table -->
+                    <!-- Live Scanned Roster & Attendance History Card -->
                     <div class="feed-table-card">
-                        <div class="feed-table-header">
-                            <div>
-                                <h3><i class="fas fa-list-check"></i> Today's Scanned Students Feed</h3>
-                                <p id="feedSubText">Live records captured during current session</p>
+                        <!-- Top Navigation Tabs (Today's Feed vs Attendance History) -->
+                        <div class="feed-tabs-header">
+                            <button type="button" class="feed-tab-pill active" id="tabLiveFeed">
+                                <i class="fas fa-bolt"></i>
+                                <span>Today's Live Scans</span>
+                                <span class="tab-counter-badge" id="badgeTodayCount">0</span>
+                            </button>
+                            <button type="button" class="feed-tab-pill" id="tabAttendanceHistory">
+                                <i class="fas fa-clock-rotate-left"></i>
+                                <span>Attendance History</span>
+                                <span class="tab-counter-badge" id="badgeHistoryCount">0</span>
+                            </button>
+                        </div>
+
+                        <!-- ================= VIEW 1: TODAY'S LIVE SCAN FEED ================= -->
+                        <div id="liveFeedView" class="feed-tab-view active">
+                            <div class="feed-table-header">
+                                <div>
+                                    <h3><i class="fas fa-list-check"></i> Today's Scanned Students Feed</h3>
+                                    <p id="feedSubText">Live records captured during current session</p>
+                                </div>
+                                <div class="feed-actions">
+                                    <button type="button" class="btn-feed-action" id="btnExportCsv"
+                                        title="Export scanned attendance to CSV">
+                                        <i class="fas fa-file-csv"></i> Export CSV
+                                    </button>
+                                    <button type="button" class="btn-feed-action btn-feed-manage" id="btnSyncDatabase"
+                                        title="Sync all attendance records to cloud database">
+                                        <i class="fas fa-cloud-arrow-up"></i> Sync Cloud
+                                    </button>
+                                </div>
                             </div>
-                            <div class="feed-actions">
-                                <button type="button" class="btn-feed-action" id="btnExportCsv"
-                                    title="Export scanned attendance to CSV">
-                                    <i class="fas fa-file-csv"></i> Export CSV
-                                </button>
-                                <button type="button" class="btn-feed-action btn-feed-manage" id="btnSyncDatabase"
-                                    title="Sync all attendance records to cloud database">
-                                    <i class="fas fa-cloud-arrow-up"></i> Sync Cloud
-                                </button>
+
+                            <!-- Quick Search in Feed -->
+                            <div class="feed-search-wrap">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="feedSearchInput"
+                                    placeholder="Filter scanned students by name or LRN...">
+                            </div>
+
+                            <!-- Table Container -->
+                            <div class="feed-table-container">
+                                <table class="feed-table" id="feedTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Student</th>
+                                            <th>Grade & Section</th>
+                                            <th>Time Recorded</th>
+                                            <th>Status</th>
+                                            <th style="text-align:center;">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="feedTableBody">
+                                        <tr id="emptyFeedRow">
+                                            <td colspan="5" class="empty-feed-cell">
+                                                <i class="fas fa-qrcode"></i>
+                                                <p>No student QR codes scanned yet today.</p>
+                                                <small>Start the camera or scan a student's ID card to log attendance</small>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
 
-                        <!-- Quick Search in Feed -->
-                        <div class="feed-search-wrap">
-                            <i class="fas fa-search"></i>
-                            <input type="text" id="feedSearchInput"
-                                placeholder="Filter scanned students by name or LRN...">
+                        <!-- ================= VIEW 2: ATTENDANCE HISTORY ================= -->
+                        <div id="historyFeedView" class="feed-tab-view" style="display:none;">
+                            <div class="feed-table-header">
+                                <div>
+                                    <h3><i class="fas fa-history"></i> Attendance History Log</h3>
+                                    <p>Past attendance records across all dates, grades, and sections</p>
+                                </div>
+                                <div class="feed-actions">
+                                    <button type="button" class="btn-feed-action" id="btnExportHistoryCsv"
+                                        title="Export historical attendance to CSV">
+                                        <i class="fas fa-file-csv"></i> Export History
+                                    </button>
+                                    <button type="button" class="btn-feed-action btn-feed-manage" id="btnRefreshHistory"
+                                        title="Reload attendance history from database">
+                                        <i class="fas fa-rotate"></i> Refresh
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- History Filters Toolbar -->
+                            <div class="history-filter-toolbar">
+                                <div class="history-filter-row">
+                                    <!-- Date Picker -->
+                                    <div class="history-filter-item">
+                                        <label for="historyDateInput"><i class="far fa-calendar"></i> Specific Date:</label>
+                                        <input type="date" id="historyDateInput" class="history-input-date">
+                                    </div>
+                                    <!-- Quick Date Chips -->
+                                    <div class="history-chips-group">
+                                        <button type="button" class="history-chip active" data-range="all">All Dates</button>
+                                        <button type="button" class="history-chip" data-range="today">Today</button>
+                                        <button type="button" class="history-chip" data-range="yesterday">Yesterday</button>
+                                        <button type="button" class="history-chip" data-range="week">Past 7 Days</button>
+                                    </div>
+                                </div>
+                                <div class="history-filter-row secondary-row">
+                                    <!-- Section Filter -->
+                                    <div class="history-filter-item">
+                                        <label for="historySectionFilter"><i class="fas fa-users-rectangle"></i> Section:</label>
+                                        <select id="historySectionFilter" class="history-select">
+                                            <option value="">All Sections</option>
+                                        </select>
+                                    </div>
+                                    <!-- Status Filter -->
+                                    <div class="history-filter-item">
+                                        <label for="historyStatusFilter"><i class="fas fa-tag"></i> Status:</label>
+                                        <select id="historyStatusFilter" class="history-select">
+                                            <option value="">All Statuses</option>
+                                            <option value="Present">Present (On Time)</option>
+                                            <option value="Late">Late Arrivals</option>
+                                        </select>
+                                    </div>
+                                    <!-- Session Filter -->
+                                    <div class="history-filter-item">
+                                        <label for="historyModeFilter"><i class="fas fa-business-time"></i> Session:</label>
+                                        <select id="historyModeFilter" class="history-select">
+                                            <option value="">All Sessions</option>
+                                            <option value="time_in">Time-In (Entry)</option>
+                                            <option value="time_out">Time-Out (Dismissal)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- History Search & Stats Summary -->
+                            <div class="history-search-summary-bar">
+                                <div class="history-search-wrap">
+                                    <i class="fas fa-search"></i>
+                                    <input type="text" id="historySearchInput"
+                                        placeholder="Search history by student name, LRN, grade, or remarks...">
+                                </div>
+                                <div class="history-stats-pill">
+                                    <span>Records: <strong id="histCountTotal">0</strong></span>
+                                    <span class="text-success"><i class="fas fa-circle-check"></i> <strong id="histCountPresent">0</strong> Present</span>
+                                    <span class="text-warning"><i class="fas fa-circle-exclamation"></i> <strong id="histCountLate">0</strong> Late</span>
+                                </div>
+                            </div>
+
+                            <!-- History Table Container -->
+                            <div class="feed-table-container">
+                                <table class="feed-table history-table" id="historyTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Date & Time</th>
+                                            <th>Student</th>
+                                            <th>Grade & Section</th>
+                                            <th>Status</th>
+                                            <th>Remarks</th>
+                                            <th style="text-align:center;">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="historyTableBody">
+                                        <tr id="emptyHistoryRow">
+                                            <td colspan="6" class="empty-feed-cell">
+                                                <i class="fas fa-calendar-times"></i>
+                                                <p>No attendance history records match your filters.</p>
+                                                <small>Try selecting a different date or clearing the search</small>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
 
-                        <!-- Table Container -->
-                        <div class="feed-table-container">
-                            <table class="feed-table" id="feedTable">
-                                <thead>
-                                    <tr>
-                                        <th>Student</th>
-                                        <th>Grade & Section</th>
-                                        <th>Time Recorded</th>
-                                        <th>Status</th>
-                                        <th style="text-align:center;">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="feedTableBody">
-                                    <tr id="emptyFeedRow">
-                                        <td colspan="5" class="empty-feed-cell">
-                                            <i class="fas fa-qrcode"></i>
-                                            <p>No student QR codes scanned yet today.</p>
-                                            <small>Start the camera or scan a student's ID card to log
-                                                attendance</small>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
                     </div>
 
                 </div>
 
             </div>
         </main>
+    </div>
+
+    <!-- Attendance Record Detail Modal -->
+    <div class="record-detail-modal-overlay" id="recordDetailModal" style="display:none;">
+        <div class="record-detail-modal-card">
+            <div class="detail-modal-header" id="detailModalHeader">
+                <div class="detail-header-title">
+                    <span class="detail-status-badge" id="modalStatusBadge"><i class="fas fa-check-circle"></i> PRESENT</span>
+                    <h3 id="modalStudentName">STUDENT NAME</h3>
+                </div>
+                <button type="button" class="btn-close-modal" id="btnCloseDetailModal" title="Close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="detail-modal-body">
+                <div class="detail-student-profile-row">
+                    <div class="detail-avatar-wrap">
+                        <img src="" alt="Student Photo" id="modalStudentPhoto" style="display:none;">
+                        <div class="detail-avatar-initial" id="modalAvatarInitial">S</div>
+                    </div>
+                    <div class="detail-profile-meta">
+                        <div class="detail-meta-chip"><i class="fas fa-id-card"></i> <span id="modalLrn">LRN: —</span></div>
+                        <div class="detail-meta-chip"><i class="fas fa-hashtag"></i> <span id="modalIdNo">ID: —</span></div>
+                        <div class="detail-meta-chip"><i class="fas fa-graduation-cap"></i> <span id="modalGradeSection">Grade & Section</span></div>
+                        <div class="detail-meta-chip highlight"><i class="fas fa-layer-group"></i> <span id="modalStrand">Strand</span></div>
+                    </div>
+                </div>
+
+                <div class="detail-grid-info">
+                    <div class="detail-info-box">
+                        <label><i class="far fa-calendar-alt"></i> Attendance Date</label>
+                        <div class="val" id="modalDate">—</div>
+                    </div>
+                    <div class="detail-info-box">
+                        <label><i class="far fa-clock"></i> Time Recorded</label>
+                        <div class="val" id="modalTime">—</div>
+                    </div>
+                    <div class="detail-info-box">
+                        <label><i class="fas fa-business-time"></i> Attendance Session</label>
+                        <div class="val" id="modalSessionMode">Morning Class Time-In</div>
+                    </div>
+                    <div class="detail-info-box">
+                        <label><i class="fas fa-chalkboard-user"></i> Recorded By</label>
+                        <div class="val" id="modalRecordedBy">Teacher Adviser</div>
+                    </div>
+                </div>
+
+                <div class="detail-remarks-box">
+                    <label><i class="fas fa-comment-dots"></i> Scanner Remarks / Notes</label>
+                    <p id="modalRemarks">On-time QR scan</p>
+                </div>
+
+                <div class="detail-guardian-box" id="modalGuardianBox">
+                    <div class="guardian-icon"><i class="fas fa-user-shield"></i></div>
+                    <div class="guardian-details">
+                        <label>Parent / Guardian Contact</label>
+                        <strong id="modalGuardianName">—</strong>
+                        <span id="modalGuardianPhone">—</span>
+                    </div>
+                </div>
+            </div>
+            <div class="detail-modal-footer" style="display:flex; justify-content:space-between; align-items:center;">
+                <button type="button" class="btn-modal-action" id="btnToggleRecordStatus" style="display:inline-flex; align-items:center; gap:7px; background:#0b2b4a; color:#fff; border:none; padding:8px 16px; border-radius:8px; font-size:12.5px; font-weight:600; cursor:pointer;">
+                    <i class="fas fa-arrows-rotate"></i> <span id="toggleStatusBtnText">Switch Status</span>
+                </button>
+                <button type="button" class="btn-modal-action btn-modal-close" id="btnModalClose">Close</button>
+            </div>
+        </div>
     </div>
 
     <!-- jsQR Library for QR decoding -->

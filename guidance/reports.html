@@ -8,8 +8,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/base.css">
-    <link rel="stylesheet" href="css/reports.css">
+    <link rel="stylesheet" href="css/base.css?v=2.5">
+    <link rel="stylesheet" href="css/reports.css?v=2.7">
     <link rel="stylesheet" href="../css/chatbot.css">
     <link rel="stylesheet" href="../css/sidebar.css">
     <link rel="stylesheet" href="../css/dashboard_announcements.css">
@@ -84,20 +84,38 @@
             <div class="page-header">
                 <div>
                     <h1>Discipline & Guidance Reports</h1>
-                    <p class="subtitle">Statistical breakdown of student violations, restorative interventions, and
-                        behavioral trends.</p>
+                    <p class="subtitle">Statistical breakdown of student violations, restorative interventions, and behavioral trends.</p>
                 </div>
                 <div class="header-actions">
-                    <button type="button" class="btn-primary" id="btnHeaderPrintByStudent"
-                        style="background: linear-gradient(135deg, #1B2A4A, #1D4ED8); border: none; font-weight: 700; box-shadow: 0 4px 12px rgba(29, 78, 216, 0.25);">
-                        <i class="fas fa-user-graduate"></i> Print by Student
-                    </button>
-                    <button class="btn-secondary btn-print" id="btnPrintReport">
-                        <i class="fas fa-print"></i> Print Whole-School Matrix
-                    </button>
-                    <button class="btn-secondary" id="btnExportCSV">
-                        <i class="fas fa-file-csv"></i> Export CSV
-                    </button>
+                    <div class="notification-wrapper">
+                        <button type="button" class="notification-btn" id="notificationBtn" title="Announcements & Notifications">
+                            <i class="fas fa-bell"></i>
+                            <span class="notif-count empty" id="notifCount" style="display: none;"></span>
+                        </button>
+                        <div class="notification-dropdown" id="notificationDropdown">
+                            <div class="dropdown-header">
+                                <h4><i class="fas fa-bullhorn" style="color: #facc15;"></i> Announcements & Alerts</h4>
+                                <button type="button" id="markAllReadBtn" class="mark-all-read">Mark all as read</button>
+                            </div>
+                            <div class="dropdown-filter-bar" id="notifFilterBar">
+                                <button type="button" class="notif-filter-tab active" data-filter="all">
+                                    <span>All</span> <span class="notif-filter-count" id="notifCountAll">0</span>
+                                </button>
+                                <button type="button" class="notif-filter-tab" data-filter="unread">
+                                    <span>Unread</span> <span class="notif-filter-count" id="notifCountUnread">0</span>
+                                </button>
+                            </div>
+                            <div class="dropdown-body" id="notificationList">
+                                <div class="empty-notifications">
+                                    <i class="fas fa-bell-slash"></i>
+                                    <p>No new notices yet</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="date-badge" id="currentDateDisplay">
+                        <i class="fas fa-calendar-alt"></i> Loading date...
+                    </div>
                 </div>
             </div>
 
@@ -112,40 +130,86 @@
             </div>
 
             <div id="viewWholeSchool">
-                <div class="summary-stats-box">
-                    <div class="summary-stats-flex">
-                        <div class="summary-stat-item">
-                            <h4 id="reportTotalIncidents">0</h4>
-                            <p>Total Recorded Incidents</p>
+                <!-- Executive Summary Stat Cards -->
+                <div class="reports-stats-grid">
+                    <div class="report-stat-card card-primary">
+                        <div class="stat-card-top">
+                            <span class="stat-card-title">Total Incidents</span>
+                            <div class="stat-card-icon">
+                                <i class="fas fa-clipboard-list"></i>
+                            </div>
                         </div>
-                        <div class="summary-stat-item">
-                            <h4 id="reportMinorCount" style="color: var(--warning);">0</h4>
-                            <p>Minor Infractions</p>
+                        <div class="stat-card-number" id="reportTotalIncidents">0</div>
+                        <div class="stat-card-meta">
+                            <i class="fas fa-calendar-check"></i> <span>Recorded in Current SY</span>
                         </div>
-                        <div class="summary-stat-item">
-                            <h4 id="reportMajorCount" style="color: var(--danger);">0</h4>
-                            <p>Major Cases</p>
+                    </div>
+
+                    <div class="report-stat-card card-warning">
+                        <div class="stat-card-top">
+                            <span class="stat-card-title">Minor Infractions</span>
+                            <div class="stat-card-icon">
+                                <i class="fas fa-triangle-exclamation"></i>
+                            </div>
                         </div>
-                        <div class="summary-stat-item">
-                            <h4 id="reportResolvedRate" style="color: var(--success);">0%</h4>
-                            <p>Resolution Rate</p>
+                        <div class="stat-card-number stat-warning" id="reportMinorCount">0</div>
+                        <div class="stat-card-meta">
+                            <i class="fas fa-file-lines"></i> <span>Reprimands & Warnings</span>
+                        </div>
+                    </div>
+
+                    <div class="report-stat-card card-danger">
+                        <div class="stat-card-top">
+                            <span class="stat-card-title">Major Cases</span>
+                            <div class="stat-card-icon">
+                                <i class="fas fa-circle-exclamation"></i>
+                            </div>
+                        </div>
+                        <div class="stat-card-number stat-danger" id="reportMajorCount">0</div>
+                        <div class="stat-card-meta">
+                            <i class="fas fa-hand-holding-heart"></i> <span>Intervention & Conference</span>
+                        </div>
+                    </div>
+
+                    <div class="report-stat-card card-success">
+                        <div class="stat-card-top">
+                            <span class="stat-card-title">Resolution Rate</span>
+                            <div class="stat-card-icon">
+                                <i class="fas fa-circle-check"></i>
+                            </div>
+                        </div>
+                        <div class="stat-card-number stat-success" id="reportResolvedRate">0%</div>
+                        <div class="stat-card-meta">
+                            <i class="fas fa-shield-halved"></i> <span>Resolved & Completed</span>
                         </div>
                     </div>
                 </div>
 
                 <div class="analytics-grid">
                     <div class="chart-card">
-                        <div class="card-header-flex">
-                            <h3><i class="fas fa-chart-pie"></i> Violation Severity Breakdown</h3>
+                        <div class="chart-header">
+                            <div class="chart-header-text">
+                                <h3><i class="fas fa-chart-pie"></i> Violation Severity Breakdown</h3>
+                                <p class="chart-subtitle">Ratio of minor infractions vs. major behavioral cases</p>
+                            </div>
+                            <span class="chart-badge badge-severity"><i class="fas fa-circle-dot"></i> Ratio</span>
                         </div>
                         <div class="chart-container">
                             <canvas id="severityChart"></canvas>
+                            <div class="doughnut-center-info">
+                                <span class="center-total" id="severityCenterTotal">0</span>
+                                <span class="center-label">Total Cases</span>
+                            </div>
                         </div>
                     </div>
 
                     <div class="chart-card">
-                        <div class="card-header-flex">
-                            <h3><i class="fas fa-chart-bar"></i> Infractions by Offense Level</h3>
+                        <div class="chart-header">
+                            <div class="chart-header-text">
+                                <h3><i class="fas fa-chart-column"></i> Infractions by Offense Level</h3>
+                                <p class="chart-subtitle">Distribution of repeat infractions from 1st to 4th+ offense</p>
+                            </div>
+                            <span class="chart-badge badge-offense"><i class="fas fa-layer-group"></i> Offense Tiers</span>
                         </div>
                         <div class="chart-container">
                             <canvas id="offenseLevelChart"></canvas>
@@ -153,41 +217,52 @@
                     </div>
                 </div>
 
-                <!-- Full Breakdown Incident Table -->
-                <div class="content-card">
-                    <div class="card-header-flex">
-                        <div>
+                <!-- Full Breakdown Incident Table Card -->
+                <div class="content-card matrix-card">
+                    <div class="matrix-card-header">
+                        <div class="matrix-header-title">
                             <h3><i class="fas fa-table-list"></i> Academic Year Discipline Case Matrix</h3>
-                            <p style="font-size: 12.5px; color: var(--text-muted); margin: 3px 0 0 0;">All reported
-                                incidents recorded for the current school year.</p>
+                            <p class="matrix-header-subtitle">Comprehensive official record of student offenses and restorative actions.</p>
                         </div>
-                        <div style="display: flex; gap: 8px;">
-                            <button type="button" class="btn-primary btn-print" id="btnPrintSchoolBondPaper">
+                        <div class="matrix-header-controls">
+                            <div class="matrix-search-box">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="matrixSearchInput" placeholder="Filter student or LRN..." autocomplete="off">
+                            </div>
+                            <select id="matrixCategoryFilter" class="matrix-select-filter">
+                                <option value="all">All Severities</option>
+                                <option value="minor">Minor Infractions</option>
+                                <option value="major">Major Violations</option>
+                            </select>
+                            <button type="button" class="btn-matrix-csv" id="btnExportCSV">
+                                <i class="fas fa-file-csv"></i> Export CSV
+                            </button>
+                            <button type="button" class="btn-print-bond" id="btnPrintSchoolBondPaper">
                                 <i class="fas fa-print"></i> Print on Bond Paper
                             </button>
                         </div>
                     </div>
 
                     <div class="table-responsive">
-                        <table class="hes-table">
+                        <table class="hes-table" id="wholeSchoolTable">
                             <thead>
                                 <tr>
-                                    <th>Incident Date</th>
-                                    <th>Student Name</th>
-                                    <th>LRN</th>
-                                    <th>Grade & Strand</th>
-                                    <th>Violation Category</th>
-                                    <th>Offense Title</th>
-                                    <th>Action / Sanction</th>
-                                    <th>Status</th>
-                                    <th style="text-align: right;">Action</th>
+                                    <th class="col-date">Incident Date</th>
+                                    <th class="col-student">Student Name</th>
+                                    <th class="col-lrn">LRN</th>
+                                    <th class="col-grade">Grade & Strand</th>
+                                    <th class="col-category">Category</th>
+                                    <th class="col-offense">Offense Title</th>
+                                    <th class="col-sanction">Action / Sanction</th>
+                                    <th class="col-status">Status</th>
+                                    <th class="col-action" style="text-align: right;">Action</th>
                                 </tr>
                             </thead>
                             <tbody id="reportTableBody">
                                 <tr>
                                     <td colspan="9"
-                                        style="text-align: center; color: var(--text-muted); padding: 30px;">
-                                        Loading report matrix...
+                                        style="text-align: center; color: var(--text-muted); padding: 36px;">
+                                        <i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i> Loading report matrix...
                                     </td>
                                 </tr>
                             </tbody>
@@ -579,8 +654,8 @@
         }
     </style>
 
-    <script type="module" src="js/reports.js"></script>
-    <script type="module" src="../js/dashboard_announcements_notifier.js"></script>
+    <script type="module" src="js/reports.js?v=2.7"></script>
+    <script type="module" src="../js/dashboard_announcements_notifier.js?v=2.7"></script>
 </body>
 
 </html>

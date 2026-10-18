@@ -91,19 +91,29 @@
                 </div>
                 <div class="header-actions">
                     <div class="notification-wrapper">
-                        <a href="#" class="notification-btn" id="notificationBtn">
+                        <a href="#" class="notification-btn" id="notificationBtn" title="Announcements & Notifications">
                             <i class="fas fa-bell"></i>
-                            <span class="notif-count" id="notifCount">0</span>
+                            <span class="notif-count empty" id="notifCount" style="display: none;">0</span>
                         </a>
                         <div class="notification-dropdown" id="notificationDropdown">
                             <div class="dropdown-header">
-                                <h4>Notifications</h4>
-                                <button id="markAllReadBtn" class="mark-all-read">Mark all as read</button>
+                                <h4><i class="fas fa-bullhorn" style="color: #facc15;"></i> Announcements & Alerts</h4>
+                                <button type="button" id="markAllReadBtn" class="mark-all-read" title="Mark all as read">
+                                    <i class="fas fa-check-double"></i> Mark all read
+                                </button>
+                            </div>
+                            <div class="dropdown-filter-bar" id="notifFilterBar">
+                                <button type="button" class="notif-filter-tab active" data-filter="all">
+                                    <span>All</span> <span class="notif-filter-count" id="notifCountAll">0</span>
+                                </button>
+                                <button type="button" class="notif-filter-tab" data-filter="unread">
+                                    <span>Unread</span> <span class="notif-filter-count" id="notifCountUnread">0</span>
+                                </button>
                             </div>
                             <div class="dropdown-body" id="notificationList">
                                 <div class="empty-notifications">
                                     <i class="fas fa-bell-slash"></i>
-                                    <p>No notifications yet</p>
+                                    <p>No new notices yet</p>
                                 </div>
                             </div>
                         </div>
@@ -143,18 +153,6 @@
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
-                </div>
-            </div>
-
-            <!-- Student Type Information Card -->
-            <div class="student-type-card">
-                <div class="student-type-icon" id="studentTypeIcon" style="background: #197e2f;">
-                    <i class="fas fa-star"></i>
-                </div>
-                <div class="student-type-info">
-                    <h3 id="studentTypeTitle">New Student</h3>
-                    <p id="studentTypeDesc">First time enrollee</p>
-                    <small id="studentTypeSub"><i class="fas fa-graduation-cap"></i> First time enrollment</small>
                 </div>
             </div>
 

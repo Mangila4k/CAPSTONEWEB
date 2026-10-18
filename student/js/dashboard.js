@@ -38,20 +38,6 @@ import { supabase } from '../../supabase/config.js';
     const rateProgressFill = document.getElementById('rateProgressFill');
     const attendanceRateLabel = document.getElementById('attendanceRateLabel');
 
-    // Notifications
-    const notifBtn = document.getElementById('notificationBtn');
-    const notifDropdown = document.getElementById('notificationDropdown');
-    const notifList = document.getElementById('notificationList');
-    const notifCount = document.getElementById('notifCount');
-    const markAllBtn = document.getElementById('markAllReadBtn');
-
-    // Student Type
-    const studentTypeBadge = document.getElementById('studentTypeBadge');
-    const studentTypeIcon = document.getElementById('studentTypeIcon');
-    const studentTypeTitle = document.getElementById('studentTypeTitle');
-    const studentTypeDesc = document.getElementById('studentTypeDesc');
-    const studentTypeSub = document.getElementById('studentTypeSub');
-
     // Activities
     const recentActivities = document.getElementById('recentActivities');
 
@@ -177,13 +163,20 @@ import { supabase } from '../../supabase/config.js';
 
             // 1. Fetch student info
             let studentRow = null;
+            let allStudentRows = [];
             try {
+                let orParts = [];
+                if (userEmail) orParts.push(`email.ilike.${userEmail}`);
+                if (userUid) orParts.push(`id.eq.${userUid}`);
+                if (sessionUser?.student_id) orParts.push(`id.eq.${sessionUser.student_id}`);
+                if (sessionUser?.lrn) orParts.push(`lrn.eq.${sessionUser.lrn}`);
                 const { data: studentsData } = await supabase
                     .from('students')
                     .select('*')
-                    .or(`email.eq.${userEmail},id.eq.${userUid}`);
+                    .or(orParts.join(','));
 
                 if (studentsData && studentsData.length > 0) {
+                    allStudentRows = studentsData;
                     studentRow = studentsData[0];
                     currentStudentRow = studentRow;
                     let fullName = `${studentRow.first_name || ''} ${studentRow.last_name || ''}`.trim();
@@ -296,79 +289,253 @@ import { supabase } from '../../supabase/config.js';
             if (bannerStrand) bannerStrand.textContent = strandVal;
             if (bannerSchoolYear) bannerSchoolYear.textContent = syVal;
 
-            // Fetch subjects count
+            // Fetch subjects count for this student's grade level & strand (dynamic, not hardcoded)
             try {
-                const { count } = await supabase
-                    .from('subjects')
-                    .select('*', { count: 'exact', head: true });
-                if (subjectsCount) {
-                    subjectsCount.textContent = count && count > 0 ? count : (latest ? 8 : 0);
+                const gradeNum = (gradeVal || '').replace(/\D/g, ''); // e.g. "Grade 8" -> "8"
+                if (gradeNum) {
+                    let subQuery = supabase
+                        .from('subjects')
+                        .select('*', { count: 'exact', head: true })
+                        .eq('grade_level', gradeNum);
+                    
+                    if ((gradeNum === '11' || gradeNum === '12') && strandVal && strandVal !== '—') {
+                        subQuery = subQuery.or(`strand.eq.${strandVal},strand.is.null`);
+                    }
+
+                    const { count: sCount, error: sErr } = await subQuery;
+                    if (!sErr && sCount !== null) {
+                        if (subjectsCount) subjectsCount.textContent = String(sCount);
+                    } else {
+                        if (subjectsCount) subjectsCount.textContent = latest ? '8' : '0';
+                    }
+                } else {
+                    if (subjectsCount) subjectsCount.textContent = latest ? '8' : '0';
                 }
             } catch(e) {
-                if (subjectsCount) subjectsCount.textContent = latest ? 8 : 0;
+                if (subjectsCount) subjectsCount.textContent = latest ? '8' : '0';
             }
 
-            // Average grade
-            const avg = latest?.general_average ? `${latest.general_average}%` : (latest ? '88.50%' : '--');
+            // Average grade - dynamically calculate from student grades table or enrollment record
+            let avg = '--';
+            try {
+                const studentLookupId = studentRow?.id || studentId;
+                let gQuery = supabase.from('grades').select('grade');
+                if (studentLookupId) {
+                    gQuery = gQuery.eq('student_id', studentLookupId);
+                } else if (userEmail) {
+                    gQuery = gQuery.eq('email', userEmail);
+                }
+                const { data: gData } = await gQuery;
+                if (gData && gData.length > 0) {
+                    const numericGrades = gData.map(g => Number(g.grade)).filter(g => !isNaN(g) && g > 0);
+                    if (numericGrades.length > 0) {
+                        const sum = numericGrades.reduce((a, b) => a + b, 0);
+                        avg = `${(sum / numericGrades.length).toFixed(2)}%`;
+                    }
+                } else if (latest?.general_average) {
+                    avg = `${latest.general_average}%`;
+                }
+            } catch(e) {}
             if (averageGrade) averageGrade.textContent = avg;
 
-            // 4. Fetch Student Attendance
+            // 4. Fetch Student Attendance (Database + Teacher Live Scans)
             let attendanceRecords = [];
 
             try {
-                let attQuery = supabase.from('attendance').select('*');
-                if (studentId) {
-                    attQuery = attQuery.eq('student_id', studentId);
-                } else if (userEmail) {
-                    attQuery = attQuery.eq('email', userEmail);
-                }
-                const { data: attData, error: attErr } = await attQuery.order('date', { ascending: false });
-                if (!attErr && attData && attData.length > 0) {
-                    attendanceRecords = attData;
+                const studentLookupIds = new Set([
+                    studentRow?.id,
+                    studentId,
+                    sessionUser?.id,
+                    sessionUser?.uid,
+                    sessionUser?.student_id,
+                    ...allStudentRows.map(s => s.id)
+                ].filter(Boolean).map(String));
+
+                if (studentLookupIds.size > 0) {
+                    const orList = Array.from(studentLookupIds).map(id => `student_id.eq.${id}`).join(',');
+                    const { data: attData, error: attErr } = await supabase
+                        .from('attendance')
+                        .select('*')
+                        .or(orList)
+                        .order('date', { ascending: false });
+
+                    if (!attErr && Array.isArray(attData) && attData.length > 0) {
+                        attendanceRecords = attData;
+                    }
                 }
             } catch (e) {}
 
-            // Check local synced attendance
-            if (attendanceRecords.length === 0) {
-                try {
-                    const storedAdminAtt = localStorage.getItem('hes_student_attendance');
-                    if (storedAdminAtt) {
-                        const parsed = JSON.parse(storedAdminAtt);
-                        if (Array.isArray(parsed)) {
-                            const myMatches = parsed.filter(item => {
-                                const matchLRN = item.lrn && String(item.lrn) === String(lrnVal);
-                                const matchName = item.name && item.name.toLowerCase() === studentDisplayName.toLowerCase();
-                                const matchId = item.student_id && String(item.student_id) === String(studentId);
-                                return matchLRN || matchName || matchId;
-                            });
-                            if (myMatches.length > 0) {
-                                attendanceRecords = myMatches;
+            // Load shared teacher-scanned attendance records
+            try {
+                const sharedList = [];
+                const norm = v => (v || '').toString().toLowerCase().trim();
+
+                const studentMatchValues = new Set([
+                    studentRow?.id,
+                    studentRow?.lrn,
+                    studentId,
+                    sessionUser?.id,
+                    sessionUser?.uid,
+                    sessionUser?.student_id,
+                    sessionUser?.studentTableId,
+                    sessionUser?.lrn,
+                    lrnVal,
+                    ...allStudentRows.map(s => s.id),
+                    ...allStudentRows.map(s => s.lrn)
+                ].filter(Boolean).map(norm));
+
+                const studentNameSet = new Set();
+                if (studentDisplayName) studentNameSet.add(norm(studentDisplayName));
+                if (sessionUser?.displayName) studentNameSet.add(norm(sessionUser.displayName));
+                if (sessionUser?.firstName || sessionUser?.lastName) {
+                    studentNameSet.add(norm(`${sessionUser.firstName || ''} ${sessionUser.lastName || ''}`));
+                }
+                if (sessionUser?.first_name || sessionUser?.last_name) {
+                    studentNameSet.add(norm(`${sessionUser.first_name || ''} ${sessionUser.last_name || ''}`));
+                }
+                if (sessionUser?.name) studentNameSet.add(norm(sessionUser.name));
+                allStudentRows.forEach(p => {
+                    const full = `${p.first_name || ''} ${p.last_name || ''}`.trim();
+                    if (full) studentNameSet.add(norm(full));
+                    if (p.full_name) studentNameSet.add(norm(p.full_name));
+                });
+                if (latest) {
+                    const lFull = `${latest.first_name || ''} ${latest.last_name || ''}`.trim();
+                    if (lFull) studentNameSet.add(norm(lFull));
+                }
+
+                function matchesStu(rec) {
+                    if (!rec) return false;
+                    const rId = norm(rec.student_id || rec.studentId || rec.id);
+                    const rLrn = norm(rec.lrn);
+                    const rEmail = norm(rec.email || rec.student_email);
+                    const rName = norm(rec.student_name || rec.name || rec.studentName || rec.full_name);
+
+                    if (rId && studentMatchValues.has(rId)) return true;
+                    if (rLrn && studentMatchValues.has(rLrn)) return true;
+                    if (userEmail && rEmail && norm(userEmail) === rEmail) return true;
+
+                    if (rName) {
+                        for (const sName of studentNameSet) {
+                            if (!sName) continue;
+                            if (rName === sName || rName.includes(sName) || sName.includes(rName)) return true;
+                            const parts = sName.split(/\s+/).filter(Boolean);
+                            if (parts.length >= 2) {
+                                const flipped = `${parts[parts.length - 1]}, ${parts.slice(0, -1).join(' ')}`;
+                                const reversed = `${parts[parts.length - 1]} ${parts.slice(0, -1).join(' ')}`;
+                                if (rName.includes(flipped) || flipped.includes(rName) || rName.includes(reversed)) return true;
                             }
                         }
                     }
-                } catch(e) {}
-            }
-
-            function isWeekend(dateStr) {
-                if (!dateStr) return false;
-                try {
-                    const d = new Date(dateStr + 'T00:00:00');
-                    const day = d.getDay();
-                    return day === 0 || day === 6;
-                } catch {
                     return false;
                 }
-            }
 
-            // Fallback generation if no records yet
-            if (attendanceRecords.length === 0) {
-                attendanceRecords = generateStudentAttendanceSnippet(studentDisplayName, lrnVal);
-            }
+                // Check hes_attendance_records
+                const centralRaw = localStorage.getItem('hes_attendance_records');
+                if (centralRaw) {
+                    const list = JSON.parse(centralRaw);
+                    if (Array.isArray(list)) list.forEach(r => { if (matchesStu(r)) sharedList.push(r); });
+                }
 
-            // Strictly filter out any weekend attendance records
-            attendanceRecords = attendanceRecords.filter(r => !isWeekend(r.date));
+                // Check hes_student_attendance
+                const hesStuRaw = localStorage.getItem('hes_student_attendance');
+                if (hesStuRaw) {
+                    const list = JSON.parse(hesStuRaw);
+                    if (Array.isArray(list)) list.forEach(r => { if (matchesStu(r)) sharedList.push(r); });
+                }
 
-            // Calculate attendance rate
+                // Check direct student keys
+                const directKeys = new Set([...Array.from(studentMatchValues), norm(userEmail), ...Array.from(studentNameSet)].filter(Boolean));
+                directKeys.forEach(val => {
+                    const dRaw = localStorage.getItem(`hes_student_attendance_${val}`);
+                    if (dRaw) {
+                        const dObj = JSON.parse(dRaw);
+                        if (Array.isArray(dObj)) dObj.forEach(r => { if (matchesStu(r) || !r.student_id) sharedList.push(r); });
+                        else if (dObj && typeof dObj === 'object') {
+                            if (matchesStu(dObj) || !dObj.student_id) sharedList.push(dObj);
+                        }
+                    }
+                });
+
+                // Check qr scans
+                for (let i = 0; i < localStorage.length; i++) {
+                    const k = localStorage.key(i);
+                    if (k && (k.startsWith('hes_qr_scans_') || k === 'todayScans')) {
+                        const sData = JSON.parse(localStorage.getItem(k) || '[]');
+                        if (Array.isArray(sData)) {
+                            sData.forEach(r => {
+                                if (matchesStu(r)) {
+                                    sharedList.push({
+                                        id: r.id,
+                                        student_id: r.studentId || r.student_id,
+                                        lrn: r.lrn,
+                                        student_name: r.name || r.student_name,
+                                        date: r.date,
+                                        status: r.status,
+                                        time_in: r.time || r.time_in,
+                                        teacher_name: r.teacher_name || localStorage.getItem('hes_teacher_name') || 'Class Adviser',
+                                        remarks: r.remarks || (r.status === 'Late' ? 'Late arrival recorded via QR Scanner' : 'On-time QR scan')
+                                    });
+                                }
+                            });
+                        }
+                    }
+                }
+
+                // Check date rosters
+                for (let i = 0; i < localStorage.length; i++) {
+                    const k = localStorage.key(i);
+                    if (k && k.startsWith('hes_student_attendance_20')) {
+                        const dateStr = k.replace('hes_student_attendance_', '');
+                        if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+                            const dateMap = JSON.parse(localStorage.getItem(k) || '{}');
+                            if (dateMap && typeof dateMap === 'object') {
+                                Object.keys(dateMap).forEach(key => {
+                                    const entry = dateMap[key];
+                                    const normKey = norm(key);
+                                    if (studentMatchValues.has(normKey) || (userEmail && normKey === norm(userEmail)) || studentNameSet.has(normKey)) {
+                                        sharedList.push({
+                                            student_id: key,
+                                            date: dateStr,
+                                            status: entry.status || 'Present',
+                                            time_in: entry.timeIn || entry.time_in || '08:00 AM',
+                                            teacher_name: entry.teacher_name || localStorage.getItem('hes_teacher_name') || 'Class Adviser',
+                                            remarks: entry.remarks || 'Recorded in class roster'
+                                        });
+                                    }
+                                });
+                            }
+                        }
+                    }
+                }
+
+                // Merge into attendanceRecords map
+                const map = new Map();
+                attendanceRecords.forEach(r => {
+                    if (r?.date) {
+                        const clean = (r.status || 'present').charAt(0).toUpperCase() + (r.status || 'present').slice(1).toLowerCase();
+                        map.set(r.date, { ...r, status: clean, time_in: r.time_in || r.timeIn || null, teacher_name: r.teacher_name || null });
+                    }
+                });
+                sharedList.forEach(r => {
+                    if (r?.date) {
+                        const clean = (r.status || 'Present').charAt(0).toUpperCase() + (r.status || 'Present').slice(1).toLowerCase();
+                        const existing = map.get(r.date) || {};
+                        map.set(r.date, {
+                            ...existing,
+                            ...r,
+                            status: clean,
+                            time_in: r.time_in || r.time || existing.time_in || null,
+                            teacher_name: r.teacher_name || existing.teacher_name || localStorage.getItem('hes_teacher_name') || 'Class Adviser',
+                            remarks: r.remarks || existing.remarks || ''
+                        });
+                    }
+                });
+
+                attendanceRecords = Array.from(map.values()).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+            } catch (e) {}
+
+            // Calculate attendance rate from real records
             if (attendanceRecords.length > 0) {
                 const totalDays = attendanceRecords.length;
                 let attended = 0;
@@ -383,15 +550,12 @@ import { supabase } from '../../supabase/config.js';
                     attendanceRateLabel.innerHTML = `<i class="fas fa-check-circle text-success"></i> ${attended}/${totalDays} Days Present`;
                 }
             } else {
-                if (attendanceRate) attendanceRate.textContent = '100%';
-                if (rateProgressFill) rateProgressFill.style.width = '100%';
+                if (attendanceRate) attendanceRate.textContent = '--%';
+                if (rateProgressFill) rateProgressFill.style.width = '0%';
                 if (attendanceRateLabel) {
-                    attendanceRateLabel.innerHTML = `<i class="fas fa-check-circle text-success"></i> Perfect Standing`;
+                    attendanceRateLabel.innerHTML = `<i class="fas fa-calendar-times" style="color: #64748b;"></i> No records yet`;
                 }
             }
-
-            // Student Type
-            determineStudentType(enrollments, studentRow);
 
             // Recent attendance activities
             renderRecentActivities(attendanceRecords.slice(0, 5));
@@ -401,119 +565,7 @@ import { supabase } from '../../supabase/config.js';
         }
     }
 
-    // ============================================
-    // GENERATE ATTENDANCE SNIPPET HELPER
-    // ============================================
 
-    function generateStudentAttendanceSnippet(studentName, lrn) {
-        const logs = [];
-        const todayObj = new Date();
-        const todayStr = todayObj.toISOString().split('T')[0];
-        let dayOffset = 0;
-        let count = 0;
-
-        while (count < 10 && dayOffset < 20) {
-            const d = new Date(todayObj);
-            d.setDate(todayObj.getDate() - dayOffset);
-            dayOffset++;
-
-            const dayOfWeek = d.getDay();
-            if (dayOfWeek === 0 || dayOfWeek === 6) continue;
-
-            const dateStr = d.toISOString().split('T')[0];
-            const hash = (d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate() + (lrn.charCodeAt(lrn.length - 1) || 7));
-            const roll = hash % 100;
-
-            let status = 'Present';
-            let timeIn = '07:20 AM';
-            let timeOut = '04:30 PM';
-            let remarks = 'On time';
-
-            if (dateStr === todayStr && dayOfWeek !== 0 && dayOfWeek !== 6) {
-                timeIn = '07:18 AM';
-                timeOut = '04:30 PM';
-                status = 'Present';
-                remarks = 'On time';
-            } else if (roll < 10) {
-                status = 'Late';
-                timeIn = '08:15 AM';
-                timeOut = '04:30 PM';
-                remarks = 'Traffic';
-            } else if (roll === 12) {
-                status = 'Excused';
-                timeIn = '—';
-                timeOut = '—';
-                remarks = 'Official reason';
-            } else {
-                status = 'Present';
-                timeIn = '07:25 AM';
-                timeOut = '04:30 PM';
-                remarks = 'On time';
-            }
-
-            logs.push({
-                date: dateStr,
-                time_in: timeIn,
-                time_out: timeOut,
-                timeIn: timeIn,
-                timeOut: timeOut,
-                status: status,
-                remarks: remarks
-            });
-            count++;
-        }
-        return logs;
-    }
-
-    // ============================================
-    // DETERMINE STUDENT TYPE
-    // ============================================
-
-    function determineStudentType(enrollments, studentRow) {
-        const count = enrollments.length;
-        let icon = 'fa-star';
-        let color = '#0b2b4a';
-        let display = 'New Student';
-        let description = 'First time enrollee';
-        let subText = '<i class="fas fa-graduation-cap"></i> First time enrollment';
-
-        if (count > 1) {
-            icon = 'fa-undo-alt';
-            display = 'Continuing Student';
-            description = 'Continuing student - progressing to next grade level';
-            subText = '<i class="fas fa-user-graduate"></i> Academic progression';
-        }
-
-        const hasOldSchool = enrollments.some(e => e.previous_school || e.previousSchool);
-        if (hasOldSchool && count <= 1) {
-            icon = 'fa-exchange-alt';
-            display = 'Transferee Student';
-            description = 'Transferred from another school - requirements verified';
-            subText = '<i class="fas fa-school"></i> Transferred from previous school';
-        }
-
-        if (studentTypeBadge) {
-            studentTypeBadge.style.background = color;
-            studentTypeBadge.innerHTML = `<i class="fas ${icon}"></i> ${display}`;
-        }
-
-        if (studentTypeIcon) {
-            studentTypeIcon.style.background = color;
-            studentTypeIcon.innerHTML = `<i class="fas ${icon}"></i>`;
-        }
-
-        if (studentTypeTitle) {
-            studentTypeTitle.textContent = display;
-        }
-
-        if (studentTypeDesc) {
-            studentTypeDesc.textContent = description;
-        }
-
-        if (studentTypeSub) {
-            studentTypeSub.innerHTML = subText;
-        }
-    }
 
     // ============================================
     // RENDER RECENT ATTENDANCE ACTIVITIES
@@ -571,6 +623,7 @@ import { supabase } from '../../supabase/config.js';
                         </div>
                         <div class="activity-time">
                             <i class="far fa-clock"></i> In: <strong>${timeInStr}</strong> | Out: <strong>${timeOutStr}</strong> • ${item.remarks || 'On time'}
+                            ${item.teacher_name ? `<div style="font-size: 11px; color: #0284c7; margin-top: 2px;"><i class="fas fa-chalkboard-teacher"></i> Recorded by: Teacher ${item.teacher_name}</div>` : ''}
                         </div>
                     </div>
                     <div class="activity-status ${statusTextClass}">
@@ -582,346 +635,40 @@ import { supabase } from '../../supabase/config.js';
     }
 
     // ============================================
-    // LOAD NOTIFICATIONS (from Supabase or Local)
+    // NOTIFICATIONS & ANNOUNCEMENTS
     // ============================================
-
-    async function loadNotifications() {
-        let notifications = [];
-
-        // 1. Gather all valid IDs and emails for this student
-        const validUids = new Set([
-            sessionUser?.uid,
-            sessionUser?.id,
-            sessionUser?.user_id,
-            sessionUser?.student_id,
-            currentStudentRow?.id,
-            currentStudentRow?.user_id,
-            currentStudentRow?.student_id
-        ].filter(Boolean).map(String));
-
-        const validEmails = new Set([
-            sessionUser?.email,
-            currentStudentRow?.email
-        ].filter(Boolean).map(e => e.trim().toLowerCase()));
-
-        // Build student name tokens for personalization verification
-        const studentNameTokens = new Set();
-        const namesToProcess = [
-            studentDisplayName,
-            currentStudentRow?.first_name,
-            currentStudentRow?.last_name,
-            sessionUser?.firstName,
-            sessionUser?.lastName,
-            sessionUser?.displayName
-        ];
-        namesToProcess.filter(Boolean).forEach(n => {
-            n.toLowerCase().split(/[\s,.-]+/).forEach(tok => {
-                if (tok.length >= 3) studentNameTokens.add(tok);
-            });
-        });
-
-        // Helper: verify that a notification is strictly meant for this student
-        function isForThisStudent(notif) {
-            if (!notif) return false;
-
-            const notifUid = notif.user_id ? String(notif.user_id) : '';
-            const notifStudentId = notif.student_id ? String(notif.student_id) : '';
-            const notifEmail = (notif.recipient_email || notif.email) ? String(notif.recipient_email || notif.email).toLowerCase().trim() : '';
-
-            // If explicitly matches this student's IDs or email
-            if (notifUid && validUids.has(notifUid)) return true;
-            if (notifStudentId && validUids.has(notifStudentId)) return true;
-            if (notifEmail && validEmails.has(notifEmail)) return true;
-
-            // If explicitly targeted to ANOTHER user/email, strictly reject!
-            if (notifUid && !validUids.has(notifUid)) return false;
-            if (notifStudentId && !validUids.has(notifStudentId)) return false;
-            if (notifEmail && !validEmails.has(notifEmail)) return false;
-
-            // Check if title or message contains personalized salutations for someone else
-            const fullText = `${notif.title || ''} ${notif.message || ''}`.toLowerCase();
-            const salutationMatch = fullText.match(/(?:dear|notice for|congratulations|attention to|hello|hi|student:?)\s+([a-z]+(?:\s+[a-z]+)?)/i);
-            if (salutationMatch && salutationMatch[1]) {
-                const addressedName = salutationMatch[1].trim().toLowerCase();
-                let matchFound = false;
-                for (const tok of studentNameTokens) {
-                    if (addressedName.includes(tok)) {
-                        matchFound = true;
-                        break;
-                    }
-                }
-                if (!matchFound) {
-                    // Belongs to another student (e.g. Mylene when logged in as Jorvin) -> REJECT!
-                    return false;
-                }
+    // Notifications and announcements are unified globally via dashboard_announcements_notifier.js
+    async function syncNotifications() {
+        if (window.DashboardAnnouncements && typeof window.DashboardAnnouncements.refresh === 'function') {
+            try {
+                await window.DashboardAnnouncements.refresh();
+            } catch (e) {
+                console.warn('Dashboard announcements sync notice:', e);
             }
-
-            // For general announcements without specific targeting
-            const generalTypes = ['broadcast', 'announcement', 'general', 'update', 'system'];
-            if (generalTypes.includes(notif.type) && !notif.user_id && !notif.student_id) {
-                return true;
-            }
-
-            // If it was a personal notification type (document reminder, enrollment notice, attendance) but lacked user IDs
-            return false;
-        }
-
-        // 2. Fetch from Supabase
-        try {
-            const orClauses = [];
-            validUids.forEach(id => {
-                orClauses.push(`user_id.eq.${id}`);
-                orClauses.push(`student_id.eq.${id}`);
-            });
-            validEmails.forEach(em => {
-                orClauses.push(`recipient_email.eq.${em}`);
-            });
-
-            // Also allow system broadcasts
-            orClauses.push('and(role.eq.student,user_id.is.null,student_id.is.null,recipient_email.is.null,type.in.(broadcast,announcement,general,update))');
-
-            let query = supabase
-                .from('notifications')
-                .select('*')
-                .order('created_at', { ascending: false })
-                .limit(30);
-
-            if (orClauses.length > 0) {
-                query = query.or(orClauses.join(','));
-            }
-
-            const { data } = await query;
-            
-            if (data && data.length > 0) {
-                data.forEach(n => {
-                    if (isForThisStudent(n)) {
-                        notifications.push({
-                            id: n.id,
-                            type: n.type || 'action',
-                            title: n.title,
-                            message: n.message,
-                            time: new Date(n.created_at).toLocaleDateString(),
-                            read: n.read === true || n.is_read === true
-                        });
-                    }
-                });
-            }
-        } catch(e) {
-            console.warn('Notifications fetch warning:', e);
-        }
-
-        // 3. Fetch from localStorage student notifications (strictly per-student keys)
-        try {
-            const keysToCheck = new Set([...validUids, ...validEmails]);
-            keysToCheck.forEach(kId => {
-                const localRaw = localStorage.getItem(`hes_notifications_${kId}`);
-                if (localRaw) {
-                    const localList = JSON.parse(localRaw);
-                    if (Array.isArray(localList)) {
-                        localList.forEach(loc => {
-                            if (isForThisStudent(loc) && !notifications.some(n => String(n.id) === String(loc.id) || n.message === loc.message)) {
-                                notifications.unshift({
-                                    id: loc.id || 'loc_' + Math.random().toString(36).substr(2, 6),
-                                    type: loc.type || 'action',
-                                    title: loc.title,
-                                    message: loc.message,
-                                    time: loc.time || 'Today',
-                                    read: loc.read || false
-                                });
-                            }
-                        });
-                    }
-                }
-            });
-        } catch(e) {}
-
-        // Fallback generic announcement if none found
-        if (notifications.length === 0) {
-            notifications = [
-                { id: 1, type: 'update', title: '📢 Enrollment Period Open', message: 'Welcome to HES! The enrollment period for SY 2026-2027 is now open.', time: 'Today', read: false },
-                { id: 2, type: 'reminder', title: '⏰ Requirements Submission', message: 'Please ensure all your enrollment requirements are submitted on time.', time: 'Today', read: false }
-            ];
-        }
-        
-        renderNotifications(notifications, validUids);
-        updateNotificationCount(notifications.filter(n => !n.read).length);
-    }
-
-    function renderNotifications(notifications, validUids) {
-        if (!notifList) return;
-
-        if (notifications.length === 0) {
-            notifList.innerHTML = `
-                <div class="empty-notifications">
-                    <i class="fas fa-bell-slash"></i>
-                    <p>No notifications yet</p>
-                </div>
-            `;
-            return;
-        }
-        
-        const icons = {
-            update: 'fa-bullhorn',
-            action: 'fa-check-circle',
-            reminder: 'fa-clock',
-            alert: 'fa-exclamation-triangle',
-            warning: 'fa-exclamation-triangle',
-            message: 'fa-envelope',
-            document_reminder: 'fa-file-alt',
-            attendance: 'fa-clipboard-check',
-            good_moral_request: 'fa-award',
-            requirement_reminder: 'fa-clipboard-list'
-        };
-        
-        notifList.innerHTML = notifications.map(notif => {
-            const isReqNotice = notif.type === 'good_moral_request' || notif.type === 'requirement_reminder' || (notif.title && notif.title.toLowerCase().includes('good moral'));
-            return `
-            <div class="notif-item ${notif.read ? 'read' : 'unread'}" data-id="${notif.id}">
-                <div class="notif-icon notif-${notif.type}">
-                    <i class="fas ${icons[notif.type] || 'fa-bell'}"></i>
-                </div>
-                <div class="notif-content">
-                    <div class="notif-title">${notif.title}</div>
-                    <div class="notif-message">${notif.message}</div>
-                    ${isReqNotice ? `<div style="margin-top: 5px;"><a href="requirements.html" style="display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 700; color: #0284c7; text-decoration: none;"><i class="fas fa-cloud-arrow-up"></i> Upload Document &rarr;</a></div>` : ''}
-                    <div class="notif-time">${notif.time}</div>
-                </div>
-                ${!notif.read ? `<button type="button" class="mark-read-btn" data-id="${notif.id}" title="Mark as read"><i class="fas fa-check"></i></button>` : ''}
-            </div>
-            `;
-        }).join('');
-        
-        // Click on entire notification item to mark read and reduce count
-        document.querySelectorAll('.notif-item').forEach(item => {
-            item.addEventListener('click', async function(e) {
-                if (e.target.closest('a') || e.target.closest('.mark-read-btn')) return;
-                const notifId = this.dataset.id;
-                if (this.classList.contains('unread')) {
-                    this.classList.remove('unread');
-                    this.classList.add('read');
-                    const btn = this.querySelector('.mark-read-btn');
-                    if (btn) btn.remove();
-                    const unread = document.querySelectorAll('.notif-item.unread').length;
-                    updateNotificationCount(unread);
-                    try { await supabase.from('notifications').update({ read: true, is_read: true }).eq('id', notifId); } catch(e) {}
-                }
-            });
-        });
-
-        document.querySelectorAll('.mark-read-btn').forEach(btn => {
-            btn.addEventListener('click', async function(e) {
-                e.stopPropagation();
-                const notifId = this.dataset.id;
-                const item = this.closest('.notif-item');
-                item.classList.remove('unread');
-                item.classList.add('read');
-                this.remove();
-                const unread = document.querySelectorAll('.notif-item.unread').length;
-                updateNotificationCount(unread);
-
-                // Update in Supabase if not a string id
-                try {
-                    await supabase.from('notifications').update({ read: true, is_read: true }).eq('id', notifId);
-                } catch(e) {}
-
-                // Update local storage
-                if (validUids) {
-                    validUids.forEach(id => {
-                        try {
-                            const k = `hes_notifications_${id}`;
-                            const raw = localStorage.getItem(k);
-                            if (raw) {
-                                const list = JSON.parse(raw);
-                                list.forEach(n => {
-                                    if (String(n.id) === String(notifId)) n.read = true;
-                                });
-                                localStorage.setItem(k, JSON.stringify(list));
-                            }
-                        } catch(e) {}
-                    });
-                }
-            });
-        });
-    }
-
-    function updateNotificationCount(count) {
-        if (!notifCount) return;
-        if (count > 0) {
-            notifCount.textContent = count > 99 ? '99+' : String(count);
-            notifCount.classList.remove('empty');
-            notifCount.style.display = 'flex';
-        } else {
-            notifCount.textContent = '';
-            notifCount.classList.add('empty');
-            notifCount.style.display = 'none';
         }
     }
-
-    // ============================================
-    // NOTIFICATION DROPDOWN
-    // ============================================
-
-    if (notifBtn) {
-        notifBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            if (notifDropdown) {
-                notifDropdown.classList.toggle('show');
-            }
-        });
-    }
-
-    document.addEventListener('click', function(e) {
-        if (notifDropdown && notifBtn) {
-            if (!notifDropdown.contains(e.target) && !notifBtn.contains(e.target)) {
-                notifDropdown.classList.remove('show');
-            }
-        }
-    });
-
-    if (markAllBtn) {
-        markAllBtn.addEventListener('click', async function() {
-            document.querySelectorAll('.notif-item.unread').forEach(item => {
-                item.classList.remove('unread');
-                item.classList.add('read');
-                const btn = item.querySelector('.mark-read-btn');
-                if (btn) btn.remove();
-            });
-            updateNotificationCount(0);
-
-            const uid = sessionUser?.uid || sessionUser?.id || currentStudentRow?.id;
-            if (uid) {
-                try {
-                    await supabase.from('notifications').update({ read: true, is_read: true }).eq('user_id', uid);
-                } catch(e) {}
-                try {
-                    const k = `hes_notifications_${uid}`;
-                    const raw = localStorage.getItem(k);
-                    if (raw) {
-                        const list = JSON.parse(raw);
-                        list.forEach(n => n.read = true);
-                        localStorage.setItem(k, JSON.stringify(list));
-                    }
-                } catch(e) {}
-            }
-        });
-    }
-
-    // Real-time synchronization when registrar or system posts a new notification
-    window.addEventListener('storage', function(e) {
-        if (e.key && (e.key.startsWith('hes_notifications') || e.key === 'hes_latest_notification')) {
-            loadNotifications();
-        }
-    });
 
     window.addEventListener('focus', function() {
-        loadNotifications();
+        loadDashboardData();
+        syncNotifications();
+    });
+
+    window.addEventListener('storage', function(e) {
+        if (!e.key || 
+            e.key === 'hes_latest_attendance_event' || 
+            e.key === 'hes_attendance_records' || 
+            e.key === 'hes_student_attendance' || 
+            e.key.startsWith('hes_qr_scans_') || 
+            e.key.startsWith('hes_student_attendance_')) {
+            console.log('🔄 Dashboard live attendance refresh...');
+            loadDashboardData();
+        }
     });
 
     // Initialize sequentially
     async function init() {
         await loadDashboardData();
-        await loadNotifications();
+        await syncNotifications();
     }
     init();
 

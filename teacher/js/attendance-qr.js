@@ -34,6 +34,7 @@ import { supabase } from '../../supabase/config.js';
     // Configuration elements
     const sessionModeSelect = document.getElementById('sessionModeSelect');
     const sectionFilterSelect = document.getElementById('sectionFilterSelect');
+    const scanStatusMode = document.getElementById('scanStatusMode');
     const lateCutoffTime = document.getElementById('lateCutoffTime');
     const soundToggle = document.getElementById('soundToggle');
     const ttsToggle = document.getElementById('ttsToggle');
@@ -76,10 +77,55 @@ import { supabase } from '../../supabase/config.js';
     const statLateCount = document.getElementById('statLateCount');
     const statDuplicates = document.getElementById('statDuplicates');
 
-    // Feed Table
+    // Feed Table & Tabs
+    const tabLiveFeed = document.getElementById('tabLiveFeed');
+    const tabAttendanceHistory = document.getElementById('tabAttendanceHistory');
+    const liveFeedView = document.getElementById('liveFeedView');
+    const historyFeedView = document.getElementById('historyFeedView');
+    const badgeTodayCount = document.getElementById('badgeTodayCount');
+    const badgeHistoryCount = document.getElementById('badgeHistoryCount');
+
     const feedTableBody = document.getElementById('feedTableBody');
     const feedSearchInput = document.getElementById('feedSearchInput');
     const btnExportCsv = document.getElementById('btnExportCsv');
+
+    // History Controls & Table
+    const historyDateInput = document.getElementById('historyDateInput');
+    const historyChips = document.querySelectorAll('.history-chip');
+    const historySectionFilter = document.getElementById('historySectionFilter');
+    const historyStatusFilter = document.getElementById('historyStatusFilter');
+    const historyModeFilter = document.getElementById('historyModeFilter');
+    const historySearchInput = document.getElementById('historySearchInput');
+    const btnExportHistoryCsv = document.getElementById('btnExportHistoryCsv');
+    const btnRefreshHistory = document.getElementById('btnRefreshHistory');
+
+    const histCountTotal = document.getElementById('histCountTotal');
+    const histCountPresent = document.getElementById('histCountPresent');
+    const histCountLate = document.getElementById('histCountLate');
+
+    const historyTableBody = document.getElementById('historyTableBody');
+    const emptyHistoryRow = document.getElementById('emptyHistoryRow');
+
+    // Record Detail Modal
+    const recordDetailModal = document.getElementById('recordDetailModal');
+    const btnCloseDetailModal = document.getElementById('btnCloseDetailModal');
+    const btnModalClose = document.getElementById('btnModalClose');
+    const modalStatusBadge = document.getElementById('modalStatusBadge');
+    const modalStudentName = document.getElementById('modalStudentName');
+    const modalStudentPhoto = document.getElementById('modalStudentPhoto');
+    const modalAvatarInitial = document.getElementById('modalAvatarInitial');
+    const modalLrn = document.getElementById('modalLrn');
+    const modalIdNo = document.getElementById('modalIdNo');
+    const modalGradeSection = document.getElementById('modalGradeSection');
+    const modalStrand = document.getElementById('modalStrand');
+    const modalDate = document.getElementById('modalDate');
+    const modalTime = document.getElementById('modalTime');
+    const modalSessionMode = document.getElementById('modalSessionMode');
+    const modalRecordedBy = document.getElementById('modalRecordedBy');
+    const modalRemarks = document.getElementById('modalRemarks');
+    const modalGuardianBox = document.getElementById('modalGuardianBox');
+    const modalGuardianName = document.getElementById('modalGuardianName');
+    const modalGuardianPhone = document.getElementById('modalGuardianPhone');
 
     // ============================================
     // STATE
@@ -91,6 +137,9 @@ import { supabase } from '../../supabase/config.js';
     let allStudents = [];
     let allSections = [];
     let todayScans = []; // List of scanned events { studentId, name, lrn, idNo, grade, section, strand, time, status, mode }
+    let allHistoryRecords = []; // Unified past & present attendance logs
+    let filteredHistoryRecords = [];
+    let activeHistoryRange = 'all'; // 'all' | 'today' | 'yesterday' | 'week' | 'custom'
 
     let isScanning = false;
     let videoStream = null;
@@ -345,6 +394,9 @@ import { supabase } from '../../supabase/config.js';
                     return {
                         id: s.id,
                         full_name: s.full_name || `${s.first_name || ''} ${s.last_name || ''}`.trim() || 'Student',
+                        first_name: s.first_name || '',
+                        last_name: s.last_name || '',
+                        email: (s.email || '').toLowerCase().trim(),
                         lrn: s.lrn || s.student_id || ('LRN-' + String(s.id).substring(0, 8)),
                         id_number: s.id_number || `2024-ST-${String(s.lrn || s.id).slice(-5).padStart(5, '0')}`,
                         grade_level: grade,
@@ -363,12 +415,16 @@ import { supabase } from '../../supabase/config.js';
             // 3. Load previous scans for today from LocalStorage
             loadTodayScansFromCache();
 
+            // 4. Load full attendance history from local and cloud sources
+            loadAllAttendanceHistory();
+
         } catch (err) {
             console.warn('Data load notice, using fallback:', err);
             allSections = DEFAULT_SECTIONS;
             allStudents = [];
             populateSectionDropdown();
             loadTodayScansFromCache();
+            loadAllAttendanceHistory();
         }
     }
 
@@ -386,7 +442,7 @@ import { supabase } from '../../supabase/config.js';
     function loadTodayScansFromCache() {
         const todayStr = getTodayDateString();
         try {
-            const cached = localStorage.getItem(`hes_qr_scans_${todayStr}`);
+            const cached = localStorage.getItem(`hes_qr_scans_${todayStr}`) || localStorage.getItem('todayScans');
             if (cached) {
                 todayScans = JSON.parse(cached);
             } else {
@@ -403,6 +459,7 @@ import { supabase } from '../../supabase/config.js';
         const todayStr = getTodayDateString();
         try {
             localStorage.setItem(`hes_qr_scans_${todayStr}`, JSON.stringify(todayScans));
+            localStorage.setItem('todayScans', JSON.stringify(todayScans));
         } catch (e) {}
     }
 
@@ -545,16 +602,23 @@ import { supabase } from '../../supabase/config.js';
             return;
         }
 
-        // Evaluate Status: Present vs Late
+        // Evaluate Status: Present vs Late based on Marking Policy
         let status = 'Present';
+        const markingPolicy = scanStatusMode ? scanStatusMode.value : 'present';
         if (sessionMode === 'time_in') {
-            const cutoffVal = lateCutoffTime ? lateCutoffTime.value : '07:30';
-            const [cutoffHours, cutoffMinutes] = cutoffVal.split(':').map(Number);
-            const currentHours = now.getHours();
-            const currentMinutes = now.getMinutes();
-
-            if (currentHours > cutoffHours || (currentHours === cutoffHours && currentMinutes > cutoffMinutes)) {
+            if (markingPolicy === 'late') {
                 status = 'Late';
+            } else if (markingPolicy === 'auto') {
+                const cutoffVal = lateCutoffTime ? lateCutoffTime.value : '07:30';
+                const [cutoffHours, cutoffMinutes] = cutoffVal.split(':').map(Number);
+                const currentHours = now.getHours();
+                const currentMinutes = now.getMinutes();
+
+                if (currentHours > cutoffHours || (currentHours === cutoffHours && currentMinutes > cutoffMinutes)) {
+                    status = 'Late';
+                }
+            } else {
+                status = 'Present';
             }
         }
 
@@ -563,6 +627,7 @@ import { supabase } from '../../supabase/config.js';
             id: 'scan_' + Date.now(),
             studentId: student.id,
             name: student.full_name,
+            email: student.email || '',
             lrn: student.lrn,
             idNo: student.id_number,
             grade: student.grade_level,
@@ -581,10 +646,39 @@ import { supabase } from '../../supabase/config.js';
         todayScans.unshift(scanRecord);
         saveTodayScansToCache();
 
+        // Also add / update in full attendance history
+        const histItem = {
+            id: scanRecord.id,
+            studentId: scanRecord.studentId,
+            name: scanRecord.name,
+            email: scanRecord.email || '',
+            lrn: scanRecord.lrn,
+            idNo: scanRecord.idNo,
+            grade: scanRecord.grade,
+            section: scanRecord.section,
+            strand: scanRecord.strand,
+            parentName: scanRecord.parentName,
+            parentContact: scanRecord.parentContact,
+            photoUrl: scanRecord.photoUrl,
+            time: scanRecord.time,
+            date: scanRecord.date,
+            status: scanRecord.status,
+            mode: scanRecord.mode,
+            remarks: scanRecord.status === 'Late' ? 'Late arrival recorded via QR Scanner' : 'On-time QR scan',
+            recordedBy: displayName || 'Teacher'
+        };
+        allHistoryRecords = allHistoryRecords.filter(r => !( (r.studentId === scanRecord.studentId || (r.lrn && r.lrn === scanRecord.lrn)) && r.date === scanRecord.date && r.mode === scanRecord.mode ));
+        allHistoryRecords.unshift(histItem);
+
+        // Update tab badges
+        if (badgeTodayCount) badgeTodayCount.textContent = todayScans.length;
+        if (badgeHistoryCount) badgeHistoryCount.textContent = allHistoryRecords.length;
+
         // Update UI
         renderStudentHud(student, status, timeRecorded);
         renderFeedTable();
         updateKpiStats();
+        applyHistoryFilters();
 
         // Play feedback sounds
         if (status === 'Late') {
@@ -605,38 +699,138 @@ import { supabase } from '../../supabase/config.js';
     // SYNC ATTENDANCE TO SUPABASE & NOTIFICATIONS
     // ============================================
     async function syncAttendanceToSupabase(record) {
+        // 1. Unified Shared Storage for instant Student & Parent portal availability
+        const unifiedRecord = {
+            id: record.id || ('scan_' + Date.now()),
+            student_id: record.studentId,
+            studentId: record.studentId,
+            lrn: record.lrn,
+            student_name: record.name,
+            name: record.name,
+            email: record.email || '',
+            grade_level: record.grade,
+            section: record.section,
+            strand: record.strand,
+            date: record.date,
+            status: record.status,
+            time_in: record.mode === 'time_in' ? record.time : (record.time || null),
+            time_out: record.mode === 'time_out' ? record.time : null,
+            remarks: record.status === 'Late' ? 'Late arrival recorded via QR Scanner' : 'On-time QR scan',
+            recorded_by: teacherId,
+            teacher_name: displayName,
+            updated_at: new Date().toISOString()
+        };
+
         try {
-            // 1. Upsert attendance record
-            const attendanceRow = {
-                student_id: record.studentId,
+            // A. Update hes_attendance_records array
+            const rawCentral = localStorage.getItem('hes_attendance_records');
+            let centralRecords = rawCentral ? JSON.parse(rawCentral) : [];
+            centralRecords = centralRecords.filter(r => 
+                !( (r.student_id === record.studentId || (r.lrn && r.lrn === record.lrn) || (r.name && r.name.toLowerCase() === record.name.toLowerCase())) && r.date === record.date )
+            );
+            centralRecords.unshift(unifiedRecord);
+            localStorage.setItem('hes_attendance_records', JSON.stringify(centralRecords.slice(0, 500)));
+
+            // B. Update hes_student_attendance array
+            const rawHesStu = localStorage.getItem('hes_student_attendance');
+            let hesStuRecords = rawHesStu ? JSON.parse(rawHesStu) : [];
+            hesStuRecords = hesStuRecords.filter(r => 
+                !( (r.student_id === record.studentId || (r.lrn && r.lrn === record.lrn) || (r.name && r.name.toLowerCase() === record.name.toLowerCase())) && r.date === record.date )
+            );
+            hesStuRecords.unshift(unifiedRecord);
+            localStorage.setItem('hes_student_attendance', JSON.stringify(hesStuRecords.slice(0, 500)));
+
+            // C. Direct lookups for student & parent
+            if (record.studentId) {
+                localStorage.setItem(`hes_student_attendance_${record.studentId}`, JSON.stringify(unifiedRecord));
+            }
+            if (record.lrn) {
+                localStorage.setItem(`hes_student_attendance_${record.lrn}`, JSON.stringify(unifiedRecord));
+            }
+            if (record.name) {
+                localStorage.setItem(`hes_student_attendance_${record.name.toLowerCase().trim()}`, JSON.stringify(unifiedRecord));
+            }
+            if (record.email) {
+                localStorage.setItem(`hes_student_attendance_${record.email.toLowerCase().trim()}`, JSON.stringify(unifiedRecord));
+            }
+
+            // Cross-link with any other student profiles having same email or name
+            allStudents.forEach(other => {
+                const sameEmail = record.email && other.email && record.email.toLowerCase() === other.email.toLowerCase();
+                const sameName = record.name && other.full_name && record.name.toLowerCase().trim() === other.full_name.toLowerCase().trim();
+                if (sameEmail || sameName) {
+                    if (other.id) localStorage.setItem(`hes_student_attendance_${other.id}`, JSON.stringify(unifiedRecord));
+                    if (other.lrn) localStorage.setItem(`hes_student_attendance_${other.lrn}`, JSON.stringify(unifiedRecord));
+                }
+            });
+
+            // D. Date roster cache
+            const rosterKey = `hes_student_attendance_${record.date}`;
+            const rosterCache = localStorage.getItem(rosterKey);
+            let rosterMap = rosterCache ? JSON.parse(rosterCache) : {};
+            rosterMap[record.studentId] = {
+                status: record.status,
+                timeIn: record.time,
+                remarks: record.status === 'Late' ? 'Late arrival (QR)' : 'On time (QR)',
+                notified: true,
+                saved: true
+            };
+            if (record.lrn) {
+                rosterMap[record.lrn] = rosterMap[record.studentId];
+            }
+            localStorage.setItem(rosterKey, JSON.stringify(rosterMap));
+
+            // E. Broadcast storage event so open student/parent tabs react dynamically
+            localStorage.setItem('hes_latest_attendance_event', JSON.stringify({
+                studentId: record.studentId,
                 lrn: record.lrn,
-                student_name: record.name,
-                grade_level: record.grade,
-                section: record.section,
-                strand: record.strand,
+                name: record.name,
+                email: record.email || '',
                 date: record.date,
                 status: record.status,
-                time_in: record.mode === 'time_in' ? record.time : undefined,
-                time_out: record.mode === 'time_out' ? record.time : undefined,
-                remarks: record.status === 'Late' ? 'Late arrival recorded via QR Scanner' : 'On-time QR scan',
-                recorded_by: teacherId,
-                teacher_name: displayName,
-                updated_at: new Date().toISOString()
-            };
+                time: record.time,
+                timestamp: Date.now()
+            }));
+        } catch (storageErr) {
+            console.warn('Attendance storage cache notice:', storageErr);
+        }
 
-            await supabase
-                .from('attendance')
-                .upsert([attendanceRow], { onConflict: 'student_id,date' });
+        // 2. Notifications to Student
+        const notifTitle = `Attendance: ${record.status} recorded`;
+        const notifMsg = `Your attendance was recorded as "${record.status}" on ${record.date} at ${record.time} by Teacher ${displayName}.`;
 
-            // 2. Insert Student/Parent Notification
-            const notifTitle = `Attendance: ${record.status} recorded`;
-            const notifMsg = `Your attendance was recorded as "${record.status}" on ${record.date} at ${record.time} by Teacher ${displayName}.`;
+        try {
+            // Local notification cache
+            const stuNotifsRaw = localStorage.getItem(`hes_notifications_${record.studentId}`);
+            let stuNotifs = stuNotifsRaw ? JSON.parse(stuNotifsRaw) : [];
+            stuNotifs.unshift({
+                id: 'notif_' + Date.now(),
+                title: notifTitle,
+                message: notifMsg,
+                type: 'attendance',
+                date: new Date().toISOString(),
+                read: false
+            });
+            localStorage.setItem(`hes_notifications_${record.studentId}`, JSON.stringify(stuNotifs.slice(0, 30)));
+        } catch (e) {}
+
+        // Query student's user_id in Supabase users table to insert database notification
+        try {
+            let targetUserId = record.studentId;
+            const { data: uData } = await supabase
+                .from('users')
+                .select('id')
+                .eq('student_id', record.studentId)
+                .maybeSingle();
+
+            if (uData && uData.id) {
+                targetUserId = uData.id;
+            }
 
             await supabase
                 .from('notifications')
                 .insert([{
-                    user_id: record.studentId,
-                    student_id: record.studentId,
+                    user_id: targetUserId,
                     role: 'student',
                     title: notifTitle,
                     message: notifMsg,
@@ -645,39 +839,26 @@ import { supabase } from '../../supabase/config.js';
                     read: false,
                     created_at: new Date().toISOString()
                 }]);
+        } catch (notifErr) {
+            console.warn('Database notification sync notice:', notifErr);
+        }
 
-            // 3. Update student local notification cache
-            try {
-                const stuNotifsRaw = localStorage.getItem(`hes_notifications_${record.studentId}`);
-                let stuNotifs = stuNotifsRaw ? JSON.parse(stuNotifsRaw) : [];
-                stuNotifs.unshift({
-                    id: 'notif_' + Date.now(),
-                    title: notifTitle,
-                    message: notifMsg,
-                    type: 'attendance',
-                    date: new Date().toISOString(),
-                    read: false
-                });
-                localStorage.setItem(`hes_notifications_${record.studentId}`, JSON.stringify(stuNotifs.slice(0, 30)));
-            } catch (e) {}
+        // 3. Upsert clean attendance record to Supabase attendance table
+        try {
+            const cleanStatus = (record.status || 'present').toLowerCase();
+            const attendanceRow = {
+                student_id: record.studentId,
+                date: record.date,
+                status: cleanStatus,
+                time_in: record.mode === 'time_in' ? record.time : (record.time || null),
+                remarks: record.status === 'Late' ? 'Late arrival recorded via QR Scanner' : 'On-time QR scan'
+            };
 
-            // 4. Update the main student attendance roster state for today
-            try {
-                const rosterKey = `hes_student_attendance_${record.date}`;
-                const rosterCache = localStorage.getItem(rosterKey);
-                let rosterMap = rosterCache ? JSON.parse(rosterCache) : {};
-                rosterMap[record.studentId] = {
-                    status: record.status,
-                    timeIn: record.time,
-                    remarks: record.status === 'Late' ? 'Late arrival (QR)' : 'On time (QR)',
-                    notified: true,
-                    saved: true
-                };
-                localStorage.setItem(rosterKey, JSON.stringify(rosterMap));
-            } catch (e) {}
-
-        } catch (err) {
-            console.warn('Supabase real-time sync notice:', err);
+            await supabase
+                .from('attendance')
+                .upsert([attendanceRow], { onConflict: 'student_id,date' });
+        } catch (attErr) {
+            console.warn('Supabase attendance table sync notice:', attErr);
         }
     }
 
@@ -778,31 +959,534 @@ import { supabase } from '../../supabase/config.js';
                     </span>
                 </td>
                 <td style="text-align: center;">
-                    <button type="button" class="btn-feed-action" onclick="window.rescanStudent('${s.id}')" title="View details" style="padding: 3px 8px; font-size: 11px;">
+                    <button type="button" class="btn-feed-action" onclick="window.viewRecordDetails('${s.id}')" title="View student details" style="padding: 3px 8px; font-size: 11px;">
                         <i class="fas fa-eye"></i> View
                     </button>
                 </td>
             </tr>
         `).join('');
+
+        if (badgeTodayCount) badgeTodayCount.textContent = todayScans.length;
+    }
+
+    // Helper: Format Date String nicely
+    function formatDisplayDate(dateStr) {
+        if (!dateStr) return '—';
+        try {
+            const parts = dateStr.split('-');
+            if (parts.length === 3) {
+                const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+                return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            }
+        } catch (e) {}
+        return dateStr;
+    }
+
+    // ============================================
+    // ATTENDANCE HISTORY LOGIC & ENGINE
+    // ============================================
+    async function loadAllAttendanceHistory() {
+        const historyMap = new Map();
+
+        // 1. Ingest today's live scans from active memory
+        todayScans.forEach(s => {
+            const key = `${s.studentId || s.lrn}_${s.date}_${s.mode || 'time_in'}`;
+            historyMap.set(key, {
+                id: s.id || ('scan_' + (s.studentId || s.lrn) + '_' + s.date),
+                studentId: s.studentId,
+                name: s.name,
+                lrn: s.lrn,
+                idNo: s.idNo,
+                grade: s.grade,
+                section: s.section,
+                strand: s.strand,
+                parentName: s.parentName,
+                parentContact: s.parentContact,
+                photoUrl: s.photoUrl,
+                time: s.time,
+                date: s.date,
+                status: s.status,
+                mode: s.mode || 'time_in',
+                remarks: s.status === 'Late' ? 'Late arrival recorded via QR Scanner' : 'On-time QR scan',
+                recordedBy: displayName || 'Teacher'
+            });
+        });
+
+        // 2. Ingest from localStorage hes_qr_scans_* (all scanned dates)
+        try {
+            for (let i = 0; i < localStorage.length; i++) {
+                const k = localStorage.key(i);
+                if (k && k.startsWith('hes_qr_scans_')) {
+                    const datePart = k.replace('hes_qr_scans_', '');
+                    const raw = localStorage.getItem(k);
+                    if (raw) {
+                        const parsed = JSON.parse(raw);
+                        if (Array.isArray(parsed)) {
+                            parsed.forEach(s => {
+                                const key = `${s.studentId || s.lrn}_${s.date || datePart}_${s.mode || 'time_in'}`;
+                                if (!historyMap.has(key)) {
+                                    historyMap.set(key, {
+                                        id: s.id || ('scan_' + (s.studentId || s.lrn) + '_' + (s.date || datePart)),
+                                        studentId: s.studentId,
+                                        name: s.name,
+                                        lrn: s.lrn,
+                                        idNo: s.idNo,
+                                        grade: s.grade,
+                                        section: s.section,
+                                        strand: s.strand,
+                                        parentName: s.parentName,
+                                        parentContact: s.parentContact,
+                                        photoUrl: s.photoUrl,
+                                        time: s.time,
+                                        date: s.date || datePart,
+                                        status: s.status,
+                                        mode: s.mode || 'time_in',
+                                        remarks: s.status === 'Late' ? 'Late arrival recorded via QR Scanner' : 'On-time QR scan',
+                                        recordedBy: displayName || 'Teacher'
+                                    });
+                                }
+                            });
+                        }
+                    }
+                }
+            }
+        } catch (e) {
+            console.warn('History read from hes_qr_scans notice:', e);
+        }
+
+        // 3. Ingest from localStorage hes_attendance_records (central portal unified store)
+        try {
+            const rawCentral = localStorage.getItem('hes_attendance_records');
+            if (rawCentral) {
+                const central = JSON.parse(rawCentral);
+                if (Array.isArray(central)) {
+                    central.forEach(r => {
+                        const sId = r.student_id || r.studentId;
+                        const sLrn = r.lrn;
+                        const sDate = r.date;
+                        const sMode = r.time_out ? 'time_out' : 'time_in';
+                        const key = `${sId || sLrn}_${sDate}_${sMode}`;
+                        if (!historyMap.has(key)) {
+                            const stu = allStudents.find(s => s.id === sId || (sLrn && s.lrn === sLrn));
+                            const sName = r.student_name || r.name || (stu ? stu.full_name : 'Student');
+                            const sGrade = r.grade_level || r.grade || (stu ? stu.grade_level : 'Grade 7');
+                            const sSec = r.section || (stu ? stu.section : 'General');
+                            const sStrand = r.strand || (stu ? stu.strand : 'JHS');
+                            const sTime = r.time_in || r.time || (r.time_out || '07:30 AM');
+                            const sStatus = r.status ? (r.status.charAt(0).toUpperCase() + r.status.slice(1).toLowerCase()) : 'Present';
+
+                            historyMap.set(key, {
+                                id: r.id || ('hist_' + (sId || sLrn) + '_' + sDate),
+                                studentId: sId,
+                                name: sName,
+                                lrn: sLrn || (stu ? stu.lrn : '—'),
+                                idNo: stu ? stu.id_number : '—',
+                                grade: sGrade,
+                                section: sSec,
+                                strand: sStrand,
+                                parentName: stu ? stu.parent_name : 'PARENT / GUARDIAN',
+                                parentContact: stu ? stu.parent_contact : '09XXXXXXXXX',
+                                photoUrl: stu ? stu.photo_url : '',
+                                time: sTime,
+                                date: sDate,
+                                status: sStatus,
+                                mode: sMode,
+                                remarks: r.remarks || (sStatus === 'Late' ? 'Late arrival' : 'On-time record'),
+                                recordedBy: r.teacher_name || displayName || 'Teacher'
+                            });
+                        }
+                    });
+                }
+            }
+        } catch (e) {
+            console.warn('History read from hes_attendance_records notice:', e);
+        }
+
+        // 4. Ingest from Supabase cloud database
+        try {
+            const { data: dbAtt, error: dbErr } = await supabase
+                .from('attendance')
+                .select('*')
+                .order('date', { ascending: false })
+                .limit(400);
+
+            if (!dbErr && dbAtt && Array.isArray(dbAtt)) {
+                dbAtt.forEach(row => {
+                    const sId = row.student_id;
+                    const sDate = row.date;
+                    const sMode = row.time_out ? 'time_out' : 'time_in';
+                    const key = `${sId}_${sDate}_${sMode}`;
+
+                    if (!historyMap.has(key)) {
+                        const stu = allStudents.find(s => s.id === sId || s.lrn === sId);
+                        const sStatus = row.status ? (row.status.charAt(0).toUpperCase() + row.status.slice(1).toLowerCase()) : 'Present';
+                        const sTime = row.time_in || row.time_out || '07:30 AM';
+
+                        historyMap.set(key, {
+                            id: row.id || ('db_' + sId + '_' + sDate),
+                            studentId: sId,
+                            name: stu ? stu.full_name : (row.student_name || 'Student (' + sId + ')'),
+                            lrn: stu ? stu.lrn : (row.lrn || '—'),
+                            idNo: stu ? stu.id_number : '—',
+                            grade: stu ? stu.grade_level : (row.grade_level || 'Grade 7'),
+                            section: stu ? stu.section : (row.section || 'General'),
+                            strand: stu ? stu.strand : (row.strand || 'JHS'),
+                            parentName: stu ? stu.parent_name : 'PARENT / GUARDIAN',
+                            parentContact: stu ? stu.parent_contact : '09XXXXXXXXX',
+                            photoUrl: stu ? stu.photo_url : '',
+                            time: sTime,
+                            date: sDate,
+                            status: sStatus,
+                            mode: sMode,
+                            remarks: row.remarks || (sStatus === 'Late' ? 'Late arrival' : 'Cloud attendance record'),
+                            recordedBy: displayName || 'Teacher'
+                        });
+                    }
+                });
+            }
+        } catch (dbEx) {
+            console.warn('Cloud attendance fetch notice:', dbEx);
+        }
+
+        // 5. Convert to array and sort descending (newest first)
+        allHistoryRecords = Array.from(historyMap.values()).sort((a, b) => {
+            if (a.date !== b.date) {
+                return (b.date || '').localeCompare(a.date || '');
+            }
+            return (b.time || '').localeCompare(a.time || '');
+        });
+
+        // 6. Update badge counters
+        if (badgeTodayCount) badgeTodayCount.textContent = todayScans.length;
+        if (badgeHistoryCount) badgeHistoryCount.textContent = allHistoryRecords.length;
+
+        // 7. Dynamically populate historySectionFilter options
+        populateHistorySectionFilter();
+
+        // 8. Apply active filters & render table
+        applyHistoryFilters();
+    }
+
+    function populateHistorySectionFilter() {
+        if (!historySectionFilter) return;
+        const currentVal = historySectionFilter.value;
+        const sectionSet = new Set();
+
+        allSections.forEach(s => {
+            if (s.name) sectionSet.add(s.name);
+        });
+        allHistoryRecords.forEach(r => {
+            if (r.section && r.section !== 'General') sectionSet.add(r.section);
+        });
+
+        historySectionFilter.innerHTML = '<option value="">All Sections</option>';
+        Array.from(sectionSet).sort().forEach(secName => {
+            const opt = document.createElement('option');
+            opt.value = secName;
+            opt.textContent = secName;
+            historySectionFilter.appendChild(opt);
+        });
+
+        if (currentVal) {
+            historySectionFilter.value = currentVal;
+        }
+    }
+
+    function applyHistoryFilters() {
+        if (!historyTableBody) return;
+
+        const datePickerVal = historyDateInput ? historyDateInput.value.trim() : '';
+        const sectionVal = historySectionFilter ? historySectionFilter.value.trim().toLowerCase() : '';
+        const statusVal = historyStatusFilter ? historyStatusFilter.value.trim().toLowerCase() : '';
+        const modeVal = historyModeFilter ? historyModeFilter.value.trim() : '';
+        const query = historySearchInput ? historySearchInput.value.trim().toLowerCase() : '';
+
+        const todayStr = getTodayDateString();
+
+        // Calculate yesterday string
+        const yesterdayObj = new Date();
+        yesterdayObj.setDate(yesterdayObj.getDate() - 1);
+        const yesterdayStr = `${yesterdayObj.getFullYear()}-${String(yesterdayObj.getMonth() + 1).padStart(2, '0')}-${String(yesterdayObj.getDate()).padStart(2, '0')}`;
+
+        // Calculate 7 days ago string
+        const weekAgoObj = new Date();
+        weekAgoObj.setDate(weekAgoObj.getDate() - 7);
+        const weekAgoStr = `${weekAgoObj.getFullYear()}-${String(weekAgoObj.getMonth() + 1).padStart(2, '0')}-${String(weekAgoObj.getDate()).padStart(2, '0')}`;
+
+        filteredHistoryRecords = allHistoryRecords.filter(r => {
+            // 1. Date filter
+            if (datePickerVal) {
+                if (r.date !== datePickerVal) return false;
+            } else if (activeHistoryRange === 'today') {
+                if (r.date !== todayStr) return false;
+            } else if (activeHistoryRange === 'yesterday') {
+                if (r.date !== yesterdayStr) return false;
+            } else if (activeHistoryRange === 'week') {
+                if (!r.date || r.date < weekAgoStr) return false;
+            }
+
+            // 2. Section filter
+            if (sectionVal) {
+                const sec = (r.section || '').toLowerCase();
+                if (sec !== sectionVal && !sec.includes(sectionVal)) return false;
+            }
+
+            // 3. Status filter
+            if (statusVal) {
+                const stat = (r.status || '').toLowerCase();
+                if (stat !== statusVal) return false;
+            }
+
+            // 4. Session mode filter
+            if (modeVal) {
+                if (r.mode !== modeVal) return false;
+            }
+
+            // 5. Search query
+            if (query) {
+                const matchName = (r.name || '').toLowerCase().includes(query);
+                const matchLrn = (r.lrn || '').toLowerCase().includes(query);
+                const matchSec = (r.section || '').toLowerCase().includes(query);
+                const matchGrade = (r.grade || '').toLowerCase().includes(query);
+                const matchRemarks = (r.remarks || '').toLowerCase().includes(query);
+                if (!matchName && !matchLrn && !matchSec && !matchGrade && !matchRemarks) return false;
+            }
+
+            return true;
+        });
+
+        // Update statistics summary
+        const total = filteredHistoryRecords.length;
+        const present = filteredHistoryRecords.filter(r => (r.status || '').toLowerCase() === 'present').length;
+        const late = filteredHistoryRecords.filter(r => (r.status || '').toLowerCase() === 'late').length;
+
+        if (histCountTotal) histCountTotal.textContent = total;
+        if (histCountPresent) histCountPresent.textContent = present;
+        if (histCountLate) histCountLate.textContent = late;
+
+        renderHistoryTable();
+    }
+
+    function renderHistoryTable() {
+        if (!historyTableBody) return;
+
+        if (filteredHistoryRecords.length === 0) {
+            historyTableBody.innerHTML = `
+                <tr id="emptyHistoryRow">
+                    <td colspan="6" class="empty-feed-cell">
+                        <i class="fas fa-calendar-times"></i>
+                        <p>No attendance history records match your filters.</p>
+                        <small>Try selecting a different date range, section, or clear the search query.</small>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        historyTableBody.innerHTML = filteredHistoryRecords.map(r => {
+            const isLate = (r.status || '').toLowerCase() === 'late';
+            const isPresent = (r.status || '').toLowerCase() === 'present';
+            const statusClass = isLate ? 'pill-late' : (isPresent ? 'pill-present' : 'pill-late');
+            const statusIcon = isLate ? 'clock' : 'check';
+            const initial = (r.name || 'S').charAt(0).toUpperCase();
+            const formattedDate = formatDisplayDate(r.date);
+            const sessionLabel = r.mode === 'time_out' ? 'Time-Out (Dismissal)' : 'Time-In (Entry)';
+
+            return `
+                <tr>
+                    <td>
+                        <span class="hist-date-pill"><i class="far fa-calendar-alt"></i> ${formattedDate}</span>
+                        <div style="font-weight: 700; color: #0f172a; margin-top: 4px; font-size: 13px;">${r.time || '—'}</div>
+                        <small style="color: #64748b; font-size: 11px; display:block;">${sessionLabel}</small>
+                    </td>
+                    <td>
+                        <div class="feed-student-cell">
+                            <div class="feed-avatar">${initial}</div>
+                            <div class="feed-student-meta">
+                                <span class="feed-student-name">${r.name || 'Unknown Student'}</span>
+                                <span class="feed-student-lrn">LRN: ${r.lrn || '—'}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span style="font-weight: 700; color: #334155;">${r.grade || '—'} - ${r.section || '—'}</span>
+                        <small style="display:block; color:#64748b; font-size:11px;">${r.strand || 'JHS'}</small>
+                    </td>
+                    <td>
+                        <span class="status-pill ${statusClass}">
+                            <i class="fas fa-${statusIcon}"></i> ${r.status || 'Present'}
+                        </span>
+                    </td>
+                    <td>
+                        <span style="font-size: 12px; color: #475569; display: inline-block; max-width: 170px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${r.remarks || ''}">
+                            ${r.remarks || 'Recorded via QR'}
+                        </span>
+                    </td>
+                    <td style="text-align: center;">
+                        <button type="button" class="btn-feed-action" onclick="window.viewRecordDetails('${r.id}')" title="View complete student attendance record" style="padding: 4px 10px; font-size: 11px;">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    // ============================================
+    // RECORD DETAIL MODAL CONTROLLER
+    // ============================================
+    window.viewRecordDetails = function (recordId) {
+        if (!recordDetailModal) return;
+
+        // Find record in history or today's scans
+        let rec = allHistoryRecords.find(r => r.id === recordId);
+        if (!rec) {
+            const todayItem = todayScans.find(s => s.id === recordId);
+            if (todayItem) {
+                rec = {
+                    id: todayItem.id,
+                    studentId: todayItem.studentId,
+                    name: todayItem.name,
+                    lrn: todayItem.lrn,
+                    idNo: todayItem.idNo,
+                    grade: todayItem.grade,
+                    section: todayItem.section,
+                    strand: todayItem.strand,
+                    parentName: todayItem.parentName,
+                    parentContact: todayItem.parentContact,
+                    photoUrl: todayItem.photoUrl,
+                    time: todayItem.time,
+                    date: todayItem.date,
+                    status: todayItem.status,
+                    mode: todayItem.mode,
+                    remarks: todayItem.status === 'Late' ? 'Late arrival recorded via QR Scanner' : 'On-time QR scan',
+                    recordedBy: displayName || 'Teacher'
+                };
+            }
+        }
+
+        if (!rec) {
+            showAlert('⚠️ Record details not found.', 'warning');
+            return;
+        }
+
+        const isLate = (rec.status || '').toLowerCase() === 'late';
+        const isPresent = (rec.status || '').toLowerCase() === 'present';
+        const statusClass = isLate ? 'pill-late' : 'pill-present';
+        const statusIcon = isLate ? 'clock' : 'check-circle';
+
+        if (modalStatusBadge) {
+            modalStatusBadge.className = `detail-status-badge ${statusClass}`;
+            modalStatusBadge.innerHTML = `<i class="fas fa-${statusIcon}"></i> ${(rec.status || 'PRESENT').toUpperCase()}`;
+        }
+
+        if (modalStudentName) modalStudentName.textContent = rec.name || 'Student Name';
+        if (modalLrn) modalLrn.textContent = `LRN: ${rec.lrn || '—'}`;
+        if (modalIdNo) modalIdNo.textContent = `ID: ${rec.idNo || '—'}`;
+        if (modalGradeSection) modalGradeSection.textContent = `${rec.grade || '—'} - ${rec.section || '—'}`;
+        if (modalStrand) modalStrand.textContent = rec.strand || 'JHS';
+
+        if (modalDate) modalDate.textContent = formatDisplayDate(rec.date);
+        if (modalTime) modalTime.textContent = rec.time || '—';
+        if (modalSessionMode) {
+            modalSessionMode.textContent = rec.mode === 'time_out' ? 'Afternoon Dismissal (Time-Out)' : 'Morning Class Time-In (Entry)';
+        }
+        if (modalRecordedBy) {
+            modalRecordedBy.textContent = rec.recordedBy || displayName || 'Teacher Adviser';
+        }
+        if (modalRemarks) {
+            modalRemarks.textContent = rec.remarks || (isLate ? 'Late arrival recorded via QR Scanner' : 'On-time QR scan');
+        }
+
+        if (modalGuardianName) modalGuardianName.textContent = rec.parentName || 'PARENT / GUARDIAN';
+        if (modalGuardianPhone) modalGuardianPhone.textContent = rec.parentContact || 'No contact provided';
+
+        // Avatar
+        const initial = (rec.name || 'S').charAt(0).toUpperCase();
+        if (modalAvatarInitial) modalAvatarInitial.textContent = initial;
+
+        if (rec.photoUrl && modalStudentPhoto) {
+            modalStudentPhoto.src = rec.photoUrl;
+            modalStudentPhoto.style.display = 'block';
+            if (modalAvatarInitial) modalAvatarInitial.style.display = 'none';
+        } else {
+            if (modalStudentPhoto) modalStudentPhoto.style.display = 'none';
+            if (modalAvatarInitial) modalAvatarInitial.style.display = 'flex';
+        }
+
+        // Status toggle action inside modal
+        const btnToggleRecordStatus = document.getElementById('btnToggleRecordStatus');
+        const toggleStatusBtnText = document.getElementById('toggleStatusBtnText');
+        if (btnToggleRecordStatus && toggleStatusBtnText) {
+            const nextStatus = isLate ? 'Present' : 'Late';
+            toggleStatusBtnText.textContent = `Change to ${nextStatus}`;
+            btnToggleRecordStatus.style.background = isLate ? '#10b981' : '#f59e0b';
+            btnToggleRecordStatus.onclick = function() {
+                toggleAttendanceStatus(rec.id);
+            };
+        }
+
+        // Show modal with animation
+        recordDetailModal.style.display = 'flex';
+        recordDetailModal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+
+        // Also if on live tab, sync HUD for consistency
+        renderStudentHud({
+            id: rec.studentId,
+            full_name: rec.name,
+            lrn: rec.lrn,
+            id_number: rec.idNo,
+            grade_level: rec.grade,
+            section: rec.section,
+            strand: rec.strand,
+            parent_name: rec.parentName,
+            parent_contact: rec.parentContact,
+            photo_url: rec.photoUrl
+        }, rec.status, rec.time);
+    };
+
+    function toggleAttendanceStatus(recordId) {
+        let rec = todayScans.find(s => s.id === recordId) || allHistoryRecords.find(r => r.id === recordId);
+        if (!rec) return;
+
+        const oldStatus = rec.status;
+        const newStatus = (oldStatus || '').toLowerCase() === 'late' ? 'Present' : 'Late';
+        rec.status = newStatus;
+        rec.remarks = newStatus === 'Late' ? 'Late arrival recorded via QR Scanner' : 'On-time QR scan';
+
+        const todayMatch = todayScans.find(s => s.id === recordId);
+        if (todayMatch) {
+            todayMatch.status = newStatus;
+            todayMatch.remarks = rec.remarks;
+        }
+        const histMatch = allHistoryRecords.find(r => r.id === recordId);
+        if (histMatch) {
+            histMatch.status = newStatus;
+            histMatch.remarks = rec.remarks;
+        }
+
+        saveTodayScansToCache();
+        renderFeedTable();
+        applyHistoryFilters();
+        updateKpiStats();
+        syncAttendanceToSupabase(rec);
+
+        // Update modal display immediately
+        window.viewRecordDetails(recordId);
+        showAlert(`Updated status of <strong>${rec.name || 'student'}</strong> to <strong>${newStatus.toUpperCase()}</strong>.`, 'success');
     }
 
     window.rescanStudent = function (scanId) {
-        const found = todayScans.find(s => s.id === scanId);
-        if (found) {
-            renderStudentHud({
-                id: found.studentId,
-                full_name: found.name,
-                lrn: found.lrn,
-                id_number: found.idNo,
-                grade_level: found.grade,
-                section: found.section,
-                strand: found.strand,
-                parent_name: found.parentName,
-                parent_contact: found.parentContact,
-                photo_url: found.photoUrl
-            }, found.status, found.time);
-        }
+        window.viewRecordDetails(scanId);
     };
+
+    function closeRecordDetailModal() {
+        if (!recordDetailModal) return;
+        recordDetailModal.style.display = 'none';
+        recordDetailModal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
 
     function updateKpiStats() {
         const total = todayScans.length;
@@ -1149,7 +1833,126 @@ import { supabase } from '../../supabase/config.js';
         });
     }
 
-    // Sync to Cloud Supabase
+    // History Tab Switching
+    if (tabLiveFeed && tabAttendanceHistory && liveFeedView && historyFeedView) {
+        tabLiveFeed.addEventListener('click', () => {
+            tabLiveFeed.classList.add('active');
+            tabAttendanceHistory.classList.remove('active');
+            liveFeedView.style.display = 'block';
+            historyFeedView.style.display = 'none';
+        });
+
+        tabAttendanceHistory.addEventListener('click', () => {
+            tabAttendanceHistory.classList.add('active');
+            tabLiveFeed.classList.remove('active');
+            liveFeedView.style.display = 'none';
+            historyFeedView.style.display = 'block';
+            loadAllAttendanceHistory();
+        });
+    }
+
+    // Quick Date Filter Chips
+    if (historyChips && historyChips.length > 0) {
+        historyChips.forEach(chip => {
+            chip.addEventListener('click', () => {
+                historyChips.forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                activeHistoryRange = chip.getAttribute('data-range') || 'all';
+
+                // If user selected a chip, clear specific date input
+                if (historyDateInput) historyDateInput.value = '';
+
+                applyHistoryFilters();
+            });
+        });
+    }
+
+    // Specific Date Input
+    if (historyDateInput) {
+        historyDateInput.addEventListener('change', () => {
+            if (historyDateInput.value) {
+                historyChips.forEach(c => c.classList.remove('active'));
+                activeHistoryRange = 'custom';
+            } else {
+                const allChip = document.querySelector('.history-chip[data-range="all"]');
+                if (allChip) allChip.classList.add('active');
+                activeHistoryRange = 'all';
+            }
+            applyHistoryFilters();
+        });
+    }
+
+    // History Filters & Search
+    if (historySectionFilter) historySectionFilter.addEventListener('change', applyHistoryFilters);
+    if (historyStatusFilter) historyStatusFilter.addEventListener('change', applyHistoryFilters);
+    if (historyModeFilter) historyModeFilter.addEventListener('change', applyHistoryFilters);
+    if (historySearchInput) historySearchInput.addEventListener('input', applyHistoryFilters);
+
+    // Refresh History Button
+    if (btnRefreshHistory) {
+        btnRefreshHistory.addEventListener('click', async () => {
+            btnRefreshHistory.disabled = true;
+            btnRefreshHistory.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+            await loadAllAttendanceHistory();
+            setTimeout(() => {
+                btnRefreshHistory.disabled = false;
+                btnRefreshHistory.innerHTML = '<i class="fas fa-rotate"></i> Refresh';
+                showAlert('🔄 Attendance history log refreshed from storage & cloud!', 'info');
+            }, 300);
+        });
+    }
+
+    // History CSV Export
+    function exportHistoryToCSV() {
+        if (!filteredHistoryRecords || filteredHistoryRecords.length === 0) {
+            showAlert('ℹ️ No history records match the current filters to export.', 'info');
+            return;
+        }
+
+        let csvContent = 'data:text/csv;charset=utf-8,';
+        csvContent += 'Date,Time,Student Name,LRN,ID Number,Grade Level,Section,Strand,Status,Session Mode,Remarks,Parent/Guardian,Parent Contact\n';
+
+        filteredHistoryRecords.forEach(r => {
+            csvContent += `"${r.date || ''}","${r.time || ''}","${r.name || ''}","${r.lrn || ''}","${r.idNo || ''}","${r.grade || ''}","${r.section || ''}","${r.strand || ''}","${r.status || ''}","${r.mode || ''}","${(r.remarks || '').replace(/"/g, '""')}","${r.parentName || ''}","${r.parentContact || ''}"\n`;
+        });
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement('a');
+        link.setAttribute('href', encodedUri);
+        link.setAttribute('download', `Student_Attendance_History_${getTodayDateString()}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        showAlert(`📥 Successfully exported ${filteredHistoryRecords.length} attendance history records to CSV!`, 'success');
+    }
+
+    if (btnExportHistoryCsv) {
+        btnExportHistoryCsv.addEventListener('click', exportHistoryToCSV);
+    }
+
+    // Modal Close Listeners
+    if (btnCloseDetailModal) btnCloseDetailModal.addEventListener('click', closeRecordDetailModal);
+    if (btnModalClose) btnModalClose.addEventListener('click', closeRecordDetailModal);
+    if (recordDetailModal) {
+        recordDetailModal.addEventListener('click', (e) => {
+            if (e.target === recordDetailModal) {
+                closeRecordDetailModal();
+            }
+        });
+    }
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && recordDetailModal && recordDetailModal.style.display === 'flex') {
+            closeRecordDetailModal();
+        }
+    });
+
+    // Cross-tab Synchronization Event Listener
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'hes_latest_attendance_event' || e.key === 'hes_attendance_records') {
+            loadTodayScansFromCache();
+            loadAllAttendanceHistory();
+        }
+    });
     const btnSyncDatabase = document.getElementById('btnSyncDatabase');
     if (btnSyncDatabase) {
         btnSyncDatabase.addEventListener('click', async () => {
@@ -1162,21 +1965,41 @@ import { supabase } from '../../supabase/config.js';
             btnSyncDatabase.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Syncing...';
 
             try {
+                // Ensure central records store is also populated
+                const rawCentral = localStorage.getItem('hes_attendance_records');
+                let centralRecords = rawCentral ? JSON.parse(rawCentral) : [];
+                todayScans.forEach(r => {
+                    const uRec = {
+                        id: r.id || ('scan_' + Date.now()),
+                        student_id: r.studentId,
+                        studentId: r.studentId,
+                        lrn: r.lrn,
+                        student_name: r.name,
+                        name: r.name,
+                        grade_level: r.grade,
+                        section: r.section,
+                        strand: r.strand,
+                        date: r.date,
+                        status: r.status,
+                        time_in: r.mode === 'time_in' ? r.time : (r.time || null),
+                        time_out: r.mode === 'time_out' ? r.time : null,
+                        remarks: r.status === 'Late' ? 'Late arrival (QR)' : 'On-time (QR)',
+                        recorded_by: teacherId,
+                        teacher_name: displayName,
+                        updated_at: new Date().toISOString()
+                    };
+                    centralRecords = centralRecords.filter(cr => !( (cr.student_id === r.studentId || (cr.lrn && cr.lrn === r.lrn)) && cr.date === r.date ));
+                    centralRecords.unshift(uRec);
+                });
+                localStorage.setItem('hes_attendance_records', JSON.stringify(centralRecords.slice(0, 500)));
+
                 const upserts = todayScans.map(r => ({
                     student_id: r.studentId,
-                    lrn: r.lrn,
-                    student_name: r.name,
-                    grade_level: r.grade,
-                    section: r.section,
-                    strand: r.strand,
                     date: r.date,
-                    status: r.status,
-                    time_in: r.mode === 'time_in' ? r.time : undefined,
-                    time_out: r.mode === 'time_out' ? r.time : undefined,
-                    remarks: r.status === 'Late' ? 'Late arrival (QR)' : 'On-time (QR)',
-                    recorded_by: teacherId,
-                    teacher_name: displayName,
-                    updated_at: new Date().toISOString()
+                    status: (r.status || 'present').toLowerCase(),
+                    time_in: r.mode === 'time_in' ? r.time : (r.time || null),
+                    time_out: r.mode === 'time_out' ? r.time : null,
+                    remarks: r.status === 'Late' ? 'Late arrival (QR)' : 'On-time (QR)'
                 }));
 
                 await supabase

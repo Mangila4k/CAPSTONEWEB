@@ -73,11 +73,39 @@ import { EmailNotificationService } from '../../js/email_service.js';
     const sidebar = document.getElementById('sidebar');
 
     // ============================================
-    // STATE
+    // STATE & YEAR LEVEL HELPERS
     // ============================================
 
     let rawEnrollments = [];
     let filteredEnrollments = [];
+    let selectedLevel = 'all'; // 'all', 'jhs', 'shs'
+    let selectedGrade = 'all'; // 'all', 'Grade 7', 'Grade 8', etc.
+
+    function getSchoolLevel(gradeName) {
+        if (!gradeName) return 'jhs';
+        const num = parseInt(String(gradeName).replace(/\D/g, ''), 10);
+        return num >= 11 ? 'shs' : 'jhs';
+    }
+
+    function getGradeNumber(gradeName) {
+        if (!gradeName) return 999;
+        const num = parseInt(String(gradeName).replace(/\D/g, ''), 10);
+        return isNaN(num) ? 999 : num;
+    }
+
+    function updateLevelBadges() {
+        const allCount = rawEnrollments.length;
+        const jhsCount = rawEnrollments.filter(e => getSchoolLevel(e.grade_name) === 'jhs').length;
+        const shsCount = rawEnrollments.filter(e => getSchoolLevel(e.grade_name) === 'shs').length;
+
+        const badgeAll = document.getElementById('badgeAllCount');
+        const badgeJhs = document.getElementById('badgeJhsCount');
+        const badgeShs = document.getElementById('badgeShsCount');
+
+        if (badgeAll) badgeAll.textContent = allCount;
+        if (badgeJhs) badgeJhs.textContent = jhsCount;
+        if (badgeShs) badgeShs.textContent = shsCount;
+    }
 
     // ============================================
     // ALERT SYSTEM
@@ -356,6 +384,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
             items.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
             rawEnrollments = items;
+            updateLevelBadges();
             applyFilters();
 
         } catch (error) {
@@ -393,7 +422,20 @@ import { EmailNotificationService } from '../../js/email_service.js';
 
         filteredEnrollments = rawEnrollments.filter(item => {
             if (statusVal && item.status.toLowerCase() !== statusVal.toLowerCase()) return false;
-            if (gradeVal && !item.grade_name.toLowerCase().includes(gradeVal.toLowerCase())) return false;
+
+            // Year level filter (JHS vs SHS)
+            if (selectedLevel === 'jhs' && getSchoolLevel(item.grade_name) !== 'jhs') return false;
+            if (selectedLevel === 'shs' && getSchoolLevel(item.grade_name) !== 'shs') return false;
+
+            // Specific Grade Level filter
+            if (selectedGrade && selectedGrade !== 'all') {
+                const sNum = selectedGrade.replace(/\D/g, '');
+                const iNum = (item.grade_name || '').replace(/\D/g, '');
+                if (sNum && iNum && sNum !== iNum) return false;
+            } else if (gradeVal && !item.grade_name.toLowerCase().includes(gradeVal.toLowerCase())) {
+                return false;
+            }
+
             if (strandVal && !item.strand.toLowerCase().includes(strandVal.toLowerCase())) return false;
             if (searchVal) {
                 const matchName = item.fullname.toLowerCase().includes(searchVal);
@@ -406,11 +448,12 @@ import { EmailNotificationService } from '../../js/email_service.js';
         });
 
         updateStats();
+        updateLevelBadges();
         renderTable();
     }
 
     // ============================================
-    // RENDER TABLE
+    // RENDER TABLE (GROUPED BY YEAR LEVEL)
     // ============================================
 
     function renderTable() {
@@ -435,12 +478,26 @@ import { EmailNotificationService } from '../../js/email_service.js';
             return;
         }
 
-        let html = '';
-        filteredEnrollments.forEach(enrollment => {
-            const dateObj = new Date(enrollment.created_at);
-            const formattedDate = isNaN(dateObj.getTime()) ? '—' : dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-            const initial = enrollment.fullname.charAt(0).toUpperCase();
+        // Sort rows by natural academic grade order (Grade 7 -> 8 -> 9 -> 10 -> 11 -> 12), then by student name
+        const sortedRows = [...filteredEnrollments].sort((a, b) => {
+            const gA = getGradeNumber(a.grade_name);
+            const gB = getGradeNumber(b.grade_name);
+            if (gA !== gB) return gA - gB;
+            return (a.fullname || '').localeCompare(b.fullname || '');
+        });
 
+        // Group rows by Year Level / Grade
+        const groups = {};
+        sortedRows.forEach(row => {
+            const gName = (row.grade_name || 'Other').trim();
+            if (!groups[gName]) groups[gName] = [];
+            groups[gName].push(row);
+        });
+
+        let html = '';
+        const groupKeys = Object.keys(groups);
+
+<<<<<<< HEAD
             let requirementsHtml = '';
             if (enrollment.has_missing && enrollment.status === 'Pending') {
                 requirementsHtml = `
@@ -524,34 +581,153 @@ import { EmailNotificationService } from '../../js/email_service.js';
 
             const gradeNum = parseInt(String(enrollment.grade_level || '').replace(/\D/g, ''), 10);
             const showStrand = gradeNum >= 11 && enrollment.strand;
+=======
+        groupKeys.forEach(gradeKey => {
+            const gradeRows = groups[gradeKey];
+            const isShs = getSchoolLevel(gradeKey) === 'shs';
+            const subLabel = isShs ? 'Senior High School' : 'Junior High School';
+            const iconClass = isShs ? 'shs' : 'jhs';
+            const iconFa = isShs ? 'fa-graduation-cap' : 'fa-school';
+>>>>>>> b239393 (pacheckkocole)
 
+            // Visual Year Level Section Header
             html += `
-                <tr>
-                    <td>
-                        <div class="student-info" style="display: flex; align-items: center; gap: 10px;">
-                            <div class="student-avatar" style="width: 36px; height: 36px; border-radius: 50%; background: #0b2b4a; color: #FFD700; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">${initial}</div>
-                            <div class="student-details">
-                                <h4 style="margin: 0; font-size: 14px; font-weight: 600; color: #0f172a;">${enrollment.fullname}</h4>
-                                <span style="font-size: 12px; color: #64748b;"><i class="fas fa-envelope"></i> ${enrollment.email}</span>
+                <tr class="year-group-row">
+                    <td colspan="8">
+                        <div class="year-group-header">
+                            <div class="year-group-title">
+                                <span class="year-group-icon ${iconClass}"><i class="fas ${iconFa}"></i></span>
+                                <div class="year-group-text">
+                                    <span class="year-group-name">${gradeKey}</span>
+                                    <span class="year-group-sub">• ${subLabel}</span>
+                                </div>
                             </div>
+                            <span class="year-group-badge">${gradeRows.length} ${gradeRows.length === 1 ? 'Record' : 'Records'}</span>
                         </div>
-                    </td>
-                    <td>
-                        ${enrollment.id_number ? `<span class="id-badge" style="font-family: monospace; font-weight: 600; color: #0b2b4a;">${enrollment.id_number}</span>` : `<span class="grade-tag" style="color: #94a3b8;">Not assigned</span>`}
-                    </td>
-                    <td>
-                        <span class="grade-tag" style="font-weight: 600;">${enrollment.grade_name}</span>
-                        ${showStrand ? `<span class="strand-tag" style="display: inline-block; margin-left: 4px; padding: 2px 6px; border-radius: 4px; background: #e0f2fe; color: #0369a1; font-size: 11px; font-weight: 600;">${enrollment.strand}</span>` : ''}
-                    </td>
-                    <td><span class="grade-tag">${enrollment.school_year}</span></td>
-                    <td><span class="badge ${statusClass}">${enrollment.status}</span></td>
-                    <td>${requirementsHtml}</td>
-                    <td><span class="grade-tag">${formattedDate}</span></td>
-                    <td class="cell-center cell-actions">
-                        ${manageDropdownHtml}
                     </td>
                 </tr>
             `;
+
+            gradeRows.forEach(enrollment => {
+                const dateObj = new Date(enrollment.created_at);
+                const formattedDate = isNaN(dateObj.getTime()) ? '—' : dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                const initial = enrollment.fullname.charAt(0).toUpperCase();
+
+                // Requirements badge — driven entirely by enrollments table
+                let requirementsHtml = '';
+                if (enrollment.has_missing && enrollment.status === 'Pending') {
+                    requirementsHtml = `
+                        <div class="requirements-warning" style="display: flex; align-items: center; gap: 8px;">
+                            <span class="missing-badge" style="background: #fee2e2; color: #dc2626; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">
+                                <i class="fas fa-exclamation-triangle"></i> ${enrollment.missing_count} missing
+                            </span>
+                            <button class="btn-notify-missing" 
+                                    data-student-name="${enrollment.fullname.replace(/"/g, '&quot;')}"
+                                    data-user-id="${enrollment.user_id || ''}"
+                                    data-student-id="${enrollment.student_id || enrollment.id || ''}"
+                                    data-email="${(enrollment.email || '').replace(/"/g, '&quot;')}"
+                                    data-missing-list="${JSON.stringify(enrollment.missing_list).replace(/"/g, '&quot;')}"
+                                    style="background: #0b2b4a; color: #FFD700; border: none; padding: 3px 8px; border-radius: 6px; font-size: 11px; cursor: pointer;">
+                                <i class="fas fa-bell"></i> Notify
+                            </button>
+                        </div>
+                    `;
+                } else if (enrollment.status === 'Pending') {
+                    requirementsHtml = `<span class="complete-badge" style="background: #d1fae5; color: #065f46; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;"><i class="fas fa-check-circle"></i> Complete</span>`;
+                } else {
+                    requirementsHtml = `<span class="grade-tag" style="color: #64748b;">Complete</span>`;
+                }
+
+                // Status badge
+                const statusLower = enrollment.status.toLowerCase();
+                const statusClass = `badge-${statusLower}`;
+
+                // Action Menu Items for Manage Dropdown
+                let menuItemsHtml = `
+                    <a href="view_enrollment.html?id=${enrollment.id}" class="manage-item view-item" title="View Full Details">
+                        <i class="fas fa-eye"></i>
+                        <span>View Details</span>
+                    </a>
+                `;
+
+                if (enrollment.status === 'Pending') {
+                    menuItemsHtml += `
+                        <button type="button" class="manage-item approve-item" onclick="window.approveEnrollment('${enrollment.id}')" title="Approve Enrollment${enrollment.has_missing ? ' (Has missing requirements)' : ''}">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Approve Application</span>
+                        </button>
+                        <button type="button" class="manage-item reject-item" onclick="window.openRejectModal('${enrollment.id}', '${enrollment.fullname.replace(/'/g, "\\'")}')" title="Reject Application">
+                            <i class="fas fa-times-circle"></i>
+                            <span>Reject Application</span>
+                        </button>
+                    `;
+                } else if (enrollment.status === 'Enrolled') {
+                    menuItemsHtml += `
+                        <a href="generate_id.html?enrollment_id=${enrollment.id}${enrollment.student_id ? '&id=' + enrollment.student_id : ''}" class="manage-item id-item" title="Generate Official Student ID">
+                            <i class="fas fa-id-card"></i>
+                            <span>Generate Student ID</span>
+                        </a>
+                    `;
+                } else if (enrollment.status === 'Rejected') {
+                    menuItemsHtml += `
+                        <button type="button" class="manage-item approve-item" onclick="window.approveEnrollment('${enrollment.id}')" title="Reconsider & Approve Application">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Approve Application</span>
+                        </button>
+                    `;
+                }
+
+                menuItemsHtml += `
+                    <div class="manage-divider"></div>
+                    <button type="button" class="manage-item delete-item" onclick="window.deleteEnrollment('${enrollment.id}', '${enrollment.fullname.replace(/'/g, "\\'")}')" title="Delete Record">
+                        <i class="fas fa-trash-alt"></i>
+                        <span>Delete Record</span>
+                    </button>
+                `;
+
+                const manageDropdownHtml = `
+                    <div class="manage-dropdown">
+                        <button type="button" class="btn-manage" aria-expanded="false" title="Manage Enrollment Actions">
+                            <span>Manage</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="manage-menu">
+                            ${menuItemsHtml}
+                        </div>
+                    </div>
+                `;
+
+                const gradeNum = parseInt(String(enrollment.grade_level || '').replace(/\D/g, ''), 10);
+                const showStrand = gradeNum >= 11 && enrollment.strand;
+
+                html += `
+                    <tr>
+                        <td>
+                            <div class="student-info" style="display: flex; align-items: center; gap: 10px;">
+                                <div class="student-avatar" style="width: 36px; height: 36px; border-radius: 50%; background: #0b2b4a; color: #FFD700; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">${initial}</div>
+                                <div class="student-details">
+                                    <h4 style="margin: 0; font-size: 14px; font-weight: 600; color: #0f172a;">${enrollment.fullname}</h4>
+                                    <span style="font-size: 12px; color: #64748b;"><i class="fas fa-envelope"></i> ${enrollment.email}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            ${enrollment.id_number ? `<span class="id-badge" style="font-family: monospace; font-weight: 600; color: #0b2b4a;">${enrollment.id_number}</span>` : `<span class="grade-tag" style="color: #94a3b8;">Not assigned</span>`}
+                        </td>
+                        <td>
+                            <span class="grade-tag" style="font-weight: 600;">${enrollment.grade_name}</span>
+                            ${showStrand ? `<span class="strand-tag" style="display: inline-block; margin-left: 4px; padding: 2px 6px; border-radius: 4px; background: #e0f2fe; color: #0369a1; font-size: 11px; font-weight: 600;">${enrollment.strand}</span>` : ''}
+                        </td>
+                        <td><span class="grade-tag">${enrollment.school_year}</span></td>
+                        <td><span class="badge ${statusClass}">${enrollment.status}</span></td>
+                        <td>${requirementsHtml}</td>
+                        <td><span class="grade-tag">${formattedDate}</span></td>
+                        <td class="cell-center cell-actions">
+                            ${manageDropdownHtml}
+                        </td>
+                    </tr>
+                `;
+            });
         });
 
         tableBody.innerHTML = html;
@@ -741,16 +917,99 @@ import { EmailNotificationService } from '../../js/email_service.js';
         if (gradeFilter) gradeFilter.value = '';
         if (strandFilter) strandFilter.value = '';
         if (searchInput) searchInput.value = '';
+        selectedLevel = 'all';
+        selectedGrade = 'all';
+
+        document.querySelectorAll('.level-tab-btn').forEach(b => {
+            b.classList.toggle('active', b.dataset.level === 'all');
+        });
+        document.querySelectorAll('.grade-pill-tag').forEach(p => {
+            p.classList.toggle('active', p.dataset.grade === 'all');
+        });
+
         applyFilters();
         showAlert('Filters reset to default.', 'info');
     };
 
     if (filterForm) filterForm.addEventListener('submit', function (e) { e.preventDefault(); applyFilters(); });
     if (statusFilter) statusFilter.addEventListener('change', applyFilters);
-    if (gradeFilter) gradeFilter.addEventListener('change', applyFilters);
     if (strandFilter) strandFilter.addEventListener('change', applyFilters);
     if (searchInput) searchInput.addEventListener('input', applyFilters);
 
+<<<<<<< HEAD
+=======
+    // Setup Level Navigation Tabs (All, Junior High, Senior High)
+    document.querySelectorAll('.level-tab-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            document.querySelectorAll('.level-tab-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            selectedLevel = this.dataset.level || 'all';
+
+            // Reset grade pill
+            document.querySelectorAll('.grade-pill-tag').forEach(p => p.classList.remove('active'));
+            const allPill = document.querySelector('.grade-pill-tag[data-grade="all"]');
+            if (allPill) allPill.classList.add('active');
+            selectedGrade = 'all';
+            if (gradeFilter) gradeFilter.value = '';
+
+            applyFilters();
+        });
+    });
+
+    // Setup Fast Grade Pills (All, Grade 7, Grade 8, etc.)
+    document.querySelectorAll('.grade-pill-tag').forEach(pill => {
+        pill.addEventListener('click', function () {
+            document.querySelectorAll('.grade-pill-tag').forEach(p => p.classList.remove('active'));
+            this.classList.add('active');
+            selectedGrade = this.dataset.grade || 'all';
+
+            if (selectedGrade === 'all') {
+                if (gradeFilter) gradeFilter.value = '';
+            } else {
+                const gradeNumStr = selectedGrade.replace(/\D/g, '');
+                if (gradeFilter) gradeFilter.value = gradeNumStr;
+                const targetLvl = getSchoolLevel(selectedGrade);
+                document.querySelectorAll('.level-tab-btn').forEach(b => {
+                    b.classList.toggle('active', b.dataset.level === targetLvl);
+                });
+                selectedLevel = targetLvl;
+            }
+
+            applyFilters();
+        });
+    });
+
+    if (gradeFilter) {
+        gradeFilter.addEventListener('change', function () {
+            const val = this.value;
+            selectedGrade = val ? (val.startsWith('Grade') ? val : `Grade ${val}`) : 'all';
+
+            document.querySelectorAll('.grade-pill-tag').forEach(p => {
+                p.classList.toggle('active', (val ? (p.dataset.grade === `Grade ${val}` || p.dataset.grade === val) : p.dataset.grade === 'all'));
+            });
+
+            if (val) {
+                const targetLvl = getSchoolLevel(val);
+                document.querySelectorAll('.level-tab-btn').forEach(b => {
+                    b.classList.toggle('active', b.dataset.level === targetLvl);
+                });
+                selectedLevel = targetLvl;
+            } else {
+                document.querySelectorAll('.level-tab-btn').forEach(b => {
+                    b.classList.toggle('active', b.dataset.level === 'all');
+                });
+                selectedLevel = 'all';
+            }
+
+            applyFilters();
+        });
+    }
+
+    // ============================================
+    // MOBILE MENU & MODAL DISMISS
+    // ============================================
+
+>>>>>>> b239393 (pacheckkocole)
     if (menuToggle && sidebar) {
         menuToggle.addEventListener('click', function (e) {
             e.stopPropagation();

@@ -1540,6 +1540,29 @@ import { supabase } from '../../supabase/config.js';
                     // Add new records
                     allLocal = [...localRecords, ...allLocal];
                     localStorage.setItem('hes_student_attendance', JSON.stringify(allLocal));
+
+                    // Also update hes_attendance_records
+                    const rawCentral = localStorage.getItem('hes_attendance_records');
+                    let centralRecords = rawCentral ? JSON.parse(rawCentral) : [];
+                    centralRecords = centralRecords.filter(a => a.date !== selectedDate);
+                    localRecords.forEach(lr => {
+                        centralRecords.unshift({
+                            ...lr,
+                            student_id: lr.student_id,
+                            studentId: lr.student_id,
+                            date: selectedDate,
+                            recorded_by: teacherId,
+                            teacher_name: displayName,
+                            updated_at: new Date().toISOString()
+                        });
+                    });
+                    localStorage.setItem('hes_attendance_records', JSON.stringify(centralRecords.slice(0, 1000)));
+
+                    // Broadcast cross-tab attendance event
+                    localStorage.setItem('hes_latest_attendance_event', JSON.stringify({
+                        date: selectedDate,
+                        timestamp: Date.now()
+                    }));
                 } catch (e) {}
 
                 showAlert(`🎉 Section attendance for ${formatDate(selectedDate)} saved successfully! All ${enrolledStudents.length} students have been notified of their attendance status.`, 'success');

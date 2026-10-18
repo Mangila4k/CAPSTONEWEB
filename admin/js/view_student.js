@@ -448,7 +448,7 @@ import { supabase } from '../../supabase/config.js';
         const gradeName = currentSection?.grade_level || enr?.grade_level || student?.grade_level || '—';
         const strand = enr?.strand || student?.strand || currentSection?.strand || '';
         const schoolYear = enr?.school_year || enr?.last_school_year || '—';
-        const form138 = student?.form_138_url || enr?.form_138_url;
+        const form138 = student?.form_138_url || enr?.form_138_url || enr?.report_card_url || student?.report_card_url || enr?.form_138 || student?.form_138 || null;
 
         let strandHtml = '';
         if (strand) {
@@ -484,6 +484,36 @@ import { supabase } from '../../supabase/config.js';
         const adviserDisplay = currentSection && currentSection.adviser_name
             ? `<span style="font-weight: 600; color: #0f172a;"><i class="fas fa-chalkboard-user" style="color: #059669; margin-right: 6px;"></i>${currentSection.adviser_name}</span>`
             : `<span style="color: #94a3b8; font-style: italic;"><i class="fas fa-user-slash" style="margin-right: 6px;"></i>No Adviser Assigned</span>`;
+
+        let form138Html = '';
+        if (form138 && typeof form138 === 'string' && form138.trim()) {
+            const trimmed = form138.trim();
+            if (trimmed === 'physical_copy_verified') {
+                form138Html = `
+                    <div class="info-item" style="grid-column: 1 / -1; border-bottom: none;">
+                        <div class="info-label">Report Card (Form 138)</div>
+                        <div class="info-value">
+                            <i class="fas fa-check-circle" style="color: #059669;"></i>
+                            <span style="color: #065f46; font-weight: 600;">Physical Copy Verified & On File</span>
+                        </div>
+                    </div>
+                `;
+            } else {
+                const isExternal = trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('data:') || trimmed.startsWith('blob:');
+                const docHref = isExternal ? trimmed : (trimmed.startsWith('/') ? trimmed : `../${trimmed}`);
+                form138Html = `
+                    <div class="info-item" style="grid-column: 1 / -1; border-bottom: none;">
+                        <div class="info-label">Report Card (Form 138)</div>
+                        <div class="info-value">
+                            <i class="fas fa-file-pdf" style="color: #dc2626;"></i>
+                            <a href="${docHref}" target="_blank" rel="noopener noreferrer" class="document-link" style="color: #1B2A4A; font-weight: 600; text-decoration: underline;">
+                                View Document <i class="fas fa-arrow-up-right-from-square" style="font-size: 11px; margin-left: 4px;"></i>
+                            </a>
+                        </div>
+                    </div>
+                `;
+            }
+        }
 
         enrollmentInfoGrid.innerHTML = `
             <div class="info-item">
@@ -525,6 +555,7 @@ import { supabase } from '../../supabase/config.js';
 
         // Update view link in card header
         if (currentEnrollmentCard) {
+            currentEnrollmentCard.style.display = 'block';
             const viewLink = currentEnrollmentCard.querySelector('.view-link');
             if (viewLink) {
                 const targetEnrollmentId = enr?.id || student?.enrollment_id;
@@ -604,11 +635,6 @@ import { supabase } from '../../supabase/config.js';
         });
 
         html += `
-                </tbody>
-            </table>
-        `;
-
-            html += `
                 </tbody>
             </table>
         `;

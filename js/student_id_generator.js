@@ -31,8 +31,8 @@ export class StudentIdGenerator {
             first_name: 'STUDENT',
             last_name: 'NAME',
             fullname: 'STUDENT NAME',
-            grade_level: 'Grade Level',
-            level_category: 'SENIOR HIGH',
+            grade_level: 'Grade 7',
+            level_category: 'GRADE 7',
             photo_url: '',
             parent_name: 'PARENT / GUARDIAN',
             parent_contact: '09XXXXXXXXX',
@@ -80,7 +80,11 @@ export class StudentIdGenerator {
                     const fName = (st.first_name || enr.first_name || '').trim();
                     const lName = (st.last_name || enr.last_name || '').trim();
                     const fullName = `${fName} ${lName}`.trim() || st.fullname || 'Student';
-                    const grade = st.grade_level || enr.grade_level || 'Grade 11';
+                    let grade = st.grade_level || enr.grade_level || 'Grade 7';
+                    const numMatch = String(grade).match(/\d+/);
+                    if (numMatch) {
+                        grade = `Grade ${numMatch[0]}`;
+                    }
                     const isSHS = String(grade).includes('11') || String(grade).includes('12') || String(grade).toUpperCase().includes('SENIOR');
                     const levelCat = isSHS ? 'SENIOR HIGH' : 'JUNIOR HIGH';
                     const lrn = st.lrn || enr.lrn || '141525100086';
@@ -132,25 +136,82 @@ export class StudentIdGenerator {
         }
     }
 
-    updateSelectDropdown() {
+    updateSelectDropdown(gradeFilter = null) {
         const sel = document.getElementById('studentSelect');
         if (!sel) return;
 
-        const currentVal = sel.value;
-        const studentOptions = this.students.map(s => `
-            <option value="${s.id}">
-                ${s.fullname} (${s.lrn}) - ${s.level_category || s.grade_level}
-            </option>
-        `).join('');
+        const filterGradeEl = document.getElementById('filterStudentGrade');
+        const activeFilter = gradeFilter !== null ? gradeFilter : (filterGradeEl ? filterGradeEl.value : 'all');
 
+        let filtered = [...this.students];
+        if (activeFilter && activeFilter !== 'all') {
+            const cleanFilterNum = activeFilter.replace(/\D/g, '');
+            filtered = filtered.filter(s => {
+                const sGrade = String(s.grade_level || '');
+                const sNum = sGrade.replace(/\D/g, '');
+                if (cleanFilterNum && sNum) {
+                    return sNum === cleanFilterNum;
+                }
+                return sGrade.toLowerCase() === activeFilter.toLowerCase();
+            });
+        }
+
+        // Group filtered students by Year Level
+        const gradesOrder = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
+        const groups = {};
+        gradesOrder.forEach(g => groups[g] = []);
+        groups['Other'] = [];
+
+        filtered.forEach(s => {
+            const rawG = String(s.grade_level || '');
+            const numMatch = rawG.match(/\d+/);
+            if (numMatch && Number(numMatch[0]) >= 7 && Number(numMatch[0]) <= 12) {
+                const gKey = `Grade ${numMatch[0]}`;
+                groups[gKey].push(s);
+            } else {
+                groups['Other'].push(s);
+            }
+        });
+
+        let optgroupsHtml = '';
+        gradesOrder.forEach(g => {
+            const list = groups[g] || [];
+            if (list.length > 0) {
+                const isSHS = g.includes('11') || g.includes('12');
+                const catLabel = isSHS ? 'Senior High' : 'Junior High';
+                optgroupsHtml += `
+                    <optgroup label="${g} (${catLabel}) - ${list.length} student${list.length === 1 ? '' : 's'}">
+                        ${list.map(s => `
+                            <option value="${s.id}">
+                                ${s.fullname} (${s.lrn}) - ${g}
+                            </option>
+                        `).join('')}
+                    </optgroup>
+                `;
+            }
+        });
+
+        if (groups['Other'] && groups['Other'].length > 0) {
+            optgroupsHtml += `
+                <optgroup label="Other Students - ${groups['Other'].length}">
+                    ${groups['Other'].map(s => `
+                        <option value="${s.id}">
+                            ${s.fullname} (${s.lrn}) - ${s.grade_level || 'General'}
+                        </option>
+                    `).join('')}
+                </optgroup>
+            `;
+        }
+
+        const currentVal = sel.value;
         sel.innerHTML = `
             <option value="">-- Select Student / Blank ID --</option>
-            ${studentOptions}
+            ${optgroupsHtml}
         `;
 
-        if (currentVal && this.students.some(s => s.id === currentVal)) {
+        if (currentVal && filtered.some(s => s.id === currentVal)) {
             sel.value = currentVal;
-        } else if (this.selectedStudent && this.selectedStudent.id) {
+        } else if (this.selectedStudent && this.selectedStudent.id && filtered.some(s => s.id === this.selectedStudent.id)) {
             sel.value = this.selectedStudent.id;
         } else {
             sel.value = "";
@@ -256,7 +317,7 @@ export class StudentIdGenerator {
 
                                 <!-- Student Level Category -->
                                 <div class="id-level-custom-wrap">
-                                    <span id="previewStudentLevel">SENIOR HIGH</span>
+                                    <span id="previewStudentLevel">GRADE 7</span>
                                 </div>
 
                                 <!-- Gold Horizontal Divider -->
@@ -374,14 +435,27 @@ export class StudentIdGenerator {
                         <i class="fas fa-sliders-h" style="color: #2563eb;"></i> Student ID Controls
                     </h3>
 
-                    <!-- Quick Student Search / Select -->
+                    <!-- Quick Student Search / Select by Year Level -->
                     <div class="id-form-group">
-                        <label><i class="fas fa-search"></i> Select Student</label>
+                        <label><i class="fas fa-filter" style="color: #2563eb;"></i> Filter by Year Level</label>
+                        <select id="filterStudentGrade">
+                            <option value="all">All Year Levels</option>
+                            <option value="Grade 7">Grade 7 (Junior High)</option>
+                            <option value="Grade 8">Grade 8 (Junior High)</option>
+                            <option value="Grade 9">Grade 9 (Junior High)</option>
+                            <option value="Grade 10">Grade 10 (Junior High)</option>
+                            <option value="Grade 11">Grade 11 (Senior High)</option>
+                            <option value="Grade 12">Grade 12 (Senior High)</option>
+                        </select>
+                    </div>
+
+                    <div class="id-form-group">
+                        <label><i class="fas fa-search" style="color: #2563eb;"></i> Select Student (By Year Level)</label>
                         <select id="studentSelect">
                             <option value="">-- Select Student / Blank ID --</option>
                             ${this.students.map(s => `
                                 <option value="${s.id}">
-                                    ${s.fullname} (${s.lrn}) - ${s.level_category || s.grade_level}
+                                    ${s.fullname} (${s.lrn}) - ${s.grade_level || s.level_category}
                                 </option>
                             `).join('')}
                         </select>
@@ -402,12 +476,18 @@ export class StudentIdGenerator {
                         <input type="text" id="inputStudentName" placeholder="e.g. STUDENT NAME">
                     </div>
 
-                    <!-- Level Category -->
+                    <!-- Year Level -->
                     <div class="id-form-group">
-                        <label>Level Category</label>
+                        <label><i class="fas fa-layer-group" style="color: #2563eb;"></i> Year Level</label>
                         <select id="inputLevelCategory">
-                            <option value="SENIOR HIGH">SENIOR HIGH</option>
-                            <option value="JUNIOR HIGH">JUNIOR HIGH</option>
+                            <option value="GRADE 7">Grade 7 (Junior High)</option>
+                            <option value="GRADE 8">Grade 8 (Junior High)</option>
+                            <option value="GRADE 9">Grade 9 (Junior High)</option>
+                            <option value="GRADE 10">Grade 10 (Junior High)</option>
+                            <option value="GRADE 11">Grade 11 (Senior High)</option>
+                            <option value="GRADE 12">Grade 12 (Senior High)</option>
+                            <option value="JUNIOR HIGH">Junior High School</option>
+                            <option value="SENIOR HIGH">Senior High School</option>
                         </select>
                     </div>
 
@@ -478,6 +558,21 @@ export class StudentIdGenerator {
     }
 
     setupEvents() {
+        const filterGradeEl = document.getElementById('filterStudentGrade');
+        if (filterGradeEl) {
+            filterGradeEl.addEventListener('change', (e) => {
+                const val = e.target.value;
+                this.updateSelectDropdown(val);
+                const sel = document.getElementById('studentSelect');
+                if (sel && sel.options.length > 1 && !sel.value) {
+                    sel.selectedIndex = 1;
+                    const newId = sel.value;
+                    const found = this.students.find(s => s.id === newId);
+                    if (found) this.selectStudent(found);
+                }
+            });
+        }
+
         const studentSelect = document.getElementById('studentSelect');
         if (studentSelect) {
             studentSelect.addEventListener('change', (e) => {
@@ -694,8 +789,20 @@ export class StudentIdGenerator {
         const studentSelect = document.getElementById('studentSelect');
         if (studentSelect) studentSelect.value = student.id || '';
 
-        const isSHS = String(student.grade_level || '').includes('11') || String(student.grade_level || '').includes('12') || String(student.level_category || '').toUpperCase().includes('SENIOR');
-        const levelCategory = isSHS ? 'SENIOR HIGH' : 'JUNIOR HIGH';
+        const rawGrade = student.grade_level || '';
+        let yearLevelVal = 'GRADE 7';
+        if (rawGrade) {
+            const numMatch = String(rawGrade).match(/\d+/);
+            if (numMatch) {
+                yearLevelVal = `GRADE ${numMatch[0]}`;
+            } else if (String(rawGrade).toUpperCase().includes('SENIOR')) {
+                yearLevelVal = 'SENIOR HIGH';
+            } else if (String(rawGrade).toUpperCase().includes('JUNIOR')) {
+                yearLevelVal = 'JUNIOR HIGH';
+            }
+        } else if (student.level_category) {
+            yearLevelVal = student.level_category.toUpperCase();
+        }
 
         // Update inputs
         const setVal = (id, val) => {
@@ -704,7 +811,7 @@ export class StudentIdGenerator {
         };
 
         setVal('inputStudentName', isUnassigned ? '' : student.fullname);
-        setVal('inputLevelCategory', levelCategory);
+        setVal('inputLevelCategory', yearLevelVal);
         setVal('inputIdNumber', isUnassigned ? '' : student.id_number);
         setVal('inputLrn', isUnassigned ? '' : student.lrn);
         setVal('inputGuardianName', isUnassigned ? '' : student.parent_name);
@@ -715,7 +822,7 @@ export class StudentIdGenerator {
         this.updateStudentNameDisplay(student.fullname);
 
         const previewLevel = document.getElementById('previewStudentLevel');
-        if (previewLevel) previewLevel.textContent = levelCategory;
+        if (previewLevel) previewLevel.textContent = yearLevelVal;
 
         const previewId = document.getElementById('previewIdNumber');
         if (previewId) previewId.textContent = student.id_number || '2024-ST-00000';

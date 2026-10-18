@@ -32,7 +32,9 @@ import { supabase } from '../../supabase/config.js';
     const rateProgressFill = document.getElementById('rateProgressFill');
     const rateLabel = document.getElementById('rateLabel');
     const presentDaysCount = document.getElementById('presentDaysCount');
+    const presentDetailLabel = document.getElementById('presentDetailLabel');
     const lateDaysCount = document.getElementById('lateDaysCount');
+    const lateDetailLabel = document.getElementById('lateDetailLabel');
     const absentDaysCount = document.getElementById('absentDaysCount');
     const absentDetailLabel = document.getElementById('absentDetailLabel');
 
@@ -197,21 +199,21 @@ import { supabase } from '../../supabase/config.js';
     if (studentName) studentName.textContent = studentDisplayName;
     if (studentInitial) studentInitial.textContent = getStudentInitials(studentDisplayName);
 
-    // Initial default enrollment values
-    let lrnVal = sessionUser.lrn || '109876543201';
-    let gradeVal = sessionUser.grade || sessionUser.grade_level || 'Grade 11';
+    // Initial enrollment values from active student session
+    let lrnVal = sessionUser.lrn || '—';
+    let gradeVal = sessionUser.grade || sessionUser.grade_level || 'Grade 8';
     let sectionVal = sessionUser.section || '';
     let strandVal = sessionUser.strand || (gradeVal.includes('11') || gradeVal.includes('12') ? 'TVL-ICT' : 'N/A');
     let syVal = sessionUser.school_year || sessionUser.schoolYear || '2025-2026';
-    let statusVal = 'Approved';
+    let statusVal = sessionUser.status || 'Enrolled';
 
     if (gradeDisplay) gradeDisplay.textContent = gradeVal;
     if (strandDisplay) strandDisplay.textContent = strandVal;
     if (statusDisplay) statusDisplay.textContent = statusVal;
     if (schoolYearDisplay) schoolYearDisplay.textContent = syVal;
 
-    // Fast initial render with cached or generated records immediately
-    rawAttendanceRecords = getInitialOrCachedAttendance(studentDisplayName, lrnVal, gradeVal, sectionVal);
+    // Real records only: start with empty list until database and shared queries resolve
+    rawAttendanceRecords = [];
     applyFilters();
 
     // ============================================
@@ -232,8 +234,16 @@ import { supabase } from '../../supabase/config.js';
     }
 
     // ============================================
-    // GENERATE / CACHED ATTENDANCE RECORDS
+    // DATE HELPERS
     // ============================================
+
+    function getTodayDateString() {
+        const d = new Date();
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
 
     function isWeekend(dateStr) {
         if (!dateStr) return false;
@@ -246,154 +256,31 @@ import { supabase } from '../../supabase/config.js';
         }
     }
 
-    function getInitialOrCachedAttendance(studentName, lrn, grade, section) {
-        try {
-            // Check student-specific local cache
-            const cacheKey = `hes_student_attendance_${lrn}`;
-            const cached = localStorage.getItem(cacheKey);
-            if (cached) {
-                const parsed = JSON.parse(cached);
-                if (Array.isArray(parsed) && parsed.length > 0) {
-                    // Strictly purge any weekend dates that might have been stored previously
-                    const cleansed = parsed.filter(item => !isWeekend(item.date));
-                    if (cleansed.length > 0) {
-                        try {
-                            localStorage.setItem(cacheKey, JSON.stringify(cleansed));
-                        } catch(e) {}
-                        return cleansed;
-                    }
-                }
-            }
-
-            // Check admin / teacher synced logs
-            const storedAdminAtt = localStorage.getItem('hes_student_attendance');
-            if (storedAdminAtt) {
-                const parsed = JSON.parse(storedAdminAtt);
-                if (Array.isArray(parsed) && parsed.length > 0) {
-                    const cleansed = parsed.filter(item => !isWeekend(item.date));
-                    const myMatches = cleansed.filter(item => {
-                        const matchLRN = item.lrn && String(item.lrn) === String(lrn);
-                        const matchName = item.name && item.name.toLowerCase() === studentName.toLowerCase();
-                        return matchLRN || matchName;
-                    });
-                    if (myMatches.length > 0) {
-                        return myMatches;
-                    }
-                }
-            }
-        } catch (e) {
-            console.warn('Cache read warning:', e);
-        }
-
-        // Generate fresh deterministic attendance records
-        const fresh = generateExclusiveStudentAttendance(studentName, lrn, grade, section);
-        try {
-            localStorage.setItem(`hes_student_attendance_${lrn}`, JSON.stringify(fresh));
-        } catch (e) {}
-        return fresh;
-    }
-
-    function generateExclusiveStudentAttendance(studentName, lrn, grade, section) {
-        const logs = [];
-        const todayObj = new Date();
-        const todayStr = todayObj.toISOString().split('T')[0];
-        const schoolDaysToGenerate = 30; // Last 30 school days
-        let count = 0;
-        let dayOffset = 0;
-
-        while (count < schoolDaysToGenerate && dayOffset < 60) {
-            const d = new Date(todayObj);
-            d.setDate(todayObj.getDate() - dayOffset);
-            dayOffset++;
-
-            const dayOfWeek = d.getDay();
-            // Strictly skip weekends (0 = Sunday, 6 = Saturday)
-            if (dayOfWeek === 0 || dayOfWeek === 6) continue;
-
-            const dateStr = d.toISOString().split('T')[0];
-            
-            // Deterministic distribution for student: 88% Present, 8% Late, 4% Excused/Absent
-            const hash = (d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate() + (lrn.charCodeAt(lrn.length - 1) || 7));
-            const roll = hash % 100;
-
-            let status = 'Present';
-            let timeIn = '07:22 AM';
-            let timeOut = '04:30 PM';
-            let remarks = 'On time';
-
-            if (dateStr === todayStr && dayOfWeek !== 0 && dayOfWeek !== 6) {
-                // Only if today is an active weekday
-                timeIn = '07:18 AM';
-                timeOut = '04:30 PM';
-                status = 'Present';
-                remarks = 'On time';
-            } else if (roll < 8) {
-                status = 'Late';
-                const lateMinutes = 5 + (hash % 25);
-                const minStr = lateMinutes < 10 ? '0' + lateMinutes : lateMinutes;
-                timeIn = `08:${minStr} AM`;
-                timeOut = '04:30 PM';
-                remarks = 'Traffic along South Road';
-            } else if (roll < 12) {
-                status = 'Excused';
-                timeIn = '—';
-                timeOut = '—';
-                remarks = 'Medical appointment / Certificate provided';
-            } else if (roll === 13) {
-                status = 'Absent';
-                timeIn = '—';
-                timeOut = '—';
-                remarks = 'Unexcused';
-            } else {
-                status = 'Present';
-                const min = 10 + (hash % 35);
-                const minStr = min < 10 ? '0' + min : min;
-                timeIn = `07:${minStr} AM`;
-                timeOut = '04:30 PM';
-                remarks = 'On time';
-            }
-
-            logs.push({
-                id: `ATT-${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}-${lrn.slice(-4)}`,
-                date: dateStr,
-                time_in: timeIn,
-                time_out: timeOut,
-                timeIn: timeIn,
-                timeOut: timeOut,
-                status: status,
-                remarks: remarks,
-                grade: grade,
-                section: section,
-                student_name: studentName,
-                lrn: lrn
-            });
-
-            count++;
-        }
-
-        // Sort descending by date
-        logs.sort((a, b) => new Date(b.date) - new Date(a.date));
-        return logs;
-    }
-
     // ============================================
-    // LOAD STUDENT & ATTENDANCE DATA FROM SUPABASE
+    // LOAD STUDENT & ATTENDANCE DATA FROM SUPABASE & REAL-TIME TEACHER STORES
     // ============================================
 
     async function loadAttendanceModule() {
         try {
-            const userEmail = sessionUser.email || '';
-            const userUid = sessionUser.uid || sessionUser.id || '';
+            const userEmail = (sessionUser.email || '').trim().toLowerCase();
+            const userUid = (sessionUser.uid || sessionUser.id || '').toString().trim();
+            const userTableId = (sessionUser.student_id || sessionUser.studentTableId || '').toString().trim();
+            const userLrn = (sessionUser.lrn || '').toString().trim();
 
-            // 1. Query Student Profile
+            let allStudentProfiles = [];
+
+            // 1. Query Student Profile (supporting multiple rows / aliases)
             try {
-                if (userEmail) {
-                    const { data: sData } = await supabase
-                        .from('students')
-                        .select('*')
-                        .eq('email', userEmail);
+                let orParts = [];
+                if (userEmail) orParts.push(`email.ilike.${userEmail}`);
+                if (userUid) orParts.push(`id.eq.${userUid}`);
+                if (userTableId) orParts.push(`id.eq.${userTableId}`);
+                if (userLrn) orParts.push(`lrn.eq.${userLrn}`);
 
+                if (orParts.length > 0) {
+                    const { data: sData } = await supabase.from('students').select('*').or(orParts.join(','));
                     if (sData && sData.length > 0) {
+                        allStudentProfiles = sData;
                         studentProfile = sData[0];
                         const full = `${studentProfile.first_name || ''} ${studentProfile.last_name || ''}`.trim();
                         if (full) {
@@ -410,30 +297,50 @@ import { supabase } from '../../supabase/config.js';
 
             // 2. Query Student Enrollment
             try {
-                const studentId = studentProfile?.id || userUid;
-                let enrQuery = supabase.from('enrollments').select('*');
-                if (userEmail && studentId) {
-                    enrQuery = enrQuery.or(`email.eq.${userEmail},student_id.eq.${studentId}`);
-                } else if (userEmail) {
-                    enrQuery = enrQuery.eq('email', userEmail);
-                } else if (studentId) {
-                    enrQuery = enrQuery.eq('student_id', studentId);
-                }
-                const { data: enrData } = await enrQuery.order('created_at', { ascending: false });
-                if (enrData && enrData.length > 0) {
-                    enrollmentRecord = enrData[0];
+                const studentIdCandidates = [
+                    studentProfile?.id,
+                    userTableId,
+                    userUid,
+                    ...allStudentProfiles.map(s => s.id)
+                ].filter(Boolean);
+
+                let enrOrParts = [];
+                if (userEmail) enrOrParts.push(`email.ilike.${userEmail}`);
+                studentIdCandidates.forEach(sid => enrOrParts.push(`student_id.eq.${sid}`));
+                if (userLrn) enrOrParts.push(`lrn.eq.${userLrn}`);
+
+                if (enrOrParts.length > 0) {
+                    const { data: enrData } = await supabase
+                        .from('enrollments')
+                        .select('*')
+                        .or(enrOrParts.join(','))
+                        .order('created_at', { ascending: false });
+
+                    if (enrData && enrData.length > 0) {
+                        enrollmentRecord = enrData[0];
+                    }
                 }
             } catch (err) {
                 console.warn('Enrollment query notice:', err);
             }
 
+            // Resolve Section Name if section_id is present
+            let resolvedSection = enrollmentRecord?.section || studentProfile?.section || sectionVal;
+            const secIdToLookup = studentProfile?.section_id || enrollmentRecord?.section_id;
+            if (secIdToLookup) {
+                try {
+                    const { data: secRow } = await supabase.from('sections').select('name').eq('id', secIdToLookup).maybeSingle();
+                    if (secRow?.name) resolvedSection = secRow.name;
+                } catch (_) {}
+            }
+
             // Update Current Enrollment Card details
             lrnVal = studentProfile?.lrn || sessionUser.lrn || enrollmentRecord?.lrn || lrnVal;
             gradeVal = enrollmentRecord?.grade_level || enrollmentRecord?.grade || studentProfile?.grade_level || gradeVal;
-            sectionVal = enrollmentRecord?.section || studentProfile?.section || sectionVal;
+            sectionVal = resolvedSection;
             strandVal = enrollmentRecord?.strand || studentProfile?.strand || (gradeVal.includes('11') || gradeVal.includes('12') ? 'TVL-ICT' : 'N/A');
             syVal = enrollmentRecord?.school_year || enrollmentRecord?.schoolYear || syVal;
-            statusVal = enrollmentRecord?.status ? (enrollmentRecord.status.charAt(0).toUpperCase() + enrollmentRecord.status.slice(1)) : 'Approved';
+            statusVal = enrollmentRecord?.status ? (enrollmentRecord.status.charAt(0).toUpperCase() + enrollmentRecord.status.slice(1)) : (sessionUser.status || 'Enrolled');
 
             if (gradeDisplay) gradeDisplay.textContent = gradeVal;
             if (strandDisplay) strandDisplay.textContent = strandVal;
@@ -442,30 +349,247 @@ import { supabase } from '../../supabase/config.js';
 
             // 3. Query Exclusive Student Attendance Records from Supabase
             let onlineRecords = [];
-            const studentId = studentProfile?.id || userUid;
+            const studentValidIds = new Set([
+                studentProfile?.id,
+                userTableId,
+                userUid,
+                sessionUser?.student_id,
+                sessionUser?.studentTableId,
+                sessionUser?.id,
+                sessionUser?.uid,
+                ...allStudentProfiles.map(s => s.id)
+            ].filter(Boolean).map(String));
 
+            if (studentValidIds.size > 0) {
+                try {
+                    const orList = Array.from(studentValidIds).map(id => `student_id.eq.${id}`).join(',');
+                    const { data: attData, error: attError } = await supabase
+                        .from('attendance')
+                        .select('*')
+                        .or(orList)
+                        .order('date', { ascending: false });
+
+                    if (!attError && Array.isArray(attData) && attData.length > 0) {
+                        onlineRecords = attData;
+                    }
+                } catch (err) {
+                    console.warn('Attendance database query notice:', err);
+                }
+            }
+
+            // 4. Load Teacher-Recorded Attendance from Shared Stores
+            const sharedRecords = [];
+            const norm = v => (v || '').toString().toLowerCase().trim();
+
+            const studentMatchValues = new Set([
+                userUid,
+                userTableId,
+                sessionUser?.id,
+                sessionUser?.uid,
+                sessionUser?.student_id,
+                sessionUser?.studentTableId,
+                sessionUser?.lrn,
+                lrnVal,
+                studentProfile?.id,
+                studentProfile?.lrn,
+                enrollmentRecord?.student_id,
+                enrollmentRecord?.lrn,
+                ...allStudentProfiles.map(s => s.id),
+                ...allStudentProfiles.map(s => s.lrn)
+            ].filter(Boolean).map(norm));
+
+            const studentNameSet = new Set();
+            if (studentDisplayName) studentNameSet.add(norm(studentDisplayName));
+            if (sessionUser?.displayName) studentNameSet.add(norm(sessionUser.displayName));
+            if (sessionUser?.firstName || sessionUser?.lastName) {
+                studentNameSet.add(norm(`${sessionUser.firstName || ''} ${sessionUser.lastName || ''}`));
+            }
+            if (sessionUser?.first_name || sessionUser?.last_name) {
+                studentNameSet.add(norm(`${sessionUser.first_name || ''} ${sessionUser.last_name || ''}`));
+            }
+            if (sessionUser?.name) studentNameSet.add(norm(sessionUser.name));
+            allStudentProfiles.forEach(p => {
+                const full = `${p.first_name || ''} ${p.last_name || ''}`.trim();
+                if (full) studentNameSet.add(norm(full));
+                if (p.full_name) studentNameSet.add(norm(p.full_name));
+            });
+            if (enrollmentRecord) {
+                const enrFull = `${enrollmentRecord.first_name || ''} ${enrollmentRecord.last_name || ''}`.trim();
+                if (enrFull) studentNameSet.add(norm(enrFull));
+            }
+
+            function matchesCurrentStudent(rec) {
+                if (!rec) return false;
+                const recStuId = norm(rec.student_id || rec.studentId || rec.id);
+                const recLrn = norm(rec.lrn);
+                const recEmail = norm(rec.email || rec.student_email);
+                const recName = norm(rec.student_name || rec.name || rec.studentName || rec.full_name);
+
+                // 1. Direct ID match
+                if (recStuId && studentMatchValues.has(recStuId)) return true;
+
+                // 2. Direct LRN match
+                if (recLrn && studentMatchValues.has(recLrn)) return true;
+
+                // 3. Email match
+                if (userEmail && recEmail && userEmail === recEmail) return true;
+
+                // 4. Name match (exact, contains, flipped last/first)
+                if (recName) {
+                    for (const sName of studentNameSet) {
+                        if (!sName) continue;
+                        if (recName === sName || recName.includes(sName) || sName.includes(recName)) return true;
+                        const parts = sName.split(/\s+/).filter(Boolean);
+                        if (parts.length >= 2) {
+                            const flipped = `${parts[parts.length - 1]}, ${parts.slice(0, -1).join(' ')}`;
+                            const reversed = `${parts[parts.length - 1]} ${parts.slice(0, -1).join(' ')}`;
+                            if (recName.includes(flipped) || flipped.includes(recName) || recName.includes(reversed)) return true;
+                        }
+                    }
+                }
+
+                return false;
+            }
+
+            // A. Check hes_attendance_records
             try {
-                let attQuery = supabase.from('attendance').select('*');
-                if (studentId) {
-                    attQuery = attQuery.eq('student_id', studentId);
-                } else if (userEmail) {
-                    attQuery = attQuery.eq('email', userEmail);
+                const centralRaw = localStorage.getItem('hes_attendance_records');
+                if (centralRaw) {
+                    const list = JSON.parse(centralRaw);
+                    if (Array.isArray(list)) {
+                        list.forEach(r => {
+                            if (matchesCurrentStudent(r)) sharedRecords.push(r);
+                        });
+                    }
                 }
-                const { data: attData, error: attError } = await attQuery.order('date', { ascending: false });
+            } catch (e) {}
 
-                if (!attError && attData && attData.length > 0) {
-                    onlineRecords = attData;
+            // B. Check hes_student_attendance
+            try {
+                const hesStuRaw = localStorage.getItem('hes_student_attendance');
+                if (hesStuRaw) {
+                    const list = JSON.parse(hesStuRaw);
+                    if (Array.isArray(list)) {
+                        list.forEach(r => {
+                            if (matchesCurrentStudent(r)) sharedRecords.push(r);
+                        });
+                    }
                 }
-            } catch (err) {
-                console.warn('Attendance database query notice:', err);
-            }
+            } catch (e) {}
 
-            if (onlineRecords.length > 0) {
-                rawAttendanceRecords = onlineRecords.filter(r => !isWeekend(r.date));
-            } else {
-                // Ensure records match the latest profile/enrollment info
-                rawAttendanceRecords = getInitialOrCachedAttendance(studentDisplayName, lrnVal, gradeVal, sectionVal).filter(r => !isWeekend(r.date));
-            }
+            // C. Check direct student keys (IDs, LRNs, email, names)
+            const directKeysToCheck = new Set([
+                ...Array.from(studentMatchValues),
+                userEmail,
+                ...Array.from(studentNameSet)
+            ].filter(Boolean));
+
+            directKeysToCheck.forEach(val => {
+                try {
+                    const directRaw = localStorage.getItem(`hes_student_attendance_${val}`);
+                    if (directRaw) {
+                        const directObj = JSON.parse(directRaw);
+                        if (Array.isArray(directObj)) {
+                            directObj.forEach(r => {
+                                if (matchesCurrentStudent(r) || !r.student_id) sharedRecords.push(r);
+                            });
+                        } else if (directObj && typeof directObj === 'object') {
+                            if (matchesCurrentStudent(directObj) || !directObj.student_id) sharedRecords.push(directObj);
+                        }
+                    }
+                } catch (e) {}
+            });
+
+            // D. Check hes_qr_scans_* and todayScans
+            try {
+                for (let i = 0; i < localStorage.length; i++) {
+                    const k = localStorage.key(i);
+                    if (k && (k.startsWith('hes_qr_scans_') || k === 'todayScans')) {
+                        const scanData = JSON.parse(localStorage.getItem(k) || '[]');
+                        if (Array.isArray(scanData)) {
+                            scanData.forEach(r => {
+                                if (matchesCurrentStudent(r)) {
+                                    sharedRecords.push({
+                                        id: r.id,
+                                        student_id: r.studentId || r.student_id,
+                                        lrn: r.lrn,
+                                        student_name: r.name || r.student_name,
+                                        date: r.date,
+                                        status: r.status,
+                                        time_in: r.time || r.time_in,
+                                        teacher_name: r.teacher_name || localStorage.getItem('hes_teacher_name') || 'Class Adviser',
+                                        remarks: r.remarks || (r.status === 'Late' ? 'Late arrival recorded via QR Scanner' : 'On-time QR scan')
+                                    });
+                                }
+                            });
+                        }
+                    }
+                }
+            } catch (e) {}
+
+            // E. Check date rosters: hes_student_attendance_YYYY-MM-DD
+            try {
+                for (let i = 0; i < localStorage.length; i++) {
+                    const k = localStorage.key(i);
+                    if (k && k.startsWith('hes_student_attendance_20')) {
+                        const dateStr = k.replace('hes_student_attendance_', '');
+                        if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+                            const dateMap = JSON.parse(localStorage.getItem(k) || '{}');
+                            if (dateMap && typeof dateMap === 'object') {
+                                Object.keys(dateMap).forEach(key => {
+                                    const entry = dateMap[key];
+                                    const normKey = norm(key);
+                                    if (studentMatchValues.has(normKey) || (userEmail && normKey === userEmail) || studentNameSet.has(normKey)) {
+                                        sharedRecords.push({
+                                            student_id: key,
+                                            date: dateStr,
+                                            status: entry.status || 'Present',
+                                            time_in: entry.timeIn || entry.time_in || '08:00 AM',
+                                            teacher_name: entry.teacher_name || localStorage.getItem('hes_teacher_name') || 'Class Adviser',
+                                            remarks: entry.remarks || 'Recorded in class roster'
+                                        });
+                                    }
+                                });
+                            }
+                        }
+                    }
+                }
+            } catch (e) {}
+
+            // Merge online and shared records
+            const mergedMap = new Map();
+
+            onlineRecords.forEach(r => {
+                if (r && r.date) {
+                    const cleanStatus = (r.status || 'present').charAt(0).toUpperCase() + (r.status || 'present').slice(1).toLowerCase();
+                    mergedMap.set(r.date, {
+                        ...r,
+                        status: cleanStatus,
+                        time_in: r.time_in || r.timeIn || null,
+                        teacher_name: r.teacher_name || (r.teacher_id ? 'Assigned Teacher' : null)
+                    });
+                }
+            });
+
+            sharedRecords.forEach(r => {
+                if (r && r.date) {
+                    const cleanStatus = (r.status || 'Present').charAt(0).toUpperCase() + (r.status || 'Present').slice(1).toLowerCase();
+                    const existing = mergedMap.get(r.date) || {};
+                    mergedMap.set(r.date, {
+                        ...existing,
+                        ...r,
+                        status: cleanStatus,
+                        time_in: r.time_in || r.time || existing.time_in || null,
+                        teacher_name: r.teacher_name || existing.teacher_name || localStorage.getItem('hes_teacher_name') || 'Class Adviser',
+                        remarks: r.remarks || existing.remarks || ''
+                    });
+                }
+            });
+
+            // Authentic records only - keep all real records
+            rawAttendanceRecords = Array.from(mergedMap.values()).sort((a, b) => {
+                return (b.date || '').localeCompare(a.date || '');
+            });
 
             applyFilters();
 
@@ -487,9 +611,6 @@ import { supabase } from '../../supabase/config.js';
         const currentMonthIdx = new Date().getMonth();
 
         filteredRecords = rawAttendanceRecords.filter(record => {
-            // Strictly exclude any weekend records (Saturday / Sunday)
-            if (isWeekend(record.date)) return false;
-
             const rDate = new Date(record.date + 'T00:00:00');
             const rMonth = isNaN(rDate.getTime()) ? -1 : rDate.getMonth();
 
@@ -506,7 +627,8 @@ import { supabase } from '../../supabase/config.js';
                 const dayFmt = getDayOfWeek(record.date).toLowerCase();
                 const remarksFmt = (record.remarks || '').toLowerCase();
                 const statusFmt = (record.status || '').toLowerCase();
-                if (!dateFmt.includes(searchVal) && !dayFmt.includes(searchVal) && !remarksFmt.includes(searchVal) && !statusFmt.includes(searchVal)) {
+                const teacherFmt = (record.teacher_name || '').toLowerCase();
+                if (!dateFmt.includes(searchVal) && !dayFmt.includes(searchVal) && !remarksFmt.includes(searchVal) && !statusFmt.includes(searchVal) && !teacherFmt.includes(searchVal)) {
                     return false;
                 }
             }
@@ -525,51 +647,94 @@ import { supabase } from '../../supabase/config.js';
 
     function renderStats(records) {
         if (!records || records.length === 0) {
-            if (attendanceRate) attendanceRate.textContent = '0%';
+            if (attendanceRate) attendanceRate.textContent = '--%';
             if (rateProgressFill) rateProgressFill.style.width = '0%';
+            if (rateLabel) rateLabel.innerHTML = '<i class="fas fa-calendar-times" style="color: #64748b;"></i> No records yet';
             if (presentDaysCount) presentDaysCount.textContent = '0';
+            if (presentDetailLabel) presentDetailLabel.innerHTML = '<i class="fas fa-calendar-times"></i> 0 days attended';
             if (lateDaysCount) lateDaysCount.textContent = '0';
+            if (lateDetailLabel) lateDetailLabel.innerHTML = '<i class="fas fa-check-circle text-success"></i> No tardy records';
             if (absentDaysCount) absentDaysCount.textContent = '0';
             if (absentDetailLabel) absentDetailLabel.innerHTML = '<i class="fas fa-info-circle"></i> 0 Absent / 0 Excused';
             return;
         }
 
         const totalDays = records.length;
-        let presentCount = 0;
+        let onTimeCount = 0;
         let lateCount = 0;
         let absentCount = 0;
         let excusedCount = 0;
 
         records.forEach(r => {
-            const st = (r.status || '').toLowerCase();
-            if (st === 'present') presentCount++;
+            const st = (r.status || '').toLowerCase().trim();
+            if (st === 'present') onTimeCount++;
             else if (st === 'late') lateCount++;
             else if (st === 'absent') absentCount++;
             else if (st === 'excused') excusedCount++;
         });
 
-        // Attendance rate formula: (Present + Late + Excused) / Total * 100
-        const attendedDays = presentCount + lateCount + excusedCount;
-        const rate = totalDays > 0 ? ((attendedDays / totalDays) * 100).toFixed(1) : 0;
+        // DepEd SF2 Standard: Total Days in Attendance = On-Time Present + Late (Tardy) Arrivals
+        const totalPresentDays = onTimeCount + lateCount;
+        const attendedDays = totalPresentDays + excusedCount;
+        const rate = totalDays > 0 ? ((attendedDays / totalDays) * 100).toFixed(1) : '0.0';
 
         if (attendanceRate) attendanceRate.textContent = `${rate}%`;
-        if (rateProgressFill) rateProgressFill.style.width = `${Math.min(100, Math.max(0, rate))}%`;
+        if (rateProgressFill) rateProgressFill.style.width = `${Math.min(100, Math.max(0, parseFloat(rate)))}%`;
 
         if (rateLabel) {
             if (rate >= 95) {
-                rateLabel.innerHTML = `<i class="fas fa-check-double text-success"></i> Outstanding Attendance (${attendedDays}/${totalDays} days)`;
-            } else if (rate >= 85) {
-                rateLabel.innerHTML = `<i class="fas fa-check text-success"></i> Good Attendance Standing (${attendedDays}/${totalDays} days)`;
+                if (lateCount === 0) {
+                    rateLabel.innerHTML = `<i class="fas fa-check-double text-success"></i> Outstanding Attendance (${attendedDays}/${totalDays} days)`;
+                } else if (onTimeCount === 0) {
+                    rateLabel.innerHTML = `<i class="fas fa-clock text-warning"></i> 100% Attended (${lateCount} late arrival${lateCount > 1 ? 's' : ''})`;
+                } else {
+                    rateLabel.innerHTML = `<i class="fas fa-check-double text-success"></i> ${rate}% Attendance (${attendedDays}/${totalDays} days, ${lateCount} late)`;
+                }
+            } else if (rate >= 80) {
+                if (lateCount > 0) {
+                    rateLabel.innerHTML = `<i class="fas fa-check text-info"></i> Good Attendance (${attendedDays}/${totalDays} days, ${lateCount} late)`;
+                } else {
+                    rateLabel.innerHTML = `<i class="fas fa-check text-info"></i> Good Attendance Standing (${attendedDays}/${totalDays} days)`;
+                }
             } else {
                 rateLabel.innerHTML = `<i class="fas fa-exclamation-circle text-danger"></i> Needs Improvement (${attendedDays}/${totalDays} days)`;
             }
         }
 
-        if (presentDaysCount) presentDaysCount.textContent = presentCount;
+        // Present Days card: Total days present in class
+        if (presentDaysCount) presentDaysCount.textContent = totalPresentDays;
+        if (presentDetailLabel) {
+            if (totalPresentDays === 0) {
+                presentDetailLabel.innerHTML = `<i class="fas fa-calendar-times"></i> 0 days in attendance`;
+            } else if (lateCount === 0) {
+                presentDetailLabel.innerHTML = `<i class="fas fa-calendar-check text-success"></i> ${onTimeCount} on-time & marked present`;
+            } else if (onTimeCount === 0) {
+                presentDetailLabel.innerHTML = `<i class="fas fa-clock text-warning"></i> 0 on-time • ${lateCount} late arrival${lateCount > 1 ? 's' : ''}`;
+            } else {
+                presentDetailLabel.innerHTML = `<i class="fas fa-calendar-check text-success"></i> ${onTimeCount} on-time • ${lateCount} late`;
+            }
+        }
+
+        // Late Arrivals card: Dynamic tardy count & descriptive label
         if (lateDaysCount) lateDaysCount.textContent = lateCount;
+        if (lateDetailLabel) {
+            if (lateCount === 0) {
+                lateDetailLabel.innerHTML = `<i class="fas fa-check-circle text-success"></i> No tardy records`;
+            } else if (lateCount === 1) {
+                lateDetailLabel.innerHTML = `<i class="fas fa-clock text-warning"></i> 1 late arrival recorded`;
+            } else {
+                lateDetailLabel.innerHTML = `<i class="fas fa-clock text-warning"></i> ${lateCount} late arrivals recorded`;
+            }
+        }
+
+        // Absences & Excused card
         if (absentDaysCount) absentDaysCount.textContent = absentCount + excusedCount;
         if (absentDetailLabel) {
-            absentDetailLabel.innerHTML = `<i class="fas fa-info-circle"></i> ${absentCount} Absent / ${excusedCount} Excused`;
+            if (absentCount === 0 && excusedCount === 0) {
+                absentDetailLabel.innerHTML = `<i class="fas fa-shield-alt text-success"></i> 0 Absent / 0 Excused`;
+            } else {
+                absentDetailLabel.innerHTML = `<i class="fas fa-info-circle"></i> ${absentCount} Absent / ${excusedCount} Excused`;
+            }
         }
     }
 
@@ -580,7 +745,42 @@ import { supabase } from '../../supabase/config.js';
     function renderTodayHighlight(records) {
         const now = new Date();
         const isWeekend = now.getDay() === 0 || now.getDay() === 6;
+        const todayStr = getTodayDateString();
+        const todayRecord = records.find(r => r.date === todayStr);
+        const sessionLabel = (gradeVal && sectionVal) ? `${gradeVal} - ${sectionVal}` : 'Regular School Day';
 
+        // 1. If an authentic attendance record exists for today, display it immediately!
+        if (todayRecord) {
+            const status = todayRecord.status || 'Present';
+            const stLower = status.toLowerCase();
+            let badgeClass = 'status-present';
+            let icon = 'fa-check-circle';
+
+            if (stLower === 'late') {
+                badgeClass = 'status-late';
+                icon = 'fa-clock';
+            } else if (stLower === 'absent') {
+                badgeClass = 'status-absent';
+                icon = 'fa-times-circle';
+            } else if (stLower === 'excused') {
+                badgeClass = 'status-excused';
+                icon = 'fa-file-medical';
+            }
+
+            if (todayStatusBadgeContainer) {
+                todayStatusBadgeContainer.innerHTML = `<span class="status-badge ${badgeClass}"><i class="fas ${icon}"></i> ${status}</span>`;
+            }
+
+            if (todayStandingText) todayStandingText.textContent = status;
+            if (todayStandingSub) todayStandingSub.textContent = todayRecord.time_in ? `Scanned / Logged at ${todayRecord.time_in}` : 'Official DepEd attendance log';
+            if (todaySessionValue) todaySessionValue.textContent = sessionLabel;
+            const tName = todayRecord.teacher_name || localStorage.getItem('hes_teacher_name') || 'Class Adviser';
+            if (todaySessionSub) todaySessionSub.textContent = `Recorded by Teacher ${tName}`;
+            if (todayRemarks) todayRemarks.textContent = todayRecord.remarks || (stLower === 'late' ? 'Late arrival recorded.' : 'In attendance with teacher.');
+            return;
+        }
+
+        // 2. Only if no attendance was taken today, check if it's weekend break
         if (isWeekend) {
             if (todayStatusBadgeContainer) {
                 todayStatusBadgeContainer.innerHTML = `<span class="status-badge status-weekend" style="background: #e0f2fe; color: #0369a1; font-weight: 600; padding: 6px 14px; border-radius: 20px; border: 1px solid #bae6fd;"><i class="fas fa-calendar-times"></i> Weekend (No Classes)</span>`;
@@ -593,47 +793,15 @@ import { supabase } from '../../supabase/config.js';
             return;
         }
 
-        const todayStr = now.toISOString().split('T')[0];
-        const todayRecord = records.find(r => r.date === todayStr);
-        const sessionLabel = (gradeVal && sectionVal) ? `${gradeVal} - ${sectionVal}` : 'Regular School Day';
-
-        if (!todayRecord) {
-            if (todayStatusBadgeContainer) {
-                todayStatusBadgeContainer.innerHTML = `<span class="status-badge status-pending"><i class="fas fa-clock"></i> Not Yet Recorded Today</span>`;
-            }
-            if (todayStandingText) todayStandingText.textContent = 'Not Yet Recorded';
-            if (todayStandingSub) todayStandingSub.textContent = 'Awaiting adviser roll call';
-            if (todaySessionValue) todaySessionValue.textContent = sessionLabel;
-            if (todaySessionSub) todaySessionSub.textContent = 'Morning & Afternoon Classes';
-            if (todayRemarks) todayRemarks.textContent = 'Your teacher has not recorded attendance for today yet.';
-            return;
-        }
-
-        const status = todayRecord.status || 'Present';
-        const stLower = status.toLowerCase();
-        let badgeClass = 'status-present';
-        let icon = 'fa-check-circle';
-
-        if (stLower === 'late') {
-            badgeClass = 'status-late';
-            icon = 'fa-clock';
-        } else if (stLower === 'absent') {
-            badgeClass = 'status-absent';
-            icon = 'fa-times-circle';
-        } else if (stLower === 'excused') {
-            badgeClass = 'status-excused';
-            icon = 'fa-file-medical';
-        }
-
+        // 3. Weekday awaiting attendance
         if (todayStatusBadgeContainer) {
-            todayStatusBadgeContainer.innerHTML = `<span class="status-badge ${badgeClass}"><i class="fas ${icon}"></i> ${status}</span>`;
+            todayStatusBadgeContainer.innerHTML = `<span class="status-badge status-pending"><i class="fas fa-clock"></i> Not Yet Recorded Today</span>`;
         }
-
-        if (todayStandingText) todayStandingText.textContent = status;
-        if (todayStandingSub) todayStandingSub.textContent = 'Official DepEd attendance log';
+        if (todayStandingText) todayStandingText.textContent = 'Not Yet Recorded';
+        if (todayStandingSub) todayStandingSub.textContent = 'Awaiting adviser roll call';
         if (todaySessionValue) todaySessionValue.textContent = sessionLabel;
-        if (todaySessionSub) todaySessionSub.textContent = 'Marked by Class Adviser';
-        if (todayRemarks) todayRemarks.textContent = todayRecord.remarks || 'Present in class.';
+        if (todaySessionSub) todaySessionSub.textContent = 'Morning & Afternoon Classes';
+        if (todayRemarks) todayRemarks.textContent = 'Your teacher has not recorded attendance for today yet.';
     }
 
     // ============================================
@@ -653,7 +821,7 @@ import { supabase } from '../../supabase/config.js';
                     <td colspan="4" class="empty-state">
                         <i class="fas fa-calendar-times"></i>
                         <h4>No Attendance Records Found</h4>
-                        <p>No attendance logs match your selected month, status, or search filters.</p>
+                        <p>No official attendance records have been logged for this period yet.</p>
                     </td>
                 </tr>
             `;
@@ -680,7 +848,12 @@ import { supabase } from '../../supabase/config.js';
                 icon = 'fa-file-medical';
             }
 
-            const remarksFmt = item.remarks ? item.remarks : (stLower === 'present' ? 'On time' : '—');
+            const timeInHtml = item.time_in ? `<div style="font-size: 11px; color: #64748b; margin-top: 3px;"><i class="far fa-clock"></i> ${item.time_in}</div>` : '';
+            const teacherNote = item.teacher_name 
+                ? `<div style="font-size: 11px; color: #0284c7; margin-top: 4px; font-weight: 500;"><i class="fas fa-chalkboard-teacher"></i> Recorded by: <strong>Teacher ${item.teacher_name}</strong></div>`
+                : `<div style="font-size: 11px; color: #64748b; margin-top: 4px;"><i class="fas fa-user-check"></i> Recorded with Teacher</div>`;
+            const baseRemarks = item.remarks ? item.remarks : (stLower === 'present' ? 'Present in class' : (stLower === 'late' ? 'Late arrival recorded' : 'Official attendance log'));
+            const remarksFmt = `<div>${baseRemarks}</div>${teacherNote}`;
 
             return `
                 <tr>
@@ -690,6 +863,7 @@ import { supabase } from '../../supabase/config.js';
                         <span class="status-badge ${badgeClass}">
                             <i class="fas ${icon}"></i> ${status}
                         </span>
+                        ${timeInHtml}
                     </td>
                     <td class="remarks-cell">${remarksFmt}</td>
                 </tr>
@@ -708,14 +882,15 @@ import { supabase } from '../../supabase/config.js';
         }
 
         let csvContent = 'data:text/csv;charset=utf-8,';
-        csvContent += 'Date,Day,Status,Remarks\r\n';
+        csvContent += 'Date,Day,Status,Time In,Remarks\r\n';
 
         filteredRecords.forEach(r => {
             const dateFmt = formatDate(r.date);
             const dayFmt = getDayOfWeek(r.date);
             const st = r.status || 'Present';
+            const timeStr = r.time_in || '—';
             const rem = `"${(r.remarks || '').replace(/"/g, '""')}"`;
-            csvContent += `${dateFmt},${dayFmt},${st},${rem}\r\n`;
+            csvContent += `${dateFmt},${dayFmt},${st},${timeStr},${rem}\r\n`;
         });
 
         const encodedUri = encodeURI(csvContent);
@@ -729,7 +904,7 @@ import { supabase } from '../../supabase/config.js';
     }
 
     // ============================================
-    // EVENT LISTENERS
+    // EVENT LISTENERS & LIVE SYNC
     // ============================================
 
     if (monthFilter) monthFilter.addEventListener('change', applyFilters);
@@ -749,6 +924,23 @@ import { supabase } from '../../supabase/config.js';
     if (exportAttendanceBtn) {
         exportAttendanceBtn.addEventListener('click', exportToCSV);
     }
+
+    // Dynamic real-time sync: when teacher scans QR or marks attendance in any tab
+    window.addEventListener('storage', (e) => {
+        if (!e.key || 
+            e.key === 'hes_latest_attendance_event' || 
+            e.key === 'hes_attendance_records' || 
+            e.key === 'hes_student_attendance' || 
+            e.key.startsWith('hes_qr_scans_') || 
+            e.key.startsWith('hes_student_attendance_')) {
+            console.log('🔄 Live attendance event detected, refreshing student attendance...');
+            loadAttendanceModule();
+        }
+    });
+
+    window.addEventListener('focus', () => {
+        loadAttendanceModule();
+    });
 
     // Initial async data fetch
     loadAttendanceModule();

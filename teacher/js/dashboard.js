@@ -47,16 +47,12 @@ import {
 
     let sessionUser = null;
     let currentScheduleContext = null;
+    let currentTeacherRecord = null;
+    let teacherSchedules = [];
     let sections = [];
+    let teacherSubjects = [];
     let subjectsByGrade = {};
-    let gradeLevels = [
-        { id: '1', gradeName: 'Grade 7' },
-        { id: '2', gradeName: 'Grade 8' },
-        { id: '3', gradeName: 'Grade 9' },
-        { id: '4', gradeName: 'Grade 10' },
-        { id: '5', gradeName: 'Grade 11' },
-        { id: '6', gradeName: 'Grade 12' }
-    ];
+    let handledGradeLevels = [];
 
     // Grade order
     const gradeOrder = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
@@ -90,7 +86,9 @@ import {
     }
 
     // Set teacher display name & initial
-    const displayName = (sessionUser.firstName ? `${sessionUser.firstName} ${sessionUser.lastName || ''}`.trim() : (sessionUser.email ? sessionUser.email.split('@')[0] : 'Teacher'));
+    const firstNm = sessionUser.firstName || sessionUser.first_name || '';
+    const lastNm = sessionUser.lastName || sessionUser.last_name || '';
+    const displayName = (firstNm || lastNm) ? `${firstNm} ${lastNm}`.trim() : (sessionUser.displayName || sessionUser.name || (sessionUser.email ? sessionUser.email.split('@')[0] : 'Teacher'));
     if (teacherName) teacherName.textContent = displayName;
     if (teacherInitial) teacherInitial.textContent = displayName.charAt(0).toUpperCase();
 
@@ -113,13 +111,59 @@ import {
     }
 
     // ============================================
+    // RESOLVE TEACHER RECORD
+    // ============================================
+
+    async function resolveTeacherRecord() {
+        if (currentTeacherRecord) return currentTeacherRecord;
+        const currentUserId = sessionUser.id || sessionUser.uid;
+        const userEmail = sessionUser.email || '';
+
+        try {
+            let { data: tData } = await supabase
+                .from('teachers')
+                .select('*')
+                .or(`user_id.eq.${currentUserId},id.eq.${currentUserId}`)
+                .maybeSingle();
+
+            if (!tData && userEmail) {
+                const { data: uData } = await supabase
+                    .from('users')
+                    .select('id')
+                    .eq('email', userEmail)
+                    .maybeSingle();
+
+                if (uData) {
+                    const { data: matchedT } = await supabase
+                        .from('teachers')
+                        .select('*')
+                        .eq('user_id', uData.id)
+                        .maybeSingle();
+                    tData = matchedT;
+                }
+            }
+
+            currentTeacherRecord = tData || {
+                id: currentUserId,
+                user_id: currentUserId,
+                employee_id: sessionUser.employee_id || 'HES-TCH-001',
+                specialization: sessionUser.specialization || 'Faculty'
+            };
+        } catch (e) {
+            console.warn('Error resolving teacher record:', e);
+            currentTeacherRecord = { id: currentUserId, user_id: currentUserId };
+        }
+        return currentTeacherRecord;
+    }
+
+    // ============================================
     // LOAD DASHBOARD DATA FROM SUPABASE
     // ============================================
 
     async function loadDashboardData() {
         try {
-            await loadSections();
-            await loadSubjects();
+            await resolveTeacherRecord();
+            await loadTeacherClassesAndSubjects();
             await updateStats();
             renderSections();
             renderSubjects();
@@ -131,83 +175,154 @@ import {
     }
 
     // ============================================
-    // LOAD SECTIONS
+    // LOAD TEACHER CLASSES AND SUBJECTS (DYNAMIC)
     // ============================================
 
-    async function loadSections() {
-        try {
-            const { data, error } = await supabase
-                .from('sections')
-                .select('*')
-                .order('grade_level', { ascending: true });
+    async function loadTeacherClassesAndSubjects() {
+        const teacher = await resolveTeacherRecord();
+        const teacherId = teacher.id;
+        const teacherUserId = teacher.user_id || sessionUser.id;
 
-            if (error) throw error;
-            sections = data || [];
-            console.log('📋 Sections loaded:', sections.length);
-        } catch (error) {
-            console.error('Error loading sections:', error);
-            sections = [];
+        // 1. Fetch schedules assigned strictly to this teacher
+        teacherSchedules = [];
+        try {
+            let sQuery = supabase.from('schedules').select('*');
+            if (teacherUserId && teacherUserId !== teacherId) {
+                sQuery = sQuery.or(`teacher_id.eq.${teacherId},teacher_id.eq.${teacherUserId}`);
+            } else {
+                sQuery = sQuery.eq('teacher_id', teacherId);
+            }
+            const { data: sRows, error: sErr } = await sQuery;
+            if (!sErr && sRows) {
+                teacherSchedules = sRows;
+            }
+        } catch (e) {
+            console.warn('Error fetching teacher schedules:', e);
         }
+
+        // 2. Fetch sections assigned to teacher (via teaching schedules or as class adviser)
+        const scheduledSectionIds = [...new Set(teacherSchedules.map(s => s.section_id).filter(Boolean))];
+        const teacherSectionMap = new Map();
+
+        // 2a. Fetch sections from schedules
+        if (scheduledSectionIds.length > 0) {
+            try {
+                const { data: secRows, error: secErr } = await supabase
+                    .from('sections')
+                    .select('*')
+                    .in('id', scheduledSectionIds);
+                if (!secErr && secRows) {
+                    secRows.forEach(sec => teacherSectionMap.set(sec.id, sec));
+                }
+            } catch (e) {
+                console.warn('Error fetching scheduled sections:', e);
+            }
+        }
+
+        // 2b. Fetch advisory sections
+        try {
+            const conds = [];
+            if (teacherId) conds.push(`adviser_id.eq.${teacherId}`);
+            if (teacherUserId && teacherUserId !== teacherId) conds.push(`adviser_id.eq.${teacherUserId}`);
+
+            const lastName = sessionUser.lastName || sessionUser.last_name;
+            if (lastName && lastName.length >= 3) {
+                conds.push(`adviser_name.ilike.%${lastName}%`);
+            }
+            if (conds.length > 0) {
+                const { data: advRows } = await supabase
+                    .from('sections')
+                    .select('*')
+                    .or(conds.join(','));
+                if (advRows) {
+                    advRows.forEach(sec => teacherSectionMap.set(sec.id, sec));
+                }
+            }
+        } catch (e) {
+            console.warn('Error fetching advisory sections:', e);
+        }
+
+        sections = Array.from(teacherSectionMap.values()).sort((a, b) => (a.grade_level || '').localeCompare(b.grade_level || ''));
+        console.log('📋 Teacher handling sections:', sections.length);
+
+        // 3. Fetch subjects assigned strictly to this teacher
+        const scheduledSubjectIds = [...new Set(teacherSchedules.map(s => s.subject_id).filter(Boolean))];
+        teacherSubjects = [];
+        subjectsByGrade = {};
+
+        if (scheduledSubjectIds.length > 0) {
+            try {
+                const { data: subRows, error: subErr } = await supabase
+                    .from('subjects')
+                    .select('*')
+                    .in('id', scheduledSubjectIds)
+                    .order('name', { ascending: true });
+
+                if (!subErr && subRows) {
+                    teacherSubjects = subRows;
+                    subRows.forEach(sub => {
+                        let gradeName = sub.grade_level || 'General';
+                        const parsedNum = parseInt(String(gradeName).replace(/[^0-9]/g, ''));
+                        if (!isNaN(parsedNum) && parsedNum >= 7 && parsedNum <= 12) {
+                            gradeName = `Grade ${parsedNum}`;
+                        }
+                        if (!subjectsByGrade[gradeName]) {
+                            subjectsByGrade[gradeName] = [];
+                        }
+                        subjectsByGrade[gradeName].push(sub);
+                    });
+                }
+            } catch (e) {
+                console.warn('Error fetching teacher subjects:', e);
+            }
+        }
+        console.log('📚 Teacher assigned subjects:', teacherSubjects.length);
+
+        // 4. Distinct grade levels handled by this teacher
+        const gradeLevelSet = new Set();
+        sections.forEach(sec => {
+            if (sec.grade_level) {
+                const num = parseInt(String(sec.grade_level).replace(/[^0-9]/g, ''));
+                gradeLevelSet.add(!isNaN(num) ? `Grade ${num}` : sec.grade_level);
+            }
+        });
+        teacherSubjects.forEach(sub => {
+            if (sub.grade_level) {
+                const num = parseInt(String(sub.grade_level).replace(/[^0-9]/g, ''));
+                gradeLevelSet.add(!isNaN(num) ? `Grade ${num}` : sub.grade_level);
+            }
+        });
+        handledGradeLevels = Array.from(gradeLevelSet);
     }
 
     // ============================================
-    // LOAD SUBJECTS
-    // ============================================
-
-    async function loadSubjects() {
-        try {
-            const { data, error } = await supabase
-                .from('subjects')
-                .select('*')
-                .order('name', { ascending: true });
-
-            if (error) throw error;
-
-            subjectsByGrade = {};
-
-            (data || []).forEach((sub) => {
-                let gradeName = sub.grade_level || 'General';
-                const parsedNum = parseInt(String(gradeName).replace(/[^0-9]/g, ''));
-                if (!isNaN(parsedNum) && parsedNum >= 7 && parsedNum <= 12) {
-                    gradeName = `Grade ${parsedNum}`;
-                }
-                if (!subjectsByGrade[gradeName]) {
-                    subjectsByGrade[gradeName] = [];
-                }
-                subjectsByGrade[gradeName].push(sub);
-            });
-
-            console.log('📚 Subjects loaded:', Object.keys(subjectsByGrade).length, 'grades');
-        } catch (error) {
-            console.error('Error loading subjects:', error);
-            subjectsByGrade = {};
-        }
-    }
-
-    // ============================================
-    // UPDATE STATS
+    // UPDATE STATS (DYNAMIC PER TEACHER)
     // ============================================
 
     async function updateStats() {
-        try {
-            const { count: studentCount } = await supabase
-                .from('students')
-                .select('*', { count: 'exact', head: true });
+        // Enrolled students belonging to the teacher's handled sections
+        let enrolledStudentCount = 0;
+        const allTeacherSectionIds = sections.map(s => s.id).filter(Boolean);
 
-            if (totalStudents) totalStudents.textContent = studentCount || 0;
-        } catch(e) {
-            if (totalStudents) totalStudents.textContent = sections.length * 25;
+        if (allTeacherSectionIds.length > 0) {
+            try {
+                const { count: studentCount, error: stErr } = await supabase
+                    .from('students')
+                    .select('id', { count: 'exact', head: true })
+                    .in('section_id', allTeacherSectionIds);
+
+                if (!stErr && studentCount !== null) {
+                    enrolledStudentCount = studentCount;
+                }
+            } catch (e) {
+                console.warn('Error counting students for teacher sections:', e);
+            }
         }
 
+        if (totalStudents) totalStudents.textContent = enrolledStudentCount;
         if (totalSections) totalSections.textContent = sections.length;
-
-        let totalSubCount = 0;
-        Object.values(subjectsByGrade).forEach(subs => {
-            totalSubCount += subs.length;
-        });
-        if (totalSubjects) totalSubjects.textContent = totalSubCount;
-
-        if (totalGradeLevels) totalGradeLevels.textContent = gradeLevels.length;
+        if (totalSubjects) totalSubjects.textContent = teacherSubjects.length;
+        if (totalGradeLevels) totalGradeLevels.textContent = handledGradeLevels.length;
     }
 
     // ============================================
@@ -222,6 +337,7 @@ import {
                 <div class="no-data">
                     <i class="fas fa-layer-group"></i>
                     <p>No sections assigned yet</p>
+                    <span style="font-size:0.75rem; color:#94a3b8; display:block; margin-top:4px;">Classes assigned by the administrator will appear here</span>
                 </div>
             `;
             return;
@@ -230,13 +346,19 @@ import {
         sectionsList.innerHTML = sections.map(section => {
             const gradeName = section.grade_level || 'N/A';
             const strandText = section.strand ? ` (${section.strand})` : '';
+            const isAdvisory = section.adviser_id === currentTeacherRecord?.id || 
+                section.adviser_id === currentTeacherRecord?.user_id || 
+                (section.adviser_name && sessionUser.lastName && section.adviser_name.toLowerCase().includes(sessionUser.lastName.toLowerCase()));
+            const badgeLabel = isAdvisory ? 'Advisory' : 'Class';
+            const badgeClass = isAdvisory ? 'badge primary' : 'badge';
+
             return `
                 <div class="section-item">
                     <div class="section-info">
                         <h4>${section.name || 'Unknown Section'}</h4>
                         <p><i class="fas fa-tag"></i> ${gradeName}${strandText}</p>
                     </div>
-                    <span class="badge">Section</span>
+                    <span class="${badgeClass}">${badgeLabel}</span>
                 </div>
             `;
         }).join('');
@@ -249,11 +371,12 @@ import {
     function renderSubjects() {
         if (!subjectsContainer) return;
 
-        if (Object.keys(subjectsByGrade).length === 0) {
+        if (teacherSubjects.length === 0 || Object.keys(subjectsByGrade).length === 0) {
             subjectsContainer.innerHTML = `
                 <div class="no-data">
                     <i class="fas fa-book"></i>
-                    <p>No subjects found.</p>
+                    <p>No subjects assigned yet.</p>
+                    <span style="font-size:0.75rem; color:#94a3b8; display:block; margin-top:4px;">Assigned teaching subjects will appear here</span>
                 </div>
             `;
             return;
@@ -528,23 +651,32 @@ import {
                 }
             }
 
-            // Fetch latest activity log for this teacher
+            // Activity log note for this teacher (scoped to today's activity)
             try {
                 const teacherUserId = teacher.user_id || sessionUser.id;
-                const { data: actLogs } = await supabase
-                    .from('activity_logs')
-                    .select('*')
-                    .eq('user_id', teacherUserId)
-                    .order('timestamp', { ascending: false })
-                    .limit(1);
+                const todayDateStr = getTodayDateString();
 
-                if (actLogs && actLogs.length > 0 && activityText) {
-                    const latest = actLogs[0];
-                    activityText.textContent = `${latest.action}: ${latest.details || 'Biometric validation completed.'}`;
-                } else if (todayAttendance?.time_in && activityText) {
+                if (todayAttendance?.time_in && activityText) {
                     const inTime = formatTimeString(todayAttendance.time_in);
                     const outTime = todayAttendance.time_out ? ` | Time-Out: ${formatTimeString(todayAttendance.time_out)}` : '';
-                    activityText.textContent = `Attendance active: Time-In recorded at ${inTime}${outTime}`;
+                    const mode = todayAttendance.verification_mode || 'Direct Validation';
+                    activityText.textContent = `Today's attendance active: Time-In recorded at ${inTime}${outTime} via ${mode}.`;
+                } else {
+                    // Check if an activity log was recorded today
+                    const { data: actLogs } = await supabase
+                        .from('activity_logs')
+                        .select('*')
+                        .eq('user_id', teacherUserId)
+                        .gte('timestamp', `${todayDateStr}T00:00:00`)
+                        .order('timestamp', { ascending: false })
+                        .limit(1);
+
+                    if (actLogs && actLogs.length > 0 && activityText) {
+                        const latest = actLogs[0];
+                        activityText.textContent = `${latest.action}: ${latest.details || 'Biometric validation completed.'}`;
+                    } else if (activityText) {
+                        activityText.textContent = 'Ready for Time-In validation. Today\'s activities will appear here upon validation.';
+                    }
                 }
             } catch(e) {
                 console.warn('Dashboard activity log note:', e);

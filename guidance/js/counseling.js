@@ -290,6 +290,44 @@ document.addEventListener('DOMContentLoaded', async function() {
                 renderSessions();
                 newSessionModal.classList.remove('active');
                 newSessionForm.reset();
+
+                // Notify student of counseling session
+                try {
+                    let studentAuthId = null;
+                    if (student.email) {
+                        const { data: uData } = await supabase.from('users').select('id').eq('email', student.email.toLowerCase()).maybeSingle();
+                        if (uData?.id) studentAuthId = uData.id;
+                    }
+
+                    const counselNotifs = [{
+                        user_id: student.id,
+                        role: 'student',
+                        title: `🗓️ Guidance Counseling Session Scheduled`,
+                        message: `A ${sType || 'Counseling'} session has been scheduled with Counselor ${displayName} on ${sDate} at ${sTime || 'TBD'}. Purpose: ${sPurpose || 'Guidance consultation'}.`,
+                        type: 'guidance',
+                        read: false,
+                        is_read: false,
+                        created_at: new Date().toISOString()
+                    }];
+
+                    if (studentAuthId && studentAuthId !== student.id) {
+                        counselNotifs.push({
+                            user_id: studentAuthId,
+                            role: 'student',
+                            title: `🗓️ Guidance Counseling Session Scheduled`,
+                            message: `A ${sType || 'Counseling'} session has been scheduled with Counselor ${displayName} on ${sDate} at ${sTime || 'TBD'}. Purpose: ${sPurpose || 'Guidance consultation'}.`,
+                            type: 'guidance',
+                            read: false,
+                            is_read: false,
+                            created_at: new Date().toISOString()
+                        });
+                    }
+
+                    await supabase.from('notifications').insert(counselNotifs);
+                } catch (notifErr) {
+                    console.warn('Student counseling notification warning:', notifErr);
+                }
+
                 showAlert(`✅ Counseling session booked for ${fullName}!`, 'success');
 
             } catch (err) {

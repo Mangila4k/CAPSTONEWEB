@@ -508,6 +508,8 @@ body {
 .badge-type.assignment { background: #dbeafe; color: #1d4ed8; }
 .badge-type.quiz { background: #fef3c7; color: #b45309; }
 .badge-type.activity { background: #dcfce7; color: #15803d; }
+.badge-type.mastery-test, .badge-type.mastery { background: #e0e7ff; color: #4338ca; }
+.badge-type.homework { background: #ccfbf1; color: #0f766e; }
 .badge-type.project { background: #f3e8ff; color: #7e22ce; }
 .badge-type.exam { background: #fee2e2; color: #b91c1c; }
 

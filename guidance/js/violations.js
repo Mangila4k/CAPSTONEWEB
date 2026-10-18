@@ -498,16 +498,36 @@ document.addEventListener('DOMContentLoaded', async function() {
                     })
                     .eq('id', currentCallSlipViolation.id);
 
-                // 2. Post a system notification to parents
-                await supabase
-                    .from('notifications')
-                    .insert({
+                // 2. Post a system notification to parents AND student
+                const studentId = currentCallSlipViolation.student_id;
+                const callSlipNotifs = [
+                    {
                         role: 'parent',
                         title: `📌 Guidance Call Slip: ${currentCallSlipViolation.student_name}`,
                         message: `Guidance Conference requested on ${reqDate} at ${reqTime} regarding ${currentCallSlipViolation.violation_type}. ${reqMsg}`,
                         type: 'guidance_call_slip',
-                        is_read: false
+                        read: false,
+                        is_read: false,
+                        created_at: new Date().toISOString()
+                    }
+                ];
+
+                if (studentId) {
+                    callSlipNotifs.push({
+                        user_id: studentId,
+                        role: 'student',
+                        title: `📌 Guidance Call Slip: Conference Notice`,
+                        message: `You are requested to report to the Guidance Office on ${reqDate} at ${reqTime} regarding ${currentCallSlipViolation.violation_type}. ${reqMsg}`,
+                        type: 'guidance',
+                        read: false,
+                        is_read: false,
+                        created_at: new Date().toISOString()
                     });
+                }
+
+                await supabase
+                    .from('notifications')
+                    .insert(callSlipNotifs);
 
                 currentCallSlipViolation.parent_notified = true;
                 callSlipModal.classList.remove('active');

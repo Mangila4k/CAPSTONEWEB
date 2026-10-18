@@ -880,14 +880,26 @@ async function initRequirementsPage() {
 
             // 3. Post audit notification
             try {
-                await supabase.from('notifications').insert([{
-                    user_id: student.student_id,
+                const targetUids = [student.id, student.student_id, student.user_id].filter(Boolean);
+                if (student.email) {
+                    try {
+                        const { data: uData } = await supabase.from('users').select('id').eq('email', student.email.toLowerCase()).maybeSingle();
+                        if (uData?.id && !targetUids.includes(uData.id)) targetUids.push(uData.id);
+                    } catch (_) {}
+                }
+                const notifsToInsert = targetUids.map(uid => ({
+                    user_id: uid,
                     role: 'student',
                     title: `✅ Requirement Verified: ${docName}`,
                     message: `The Registrar's Office has verified receipt of your physical copy of ${docName}.`,
                     type: 'requirement',
-                    read: false
-                }]);
+                    read: false,
+                    is_read: false,
+                    created_at: new Date().toISOString()
+                }));
+                if (notifsToInsert.length > 0) {
+                    await supabase.from('notifications').insert(notifsToInsert);
+                }
             } catch(e) {}
 
             alert(`✅ ${docName} marked as received for ${student.fullname}!`);
@@ -953,14 +965,26 @@ async function initRequirementsPage() {
         try {
             // 1. Post in-app notification to student
             try {
-                await supabase.from('notifications').insert([{
-                    user_id: activeStudent.student_id || activeStudent.id,
+                const targetUids = [activeStudent.id, activeStudent.student_id, activeStudent.user_id].filter(Boolean);
+                if (activeStudent.email) {
+                    try {
+                        const { data: uData } = await supabase.from('users').select('id').eq('email', activeStudent.email.toLowerCase()).maybeSingle();
+                        if (uData?.id && !targetUids.includes(uData.id)) targetUids.push(uData.id);
+                    } catch (_) {}
+                }
+                const notifsToInsert = targetUids.map(uid => ({
+                    user_id: uid,
                     role: 'student',
                     title: subject,
                     message: message,
                     type: 'requirement_reminder',
-                    read: false
-                }]);
+                    read: false,
+                    is_read: false,
+                    created_at: new Date().toISOString()
+                }));
+                if (notifsToInsert.length > 0) {
+                    await supabase.from('notifications').insert(notifsToInsert);
+                }
             } catch (err) {
                 console.warn('In-app notification insert notice:', err);
             }
@@ -1012,14 +1036,26 @@ async function initRequirementsPage() {
         for (const st of incompleteStudents) {
             const missingNames = st.evaluation.docItems.filter(d => !d.isSubmitted && d.required).map(d => d.name).join(', ');
             try {
-                await supabase.from('notifications').insert([{
-                    user_id: st.student_id || st.id,
+                const targetUids = [st.id, st.student_id, st.user_id].filter(Boolean);
+                if (st.email) {
+                    try {
+                        const { data: uData } = await supabase.from('users').select('id').eq('email', st.email.toLowerCase()).maybeSingle();
+                        if (uData?.id && !targetUids.includes(uData.id)) targetUids.push(uData.id);
+                    } catch (_) {}
+                }
+                const notifsToInsert = targetUids.map(uid => ({
+                    user_id: uid,
                     role: 'student',
                     title: '⚠️ Notice: Pending Enrollment Requirements',
                     message: `Dear ${st.fullname}, please be reminded to submit your pending requirement(s): ${missingNames} to the Registrar's Office as soon as possible.`,
                     type: 'requirement_reminder',
-                    read: false
-                }]);
+                    read: false,
+                    is_read: false,
+                    created_at: new Date().toISOString()
+                }));
+                if (notifsToInsert.length > 0) {
+                    await supabase.from('notifications').insert(notifsToInsert);
+                }
                 sentCount++;
             } catch(e) {}
         }

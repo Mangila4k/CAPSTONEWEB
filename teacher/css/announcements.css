@@ -733,8 +733,8 @@
     background: #fff;
     border-radius: 16px;
     width: 100%;
-    max-width: 640px;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+    max-width: 780px;
+    box-shadow: 0 25px 50px -12px rgba(11, 43, 74, 0.25);
     overflow: hidden;
     max-height: 90vh;
     display: flex;
@@ -792,9 +792,21 @@
 }
 
 .modal-body {
-    padding: 24px;
+    padding: 24px 28px;
     overflow-y: auto;
-    max-height: calc(90vh - 130px);
+    overflow-x: hidden;
+    max-height: calc(90vh - 140px);
+    scrollbar-width: thin;
+    scrollbar-color: var(--slate-300) transparent;
+}
+
+.modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+    background-color: var(--slate-300);
+    border-radius: 3px;
 }
 
 .form-group {
@@ -802,6 +814,7 @@
     display: flex;
     flex-direction: column;
     gap: 6px;
+    min-width: 0;
 }
 
 .form-group label {
@@ -816,11 +829,14 @@
 
 .form-row {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 16px;
+    min-width: 0;
 }
 
 .form-input {
+    width: 100%;
+    box-sizing: border-box;
     padding: 10px 14px;
     border: 1.5px solid var(--slate-200);
     border-radius: 8px;
@@ -829,6 +845,7 @@
     color: var(--slate-800);
     background: #fff;
     transition: all 0.2s;
+    min-width: 0;
 }
 
 .form-input:focus {
@@ -923,7 +940,16 @@
     }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 720px) {
+    .modal-container {
+        max-width: 95vw;
+        border-radius: 12px;
+    }
+
+    .modal-body {
+        padding: 18px 20px;
+    }
+
     .form-row {
         grid-template-columns: 1fr;
     }

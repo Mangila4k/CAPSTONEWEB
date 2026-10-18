@@ -165,7 +165,7 @@ export const AnnouncementsService = {
                 if (aud === 'all') return true;
                 if (role === 'admin') return true;
                 if (role === 'teacher') {
-                    return aud === 'teachers' || aud === 'teacher' || aud === 'parent_teacher_meeting' || aud === 'all';
+                    return aud === 'teachers' || aud === 'teacher' || aud === 'parent_teacher_meeting' || aud === 'parents' || aud === 'all' || item.author_role === 'teacher';
                 }
                 if (role === 'parent' || role === 'parents') {
                     return aud === 'parents' || aud === 'parent' || aud === 'parent_teacher_meeting' || aud === 'all';
@@ -229,6 +229,7 @@ export const AnnouncementsService = {
             meeting_link: payload.meeting_link || '',
             author_name: payload.author_name || 'Administrator',
             author_role: payload.author_role || 'admin',
+            section_or_child: payload.section_or_child || '',
             requires_rsvp: Boolean(payload.requires_rsvp),
             agenda: Array.isArray(payload.agenda) ? payload.agenda : []
         };

@@ -25,7 +25,7 @@
                         <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo"
                             onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
                     </div>
-                    <div class="logo-text">PLS<span>NSH</span></div>
+                    <div class="logo-text">PLS<span>NHS</span></div>
                 </div>
                 <div class="school-badge">Placido L. Señor National High School</div>
             </div>
@@ -66,11 +66,11 @@
             <div class="sidebar-footer">
                 <div class="teacher-profile">
                     <div class="teacher-avatar">
-                        <div class="avatar-initial" id="teacherInitial">RQ</div>
+                        <div class="avatar-initial" id="teacherInitial">--</div>
                         <div class="online-dot"></div>
                     </div>
                     <div class="teacher-info">
-                        <div class="teacher-name" id="teacherName">Ryan Quiroga</div>
+                        <div class="teacher-name" id="teacherName">Teacher</div>
                         <div class="teacher-role"><i class="fas fa-chalkboard-user"></i> Teacher</div>
                     </div>
                 </div>
@@ -152,7 +152,7 @@
 
                 <div class="filter-controls">
                     <select class="filter-select" id="filterSectionSelect">
-                        <option value="">All Sections</option>
+                        <option value="">All Year Levels & Sections</option>
                     </select>
 
                     <select class="filter-select" id="filterSubjectSelect">
@@ -164,6 +164,7 @@
                         <option value="Assignment">Assignment</option>
                         <option value="Quiz">Quiz</option>
                         <option value="Activity">Activity</option>
+                        <option value="Mastery Test">Mastery Test</option>
                         <option value="Project">Project</option>
                         <option value="Homework">Homework</option>
                         <option value="Exam">Exam</option>
@@ -210,25 +211,18 @@
                             <span>General Information</span>
                         </div>
                         <div class="form-grid">
-                            <div class="form-group full-width">
-                                <label for="assessmentTitle">
-                                    <i class="fas fa-heading"></i> Assessment Title <span class="req">*</span>
-                                </label>
-                                <input type="text" id="assessmentTitle" class="form-control"
-                                    placeholder="e.g., Essay on Biodiversity & Ecosystems" required>
-                            </div>
-
                             <div class="form-group">
                                 <label for="assessmentType">
-                                    <i class="fas fa-layer-group"></i> Assessment Type
+                                    <i class="fas fa-layer-group"></i> Assessment Type <span class="req">*</span>
                                 </label>
-                                <select id="assessmentType" class="form-control">
-                                    <option value="Assignment">Assignment</option>
-                                    <option value="Quiz">Quiz</option>
+                                <select id="assessmentType" class="form-control" required>
                                     <option value="Activity">Activity / Performance Task</option>
+                                    <option value="Quiz">Quiz</option>
+                                    <option value="Mastery Test">Mastery Test</option>
+                                    <option value="Assignment">Assignment</option>
+                                    <option value="Exam">Exam / Long Test</option>
                                     <option value="Project">Quarter Project</option>
                                     <option value="Homework">Homework</option>
-                                    <option value="Exam">Exam / Long Test</option>
                                 </select>
                             </div>
 
@@ -242,10 +236,10 @@
 
                             <div class="form-group">
                                 <label for="assessmentSection">
-                                    <i class="fas fa-users"></i> Target Section / Class <span class="req">*</span>
+                                    <i class="fas fa-graduation-cap"></i> Year Level / Section <span class="req">*</span>
                                 </label>
                                 <select id="assessmentSection" class="form-control" required>
-                                    <option value="">Select Section</option>
+                                    <option value="">Select Year Level / Section</option>
                                 </select>
                             </div>
 

@@ -196,26 +196,74 @@ import { supabase } from '../../supabase/config.js';
 
     // Populate Filter and Modal Dropdowns
     function populateDropdowns() {
-        // Filter sections
+        // Group sections by Year Level (grade_level)
+        function getGradeNum(g) {
+            const m = (g || '').match(/\d+/);
+            return m ? parseInt(m[0], 10) : 999;
+        }
+
+        const sectionsByGrade = {};
+        sections.forEach(s => {
+            const gl = s.grade_level || 'Other';
+            if (!sectionsByGrade[gl]) sectionsByGrade[gl] = [];
+            sectionsByGrade[gl].push(s);
+        });
+
+        const sortedGrades = Object.keys(sectionsByGrade).sort((a, b) => getGradeNum(a) - getGradeNum(b));
+
+        // Filter sections & year levels
         if (filterSectionSelect) {
-            filterSectionSelect.innerHTML = '<option value="">All Sections</option>';
-            sections.forEach(s => {
-                const opt = document.createElement('option');
-                opt.value = s.id;
-                opt.textContent = `${s.grade_level ? s.grade_level + ' - ' : ''}${s.name}`;
-                filterSectionSelect.appendChild(opt);
+            filterSectionSelect.innerHTML = '<option value="">All Year Levels & Sections</option>';
+            sortedGrades.forEach(gl => {
+                const group = document.createElement('optgroup');
+                group.label = `── ${gl} ──`;
+
+                // Option for entire year level
+                const yearOpt = document.createElement('option');
+                yearOpt.value = `year:${gl}`;
+                yearOpt.textContent = `All ${gl} (Entire Year Level)`;
+                group.appendChild(yearOpt);
+
+                // Individual sections under this year level
+                sectionsByGrade[gl].sort((a, b) => a.name.localeCompare(b.name)).forEach(s => {
+                    const opt = document.createElement('option');
+                    opt.value = s.id;
+                    opt.textContent = `${s.name}`;
+                    group.appendChild(opt);
+                });
+
+                filterSectionSelect.appendChild(group);
             });
         }
 
-        // Modal sections
+        // Modal sections & year levels
         if (sectionSelect) {
-            sectionSelect.innerHTML = '<option value="">Select Section / Class</option>';
-            sections.forEach(s => {
-                const opt = document.createElement('option');
-                opt.value = s.id;
-                opt.dataset.name = `${s.grade_level ? s.grade_level + ' - ' : ''}${s.name}`;
-                opt.textContent = `${s.grade_level ? s.grade_level + ' - ' : ''}${s.name}`;
-                sectionSelect.appendChild(opt);
+            sectionSelect.innerHTML = '<option value="">Select Year Level / Section</option>';
+            sortedGrades.forEach(gl => {
+                const group = document.createElement('optgroup');
+                group.label = `── ${gl} ──`;
+
+                // Option for entire year level
+                const yearOpt = document.createElement('option');
+                yearOpt.value = `year:${gl}`;
+                yearOpt.dataset.isYear = 'true';
+                yearOpt.dataset.gradeLevel = gl;
+                yearOpt.dataset.name = `All ${gl}`;
+                yearOpt.textContent = `⭐ All ${gl} (Entire Year Level)`;
+                group.appendChild(yearOpt);
+
+                // Individual sections under this year level
+                sectionsByGrade[gl].sort((a, b) => a.name.localeCompare(b.name)).forEach(s => {
+                    const opt = document.createElement('option');
+                    opt.value = s.id;
+                    opt.dataset.isYear = 'false';
+                    opt.dataset.gradeLevel = gl;
+                    opt.dataset.name = `${gl} - ${s.name}`;
+                    opt.textContent = `${gl} - ${s.name}`;
+                    group.appendChild(opt);
+                });
+
+                sectionSelect.appendChild(group);
             });
         }
 
@@ -360,7 +408,10 @@ import { supabase } from '../../supabase/config.js';
                 (a.section_name && a.section_name.toLowerCase().includes(searchTerm)) ||
                 (a.description && a.description.toLowerCase().includes(searchTerm));
 
-            const matchesSection = !selSection || a.section_id === selSection;
+            const matchesSection = !selSection || 
+                (selSection.startsWith('year:')
+                    ? (a.section_name && a.section_name.toLowerCase().includes(selSection.replace('year:', '').toLowerCase()))
+                    : a.section_id === selSection);
             const matchesSubject = !selSubject || a.subject_id === selSubject;
             const matchesType = !selType || (a.type && a.type.toLowerCase() === selType.toLowerCase());
             const matchesStatus = !selStatus || (a.status && a.status.toLowerCase() === selStatus.toLowerCase());
@@ -493,8 +544,10 @@ import { supabase } from '../../supabase/config.js';
         const t = (type || '').toLowerCase();
         if (t.includes('quiz')) return 'fas fa-question-circle';
         if (t.includes('activity')) return 'fas fa-pen-alt';
+        if (t.includes('mastery')) return 'fas fa-check-circle';
         if (t.includes('project')) return 'fas fa-project-diagram';
         if (t.includes('exam')) return 'fas fa-file-invoice';
+        if (t.includes('homework')) return 'fas fa-book-reader';
         return 'fas fa-tasks';
     }
 
@@ -530,8 +583,32 @@ import { supabase } from '../../supabase/config.js';
         modalTitle.innerHTML = '<i class="fas fa-edit"></i> Edit Assessment';
         if (assessmentIdInput) assessmentIdInput.value = target.id;
         if (titleInput) titleInput.value = target.title || '';
-        if (typeInput) typeInput.value = target.type || 'Assignment';
-        if (sectionSelect) sectionSelect.value = target.section_id || '';
+        if (typeInput) {
+            typeInput.value = target.type || target.title || 'Activity';
+            if (!typeInput.value || typeInput.selectedIndex === -1) {
+                const targetKey = (target.type || target.title || '').toLowerCase();
+                for (let i = 0; i < typeInput.options.length; i++) {
+                    const optVal = typeInput.options[i].value.toLowerCase();
+                    const optText = typeInput.options[i].text.toLowerCase();
+                    if (targetKey.includes(optVal) || optText.includes(targetKey)) {
+                        typeInput.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+        }
+        if (sectionSelect) {
+            if (target.section_id) {
+                sectionSelect.value = target.section_id;
+            } else if (target.section_name && target.section_name.toLowerCase().includes('grade')) {
+                const m = target.section_name.match(/Grade\s*\d+/i);
+                if (m) {
+                    sectionSelect.value = `year:${m[0]}`;
+                }
+            } else {
+                sectionSelect.value = '';
+            }
+        }
         if (subjectSelect) subjectSelect.value = target.subject_id || '';
         if (pointsInput) pointsInput.value = target.total_points || 100;
         if (instructionsInput) instructionsInput.value = target.description || '';
@@ -570,9 +647,27 @@ import { supabase } from '../../supabase/config.js';
         e.preventDefault();
 
         const id = assessmentIdInput?.value;
-        const title = titleInput?.value.trim();
-        const type = typeInput?.value || 'Assignment';
-        const sectionId = sectionSelect?.value || null;
+        const type = typeInput?.value || 'Activity';
+        const selectedTypeOpt = typeInput?.selectedOptions?.[0];
+        const title = selectedTypeOpt ? selectedTypeOpt.text : type;
+        let sectionId = null;
+        let sectionName = 'General';
+        const selSectionOpt = sectionSelect?.selectedOptions?.[0];
+        if (selSectionOpt) {
+            if (selSectionOpt.dataset.isYear === 'true') {
+                sectionId = null;
+                sectionName = `All ${selSectionOpt.dataset.gradeLevel || 'Students'}`;
+            } else {
+                sectionId = sectionSelect.value || null;
+                sectionName = selSectionOpt.dataset.name || selSectionOpt.text || 'General';
+            }
+        }
+
+        if (!sectionSelect?.value) {
+            showAlert('⚠️ Please select a Year Level or Section', 'error');
+            return;
+        }
+
         const subjectId = subjectSelect?.value || null;
         const points = parseInt(pointsInput?.value, 10) || 100;
         const dueDateVal = dueDateInput?.value;
@@ -582,21 +677,14 @@ import { supabase } from '../../supabase/config.js';
         const status = statusSelect?.value || 'published';
         const allowLate = allowLateCheckbox ? allowLateCheckbox.checked : true;
 
-        if (!title) {
-            showAlert('⚠️ Please enter an assessment title', 'error');
+        if (!type) {
+            showAlert('⚠️ Please select an assessment type', 'error');
             return;
         }
 
         let dueTimestamp = null;
         if (dueDateVal) {
             dueTimestamp = new Date(`${dueDateVal}T${dueTimeVal}:00`).toISOString();
-        }
-
-        // Section & Subject names
-        let sectionName = 'General';
-        const selSectionOpt = sectionSelect?.selectedOptions?.[0];
-        if (selSectionOpt && selSectionOpt.dataset.name) {
-            sectionName = selSectionOpt.dataset.name;
         }
 
         let subjectName = 'General';
@@ -674,12 +762,19 @@ import { supabase } from '../../supabase/config.js';
 
                 if (error) throw error;
 
-                // Send notification to students in that section
-                if (status === 'published' && sectionId) {
-                    notifyStudentsOfNewAssessment(sectionId, title, points, dueDateFormattedPreview(dueTimestamp));
+                // Send notification to students regarding which section or year level they belong to
+                if (status === 'published') {
+                    notifyStudentsOfNewAssessment({
+                        sectionId,
+                        sectionName,
+                        subjectName,
+                        title,
+                        points,
+                        dueStr: dueDateFormattedPreview(dueTimestamp)
+                    });
                 }
 
-                showAlert('✅ Assessment published for students!', 'success');
+                showAlert('✅ Assessment published and students notified!', 'success');
             }
 
             closeModal();
@@ -703,29 +798,158 @@ import { supabase } from '../../supabase/config.js';
         }
     }
 
-    // Broadcast notification to students
-    async function notifyStudentsOfNewAssessment(sectionId, title, points, dueStr) {
+    // Broadcast notification to students regarding which section or year level they belong to
+    async function notifyStudentsOfNewAssessment({ sectionId, sectionName, subjectName, title, points, dueStr }) {
         try {
-            // Find students in this section
-            const { data: students } = await supabase
-                .from('students')
-                .select('id, email')
-                .eq('section_id', sectionId);
+            const isYearLevel = !sectionId || (sectionName && sectionName.toLowerCase().startsWith('all grade'));
+            let students = [];
 
-            if (students && students.length > 0) {
-                const notifs = students.map(s => ({
-                    user_id: s.id,
+            if (isYearLevel) {
+                // Extract grade level name, e.g. "Grade 8" from "All Grade 8"
+                const m = (sectionName || '').match(/Grade\s*\d+/i);
+                const gradeLevelMatch = m ? m[0] : '';
+
+                let query = supabase
+                    .from('students')
+                    .select('id, email, first_name, last_name, grade_level, section_id');
+
+                if (gradeLevelMatch) {
+                    query = query.ilike('grade_level', `%${gradeLevelMatch}%`);
+                }
+
+                const { data: matchedStudents, error: sErr } = await query;
+                if (sErr) console.warn('Students query warning:', sErr);
+                students = matchedStudents || [];
+            } else {
+                // Specific Section
+                const { data: matchedStudents, error: sErr } = await supabase
+                    .from('students')
+                    .select('id, email, first_name, last_name, grade_level, section_id')
+                    .eq('section_id', sectionId);
+                if (sErr) console.warn('Students query warning:', sErr);
+                students = matchedStudents || [];
+            }
+
+            console.log(`📢 Target audience: ${students.length} students for ${sectionName}`);
+
+            // Fetch user account IDs from `users` table where role = 'student' to ensure match with auth user session IDs
+            let userMap = {};
+            try {
+                const { data: usersData } = await supabase
+                    .from('users')
+                    .select('id, email, student_id')
+                    .eq('role', 'student');
+
+                if (usersData) {
+                    usersData.forEach(u => {
+                        if (u.student_id) userMap[u.student_id] = u.id;
+                        if (u.email) userMap[u.email.toLowerCase()] = u.id;
+                    });
+                }
+            } catch(uErr) {
+                console.warn('Users table mapping notice:', uErr);
+            }
+
+            // Notification title and message informing student of the specific year level or section
+            const targetScope = isYearLevel ? `Year Level: ${sectionName}` : `Section: ${sectionName}`;
+            const notifTitle = `New Assessment: ${title} (${targetScope})`;
+            const notifMessage = isYearLevel
+                ? `Teacher ${displayName} posted a new assessment (${points} pts) for your Year Level (${sectionName}) in ${subjectName || 'General'}. Due: ${dueStr}. Please check your Assessments page to view instructions and submit.`
+                : `Teacher ${displayName} posted a new assessment (${points} pts) for your section (${sectionName}) in ${subjectName || 'General'}. Due: ${dueStr}. Please check your Assessments page to view instructions and submit.`;
+
+            const notifs = [];
+            const targetedUserIds = new Set();
+
+            students.forEach(s => {
+                const sId = s.id;
+                const authUid = userMap[s.id] || (s.email ? userMap[s.email.toLowerCase()] : null);
+
+                // Add record for student ID
+                notifs.push({
+                    user_id: sId,
                     role: 'student',
-                    title: `New Assessment: ${title}`,
-                    message: `Teacher ${displayName} posted a new assessment (${points} pts). Due: ${dueStr}. Come pass your work!`,
+                    title: notifTitle,
+                    message: notifMessage,
                     type: 'assessment',
                     read: false,
                     is_read: false,
                     created_at: new Date().toISOString()
-                }));
+                });
+                targetedUserIds.add(sId);
 
-                await supabase.from('notifications').insert(notifs);
+                // If auth user account ID differs, also add for auth user account ID
+                if (authUid && authUid !== sId) {
+                    notifs.push({
+                        user_id: authUid,
+                        role: 'student',
+                        title: notifTitle,
+                        message: notifMessage,
+                        type: 'assessment',
+                        read: false,
+                        is_read: false,
+                        created_at: new Date().toISOString()
+                    });
+                    targetedUserIds.add(authUid);
+                }
+
+                if (s.email) {
+                    targetedUserIds.add(s.email.toLowerCase());
+                }
+            });
+
+            // Also add a general broadcast notification for students in this year level/section
+            if (students.length === 0) {
+                notifs.push({
+                    user_id: null,
+                    role: 'student',
+                    title: notifTitle,
+                    message: notifMessage,
+                    type: 'assessment',
+                    read: false,
+                    is_read: false,
+                    created_at: new Date().toISOString()
+                });
             }
+
+            // Batch insert to Supabase notifications table
+            for (let i = 0; i < notifs.length; i += 100) {
+                const chunk = notifs.slice(i, i + 100);
+                const { error: insErr } = await supabase
+                    .from('notifications')
+                    .insert(chunk);
+                if (insErr) {
+                    console.warn('Notification insert chunk notice:', insErr);
+                }
+            }
+
+            // Update localStorage for real-time notification update
+            targetedUserIds.forEach(targetId => {
+                try {
+                    const localKey = `hes_notifications_${targetId}`;
+                    const raw = localStorage.getItem(localKey);
+                    let list = [];
+                    if (raw) list = JSON.parse(raw);
+                    list.unshift({
+                        id: 'notif_assess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+                        title: notifTitle,
+                        message: notifMessage,
+                        type: 'assessment',
+                        time: 'Just now',
+                        read: false,
+                        created_at: new Date().toISOString()
+                    });
+                    localStorage.setItem(localKey, JSON.stringify(list));
+                } catch(e) {}
+            });
+
+            // Fire storage update event for live notification bell badge
+            localStorage.setItem('hes_latest_notification', JSON.stringify({
+                time: Date.now(),
+                title: notifTitle,
+                message: notifMessage,
+                target: sectionName
+            }));
+
         } catch(e) {
             console.warn('Could not broadcast notification to students:', e);
         }

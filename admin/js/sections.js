@@ -741,4 +741,17 @@ document.addEventListener('DOMContentLoaded', async function() {
     // ===== INIT =====
     await loadTeachers();
     await loadSections();
+
+    // Automatically open edit modal if arrived with ?edit=SECTION_ID
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const editId = urlParams.get('edit');
+        if (editId && typeof window.openEditModal === 'function') {
+            setTimeout(() => {
+                window.openEditModal(editId);
+            }, 100);
+        }
+    } catch (e) {
+        console.warn('Could not auto-open edit modal:', e);
+    }
 });

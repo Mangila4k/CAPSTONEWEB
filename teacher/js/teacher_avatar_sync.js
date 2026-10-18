@@ -1,7 +1,7 @@
 // ===== HES TEACHER AVATAR & INITIALS SYNC =====
 (function() {
     function getTeacherInitials(name) {
-        if (!name || typeof name !== 'string') return 'RQ';
+        if (!name || typeof name !== 'string') return 'T';
         const cleanName = name.replace(/^(mr\.?|mrs\.?|ms\.?|dr\.?|prof\.?|engr\.?|atty\.?)\s+/i, '').trim();
         const words = cleanName.split(/[\s,&-]+/).filter(w => w.length > 0 && !['and', 'the', 'of', '&'].includes(w.toLowerCase()));
         if (words.length === 0) return name.charAt(0).toUpperCase();
@@ -19,7 +19,9 @@
                 if (userStr) {
                     try {
                         const u = JSON.parse(userStr);
-                        const uName = u.name || u.displayName || `${u.firstName || ''} ${u.lastName || ''}`.trim();
+                        const first = u.firstName || u.first_name || '';
+                        const last = u.lastName || u.last_name || '';
+                        const uName = (first || last) ? `${first} ${last}`.trim() : (u.name || u.displayName || (u.email ? u.email.split('@')[0] : ''));
                         if (uName) savedName = uName;
                     } catch(e) {}
                 }
@@ -27,7 +29,7 @@
 
             // Fallback default teacher name if not set
             if (!savedName) {
-                savedName = 'Ryan Quiroga';
+                savedName = 'Teacher';
             }
 
             document.querySelectorAll('.teacher-name, #teacherName').forEach(el => {

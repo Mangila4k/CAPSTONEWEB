@@ -138,11 +138,6 @@
                 </div>
             </div>
 
-            <!-- Grade Level Summary (Whole School by Year Level) -->
-            <div class="grade-summary" id="gradeSummary">
-                <!-- Dynamically loaded by JavaScript for Grade 7 to Grade 12 -->
-            </div>
-
             <!-- Actions Bar with Year Level, Section & Strand Filters -->
             <div class="actions-bar">
                 <div class="filter-group">
@@ -194,6 +189,50 @@
                     <a href="add_student.html" class="btn-add-student" title="Enroll New or Transfer Student">
                         <i class="fas fa-user-plus"></i> Enroll Student
                     </a>
+                </div>
+            </div>
+
+            <!-- Year Level Navigation Tabs -->
+            <div class="level-tabs-bar">
+                <div class="level-tabs">
+                    <button type="button" class="level-tab-btn active" data-level="all" id="tabAllLevels">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <i class="fas fa-layer-group"></i>
+                            <span>All Year Levels</span>
+                        </div>
+                        <span class="tab-badge" id="badgeAllCount">0</span>
+                    </button>
+                    <button type="button" class="level-tab-btn" data-level="jhs" id="tabJhsLevels">
+                        <div style="display:flex; flex-direction:column; align-items:flex-start; gap:2px;">
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <i class="fas fa-school" style="color:#0284c7;"></i>
+                                <span>Junior High School</span>
+                            </div>
+                            <span class="tab-subtitle">Grades 7–10</span>
+                        </div>
+                        <span class="tab-badge jhs" id="badgeJhsCount">0</span>
+                    </button>
+                    <button type="button" class="level-tab-btn" data-level="shs" id="tabShsLevels">
+                        <div style="display:flex; flex-direction:column; align-items:flex-start; gap:2px;">
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <i class="fas fa-graduation-cap" style="color:#7c3aed;"></i>
+                                <span>Senior High School</span>
+                            </div>
+                            <span class="tab-subtitle">Grades 11–12</span>
+                        </div>
+                        <span class="tab-badge shs" id="badgeShsCount">0</span>
+                    </button>
+                </div>
+
+                <div class="grade-pills-row">
+                    <span class="pills-title"><i class="fas fa-filter"></i> Year Level:</span>
+                    <button type="button" class="grade-pill-tag active" data-grade="all">All</button>
+                    <button type="button" class="grade-pill-tag" data-grade="Grade 7">Grade 7</button>
+                    <button type="button" class="grade-pill-tag" data-grade="Grade 8">Grade 8</button>
+                    <button type="button" class="grade-pill-tag" data-grade="Grade 9">Grade 9</button>
+                    <button type="button" class="grade-pill-tag" data-grade="Grade 10">Grade 10</button>
+                    <button type="button" class="grade-pill-tag" data-grade="Grade 11">Grade 11</button>
+                    <button type="button" class="grade-pill-tag" data-grade="Grade 12">Grade 12</button>
                 </div>
             </div>
 

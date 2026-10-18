@@ -137,6 +137,13 @@ import { supabase } from '../../supabase/config.js';
             await fetchStudentRecord();
             await loadClasswork();
             setupEventListeners();
+
+            // Check if directed from a notification with a specific assessment ID
+            const urlParams = new URLSearchParams(window.location.search);
+            const targetAssessId = urlParams.get('id');
+            if (targetAssessId && assessments.some(a => String(a.id) === String(targetAssessId))) {
+                setTimeout(() => openClassroomModal(targetAssessId), 250);
+            }
         } catch(err) {
             console.error('Initialization error:', err);
             showAlert('❌ Failed to load assessments: ' + err.message, 'error');
@@ -148,14 +155,19 @@ import { supabase } from '../../supabase/config.js';
         try {
             const userEmail = sessionUser.email || '';
             const userUid = sessionUser.uid || sessionUser.id || '';
+            const studentTableId = sessionUser.student_id || sessionUser.studentTableId || '';
 
-            const { data } = await supabase
-                .from('students')
-                .select('*')
-                .or(`email.eq.${userEmail},id.eq.${userUid}`);
+            let query = supabase.from('students').select('*');
+            if (studentTableId) {
+                query = query.or(`id.eq.${studentTableId},email.eq.${userEmail}`);
+            } else {
+                query = query.or(`email.eq.${userEmail},id.eq.${userUid}`);
+            }
 
+            const { data } = await query;
             if (data && data.length > 0) {
-                studentRow = data[0];
+                // If studentTableId matches one, pick that one preferentially
+                studentRow = (studentTableId && data.find(s => s.id === studentTableId)) || data[0];
                 const fullName = `${studentRow.first_name || ''} ${studentRow.last_name || ''}`.trim();
                 if (fullName) {
                     studentDisplayName = fullName;
@@ -183,14 +195,33 @@ import { supabase } from '../../supabase/config.js';
             const { data: allAssessments, error: assessErr } = await query;
             if (assessErr) throw assessErr;
 
-            // Filter for student's section if assigned to specific section
-            if (studentRow && studentRow.section_id) {
-                assessments = (allAssessments || []).filter(a => 
-                    !a.section_id || a.section_id === studentRow.section_id
-                );
-            } else {
-                assessments = allAssessments || [];
-            }
+            // Filter for student's section or year level
+            const studentGrade = (studentRow?.grade_level || sessionUser?.grade_level || sessionUser?.grade || '').toLowerCase().trim();
+            const studentSecId = studentRow?.section_id || sessionUser?.section_id || sessionUser?.sectionId || '';
+            const studentSecName = (studentRow?.section || sessionUser?.section || '').toLowerCase().trim();
+
+            assessments = (allAssessments || []).filter(a => {
+                // 1. Explicit section match by section_id
+                if (a.section_id) {
+                    // Must strictly match student's enrolled section
+                    if (studentSecId && String(a.section_id) === String(studentSecId)) return true;
+                    if (studentSecName && a.section_name && a.section_name.toLowerCase().includes(studentSecName)) return true;
+                    // If student does not belong to this section, strictly exclude!
+                    return false;
+                }
+
+                // 2. Year level target without section_id (e.g. "All Grade 8")
+                if (a.section_name && studentGrade) {
+                    if (a.section_name.toLowerCase().includes(studentGrade)) return true;
+                }
+
+                // 3. School-wide assessments (no section or general)
+                if (!a.section_id && (!a.section_name || a.section_name.toLowerCase() === 'general' || a.section_name.toLowerCase() === 'all students')) {
+                    return true;
+                }
+
+                return false;
+            });
 
             // 2. Fetch submissions made by this student
             const studentId = studentRow?.id || sessionUser.uid || sessionUser.id;

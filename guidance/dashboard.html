@@ -54,7 +54,7 @@
                 <div class="nav-section">
                     <div class="nav-section-title">RECORDS & REPORTS</div>
                     <ul class="nav-items">
-                        <li><a href="reports.html"><i class="fas fa-chart-pie"></i> Reports</a></li>
+                        <li><a href="reports.html"><i class="fas fa-chart-pie"></i> Discipline Reports</a></li>
                     </ul>
                 </div>
 
@@ -94,12 +94,20 @@
                     <div class="notification-wrapper">
                         <button type="button" class="notification-btn" id="notificationBtn" title="Announcements & Notifications">
                             <i class="fas fa-bell"></i>
-                            <span class="notif-count empty" id="notifCount">0</span>
+                            <span class="notif-count empty" id="notifCount" style="display: none;"></span>
                         </button>
                         <div class="notification-dropdown" id="notificationDropdown">
                             <div class="dropdown-header">
                                 <h4><i class="fas fa-bullhorn" style="color: #facc15;"></i> Announcements & Alerts</h4>
                                 <button type="button" id="markAllReadBtn" class="mark-all-read">Mark all as read</button>
+                            </div>
+                            <div class="dropdown-filter-bar" id="notifFilterBar">
+                                <button type="button" class="notif-filter-tab active" data-filter="all">
+                                    <span>All</span> <span class="notif-filter-count" id="notifCountAll">0</span>
+                                </button>
+                                <button type="button" class="notif-filter-tab" data-filter="unread">
+                                    <span>Unread</span> <span class="notif-filter-count" id="notifCountUnread">0</span>
+                                </button>
                             </div>
                             <div class="dropdown-body" id="notificationList">
                                 <div class="empty-notifications">
@@ -217,10 +225,18 @@
 
                 <div style="display: flex; flex-direction: column; gap: 24px;">
                     <div class="content-card" style="margin-bottom: 0;">
-                        <div class="card-header-flex">
-                            <h3><i class="fas fa-calendar-check"></i> Upcoming Counseling</h3>
-                            <a href="counseling.html"
-                                style="font-size: 12px; color: var(--accent); font-weight: 600; text-decoration: none;">Manage</a>
+                        <div class="card-header-flex" style="flex-wrap: wrap; gap: 10px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <h3><i class="fas fa-calendar-check"></i> Counseling Sessions</h3>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div class="counseling-filter-pills" id="counselingFilterPills" style="display: flex; gap: 4px; background: #f1f5f9; padding: 2px 4px; border-radius: 20px;">
+                                    <button type="button" class="counseling-pill active" data-filter="upcoming" style="border: none; background: #0b2b4a; color: #ffffff; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 14px; cursor: pointer; transition: all 0.2s;">Upcoming</button>
+                                    <button type="button" class="counseling-pill" data-filter="all" style="border: none; background: transparent; color: #64748b; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 14px; cursor: pointer; transition: all 0.2s;">All Records</button>
+                                </div>
+                                <a href="counseling.html"
+                                    style="font-size: 12px; color: var(--accent); font-weight: 600; text-decoration: none;">Manage</a>
+                            </div>
                         </div>
                         <div id="upcomingCounselingList">
                             <p style="color: var(--text-muted); font-size: 13px; text-align: center; padding: 20px 0;">
@@ -258,6 +274,32 @@
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- Counseling Session Detail Modal -->
+    <div class="modal-overlay" id="counselingDetailModal">
+        <div class="modal-card" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-hand-holding-heart" style="color: var(--accent);"></i> <span id="counselingModalTitle">Counseling Session Details</span></h3>
+                <button type="button" class="modal-close-btn" id="closeCounselingModalBtn" title="Close"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" id="counselingModalBody" style="padding: 24px;">
+                <!-- Populated dynamically by JS -->
+            </div>
+            <div class="modal-footer" style="display: flex; align-items: center; justify-content: space-between; padding: 14px 24px; border-top: 1px solid var(--border-color); background: #f8fafc; border-bottom-left-radius: 16px; border-bottom-right-radius: 16px; flex-wrap: wrap; gap: 10px;">
+                <div id="counselingModalStatusActions">
+                    <!-- Dynamic button to mark as completed or return to scheduled -->
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <a href="counseling.html" class="btn-secondary" id="counselingModalLink" style="padding: 7px 14px; font-size: 12.5px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                        <i class="fas fa-arrow-up-right-from-square"></i> Open in Counseling Portal
+                    </a>
+                    <button type="button" class="btn-primary" id="dismissCounselingModalBtn" style="padding: 7px 16px; font-size: 12.5px;">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Scripts -->

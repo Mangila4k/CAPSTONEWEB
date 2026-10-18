@@ -42,6 +42,8 @@ body {
 .app-container {
     display: flex;
     min-height: 100vh;
+    max-width: 100vw;
+    overflow-x: hidden;
 }
 
 /* ===== MOBILE MENU TOGGLE ===== */
@@ -225,6 +227,9 @@ body {
     margin-left: var(--sidebar-width);
     padding: 30px 36px;
     min-height: 100vh;
+    min-width: 0;
+    max-width: calc(100vw - var(--sidebar-width));
+    box-sizing: border-box;
     transition: margin-left 0.3s ease;
 }
 
@@ -642,7 +647,9 @@ body {
 }
 
 select.filter-select,
-.filter-select {
+.filter-select,
+select.matrix-select-filter,
+.matrix-select-filter {
     width: auto;
     max-width: 100%;
 }
@@ -669,6 +676,7 @@ select.filter-select,
     }
     .main-content {
         margin-left: 0;
+        max-width: 100vw;
         padding: 24px 16px;
     }
     .menu-toggle {
