@@ -136,22 +136,21 @@ import { supabase } from '../../supabase/config.js';
 
     let allStudents = [];
     let allSections = [];
-    let todayScans = []; // List of scanned events { studentId, name, lrn, idNo, grade, section, strand, time, status, mode }
-    let allHistoryRecords = []; // Unified past & present attendance logs
+    let todayScans = []; 
+    let allHistoryRecords = []; 
     let filteredHistoryRecords = [];
-    let activeHistoryRange = 'all'; // 'all' | 'today' | 'yesterday' | 'week' | 'custom'
+    let activeHistoryRange = 'all'; 
 
     let isScanning = false;
     let videoStream = null;
-    let currentFacingMode = 'environment'; // 'environment' (back) or 'user' (front)
+    let currentFacingMode = 'environment'; 
     let availableVideoDevices = [];
     let selectedDeviceId = null;
     let animationFrameId = null;
     let lastScanTime = 0;
-    const SCAN_COOLDOWN_MS = 2200; // Cooldown between scanning same code
+    const SCAN_COOLDOWN_MS = 2200; 
     let lastScannedPayload = '';
 
-    // Default Sections
     const DEFAULT_SECTIONS = [
         { id: 'sec_g7_diamond', name: 'Diamond', grade_level: 'Grade 7', strand: 'JHS' },
         { id: 'sec_g7_emerald', name: 'Emerald', grade_level: 'Grade 7', strand: 'JHS' },
@@ -170,9 +169,6 @@ import { supabase } from '../../supabase/config.js';
         { id: 'sec_g12_humss_a', name: 'HUMSS A - Aristotle', grade_level: 'Grade 12', strand: 'HUMSS' },
         { id: 'sec_g12_tvl_ict', name: 'TVL A - Lovelace', grade_level: 'Grade 12', strand: 'TVL-ICT' }
     ];
-
-    // Default Students
-    const DEFAULT_STUDENTS = [];
 
     // ============================================
     // AUTH & SESSION
@@ -279,11 +275,10 @@ import { supabase } from '../../supabase/config.js';
             const now = audioCtx.currentTime;
 
             if (type === 'success') {
-                // Ding-Dong Chime
                 const osc1 = audioCtx.createOscillator();
                 const gain1 = audioCtx.createGain();
                 osc1.type = 'sine';
-                osc1.frequency.setValueAtTime(880, now); // A5
+                osc1.frequency.setValueAtTime(880, now);
                 gain1.gain.setValueAtTime(0.3, now);
                 gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
                 osc1.connect(gain1);
@@ -294,7 +289,7 @@ import { supabase } from '../../supabase/config.js';
                 const osc2 = audioCtx.createOscillator();
                 const gain2 = audioCtx.createGain();
                 osc2.type = 'sine';
-                osc2.frequency.setValueAtTime(1318.51, now + 0.12); // E6
+                osc2.frequency.setValueAtTime(1318.51, now + 0.12);
                 gain2.gain.setValueAtTime(0.4, now + 0.12);
                 gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
                 osc2.connect(gain2);
@@ -303,11 +298,10 @@ import { supabase } from '../../supabase/config.js';
                 osc2.stop(now + 0.55);
 
             } else if (type === 'duplicate') {
-                // Soft double beep
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
                 osc.type = 'triangle';
-                osc.frequency.setValueAtTime(587.33, now); // D5
+                osc.frequency.setValueAtTime(587.33, now);
                 osc.frequency.setValueAtTime(587.33, now + 0.12);
                 gain.gain.setValueAtTime(0.2, now);
                 gain.gain.setValueAtTime(0, now + 0.08);
@@ -319,7 +313,6 @@ import { supabase } from '../../supabase/config.js';
                 osc.stop(now + 0.25);
 
             } else if (type === 'error') {
-                // Low warning buzz
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
                 osc.type = 'sawtooth';
@@ -357,7 +350,6 @@ import { supabase } from '../../supabase/config.js';
     // ============================================
     async function loadData() {
         try {
-            // 1. Fetch Sections from Supabase
             let loadedSections = [];
             const { data: secData, error: secErr } = await supabase
                 .from('sections')
@@ -377,7 +369,6 @@ import { supabase } from '../../supabase/config.js';
             allSections = loadedSections;
             populateSectionDropdown();
 
-            // 2. Fetch Students from Supabase
             let loadedStudents = [];
             const { data: stuData, error: stuErr } = await supabase
                 .from('students')
@@ -412,10 +403,7 @@ import { supabase } from '../../supabase/config.js';
             }
             allStudents = loadedStudents;
 
-            // 3. Load previous scans for today from LocalStorage
             loadTodayScansFromCache();
-
-            // 4. Load full attendance history from local and cloud sources
             loadAllAttendanceHistory();
 
         } catch (err) {
@@ -464,7 +452,7 @@ import { supabase } from '../../supabase/config.js';
     }
 
     // ============================================
-    // QR CODE PAYLOAD PARSER
+    // QR CODE PAYLOAD PARSER (Extracts raw ID / LRN)
     // ============================================
     function parseStudentPayload(rawText) {
         if (!rawText || typeof rawText !== 'string') return null;
@@ -472,27 +460,17 @@ import { supabase } from '../../supabase/config.js';
 
         let lrn = '';
         let idNumber = '';
-        let fullName = '';
-        let gradeLevel = '';
-        let section = '';
-        let strand = '';
-        let parentName = '';
-        let parentContact = '';
 
-        // Case 1: URL format (e.g. https://.../verify_id.html?lrn=109283746510&id=2024-ST-00010&name=...)
+        // URL format
         if (text.includes('?') && (text.includes('lrn=') || text.includes('id='))) {
             try {
                 const queryString = text.split('?')[1] || '';
                 const params = new URLSearchParams(queryString);
                 lrn = params.get('lrn') || '';
                 idNumber = params.get('id') || '';
-                fullName = params.get('name') || '';
-                gradeLevel = params.get('level') || '';
-                parentName = params.get('guardian') || '';
-                parentContact = params.get('contact') || '';
             } catch (e) {}
         }
-        // Case 2: Pipe delimited format (e.g. PLSNHS-STUDENT|LRN:109283746510|ID:2024-ST-00010|NAME:...)
+        // Pipe delimited format
         else if (text.includes('|') && (text.includes('LRN:') || text.includes('ID:'))) {
             const parts = text.split('|');
             parts.forEach(p => {
@@ -501,25 +479,17 @@ import { supabase } from '../../supabase/config.js';
                 const key = (k || '').trim().toUpperCase();
                 if (key === 'LRN') lrn = v;
                 else if (key === 'ID') idNumber = v;
-                else if (key === 'NAME') fullName = v;
-                else if (key === 'LEVEL') gradeLevel = v;
-                else if (key === 'CONTACT') parentContact = v;
-                else if (key === 'GUARDIAN' || key === 'PARENT') parentName = v;
             });
         }
-        // Case 3: JSON format
+        // JSON format
         else if (text.startsWith('{') && text.endsWith('}')) {
             try {
                 const obj = JSON.parse(text);
                 lrn = obj.lrn || obj.student_lrn || '';
                 idNumber = obj.id || obj.id_number || '';
-                fullName = obj.name || obj.full_name || '';
-                gradeLevel = obj.level || obj.grade_level || '';
-                parentName = obj.guardian || obj.parent_name || '';
-                parentContact = obj.contact || obj.parent_contact || '';
             } catch (e) {}
         }
-        // Case 4: Raw LRN or ID string (e.g. 109283746510 or 2024-ST-00010)
+        // Raw LRN or ID string
         else {
             if (/^\d{12}$/.test(text)) {
                 lrn = text;
@@ -530,57 +500,82 @@ import { supabase } from '../../supabase/config.js';
             }
         }
 
-        // Match with known student database
-        let matchedStudent = null;
-        if (lrn) {
-            matchedStudent = allStudents.find(s => s.lrn && (s.lrn === lrn || s.lrn.includes(lrn)));
-        }
-        if (!matchedStudent && idNumber) {
-            matchedStudent = allStudents.find(s => s.id_number && (s.id_number === idNumber || s.id_number.includes(idNumber)));
-        }
-        if (!matchedStudent && fullName && fullName !== 'STUDENT NAME') {
-            matchedStudent = allStudents.find(s => s.full_name.toLowerCase() === fullName.toLowerCase());
-        }
-
-        if (matchedStudent) {
-            return {
-                ...matchedStudent,
-                matched: true
-            };
-        }
-
-        // If not found in database, construct synthetic student record from QR data
-        if (lrn || fullName) {
-            return {
-                id: 'qr_' + (lrn || Date.now()),
-                full_name: fullName || 'Scanned Student',
-                lrn: lrn || '141525100086',
-                id_number: idNumber || '2024-ST-00000',
-                grade_level: gradeLevel || 'Grade 11',
-                section: section || 'STEM A',
-                strand: strand || (gradeLevel.includes('11') || gradeLevel.includes('12') ? 'STEM' : 'JHS'),
-                parent_name: parentName || 'PARENT / GUARDIAN',
-                parent_contact: parentContact || '09XXXXXXXXX',
-                photo_url: '',
-                matched: false
-            };
-        }
-
-        return null;
+        // Return extracted identifiers to be looked up in DB
+        return { lrn: lrn || null, idNumber: idNumber || null, rawText: text };
     }
 
     // ============================================
-    // PROCESS ATTENDANCE SCAN EVENT
+    // PROCESS ATTENDANCE SCAN EVENT (Now Fetches DB)
     // ============================================
-    async function handleStudentScan(student) {
-        if (!student) return;
+    async function handleStudentScan(parsedData) {
+        if (!parsedData) return;
 
+        // Show loading briefly if needed (optional)
+        
+        let student = null;
+
+        // 1. Fetch latest info from Supabase students table
+        try {
+            let query = supabase.from('students').select('*');
+            
+            if (parsedData.idNumber) {
+                query = query.or(`id_number.eq.${parsedData.idNumber},lrn.eq.${parsedData.idNumber}`);
+            } else if (parsedData.lrn) {
+                query = query.eq('lrn', parsedData.lrn);
+            } else if (parsedData.rawText) {
+                // Fallback raw text search
+                query = query.or(`lrn.eq.${parsedData.rawText},id_number.eq.${parsedData.rawText}`);
+            }
+
+            const { data: dbStudent, error } = await query.limit(1).maybeSingle();
+
+            if (!error && dbStudent) {
+                const secObj = allSections.find(sec => sec.id === dbStudent.section_id || sec.name === dbStudent.section);
+                student = {
+                    id: dbStudent.id,
+                    full_name: dbStudent.full_name || `${dbStudent.first_name || ''} ${dbStudent.last_name || ''}`.trim() || 'Student',
+                    email: (dbStudent.email || '').toLowerCase().trim(),
+                    lrn: dbStudent.lrn || dbStudent.student_id || '—',
+                    id_number: dbStudent.id_number || dbStudent.lrn || '—',
+                    grade_level: dbStudent.grade_level || (secObj ? secObj.grade_level : 'Grade 7'),
+                    section: dbStudent.section || (secObj ? secObj.name : 'General'),
+                    strand: dbStudent.strand || (secObj ? secObj.strand : 'JHS'),
+                    parent_name: dbStudent.parent_name || dbStudent.guardian_name || 'PARENT / GUARDIAN',
+                    parent_contact: dbStudent.parent_contact || dbStudent.guardian_contact || '09XXXXXXXXX',
+                    photo_url: dbStudent.photo_url || dbStudent.avatar_url || dbStudent.two_by_two_picture_url || ''
+                };
+            }
+        } catch (fetchErr) {
+            console.warn('Supabase fetch error, falling back to local cache:', fetchErr);
+        }
+
+        // 2. Fallback to local cache if DB fetch fails
+        if (!student) {
+            if (parsedData.idNumber) {
+                student = allStudents.find(s => s.id_number === parsedData.idNumber || s.id_number.includes(parsedData.idNumber));
+            }
+            if (!student && parsedData.lrn) {
+                student = allStudents.find(s => s.lrn === parsedData.lrn || s.lrn.includes(parsedData.lrn));
+            }
+            if (!student && parsedData.rawText) {
+                student = allStudents.find(s => s.full_name.toLowerCase() === parsedData.rawText.toLowerCase());
+            }
+        }
+
+        // 3. Final fallback if not found anywhere
+        if (!student) {
+            playSound('error');
+            showAlert(`⚠️ Student not found in database. Scanned: "${parsedData.rawText}"`, 'error');
+            return;
+        }
+
+        // --- PROCEED WITH ATTENDANCE LOGIC ---
         const now = new Date();
         const timeRecorded = getCurrentTimeString();
         const todayStr = getTodayDateString();
         const sessionMode = sessionModeSelect ? sessionModeSelect.value : 'time_in';
 
-        // Check if section filter is active and student doesn't match
+        // Check section filter
         const filterSection = sectionFilterSelect ? sectionFilterSelect.value : '';
         if (filterSection && student.section !== filterSection && !student.section.includes(filterSection)) {
             playSound('error');
@@ -589,11 +584,9 @@ import { supabase } from '../../supabase/config.js';
             return;
         }
 
-        // Check for duplicates in current session
+        // Check duplicates
         const existingScan = todayScans.find(s => (s.studentId === student.id || s.lrn === student.lrn) && s.mode === sessionMode);
-
         if (existingScan) {
-            // Already scanned!
             playSound('duplicate');
             renderStudentHud(student, 'DUPLICATE', existingScan.time);
             speakAnnouncement(`${student.full_name}, already recorded`);
@@ -602,7 +595,7 @@ import { supabase } from '../../supabase/config.js';
             return;
         }
 
-        // Evaluate Status: Present vs Late based on Marking Policy
+        // Evaluate Status
         let status = 'Present';
         const markingPolicy = scanStatusMode ? scanStatusMode.value : 'present';
         if (sessionMode === 'time_in') {
@@ -611,18 +604,12 @@ import { supabase } from '../../supabase/config.js';
             } else if (markingPolicy === 'auto') {
                 const cutoffVal = lateCutoffTime ? lateCutoffTime.value : '07:30';
                 const [cutoffHours, cutoffMinutes] = cutoffVal.split(':').map(Number);
-                const currentHours = now.getHours();
-                const currentMinutes = now.getMinutes();
-
-                if (currentHours > cutoffHours || (currentHours === cutoffHours && currentMinutes > cutoffMinutes)) {
+                if (now.getHours() > cutoffHours || (now.getHours() === cutoffHours && now.getMinutes() > cutoffMinutes)) {
                     status = 'Late';
                 }
-            } else {
-                status = 'Present';
             }
         }
 
-        // Create scan record
         const scanRecord = {
             id: 'scan_' + Date.now(),
             studentId: student.id,
@@ -642,45 +629,22 @@ import { supabase } from '../../supabase/config.js';
             mode: sessionMode
         };
 
-        // Add to top of today's scans list
         todayScans.unshift(scanRecord);
         saveTodayScansToCache();
 
-        // Also add / update in full attendance history
-        const histItem = {
-            id: scanRecord.id,
-            studentId: scanRecord.studentId,
-            name: scanRecord.name,
-            email: scanRecord.email || '',
-            lrn: scanRecord.lrn,
-            idNo: scanRecord.idNo,
-            grade: scanRecord.grade,
-            section: scanRecord.section,
-            strand: scanRecord.strand,
-            parentName: scanRecord.parentName,
-            parentContact: scanRecord.parentContact,
-            photoUrl: scanRecord.photoUrl,
-            time: scanRecord.time,
-            date: scanRecord.date,
-            status: scanRecord.status,
-            mode: scanRecord.mode,
-            remarks: scanRecord.status === 'Late' ? 'Late arrival recorded via QR Scanner' : 'On-time QR scan',
-            recordedBy: displayName || 'Teacher'
-        };
+        const histItem = { ...scanRecord, remarks: status === 'Late' ? 'Late arrival recorded via QR Scanner' : 'On-time QR scan', recordedBy: displayName };
         allHistoryRecords = allHistoryRecords.filter(r => !( (r.studentId === scanRecord.studentId || (r.lrn && r.lrn === scanRecord.lrn)) && r.date === scanRecord.date && r.mode === scanRecord.mode ));
         allHistoryRecords.unshift(histItem);
 
-        // Update tab badges
         if (badgeTodayCount) badgeTodayCount.textContent = todayScans.length;
         if (badgeHistoryCount) badgeHistoryCount.textContent = allHistoryRecords.length;
 
-        // Update UI
         renderStudentHud(student, status, timeRecorded);
         renderFeedTable();
         updateKpiStats();
         applyHistoryFilters();
 
-        // Play feedback sounds
+        // Audio/Visual feedback
         if (status === 'Late') {
             playSound('success');
             speakAnnouncement(`${student.full_name}, Marked Late`);
@@ -691,15 +655,12 @@ import { supabase } from '../../supabase/config.js';
             showAlert(`✅ <strong>${student.full_name}</strong> (${student.lrn}) recorded as <strong>PRESENT</strong> at ${timeRecorded}.`, 'success');
         }
 
-        // Sync to Supabase & Notifications in background
         syncAttendanceToSupabase(scanRecord);
     }
 
-    // ============================================
-    // SYNC ATTENDANCE TO SUPABASE & NOTIFICATIONS
-    // ============================================
+    // ... (rest of the file remains exactly the same from `syncAttendanceToSupabase` down) ...
+    
     async function syncAttendanceToSupabase(record) {
-        // 1. Unified Shared Storage for instant Student & Parent portal availability
         const unifiedRecord = {
             id: record.id || ('scan_' + Date.now()),
             student_id: record.studentId,
@@ -722,7 +683,6 @@ import { supabase } from '../../supabase/config.js';
         };
 
         try {
-            // A. Update hes_attendance_records array
             const rawCentral = localStorage.getItem('hes_attendance_records');
             let centralRecords = rawCentral ? JSON.parse(rawCentral) : [];
             centralRecords = centralRecords.filter(r => 
@@ -731,7 +691,6 @@ import { supabase } from '../../supabase/config.js';
             centralRecords.unshift(unifiedRecord);
             localStorage.setItem('hes_attendance_records', JSON.stringify(centralRecords.slice(0, 500)));
 
-            // B. Update hes_student_attendance array
             const rawHesStu = localStorage.getItem('hes_student_attendance');
             let hesStuRecords = rawHesStu ? JSON.parse(rawHesStu) : [];
             hesStuRecords = hesStuRecords.filter(r => 
@@ -740,7 +699,6 @@ import { supabase } from '../../supabase/config.js';
             hesStuRecords.unshift(unifiedRecord);
             localStorage.setItem('hes_student_attendance', JSON.stringify(hesStuRecords.slice(0, 500)));
 
-            // C. Direct lookups for student & parent
             if (record.studentId) {
                 localStorage.setItem(`hes_student_attendance_${record.studentId}`, JSON.stringify(unifiedRecord));
             }
@@ -754,7 +712,6 @@ import { supabase } from '../../supabase/config.js';
                 localStorage.setItem(`hes_student_attendance_${record.email.toLowerCase().trim()}`, JSON.stringify(unifiedRecord));
             }
 
-            // Cross-link with any other student profiles having same email or name
             allStudents.forEach(other => {
                 const sameEmail = record.email && other.email && record.email.toLowerCase() === other.email.toLowerCase();
                 const sameName = record.name && other.full_name && record.name.toLowerCase().trim() === other.full_name.toLowerCase().trim();
@@ -764,7 +721,6 @@ import { supabase } from '../../supabase/config.js';
                 }
             });
 
-            // D. Date roster cache
             const rosterKey = `hes_student_attendance_${record.date}`;
             const rosterCache = localStorage.getItem(rosterKey);
             let rosterMap = rosterCache ? JSON.parse(rosterCache) : {};
@@ -780,7 +736,6 @@ import { supabase } from '../../supabase/config.js';
             }
             localStorage.setItem(rosterKey, JSON.stringify(rosterMap));
 
-            // E. Broadcast storage event so open student/parent tabs react dynamically
             localStorage.setItem('hes_latest_attendance_event', JSON.stringify({
                 studentId: record.studentId,
                 lrn: record.lrn,
@@ -795,12 +750,10 @@ import { supabase } from '../../supabase/config.js';
             console.warn('Attendance storage cache notice:', storageErr);
         }
 
-        // 2. Notifications to Student
         const notifTitle = `Attendance: ${record.status} recorded`;
         const notifMsg = `Your attendance was recorded as "${record.status}" on ${record.date} at ${record.time} by Teacher ${displayName}.`;
 
         try {
-            // Local notification cache
             const stuNotifsRaw = localStorage.getItem(`hes_notifications_${record.studentId}`);
             let stuNotifs = stuNotifsRaw ? JSON.parse(stuNotifsRaw) : [];
             stuNotifs.unshift({
@@ -814,7 +767,6 @@ import { supabase } from '../../supabase/config.js';
             localStorage.setItem(`hes_notifications_${record.studentId}`, JSON.stringify(stuNotifs.slice(0, 30)));
         } catch (e) {}
 
-        // Query student's user_id in Supabase users table to insert database notification
         try {
             let targetUserId = record.studentId;
             const { data: uData } = await supabase
@@ -843,7 +795,6 @@ import { supabase } from '../../supabase/config.js';
             console.warn('Database notification sync notice:', notifErr);
         }
 
-        // 3. Upsert clean attendance record to Supabase attendance table
         try {
             const cleanStatus = (record.status || 'present').toLowerCase();
             const attendanceRow = {
@@ -905,7 +856,6 @@ import { supabase } from '../../supabase/config.js';
             hudGuardianInfo.style.display = 'none';
         }
 
-        // Smooth scroll to HUD if needed
         studentHudCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
@@ -988,7 +938,6 @@ import { supabase } from '../../supabase/config.js';
     async function loadAllAttendanceHistory() {
         const historyMap = new Map();
 
-        // 1. Ingest today's live scans from active memory
         todayScans.forEach(s => {
             const key = `${s.studentId || s.lrn}_${s.date}_${s.mode || 'time_in'}`;
             historyMap.set(key, {
@@ -1012,7 +961,6 @@ import { supabase } from '../../supabase/config.js';
             });
         });
 
-        // 2. Ingest from localStorage hes_qr_scans_* (all scanned dates)
         try {
             for (let i = 0; i < localStorage.length; i++) {
                 const k = localStorage.key(i);
@@ -1054,7 +1002,6 @@ import { supabase } from '../../supabase/config.js';
             console.warn('History read from hes_qr_scans notice:', e);
         }
 
-        // 3. Ingest from localStorage hes_attendance_records (central portal unified store)
         try {
             const rawCentral = localStorage.getItem('hes_attendance_records');
             if (rawCentral) {
@@ -1102,7 +1049,6 @@ import { supabase } from '../../supabase/config.js';
             console.warn('History read from hes_attendance_records notice:', e);
         }
 
-        // 4. Ingest from Supabase cloud database
         try {
             const { data: dbAtt, error: dbErr } = await supabase
                 .from('attendance')
@@ -1148,7 +1094,6 @@ import { supabase } from '../../supabase/config.js';
             console.warn('Cloud attendance fetch notice:', dbEx);
         }
 
-        // 5. Convert to array and sort descending (newest first)
         allHistoryRecords = Array.from(historyMap.values()).sort((a, b) => {
             if (a.date !== b.date) {
                 return (b.date || '').localeCompare(a.date || '');
@@ -1156,14 +1101,10 @@ import { supabase } from '../../supabase/config.js';
             return (b.time || '').localeCompare(a.time || '');
         });
 
-        // 6. Update badge counters
         if (badgeTodayCount) badgeTodayCount.textContent = todayScans.length;
         if (badgeHistoryCount) badgeHistoryCount.textContent = allHistoryRecords.length;
 
-        // 7. Dynamically populate historySectionFilter options
         populateHistorySectionFilter();
-
-        // 8. Apply active filters & render table
         applyHistoryFilters();
     }
 
@@ -1203,18 +1144,15 @@ import { supabase } from '../../supabase/config.js';
 
         const todayStr = getTodayDateString();
 
-        // Calculate yesterday string
         const yesterdayObj = new Date();
         yesterdayObj.setDate(yesterdayObj.getDate() - 1);
         const yesterdayStr = `${yesterdayObj.getFullYear()}-${String(yesterdayObj.getMonth() + 1).padStart(2, '0')}-${String(yesterdayObj.getDate()).padStart(2, '0')}`;
 
-        // Calculate 7 days ago string
         const weekAgoObj = new Date();
         weekAgoObj.setDate(weekAgoObj.getDate() - 7);
         const weekAgoStr = `${weekAgoObj.getFullYear()}-${String(weekAgoObj.getMonth() + 1).padStart(2, '0')}-${String(weekAgoObj.getDate()).padStart(2, '0')}`;
 
         filteredHistoryRecords = allHistoryRecords.filter(r => {
-            // 1. Date filter
             if (datePickerVal) {
                 if (r.date !== datePickerVal) return false;
             } else if (activeHistoryRange === 'today') {
@@ -1225,24 +1163,20 @@ import { supabase } from '../../supabase/config.js';
                 if (!r.date || r.date < weekAgoStr) return false;
             }
 
-            // 2. Section filter
             if (sectionVal) {
                 const sec = (r.section || '').toLowerCase();
                 if (sec !== sectionVal && !sec.includes(sectionVal)) return false;
             }
 
-            // 3. Status filter
             if (statusVal) {
                 const stat = (r.status || '').toLowerCase();
                 if (stat !== statusVal) return false;
             }
 
-            // 4. Session mode filter
             if (modeVal) {
                 if (r.mode !== modeVal) return false;
             }
 
-            // 5. Search query
             if (query) {
                 const matchName = (r.name || '').toLowerCase().includes(query);
                 const matchLrn = (r.lrn || '').toLowerCase().includes(query);
@@ -1255,7 +1189,6 @@ import { supabase } from '../../supabase/config.js';
             return true;
         });
 
-        // Update statistics summary
         const total = filteredHistoryRecords.length;
         const present = filteredHistoryRecords.filter(r => (r.status || '').toLowerCase() === 'present').length;
         const late = filteredHistoryRecords.filter(r => (r.status || '').toLowerCase() === 'late').length;
@@ -1338,7 +1271,6 @@ import { supabase } from '../../supabase/config.js';
     window.viewRecordDetails = function (recordId) {
         if (!recordDetailModal) return;
 
-        // Find record in history or today's scans
         let rec = allHistoryRecords.find(r => r.id === recordId);
         if (!rec) {
             const todayItem = todayScans.find(s => s.id === recordId);
@@ -1401,7 +1333,6 @@ import { supabase } from '../../supabase/config.js';
         if (modalGuardianName) modalGuardianName.textContent = rec.parentName || 'PARENT / GUARDIAN';
         if (modalGuardianPhone) modalGuardianPhone.textContent = rec.parentContact || 'No contact provided';
 
-        // Avatar
         const initial = (rec.name || 'S').charAt(0).toUpperCase();
         if (modalAvatarInitial) modalAvatarInitial.textContent = initial;
 
@@ -1414,7 +1345,6 @@ import { supabase } from '../../supabase/config.js';
             if (modalAvatarInitial) modalAvatarInitial.style.display = 'flex';
         }
 
-        // Status toggle action inside modal
         const btnToggleRecordStatus = document.getElementById('btnToggleRecordStatus');
         const toggleStatusBtnText = document.getElementById('toggleStatusBtnText');
         if (btnToggleRecordStatus && toggleStatusBtnText) {
@@ -1426,12 +1356,10 @@ import { supabase } from '../../supabase/config.js';
             };
         }
 
-        // Show modal with animation
         recordDetailModal.style.display = 'flex';
         recordDetailModal.classList.add('active');
         document.body.style.overflow = 'hidden';
 
-        // Also if on live tab, sync HUD for consistency
         renderStudentHud({
             id: rec.studentId,
             full_name: rec.name,
@@ -1472,7 +1400,6 @@ import { supabase } from '../../supabase/config.js';
         updateKpiStats();
         syncAttendanceToSupabase(rec);
 
-        // Update modal display immediately
         window.viewRecordDetails(recordId);
         showAlert(`Updated status of <strong>${rec.name || 'student'}</strong> to <strong>${newStatus.toUpperCase()}</strong>.`, 'success');
     }
@@ -1526,7 +1453,7 @@ import { supabase } from '../../supabase/config.js';
             return;
         }
 
-        initAudio(); // Prepare web audio on user interaction
+        initAudio(); 
 
         try {
             if (videoStream) {
@@ -1557,7 +1484,6 @@ import { supabase } from '../../supabase/config.js';
                 if (scannerStatusText) scannerStatusText.textContent = 'Scanning Active...';
             }
 
-            // Check if torch is supported
             const track = videoStream.getVideoTracks()[0];
             const capabilities = track.getCapabilities ? track.getCapabilities() : {};
             if (capabilities.torch && btnToggleTorch) {
@@ -1566,10 +1492,7 @@ import { supabase } from '../../supabase/config.js';
                 btnToggleTorch.style.display = 'none';
             }
 
-            // Update devices dropdown with exact labels
             enumerateCameraDevices();
-
-            // Start optical scanning loop
             requestAnimationFrame(scanLoop);
 
         } catch (err) {
@@ -1619,7 +1542,6 @@ import { supabase } from '../../supabase/config.js';
 
             let decodedText = null;
 
-            // Strategy 1: Native BarcodeDetector if supported (fastest hardware acceleration)
             if ('BarcodeDetector' in window) {
                 try {
                     const detector = new window.BarcodeDetector({ formats: ['qr_code'] });
@@ -1630,7 +1552,6 @@ import { supabase } from '../../supabase/config.js';
                 } catch (e) {}
             }
 
-            // Strategy 2: jsQR Library fallback
             if (!decodedText && typeof jsQR !== 'undefined') {
                 try {
                     const imageData = ctx.getImageData(0, 0, width, height);
@@ -1643,16 +1564,15 @@ import { supabase } from '../../supabase/config.js';
                 } catch (e) {}
             }
 
-            // If QR code found
             if (decodedText) {
                 const now = Date.now();
                 if (decodedText !== lastScannedPayload || now - lastScanTime > SCAN_COOLDOWN_MS) {
                     lastScanTime = now;
                     lastScannedPayload = decodedText;
 
-                    const student = parseStudentPayload(decodedText);
-                    if (student) {
-                        handleStudentScan(student);
+                    const parsedData = parseStudentPayload(decodedText);
+                    if (parsedData) {
+                        handleStudentScan(parsedData);
                     } else {
                         playSound('error');
                         showAlert(`⚠️ Scanned QR code data is unrecognized or invalid format: "${decodedText}"`, 'warning');
@@ -1664,7 +1584,6 @@ import { supabase } from '../../supabase/config.js';
         animationFrameId = requestAnimationFrame(scanLoop);
     }
 
-    // Toggle Torch / Flashlight
     let isTorchOn = false;
     async function toggleTorch() {
         if (!videoStream) return;
@@ -1682,7 +1601,6 @@ import { supabase } from '../../supabase/config.js';
         }
     }
 
-    // Flip Front / Rear Camera
     function flipCamera() {
         currentFacingMode = (currentFacingMode === 'environment') ? 'user' : 'environment';
         selectedDeviceId = null;
@@ -1691,9 +1609,6 @@ import { supabase } from '../../supabase/config.js';
         }
     }
 
-    // ============================================
-    // UPLOAD IMAGE SCANNER
-    // ============================================
     function handleImageUpload(e) {
         const file = e.target.files[0];
         if (!file) return;
@@ -1718,9 +1633,9 @@ import { supabase } from '../../supabase/config.js';
                 }
 
                 if (decoded) {
-                    const student = parseStudentPayload(decoded);
-                    if (student) {
-                        handleStudentScan(student);
+                    const parsedData = parseStudentPayload(decoded);
+                    if (parsedData) {
+                        handleStudentScan(parsedData);
                     } else {
                         showAlert('⚠️ QR code detected but could not identify a valid student ID payload.', 'warning');
                     }
@@ -1733,14 +1648,10 @@ import { supabase } from '../../supabase/config.js';
         reader.readAsDataURL(file);
     }
 
-    // ============================================
-    // HARDWARE BARCODE GUN / KEYBOARD LISTENER
-    // ============================================
     let barcodeBuffer = '';
     let barcodeTimeout = null;
 
     window.addEventListener('keydown', (e) => {
-        // If typing inside an input other than hardwareScanInput, ignore
         if (document.activeElement && document.activeElement.tagName === 'INPUT' && document.activeElement !== hardwareScanInput) {
             return;
         }
@@ -1749,9 +1660,9 @@ import { supabase } from '../../supabase/config.js';
             if (barcodeBuffer.trim().length > 3) {
                 const payload = barcodeBuffer.trim();
                 barcodeBuffer = '';
-                const student = parseStudentPayload(payload);
-                if (student) {
-                    handleStudentScan(student);
+                const parsedData = parseStudentPayload(payload);
+                if (parsedData) {
+                    handleStudentScan(parsedData);
                 }
             }
         } else if (e.key.length === 1) {
@@ -1763,9 +1674,6 @@ import { supabase } from '../../supabase/config.js';
         }
     });
 
-    // ============================================
-    // EVENT LISTENERS
-    // ============================================
     if (btnStartCamera) btnStartCamera.addEventListener('click', startCamera);
     if (btnToggleScanner) {
         btnToggleScanner.addEventListener('click', () => {
@@ -1790,9 +1698,9 @@ import { supabase } from '../../supabase/config.js';
             const raw = hardwareScanInput.value.trim();
             if (!raw) return;
             hardwareScanInput.value = '';
-            const student = parseStudentPayload(raw);
-            if (student) {
-                handleStudentScan(student);
+            const parsedData = parseStudentPayload(raw);
+            if (parsedData) {
+                handleStudentScan(parsedData);
             } else {
                 showAlert(`⚠️ Could not find student matching "${raw}".`, 'warning');
             }
@@ -1808,7 +1716,6 @@ import { supabase } from '../../supabase/config.js';
         feedSearchInput.addEventListener('input', renderFeedTable);
     }
 
-    // CSV Export
     if (btnExportCsv) {
         btnExportCsv.addEventListener('click', () => {
             if (todayScans.length === 0) {
@@ -1833,7 +1740,6 @@ import { supabase } from '../../supabase/config.js';
         });
     }
 
-    // History Tab Switching
     if (tabLiveFeed && tabAttendanceHistory && liveFeedView && historyFeedView) {
         tabLiveFeed.addEventListener('click', () => {
             tabLiveFeed.classList.add('active');
@@ -1851,7 +1757,6 @@ import { supabase } from '../../supabase/config.js';
         });
     }
 
-    // Quick Date Filter Chips
     if (historyChips && historyChips.length > 0) {
         historyChips.forEach(chip => {
             chip.addEventListener('click', () => {
@@ -1859,7 +1764,6 @@ import { supabase } from '../../supabase/config.js';
                 chip.classList.add('active');
                 activeHistoryRange = chip.getAttribute('data-range') || 'all';
 
-                // If user selected a chip, clear specific date input
                 if (historyDateInput) historyDateInput.value = '';
 
                 applyHistoryFilters();
@@ -1867,7 +1771,6 @@ import { supabase } from '../../supabase/config.js';
         });
     }
 
-    // Specific Date Input
     if (historyDateInput) {
         historyDateInput.addEventListener('change', () => {
             if (historyDateInput.value) {
@@ -1882,13 +1785,11 @@ import { supabase } from '../../supabase/config.js';
         });
     }
 
-    // History Filters & Search
     if (historySectionFilter) historySectionFilter.addEventListener('change', applyHistoryFilters);
     if (historyStatusFilter) historyStatusFilter.addEventListener('change', applyHistoryFilters);
     if (historyModeFilter) historyModeFilter.addEventListener('change', applyHistoryFilters);
     if (historySearchInput) historySearchInput.addEventListener('input', applyHistoryFilters);
 
-    // Refresh History Button
     if (btnRefreshHistory) {
         btnRefreshHistory.addEventListener('click', async () => {
             btnRefreshHistory.disabled = true;
@@ -1902,7 +1803,6 @@ import { supabase } from '../../supabase/config.js';
         });
     }
 
-    // History CSV Export
     function exportHistoryToCSV() {
         if (!filteredHistoryRecords || filteredHistoryRecords.length === 0) {
             showAlert('ℹ️ No history records match the current filters to export.', 'info');
@@ -1930,7 +1830,6 @@ import { supabase } from '../../supabase/config.js';
         btnExportHistoryCsv.addEventListener('click', exportHistoryToCSV);
     }
 
-    // Modal Close Listeners
     if (btnCloseDetailModal) btnCloseDetailModal.addEventListener('click', closeRecordDetailModal);
     if (btnModalClose) btnModalClose.addEventListener('click', closeRecordDetailModal);
     if (recordDetailModal) {
@@ -1946,7 +1845,6 @@ import { supabase } from '../../supabase/config.js';
         }
     });
 
-    // Cross-tab Synchronization Event Listener
     window.addEventListener('storage', (e) => {
         if (e.key === 'hes_latest_attendance_event' || e.key === 'hes_attendance_records') {
             loadTodayScansFromCache();
@@ -1965,7 +1863,6 @@ import { supabase } from '../../supabase/config.js';
             btnSyncDatabase.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Syncing...';
 
             try {
-                // Ensure central records store is also populated
                 const rawCentral = localStorage.getItem('hes_attendance_records');
                 let centralRecords = rawCentral ? JSON.parse(rawCentral) : [];
                 todayScans.forEach(r => {
@@ -2017,12 +1914,8 @@ import { supabase } from '../../supabase/config.js';
         });
     }
 
-    // Clean up camera on page exit
     window.addEventListener('beforeunload', stopCamera);
 
-    // ============================================
-    // INITIALIZATION
-    // ============================================
     loadData();
     enumerateCameraDevices();
 

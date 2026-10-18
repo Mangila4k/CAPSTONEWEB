@@ -24,6 +24,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     const editStrandGroup = document.getElementById('editStrandGroup');
     const addStrandSelect = document.getElementById('addStrand');
     const editStrandSelect = document.getElementById('editStrand');
+    const addAdviserSelect = document.getElementById('addAdviserName');
+    const editAdviserSelect = document.getElementById('editAdviserName');
 
     // State
     let sections = [];
@@ -126,8 +128,49 @@ document.addEventListener('DOMContentLoaded', async function() {
                 };
             });
 
+            // Populate dropdowns
+            populateAdviserDropdown(addAdviserSelect);
+            populateAdviserDropdown(editAdviserSelect);
+
         } catch (err) {
             console.error('Error loading teachers:', err);
+        }
+    }
+
+    // Function to populate Adviser dropdowns and disable assigned teachers
+    function populateAdviserDropdown(selectElement) {
+        if (!selectElement) return;
+        
+        // Keep the default empty option
+        const currentVal = selectElement.value;
+        selectElement.innerHTML = '<option value="">Select a Teacher</option>';
+        
+        teachers.forEach(t => {
+            // Check if teacher is already assigned to any section
+            const isAssigned = sections.some(s => 
+                s.adviser_id === t.id || 
+                s.adviser_id === t.user_id || 
+                (s.adviser_name && s.adviser_name.trim().toLowerCase() === t.name.toLowerCase())
+            );
+
+            const opt = document.createElement('option');
+            opt.value = t.name; // Using name to match existing code structure
+            opt.textContent = t.name + (isAssigned ? ' (Already Assigned)' : '');
+            
+            // If they are assigned, disable them so they can't be selected again
+            if (isAssigned) {
+                opt.disabled = true;
+                opt.style.color = '#94a3b8'; // Gray out text
+            }
+            
+            selectElement.appendChild(opt);
+        });
+
+        // Restore previous value if it exists and isn't disabled
+        if (currentVal) {
+            const options = Array.from(selectElement.options);
+            const match = options.find(o => o.value === currentVal && !o.disabled);
+            if (match) selectElement.value = currentVal;
         }
     }
 
@@ -177,6 +220,11 @@ document.addEventListener('DOMContentLoaded', async function() {
             updateStats();
             renderGradeSummary();
             renderTable();
+            
+            // Re-populate dropdowns now that sections are loaded (to disable assigned teachers)
+            populateAdviserDropdown(addAdviserSelect);
+            populateAdviserDropdown(editAdviserSelect);
+
         } catch (err) {
             console.error('Error loading sections:', err);
             showAlert('Failed to load sections from database: ' + err.message, 'error');
@@ -329,7 +377,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             'Grade 12': { sub: 'Senior High School', type: 'shs', icon: 'fa-award', colorClass: 'grade-12' }
         };
 
-        // Determine all unique grade levels present in filtered list in ascending numerical order
         const uniqueGradeKeys = [];
         gradeLevels.forEach(g => {
             const hasMatches = filtered.some(s => {
@@ -340,7 +387,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             if (hasMatches) uniqueGradeKeys.push(g);
         });
 
-        // Also check any extra grade level outside standard 7-12
         filtered.forEach(s => {
             const rawG = s.grade_level ? (s.grade_level.toString().startsWith('Grade') ? s.grade_level : `Grade ${s.grade_level}`) : 'Other';
             if (!uniqueGradeKeys.includes(rawG)) uniqueGradeKeys.push(rawG);
@@ -475,7 +521,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             tableBody.innerHTML = containerHtml;
         }
 
-        // Toggle Manage dropdown menu across all boxes
         const rootElem = sectionsContainer || tableBody;
         rootElem.querySelectorAll('.btn-manage').forEach(btn => {
             btn.addEventListener('click', function(e) {
@@ -485,7 +530,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                 const row = this.closest('tr');
                 const isOpen = dropdown.classList.contains('show');
 
-                // Close all other open dropdowns
                 document.querySelectorAll('.manage-dropdown.show').forEach(d => {
                     d.classList.remove('show');
                     d.classList.remove('dropup');
@@ -515,7 +559,13 @@ document.addEventListener('DOMContentLoaded', async function() {
         addModal.classList.add('show');
         if (document.getElementById('addSectionName')) document.getElementById('addSectionName').value = '';
         if (document.getElementById('addGradeId')) document.getElementById('addGradeId').value = '';
-        if (document.getElementById('addAdviserName')) document.getElementById('addAdviserName').value = '';
+        
+        // Reset Adviser Dropdown
+        if (addAdviserSelect) {
+            addAdviserSelect.value = '';
+            populateAdviserDropdown(addAdviserSelect); 
+        }
+
         if (document.getElementById('addStrand')) document.getElementById('addStrand').value = '';
         toggleStrandField('', addStrandGroup, addStrandSelect);
     };
@@ -539,8 +589,21 @@ document.addEventListener('DOMContentLoaded', async function() {
             document.getElementById('editStrand').value = section.strand || '';
         }
         
-        if (document.getElementById('editAdviserName')) {
-            document.getElementById('editAdviserName').value = section.adviser_name || getAdviserName(section) || '';
+        // Populate Edit Adviser Dropdown (allow current adviser to be selected)
+        if (editAdviserSelect) {
+            const currentAdviserName = section.adviser_name || getAdviserName(section) || '';
+            
+            // Temporarily remove this section from the "assigned" check so its current adviser can be selected
+            const originalSections = [...sections];
+            sections = sections.filter(s => s.id !== section.id);
+            
+            populateAdviserDropdown(editAdviserSelect);
+            
+            // Restore sections
+            sections = originalSections;
+            
+            // Set the value
+            editAdviserSelect.value = currentAdviserName;
         }
         
         editModal.classList.add('show');
@@ -564,7 +627,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         if (!section) return;
 
         try {
-            // Check if section has enrolled students
             const { count: studentCount, error: countErr } = await supabase
                 .from('students')
                 .select('*', { count: 'exact', head: true })
@@ -602,7 +664,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
             const sectionName = document.getElementById('addSectionName').value.trim();
             const gradeId = document.getElementById('addGradeId').value;
-            const adviserName = document.getElementById('addAdviserName') ? document.getElementById('addAdviserName').value.trim() : '';
+            const adviserName = addAdviserSelect ? addAdviserSelect.value.trim() : '';
             const strandVal = (parseInt(gradeId, 10) >= 11 && addStrandSelect) ? (addStrandSelect.value || null) : null;
 
             if (!sectionName || !gradeId || !adviserName) {
@@ -652,7 +714,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             const id = document.getElementById('editSectionId').value;
             const sectionName = document.getElementById('editSectionName').value.trim();
             const gradeId = document.getElementById('editGradeId').value;
-            const adviserName = document.getElementById('editAdviserName') ? document.getElementById('editAdviserName').value.trim() : '';
+            const adviserName = editAdviserSelect ? editAdviserSelect.value.trim() : '';
             const strandVal = (parseInt(gradeId, 10) >= 11 && editStrandSelect) ? (editStrandSelect.value || null) : null;
 
             if (!id || !sectionName || !gradeId || !adviserName) {

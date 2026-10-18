@@ -197,7 +197,7 @@ import { supabase } from '../../supabase/config.js';
                 console.warn('Real grades fetch for parents error:', err);
             }
 
-            // 4. Build Academic Grades Structure for each child (AUTHENTIC DATA ONLY - NO SYNTHETIC GRADES)
+            // 4. Build Academic Grades Structure (STRICT RULE: Only compute Final if ALL 4 quarters exist)
             dynamicGradesData = registeredChildren.map((child, cIdx) => {
                 const studentSubjects = subjectsList.slice(0, 8).map((sub, sIdx) => {
                     const gradeKey = `${child.id}_${sub.id}`;
@@ -208,10 +208,11 @@ import { supabase } from '../../supabase/config.js';
                     const q3 = realScores && realScores[3] !== undefined ? realScores[3] : null;
                     const q4 = realScores && realScores[4] !== undefined ? realScores[4] : null;
 
-                    const validQuarters = [q1, q2, q3, q4].filter(q => q !== null && !isNaN(q));
-                    const final = validQuarters.length > 0
-                        ? parseFloat((validQuarters.reduce((a, b) => a + b, 0) / validQuarters.length).toFixed(2))
-                        : null;
+                    // CHECK IF ALL 4 QUARTERS ARE PRESENT
+                    let final = null;
+                    if (q1 !== null && q2 !== null && q3 !== null && q4 !== null) {
+                        final = parseFloat(((q1 + q2 + q3 + q4) / 4).toFixed(2));
+                    }
 
                     return {
                         name: sub.name || 'Subject',
@@ -223,6 +224,7 @@ import { supabase } from '../../supabase/config.js';
                     };
                 });
 
+                // Only average subjects that have a computed Final Grade
                 const evaluatedSubjects = studentSubjects.filter(s => s.final !== null);
                 const average = evaluatedSubjects.length > 0
                     ? parseFloat((evaluatedSubjects.reduce((sum, s) => sum + s.final, 0) / evaluatedSubjects.length).toFixed(2))

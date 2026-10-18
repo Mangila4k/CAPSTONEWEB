@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Class Program - Teacher Dashboard | PLSNSH, Placido L. Señor National High School</title>
+    <title>Class Program - Teacher Dashboard | PLSNHS, Placido L. Señor National High School</title>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Google Fonts -->
@@ -34,20 +34,14 @@
                 <div class="nav-section">
                     <div class="nav-section-title">MAIN MENU</div>
                     <ul class="nav-items">
-                        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a>
-                        </li>
-                        <li><a href="announcements.html"><i class="fas fa-bullhorn"></i> <span>Announcements</span></a>
-                        </li>
-                        <li><a href="attendance-face.html"><i class="fas fa-camera"></i> <span>Face
-                                    Attendance</span></a></li>
-                        <li><a href="attendance-qr.html"><i class="fas fa-qrcode"></i> <span>Student QR
-                                    Scanner</span></a></li>
+                        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+                        <li><a href="announcements.html"><i class="fas fa-bullhorn"></i> <span>Announcements</span></a></li>
+                        <li><a href="attendance-face.html"><i class="fas fa-camera"></i> <span>Face Attendance</span></a></li>
+                        <li><a href="attendance-qr.html"><i class="fas fa-qrcode"></i> <span>Student QR Scanner</span></a></li>
                         <li><a href="classes.html"><i class="fas fa-users"></i> <span>My Classes</span></a></li>
-                        <li><a href="class-program.html" class="active"><i class="fas fa-calendar-alt"></i> <span>Class
-                                    Program</span></a></li>
+                        <li><a href="class-program.html" class="active"><i class="fas fa-calendar-alt"></i> <span>Class Program</span></a></li>
                         <li><a href="teacher-load.html"><i class="fas fa-clock"></i> <span>Teacher Load</span></a></li>
-                        <li><a href="assessments.html"><i class="fas fa-clipboard-list"></i>
-                                <span>Assessments</span></a></li>
+                        <li><a href="assessments.html"><i class="fas fa-clipboard-list"></i> <span>Assessments</span></a></li>
                         <li><a href="grades.html"><i class="fas fa-star"></i> <span>Grades</span></a></li>
                     </ul>
                 </div>
@@ -56,8 +50,7 @@
                     <div class="nav-section-title">ACCOUNT</div>
                     <ul class="nav-items">
                         <li><a href="profile.html"><i class="fas fa-user"></i> <span>Profile</span></a></li>
-                        <li><a href="../auth/login.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i>
-                                <span>Logout</span></a></li>
+                        <li><a href="../auth/login.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
                     </ul>
                 </div>
             </nav>
@@ -87,10 +80,6 @@
                         or PDF) to your sections</p>
                 </div>
                 <div class="header-actions" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                    <button type="button" class="btn-header-action" id="btnUploadStudentSchedule"
-                        style="background: #2563eb; color: #fff; border-color: #2563eb; display: inline-flex; align-items: center; gap: 8px;">
-                        <i class="fas fa-file-image"></i> Send Student Load (Image / PDF / Docs)
-                    </button>
                     <a href="teacher-load.html" class="btn-header-action"
                         style="background: #fff; color: var(--primary); text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
                         <i class="fas fa-clock"></i> View Teacher Load
@@ -147,7 +136,7 @@
                 </div>
             </div>
 
-            <!-- Student Load Management / Send Schedule to Sections -->
+            <!-- Student Load Management (Fetched from Admin) -->
             <div class="section-schedules-card" id="sectionSchedulesCard"
                 style="background: #fff; border-radius: var(--radius); padding: 18px 22px; margin-bottom: 22px; border: 1px solid var(--gray-200); box-shadow: var(--shadow-sm);">
                 <div
@@ -157,14 +146,10 @@
                             style="font-size: 1.05rem; font-weight: 700; color: var(--primary); margin: 0; display: flex; align-items: center; gap: 8px;">
                             <i class="fas fa-paper-plane" style="color: #2563eb;"></i> Student Load by Section
                         </h3>
-                        <p style="font-size: 0.82rem; color: var(--gray-500); margin: 2px 0 0 0;">Send or upload the
-                            schedule—often as an image file (PNG, JPG) or PDF—to your students so they can view their
-                            assigned student load.</p>
+                        <p style="font-size: 0.82rem; color: var(--gray-500); margin: 2px 0 0 0;">
+                            Official workloads uploaded by the Admin. Click <strong>Share</strong> to publish the schedule to your students.
+                        </p>
                     </div>
-                    <button type="button" class="btn-header-action" id="btnQuickUploadDoc"
-                        style="background: #2563eb; color: #fff; border-color: #2563eb; font-size: 0.85rem; padding: 7px 14px; display: inline-flex; align-items: center; gap: 6px;">
-                        <i class="fas fa-cloud-upload-alt"></i> Send / Upload Student Load
-                    </button>
                 </div>
                 <div id="sectionSchedulesList"
                     style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px;">
@@ -208,130 +193,12 @@
 
             <!-- View 1: Day-by-Day Schedule Cards -->
             <div id="scheduleContainer">
-                <!-- Populated dynamically by class-program.js -->
+                <!-- Populated dynamically by schedule.js -->
             </div>
 
-            <!-- Modal: Upload or Link Student Load (Image, PDF or Google Docs) -->
-            <div id="modalUploadStudentSchedule"
-                style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 1050; align-items: center; justify-content: center; padding: 20px;">
-                <div
-                    style="background: #fff; width: 100%; max-width: 600px; border-radius: 14px; box-shadow: var(--shadow-lg); overflow: hidden; display: flex; flex-direction: column; max-height: 90vh;">
-                    <div
-                        style="padding: 16px 22px; background: var(--primary); color: #fff; display: flex; justify-content: space-between; align-items: center;">
-                        <h4 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
-                            <i class="fas fa-paper-plane" style="color: #60a5fa;"></i> Send Student Load (Schedule Image
-                            / PDF)
-                        </h4>
-                        <button type="button" id="btnCloseUploadModal"
-                            style="background: transparent; border: none; color: #fff; font-size: 1.4rem; cursor: pointer; line-height: 1;">&times;</button>
-                    </div>
-
-                    <div style="padding: 22px; overflow-y: auto;">
-                        <!-- Section Selector -->
-                        <div style="margin-bottom: 18px;">
-                            <label
-                                style="display: block; font-weight: 600; font-size: 0.88rem; color: var(--primary); margin-bottom: 6px;">
-                                Target Section <span style="color: #ef4444;">*</span>
-                            </label>
-                            <select id="modalSelectSection"
-                                style="width: 100%; padding: 10px 14px; border: 1.5px solid var(--gray-300); border-radius: 8px; font-size: 0.92rem; outline: none; background: #fff;">
-                                <option value="">Loading sections...</option>
-                            </select>
-                        </div>
-
-                        <!-- Current Active Schedule Info for selected section -->
-                        <div id="modalCurrentDocBox"
-                            style="display: none; background: #f8fafc; border: 1px solid var(--gray-200); border-radius: 10px; padding: 14px 16px; margin-bottom: 18px;">
-                            <div
-                                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                                <span
-                                    style="font-size: 0.8rem; font-weight: 700; color: var(--gray-600); text-transform: uppercase;">Current
-                                    Active Student Load</span>
-                                <span id="modalCurrentDocBadge" class="badge"
-                                    style="padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 600;">Active</span>
-                            </div>
-                            <div id="modalCurrentDocName"
-                                style="font-weight: 600; color: var(--primary); font-size: 0.92rem;">Schedule_Image.png
-                            </div>
-                            <div id="modalCurrentDocMeta"
-                                style="font-size: 0.78rem; color: var(--gray-500); margin-top: 2px;">Assigned recently
-                            </div>
-                            <div style="display: flex; gap: 8px; margin-top: 10px;">
-                                <button type="button" id="btnModalPreviewDoc"
-                                    style="background: #2563eb; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.82rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
-                                    <i class="fas fa-eye"></i> Preview / Open
-                                </button>
-                                <button type="button" id="btnModalDeleteDoc"
-                                    style="background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; padding: 6px 12px; border-radius: 6px; font-size: 0.82rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
-                                    <i class="fas fa-trash-alt"></i> Remove Student Load
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Tab Navigation -->
-                        <div
-                            style="display: flex; gap: 8px; border-bottom: 2px solid var(--gray-200); margin-bottom: 16px;">
-                            <button type="button" id="tabFileUpload"
-                                style="padding: 8px 16px; border: none; background: transparent; font-weight: 700; font-size: 0.88rem; color: #059669; border-bottom: 3px solid #059669; cursor: pointer; display: flex; align-items: center; gap: 6px; margin-bottom: -2px;">
-                                <i class="fas fa-file-image"></i> Upload Schedule Image / PDF
-                            </button>
-                            <button type="button" id="tabGDocsLink"
-                                style="padding: 8px 16px; border: none; background: transparent; font-weight: 600; font-size: 0.88rem; color: var(--gray-500); cursor: pointer; display: flex; align-items: center; gap: 6px; margin-bottom: -2px;">
-                                <i class="fab fa-google-drive"></i> Google Docs / Drive Link
-                            </button>
-                        </div>
-
-                        <!-- Tab 1: File Upload (Image / PDF) -->
-                        <div id="panelFileUpload" style="display: block;">
-                            <input type="file" id="modalScheduleFileInput"
-                                accept="image/png,image/jpeg,image/jpg,application/pdf" style="display: none;">
-                            <div id="modalFileDropzone"
-                                style="border: 2px dashed #93c5fd; background: #f0f7ff; border-radius: 10px; padding: 28px 20px; text-align: center; cursor: pointer; transition: border-color 0.2s;">
-                                <i class="fas fa-file-image"
-                                    style="font-size: 2.4rem; color: #2563eb; margin-bottom: 8px;"></i>
-                                <div style="font-weight: 600; color: var(--primary); font-size: 0.92rem;"
-                                    id="modalDropzoneText">Click to select Schedule Image (JPG, PNG) or PDF, or drag
-                                    file here</div>
-                                <div style="font-size: 0.78rem; color: var(--gray-500); margin-top: 4px;">Commonly an
-                                    image file (PNG, JPG screenshot/photo) or PDF document (Max 10MB)</div>
-                            </div>
-                            <div id="modalSelectedFileStatus"
-                                style="display: none; margin-top: 10px; padding: 8px 12px; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 6px; font-size: 0.85rem; color: #065f46; display: flex; align-items: center; gap: 8px;">
-                                <i class="fas fa-check-circle"></i> <span id="modalSelectedFileName"
-                                    style="font-weight: 600;"></span>
-                            </div>
-                            <button type="button" id="btnModalUploadFile"
-                                style="width: 100%; margin-top: 14px; background: #059669; color: #fff; border: none; padding: 11px; border-radius: 8px; font-weight: 700; font-size: 0.92rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                                <i class="fas fa-paper-plane"></i> Send & Publish Student Load
-                            </button>
-                        </div>
-
-                        <!-- Tab 2: Google Docs URL -->
-                        <div id="panelGDocsLink" style="display: none;">
-                            <label
-                                style="display: block; font-weight: 600; font-size: 0.86rem; color: var(--primary); margin-bottom: 6px;">
-                                Google Docs or Google Drive Shareable Link
-                            </label>
-                            <div style="position: relative; margin-bottom: 10px;">
-                                <i class="fab fa-google-drive"
-                                    style="position: absolute; left: 14px; top: 12px; color: #4285F4; font-size: 1.1rem;"></i>
-                                <input type="url" id="modalGDocsUrl"
-                                    placeholder="https://docs.google.com/document/d/... or drive link"
-                                    style="width: 100%; padding: 10px 14px 10px 40px; border: 1.5px solid var(--gray-300); border-radius: 8px; font-size: 0.9rem; outline: none;">
-                            </div>
-                            <p
-                                style="font-size: 0.78rem; color: var(--gray-500); margin: 0 0 16px 0; line-height: 1.4;">
-                                <i class="fas fa-info-circle text-primary"></i> Make sure the document sharing
-                                permission is set to <strong>"Anyone with the link can view"</strong> so students can
-                                view it immediately.
-                            </p>
-                            <button type="button" id="btnModalSaveGDoc"
-                                style="width: 100%; background: #2563eb; color: #fff; border: none; padding: 11px; border-radius: 8px; font-weight: 700; font-size: 0.92rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                                <i class="fas fa-link"></i> Save & Publish Student Load Link
-                            </button>
-                        </div>
-                    </div>
-                </div>
+            <!-- View 2: Timetable Grid -->
+            <div id="timetableContainer" class="timetable-grid-card">
+                <!-- Populated dynamically by schedule.js -->
             </div>
 
             <!-- Modal: Fullscreen Document Viewer -->

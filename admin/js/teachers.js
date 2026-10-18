@@ -12,14 +12,22 @@ document.addEventListener('DOMContentLoaded', async function() {
     const statusFilter = document.getElementById('statusFilter');
     const searchInput = document.getElementById('searchInput');
 
+    // Workload Records Elements
+    const workloadsTableBody = document.getElementById('workloadsTableBody');
+    const workloadRecordCount = document.getElementById('workloadRecordCount');
+    
+    // Teacher Workloads Elements
+    const teacherWorkloadsTableBody = document.getElementById('teacherWorkloadsTableBody');
+    const btnUploadTeacherWorkload = document.getElementById('btnUploadTeacherWorkload');
+
     // Attach Schedule Modal Elements
     const attachScheduleModal = document.getElementById('attachScheduleModal');
     const btnCloseScheduleModal = document.getElementById('btnCloseScheduleModal');
     const btnCancelScheduleModal = document.getElementById('btnCancelScheduleModal');
-    const modalTeacherAvatar = document.getElementById('modalTeacherAvatar');
-    const modalTeacherName = document.getElementById('modalTeacherName');
-    const modalTeacherId = document.getElementById('modalTeacherId');
-    const modalTeacherEmail = document.getElementById('modalTeacherEmail');
+    
+    // Grade and Section Dropdowns
+    const uploadGradeSelect = document.getElementById('uploadGradeSelect');
+    const uploadSectionSelect = document.getElementById('uploadSectionSelect');
 
     const modalExistingDocBox = document.getElementById('modalExistingDocBox');
     const modalExistingDocName = document.getElementById('modalExistingDocName');
@@ -34,6 +42,18 @@ document.addEventListener('DOMContentLoaded', async function() {
     const selectedFileSize = document.getElementById('selectedFileSize');
     const btnSubmitAttachSchedule = document.getElementById('btnSubmitAttachSchedule');
 
+    // Teacher Workload Modal Elements
+    const teacherWorkloadModal = document.getElementById('teacherWorkloadModal');
+    const btnCloseTeacherWorkloadModal = document.getElementById('btnCloseTeacherWorkloadModal');
+    const btnCancelTeacherWorkload = document.getElementById('btnCancelTeacherWorkload');
+    const uploadTeacherSelect = document.getElementById('uploadTeacherSelect');
+    const teacherScheduleDropZone = document.getElementById('teacherScheduleDropZone');
+    const teacherScheduleFileInput = document.getElementById('teacherScheduleFileInput');
+    const teacherSelectedFileInfo = document.getElementById('teacherSelectedFileInfo');
+    const teacherSelectedFileName = document.getElementById('teacherSelectedFileName');
+    const teacherSelectedFileSize = document.getElementById('teacherSelectedFileSize');
+    const btnSubmitTeacherWorkload = document.getElementById('btnSubmitTeacherWorkload');
+
     // Preview Modal Elements
     const schedulePreviewModal = document.getElementById('schedulePreviewModal');
     const btnClosePreviewModal = document.getElementById('btnClosePreviewModal');
@@ -42,8 +62,14 @@ document.addEventListener('DOMContentLoaded', async function() {
     const btnOpenScheduleExternal = document.getElementById('btnOpenScheduleExternal');
 
     let teachers = [];
-    let currentSelectedTeacher = null;
+    let allSections = []; 
+    let allTeacherWorkloads = []; // Store fetched teacher workloads
+    let currentSelectedSection = null;
     let currentSelectedFile = null;
+    
+    // Teacher Workload state
+    let currentSelectedTeacher = null;
+    let currentSelectedTeacherFile = null;
 
     // Update statistics
     function updateStats() {
@@ -60,44 +86,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         if (elWithout) elWithout.textContent = withoutSections;
     }
 
-    // Check if teacher has an attached workload schedule
-    function getTeacherScheduleDoc(teacher) {
-        if (!teacher) return null;
-        if (teacher.teacher_load_url) {
-            return {
-                url: teacher.teacher_load_url,
-                fileName: teacher.teacher_load_name || 'Teacher_Workload.pdf',
-                fileType: teacher.teacher_load_file_type || 'application/pdf',
-                updatedAt: teacher.teacher_load_updated_at || new Date().toISOString()
-            };
-        }
-
-        // Check local storage specific to this teacher
-        const localKeys = [
-            `hes_teacher_load_doc_${teacher.id}`,
-            teacher.user_id ? `hes_teacher_load_doc_${teacher.user_id}` : null
-        ].filter(Boolean);
-
-        for (const k of localKeys) {
-            const raw = localStorage.getItem(k);
-            if (raw) {
-                try {
-                    const parsed = JSON.parse(raw);
-                    if (parsed && (parsed.url || parsed.fileData)) {
-                        return {
-                            url: parsed.url || parsed.fileData,
-                            fileName: parsed.fileName || 'Teacher_Workload.pdf',
-                            fileType: parsed.fileType || 'application/pdf',
-                            updatedAt: parsed.uploadDate || new Date().toISOString()
-                        };
-                    }
-                } catch (e) {}
-            }
-        }
-        return null;
-    }
-
-    // Render table
+    // Render Teachers Table
     function renderTable() {
         if (!tableBody) return;
 
@@ -146,10 +135,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             const joinedDate = new Date(teacher.created_at || Date.now());
             const formattedDate = joinedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
             const hasSections = teacher.section_count > 0;
-            const scheduleDoc = getTeacherScheduleDoc(teacher);
-            const hasSchedule = !!scheduleDoc;
 
-            // Sections tags
             let sectionsHtml = '';
             if (hasSections && teacher.sections) {
                 const sectionList = Array.isArray(teacher.sections) ? teacher.sections : teacher.sections.split(', ');
@@ -162,14 +148,9 @@ document.addEventListener('DOMContentLoaded', async function() {
                 sectionsHtml = `<span class="badge badge-warning" style="font-size: 11px;">No sections assigned</span>`;
             }
 
-            // Status badge & Schedule badge
             const statusBadge = hasSections
                 ? `<span class="badge badge-success"><i class="fas fa-check-circle"></i> Adviser</span>`
                 : `<span class="badge badge-secondary"><i class="fas fa-clock"></i> Available</span>`;
-
-            const scheduleBadge = hasSchedule
-                ? `<span class="badge-pdf-attached" title="Schedule Attached: ${scheduleDoc.fileName}"><i class="fas fa-file-pdf"></i> Schedule PDF</span>`
-                : '';
 
             html += `
                 <tr>
@@ -199,7 +180,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                     <td>
                         <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
                             ${statusBadge}
-                            ${scheduleBadge}
                         </div>
                     </td>
                     <td class="cell-actions">
@@ -217,9 +197,9 @@ document.addEventListener('DOMContentLoaded', async function() {
                                     <i class="fas fa-edit"></i>
                                     <span>Edit Teacher</span>
                                 </a>
-                                <button type="button" class="manage-item schedule-item attach-schedule ${hasSchedule ? 'has-schedule' : ''}" data-id="${teacher.id}" title="${hasSchedule ? 'Manage / View Workload Schedule (PDF)' : 'Attach Workload Schedule (PDF)'}">
-                                    <i class="fas ${hasSchedule ? 'fa-file-circle-check' : 'fa-file-pdf'}"></i>
-                                    <span>${hasSchedule ? 'Workload (PDF)' : 'Attach Workload'}</span>
+                                <button type="button" class="manage-item schedule-item" onclick="document.getElementById('uploadGradeSelect').focus(); document.getElementById('attachScheduleModal').style.display='flex';" title="Upload Section Workload">
+                                    <i class="fas fa-file-upload"></i>
+                                    <span>Upload Workloads</span>
                                 </button>
                                 <a href="register_face.html?id=${teacher.id}" class="manage-item face-item" title="Register / Re-scan Face Biometrics">
                                     <i class="fas fa-camera"></i>
@@ -239,7 +219,6 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         tableBody.innerHTML = html;
 
-        // Toggle Manage dropdown menu
         tableBody.querySelectorAll('.btn-manage').forEach(btn => {
             btn.addEventListener('click', function(e) {
                 e.preventDefault();
@@ -248,7 +227,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                 const row = this.closest('tr');
                 const isOpen = dropdown.classList.contains('show');
 
-                // Close all other open dropdowns
                 document.querySelectorAll('.manage-dropdown.show').forEach(d => {
                     d.classList.remove('show');
                     d.classList.remove('dropup');
@@ -270,18 +248,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             });
         });
 
-        // Attach action handlers
-        tableBody.querySelectorAll('.attach-schedule').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                const dropdown = this.closest('.manage-dropdown');
-                if (dropdown) dropdown.classList.remove('show');
-                const id = this.dataset.id;
-                openAttachScheduleModal(id);
-            });
-        });
-
         tableBody.querySelectorAll('.delete').forEach(btn => {
             btn.addEventListener('click', function(e) {
                 e.preventDefault();
@@ -290,6 +256,181 @@ document.addEventListener('DOMContentLoaded', async function() {
                 if (dropdown) dropdown.classList.remove('show');
                 const id = this.dataset.id;
                 deleteTeacher(id);
+            });
+        });
+    }
+
+    // Render Section Workloads Records Table
+    function renderWorkloadsTable() {
+        if (!workloadsTableBody) return;
+
+        const uploadedWorkloads = allSections.filter(s => s.schedule_doc_url);
+
+        if (workloadRecordCount) {
+            workloadRecordCount.textContent = `Total: ${uploadedWorkloads.length} records`;
+        }
+
+        if (uploadedWorkloads.length === 0) {
+            workloadsTableBody.innerHTML = `
+                <tr>
+                    <td colspan="5">
+                        <div class="no-data" style="text-align: center; padding: 40px; color: #64748b;">
+                            <i class="fas fa-file-upload" style="font-size: 36px; margin-bottom: 12px; color: #94a3b8;"></i>
+                            <h3 style="font-size: 16px; margin-bottom: 6px; color: #1e293b;">No Section Workloads Uploaded</h3>
+                            <p style="font-size: 13px; margin: 0;">Click "Upload Workloads per Section" to add a schedule.</p>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        uploadedWorkloads.sort((a, b) => new Date(b.schedule_doc_updated_at || 0) - new Date(a.schedule_doc_updated_at || 0));
+
+        let html = '';
+        uploadedWorkloads.forEach(sec => {
+            const dateStr = sec.schedule_doc_updated_at ? new Date(sec.schedule_doc_updated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Unknown Date';
+            const uploadedBy = sec.schedule_doc_uploaded_by || 'Admin';
+
+            html += `
+                <tr>
+                    <td><span style="font-weight: 600; color: #475569;"><i class="far fa-calendar-alt" style="color: #94a3b8; margin-right: 6px;"></i> ${dateStr}</span></td>
+                    <td><span class="badge badge-info" style="font-size: 12px;">${sec.grade_level ? `${sec.grade_level} - ` : ''}${sec.name}</span></td>
+                    <td><i class="fas fa-file-pdf" style="color: #dc2626; margin-right: 6px;"></i> ${sec.schedule_doc_name || 'Schedule_Document.pdf'}</td>
+                    <td><span style="font-weight: 500;"><i class="fas fa-user-shield" style="color: #0f766e; margin-right: 6px;"></i> ${uploadedBy}</span></td>
+                    <td>
+                        <div style="display: flex; gap: 6px;">
+                            <button type="button" class="btn-preview-record" data-url="${sec.schedule_doc_url}" data-name="${sec.schedule_doc_name || 'Schedule'}" style="padding: 5px 10px; background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; border-radius: 6px; font-size: 11.5px; font-weight: 600; cursor: pointer;">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                            <button type="button" class="btn-delete-record" data-id="${sec.id}" data-name="${sec.name}" style="padding: 5px 10px; background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; border-radius: 6px; font-size: 11.5px; font-weight: 600; cursor: pointer;">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        });
+
+        workloadsTableBody.innerHTML = html;
+
+        workloadsTableBody.querySelectorAll('.btn-preview-record').forEach(btn => {
+            btn.addEventListener('click', function() {
+                openSchedulePreview(this.dataset.url, this.dataset.name);
+            });
+        });
+
+        workloadsTableBody.querySelectorAll('.btn-delete-record').forEach(btn => {
+            btn.addEventListener('click', async function() {
+                const secId = this.dataset.id;
+                const secName = this.dataset.name;
+                
+                if (!confirm(`Are you sure you want to delete the uploaded workload for Section ${secName}?`)) return;
+
+                try {
+                    await supabase.from('sections').update({
+                        schedule_doc_url: null,
+                        schedule_doc_name: null,
+                        schedule_doc_type: null,
+                        schedule_doc_updated_at: null,
+                        schedule_doc_uploaded_by: null,
+                        shared_at: null,
+                        shared_by: null
+                    }).eq('id', secId);
+
+                    showAlert(`Workload schedule removed for Section ${secName}.`, 'success');
+                    await loadTeachers(); 
+                } catch (err) {
+                    console.error('Error deleting workload:', err);
+                    showAlert('Failed to delete workload: ' + err.message, 'error');
+                }
+            });
+        });
+    }
+    
+    // NEW: Render Teacher Individual Workloads Table
+    function renderTeacherWorkloadsTable() {
+        if (!teacherWorkloadsTableBody) return;
+        
+        if (allTeacherWorkloads.length === 0) {
+            teacherWorkloadsTableBody.innerHTML = `
+                <tr>
+                    <td colspan="4">
+                        <div class="no-data" style="text-align: center; padding: 40px; color: #64748b;">
+                            <i class="fas fa-file-upload" style="font-size: 36px; margin-bottom: 12px; color: #94a3b8;"></i>
+                            <h3 style="font-size: 16px; margin-bottom: 6px; color: #1e293b;">No Teacher Workloads Uploaded</h3>
+                            <p style="font-size: 13px; margin: 0;">Click "Upload Workload" to assign a workload to a teacher.</p>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+        
+        // Sort by newest first
+        allTeacherWorkloads.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+        
+        let html = '';
+        allTeacherWorkloads.forEach(workload => {
+            const teacher = teachers.find(t => t.id === workload.teacher_id);
+            const teacherName = teacher ? teacher.fullname : 'Unknown Teacher';
+            const teacherEmail = teacher ? teacher.email : '';
+            const initial = teacherName.charAt(0).toUpperCase();
+            const dateStr = workload.created_at ? new Date(workload.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Recently';
+            
+            html += `
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div class="teacher-avatar" style="width: 32px; height: 32px; border-radius: 50%; background: #1B2A4A; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px;">
+                                ${initial}
+                            </div>
+                            <div>
+                                <div style="font-weight: 600; color: #0f172a;">${teacherName}</div>
+                                <div style="font-size: 11px; color: #64748b;">${teacherEmail}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><i class="fas fa-file-pdf" style="color: #dc2626; margin-right: 6px;"></i> ${workload.file_name || 'Teacher_Workload.pdf'}</td>
+                    <td><span style="font-weight: 600; color: #475569;">${dateStr}</span></td>
+                    <td>
+                        <div style="display: flex; gap: 6px;">
+                            <button type="button" class="btn-preview-teacher-record" data-url="${workload.file_url}" data-name="${workload.file_name || 'Workload'}" style="padding: 5px 10px; background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; border-radius: 6px; font-size: 11.5px; font-weight: 600; cursor: pointer;">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                            <button type="button" class="btn-delete-teacher-record" data-id="${workload.id}" data-name="${teacherName}" style="padding: 5px 10px; background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; border-radius: 6px; font-size: 11.5px; font-weight: 600; cursor: pointer;">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        });
+        
+        teacherWorkloadsTableBody.innerHTML = html;
+        
+        teacherWorkloadsTableBody.querySelectorAll('.btn-preview-teacher-record').forEach(btn => {
+            btn.addEventListener('click', function() {
+                openSchedulePreview(this.dataset.url, this.dataset.name);
+            });
+        });
+        
+        teacherWorkloadsTableBody.querySelectorAll('.btn-delete-teacher-record').forEach(btn => {
+            btn.addEventListener('click', async function() {
+                const id = this.dataset.id;
+                const name = this.dataset.name;
+                
+                if (!confirm(`Are you sure you want to delete the workload for ${name}?`)) return;
+
+                try {
+                    await supabase.from('teacher_workloads').delete().eq('id', id);
+
+                    showAlert(`Workload removed for ${name}.`, 'success');
+                    await loadTeachers(); 
+                } catch (err) {
+                    console.error('Error deleting teacher workload:', err);
+                    showAlert('Failed to delete teacher workload: ' + err.message, 'error');
+                }
             });
         });
     }
@@ -306,23 +447,49 @@ document.addEventListener('DOMContentLoaded', async function() {
                 </tr>
             `;
         }
+        if (workloadsTableBody) {
+            workloadsTableBody.innerHTML = `
+                <tr>
+                    <td colspan="5" style="text-align: center; padding: 40px; color: #64748b;">
+                        <i class="fas fa-spinner fa-spin" style="font-size: 24px; color: #1B2A4A; margin-bottom: 8px;"></i>
+                        <p style="margin: 0;">Loading workload records...</p>
+                    </td>
+                </tr>
+            `;
+        }
+        if (teacherWorkloadsTableBody) {
+            teacherWorkloadsTableBody.innerHTML = `
+                <tr>
+                    <td colspan="4" style="text-align: center; padding: 40px; color: #64748b;">
+                        <i class="fas fa-spinner fa-spin" style="font-size: 24px; color: #1B2A4A; margin-bottom: 8px;"></i>
+                        <p style="margin: 0;">Loading teacher workloads...</p>
+                    </td>
+                </tr>
+            `;
+        }
 
         try {
             const [
                 { data: teacherRows, error: tErr },
                 { data: userRows, error: uErr },
-                { data: sectionRows, error: sErr }
+                { data: sectionRows, error: sErr },
+                { data: workloadRows, error: wErr }
             ] = await Promise.all([
                 supabase.from('teachers').select('*'),
                 supabase.from('users').select('*').eq('role', 'teacher'),
-                supabase.from('sections').select('*')
+                supabase.from('sections').select('*'),
+                supabase.from('teacher_workloads').select('*')
             ]);
 
             if (tErr) console.warn('Teachers query warning:', tErr);
+            if (wErr) console.warn('Teacher Workloads query warning:', wErr);
 
             const users = userRows || [];
             const sections = sectionRows || [];
             const teacherTableData = teacherRows || [];
+
+            allSections = sections; 
+            allTeacherWorkloads = workloadRows || [];
 
             const combinedTeachers = [];
             const processedUserIds = new Set();
@@ -334,7 +501,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                 const fullName = matchedUser ? `${matchedUser.first_name || ''} ${matchedUser.last_name || ''}`.trim() : (t.fullname || 'Faculty Teacher');
                 const email = matchedUser ? matchedUser.email : (t.email || 'teacher@hiraya.edu.ph');
 
-                // Find assigned sections (by teacher ID, user ID, or adviser full name)
                 const assignedSections = sections.filter(sec => 
                     sec.adviser_id === t.id || 
                     sec.adviser_id === t.user_id ||
@@ -352,15 +518,10 @@ document.addEventListener('DOMContentLoaded', async function() {
                     created_at: t.created_at || (matchedUser ? matchedUser.created_at : new Date().toISOString()),
                     section_count: assignedSections.length,
                     sections: assignedSections.map(s => `${s.grade_level ? `${s.grade_level} - ` : ''}${s.name}`).join(', '),
-                    teacher_load_url: t.teacher_load_url || null,
-                    teacher_load_name: t.teacher_load_name || null,
-                    teacher_load_file_type: t.teacher_load_file_type || null,
-                    teacher_load_updated_at: t.teacher_load_updated_at || null,
                     avatar_url: t.avatar_url || t.profile_picture || matchedUser?.profile_picture || matchedUser?.avatar_url || null
                 });
             });
 
-            // Add any user with role=teacher not yet in teachers table
             users.forEach(u => {
                 if (!processedUserIds.has(u.id)) {
                     const fullName = `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.email;
@@ -380,18 +541,23 @@ document.addEventListener('DOMContentLoaded', async function() {
                         created_at: u.created_at || new Date().toISOString(),
                         section_count: assignedSections.length,
                         sections: assignedSections.map(s => `${s.grade_level ? `${s.grade_level} - ` : ''}${s.name}`).join(', '),
-                        teacher_load_url: null,
-                        teacher_load_name: null,
-                        teacher_load_file_type: null,
-                        teacher_load_updated_at: null,
                         avatar_url: u.profile_picture || u.avatar_url || null
                     });
                 }
             });
 
             teachers = combinedTeachers;
+            
+            // Populate Teacher Workload Select Dropdown
+            if (uploadTeacherSelect) {
+                uploadTeacherSelect.innerHTML = '<option value="">-- Choose Teacher --</option>' +
+                    teachers.map(t => `<option value="${t.id}">${t.fullname}</option>`).join('');
+            }
+            
             updateStats();
             renderTable();
+            renderWorkloadsTable();
+            renderTeacherWorkloadsTable();
         } catch (err) {
             console.error('Error loading teachers:', err);
             showAlert('Failed to load teachers from database: ' + err.message, 'error');
@@ -399,50 +565,81 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 
     // ============================================
-    // ATTACH SCHEDULE MODAL WORKFLOW
+    // SECTION SCHEDULE MODAL WORKFLOW
     // ============================================
 
-    function openAttachScheduleModal(teacherId) {
-        const teacher = teachers.find(t => t.id === teacherId);
-        if (!teacher) return;
-
-        currentSelectedTeacher = teacher;
+    function openAttachScheduleModal() {
+        currentSelectedSection = null;
         currentSelectedFile = null;
+        if (modalExistingDocBox) modalExistingDocBox.style.display = 'none';
 
-        if (modalTeacherName) modalTeacherName.textContent = teacher.fullname;
-        if (modalTeacherAvatar) modalTeacherAvatar.textContent = (teacher.fullname || 'T').charAt(0).toUpperCase();
-        if (modalTeacherId) modalTeacherId.innerHTML = `<i class="fas fa-id-badge"></i> ${teacher.id_number || 'N/A'}`;
-        if (modalTeacherEmail) modalTeacherEmail.innerHTML = `<i class="fas fa-envelope"></i> ${teacher.email}`;
-
-        // Reset file selection
+        if (uploadGradeSelect) uploadGradeSelect.value = '';
+        if (uploadSectionSelect) uploadSectionSelect.innerHTML = '<option value="">-- Choose Section --</option>';
+        
         if (scheduleFileInput) scheduleFileInput.value = '';
         if (selectedFileInfo) selectedFileInfo.style.display = 'none';
-
-        // Check existing schedule doc
-        const existingDoc = getTeacherScheduleDoc(teacher);
-        if (existingDoc && (existingDoc.url || existingDoc.fileData)) {
-            if (modalExistingDocBox) modalExistingDocBox.style.display = 'block';
-            if (modalExistingDocName) modalExistingDocName.textContent = existingDoc.fileName || 'Teacher_Workload.pdf';
-            if (modalExistingDocMeta) {
-                const dateStr = existingDoc.updatedAt ? new Date(existingDoc.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Recently';
-                modalExistingDocMeta.textContent = `Uploaded: ${dateStr} • Visible strictly to this teacher`;
-            }
-        } else {
-            if (modalExistingDocBox) modalExistingDocBox.style.display = 'none';
-        }
 
         if (attachScheduleModal) attachScheduleModal.style.display = 'flex';
     }
 
     function closeAttachScheduleModal() {
         if (attachScheduleModal) attachScheduleModal.style.display = 'none';
-        currentSelectedTeacher = null;
+        currentSelectedSection = null;
         currentSelectedFile = null;
         if (scheduleFileInput) scheduleFileInput.value = '';
         if (selectedFileInfo) selectedFileInfo.style.display = 'none';
     }
 
-    // Drag and drop & file selection handlers
+    if (uploadGradeSelect) {
+        uploadGradeSelect.addEventListener('change', function() {
+            const selectedGrade = this.value;
+            uploadSectionSelect.innerHTML = '<option value="">-- Choose Section --</option>';
+            if (modalExistingDocBox) modalExistingDocBox.style.display = 'none';
+            currentSelectedSection = null;
+
+            if (!selectedGrade) return;
+
+            const filteredSections = allSections.filter(s => s.grade_level === selectedGrade);
+
+            if (filteredSections.length === 0) {
+                uploadSectionSelect.innerHTML = '<option value="">No sections found for this grade</option>';
+                return;
+            }
+
+            filteredSections.forEach(sec => {
+                const opt = document.createElement('option');
+                opt.value = sec.id;
+                opt.textContent = sec.name;
+                uploadSectionSelect.appendChild(opt);
+            });
+        });
+    }
+
+    if (uploadSectionSelect) {
+        uploadSectionSelect.addEventListener('change', function() {
+            const sectionId = this.value;
+            if (!sectionId) {
+                if (modalExistingDocBox) modalExistingDocBox.style.display = 'none';
+                currentSelectedSection = null;
+                return;
+            }
+
+            currentSelectedSection = allSections.find(s => s.id === sectionId);
+            if (!currentSelectedSection) return;
+
+            if (currentSelectedSection.schedule_doc_url) {
+                if (modalExistingDocBox) modalExistingDocBox.style.display = 'block';
+                if (modalExistingDocName) modalExistingDocName.textContent = currentSelectedSection.schedule_doc_name || 'Section_Schedule.pdf';
+                if (modalExistingDocMeta) {
+                    const dateStr = currentSelectedSection.schedule_doc_updated_at ? new Date(currentSelectedSection.schedule_doc_updated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Recently';
+                    modalExistingDocMeta.textContent = `Uploaded: ${dateStr}`;
+                }
+            } else {
+                if (modalExistingDocBox) modalExistingDocBox.style.display = 'none';
+            }
+        });
+    }
+
     if (scheduleDropZone && scheduleFileInput) {
         scheduleDropZone.addEventListener('click', () => scheduleFileInput.click());
 
@@ -472,8 +669,6 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     function handleFileSelection(file) {
         if (!file) return;
-
-        // Size check (max 20MB)
         if (file.size > 20 * 1024 * 1024) {
             alert('File exceeds 20MB size limit.');
             return;
@@ -487,10 +682,12 @@ document.addEventListener('DOMContentLoaded', async function() {
         if (selectedFileInfo) selectedFileInfo.style.display = 'block';
     }
 
-    // Submit Attach Schedule
     if (btnSubmitAttachSchedule) {
         btnSubmitAttachSchedule.addEventListener('click', async function() {
-            if (!currentSelectedTeacher) return;
+            if (!currentSelectedSection) {
+                alert('Please select a Grade and Section first.');
+                return;
+            }
             if (!currentSelectedFile) {
                 alert('Please select a schedule document (PDF or Image) to attach.');
                 return;
@@ -498,14 +695,13 @@ document.addEventListener('DOMContentLoaded', async function() {
 
             const originalBtnHtml = btnSubmitAttachSchedule.innerHTML;
             btnSubmitAttachSchedule.disabled = true;
-            btnSubmitAttachSchedule.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading & Attaching...';
+            btnSubmitAttachSchedule.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
 
             try {
                 const file = currentSelectedFile;
                 const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
                 const fileType = file.type || (isPdf ? 'application/pdf' : 'image/png');
 
-                // Read file as base64 DataURL (ensures 100% offline & fallback access)
                 const dataUrl = await new Promise((resolve, reject) => {
                     const reader = new FileReader();
                     reader.onload = () => resolve(reader.result);
@@ -514,77 +710,62 @@ document.addEventListener('DOMContentLoaded', async function() {
                 });
 
                 let publicUrl = null;
-
-                // Try uploading to Supabase Storage bucket 'teacher-schedules'
                 try {
                     const cleanFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-                    const storagePath = `${currentSelectedTeacher.id}/${Date.now()}_${cleanFileName}`;
+                    const storagePath = `section_schedules/${currentSelectedSection.id}/${Date.now()}_${cleanFileName}`;
 
                     const { data: uploadData, error: upErr } = await supabase
                         .storage
                         .from('teacher-schedules')
-                        .upload(storagePath, file, {
-                            cacheControl: '3600',
-                            upsert: true
-                        });
+                        .upload(storagePath, file, { cacheControl: '3600', upsert: true });
 
                     if (!upErr && uploadData) {
-                        const { data: pubData } = supabase
-                            .storage
-                            .from('teacher-schedules')
-                            .getPublicUrl(storagePath);
-                        if (pubData && pubData.publicUrl) {
-                            publicUrl = pubData.publicUrl;
-                        }
+                        const { data: pubData } = supabase.storage.from('teacher-schedules').getPublicUrl(storagePath);
+                        if (pubData && pubData.publicUrl) publicUrl = pubData.publicUrl;
                     }
                 } catch (stErr) {
-                    console.warn('Storage bucket upload notice (fallback to DataURL):', stErr);
+                    console.warn('Storage upload notice (fallback to DataURL):', stErr);
                 }
 
                 const finalUrl = publicUrl || dataUrl;
                 const uploadIso = new Date().toISOString();
 
-                // 1. Update Supabase teachers table
-                try {
-                    await supabase
-                        .from('teachers')
-                        .update({
-                            teacher_load_url: finalUrl,
-                            teacher_load_name: file.name,
-                            teacher_load_file_type: fileType,
-                            teacher_load_updated_at: uploadIso
-                        })
-                        .eq('id', currentSelectedTeacher.id);
-                } catch (dbErr) {
-                    console.warn('Teachers table update error:', dbErr);
-                }
+                const { error: secErr } = await supabase
+                    .from('sections')
+                    .update({
+                        schedule_doc_url: finalUrl,
+                        schedule_doc_name: file.name,
+                        schedule_doc_type: fileType,
+                        schedule_doc_updated_at: uploadIso,
+                        schedule_doc_uploaded_by: 'Admin'
+                    })
+                    .eq('id', currentSelectedSection.id);
 
-                // 2. Cache in localStorage strictly for this specific teacher
+                if (secErr) console.warn('Section update error:', secErr);
+
                 const docPayload = {
-                    teacherId: currentSelectedTeacher.id,
-                    userId: currentSelectedTeacher.user_id,
+                    sectionId: currentSelectedSection.id,
+                    sectionName: currentSelectedSection.name,
                     fileName: file.name,
                     fileType: fileType,
                     url: finalUrl,
                     fileData: dataUrl,
                     uploadDate: uploadIso,
-                    issuedBy: 'Administration'
+                    uploadedBy: 'Admin'
                 };
 
-                localStorage.setItem(`hes_teacher_load_doc_${currentSelectedTeacher.id}`, JSON.stringify(docPayload));
-                if (currentSelectedTeacher.user_id) {
-                    localStorage.setItem(`hes_teacher_load_doc_${currentSelectedTeacher.user_id}`, JSON.stringify(docPayload));
-                }
+                localStorage.setItem(`hes_section_schedule_${currentSelectedSection.id}`, JSON.stringify(docPayload));
+                localStorage.setItem(`hes_section_schedule_${currentSelectedSection.name.toUpperCase()}`, JSON.stringify(docPayload));
 
-                // Update in-memory state
-                currentSelectedTeacher.teacher_load_url = finalUrl;
-                currentSelectedTeacher.teacher_load_name = file.name;
-                currentSelectedTeacher.teacher_load_file_type = fileType;
-                currentSelectedTeacher.teacher_load_updated_at = uploadIso;
+                currentSelectedSection.schedule_doc_url = finalUrl;
+                currentSelectedSection.schedule_doc_name = file.name;
+                currentSelectedSection.schedule_doc_type = fileType;
+                currentSelectedSection.schedule_doc_updated_at = uploadIso;
+                currentSelectedSection.schedule_doc_uploaded_by = 'Admin';
 
-                showAlert(`✅ Official schedule document (${file.name}) attached successfully for ${currentSelectedTeacher.fullname}! Only this teacher can see it in their portal.`, 'success');
+                showAlert(`✅ Official schedule document attached to Section ${currentSelectedSection.name}!`, 'success');
                 closeAttachScheduleModal();
-                renderTable();
+                await loadTeachers();
             } catch (err) {
                 console.error('Error attaching schedule:', err);
                 alert('Failed to attach schedule: ' + err.message);
@@ -595,40 +776,35 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
 
-    // Remove Existing Schedule
     if (btnRemoveExistingDoc) {
         btnRemoveExistingDoc.addEventListener('click', async function() {
-            if (!currentSelectedTeacher) return;
-            if (!confirm(`Are you sure you want to remove the workload schedule for ${currentSelectedTeacher.fullname}?`)) {
+            if (!currentSelectedSection) return;
+            if (!confirm(`Are you sure you want to remove the workload schedule for Section ${currentSelectedSection.name}?`)) {
                 return;
             }
 
             try {
-                // Update Supabase
                 await supabase
-                    .from('teachers')
+                    .from('sections')
                     .update({
-                        teacher_load_url: null,
-                        teacher_load_name: null,
-                        teacher_load_file_type: null,
-                        teacher_load_updated_at: new Date().toISOString()
+                        schedule_doc_url: null,
+                        schedule_doc_name: null,
+                        schedule_doc_type: null,
+                        schedule_doc_updated_at: new Date().toISOString()
                     })
-                    .eq('id', currentSelectedTeacher.id);
+                    .eq('id', currentSelectedSection.id);
 
-                // Remove from local storage
-                localStorage.removeItem(`hes_teacher_load_doc_${currentSelectedTeacher.id}`);
-                if (currentSelectedTeacher.user_id) {
-                    localStorage.removeItem(`hes_teacher_load_doc_${currentSelectedTeacher.user_id}`);
-                }
+                localStorage.removeItem(`hes_section_schedule_${currentSelectedSection.id}`);
+                localStorage.removeItem(`hes_section_schedule_${currentSelectedSection.name.toUpperCase()}`);
 
-                currentSelectedTeacher.teacher_load_url = null;
-                currentSelectedTeacher.teacher_load_name = null;
-                currentSelectedTeacher.teacher_load_file_type = null;
+                currentSelectedSection.schedule_doc_url = null;
+                currentSelectedSection.schedule_doc_name = null;
+                currentSelectedSection.schedule_doc_type = null;
 
                 if (modalExistingDocBox) modalExistingDocBox.style.display = 'none';
 
-                showAlert(`Schedule removed for ${currentSelectedTeacher.fullname}.`, 'success');
-                renderTable();
+                showAlert(`Schedule removed for Section ${currentSelectedSection.name}.`, 'success');
+                await loadTeachers();
             } catch (err) {
                 console.error('Error removing schedule:', err);
                 alert('Failed to remove schedule: ' + err.message);
@@ -636,16 +812,166 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
 
-    // Preview Existing Schedule PDF / Image
     if (btnPreviewExistingDoc) {
         btnPreviewExistingDoc.addEventListener('click', function() {
-            if (!currentSelectedTeacher) return;
-            const doc = getTeacherScheduleDoc(currentSelectedTeacher);
-            if (!doc || !doc.url) return;
-
-            openSchedulePreview(doc.url, doc.fileName || 'Teacher_Workload.pdf');
+            if (!currentSelectedSection || !currentSelectedSection.schedule_doc_url) return;
+            const doc = {
+                url: currentSelectedSection.schedule_doc_url,
+                fileName: currentSelectedSection.schedule_doc_name || 'Section_Schedule.pdf'
+            };
+            openSchedulePreview(doc.url, doc.fileName);
         });
     }
+
+    // ============================================
+    // NEW: TEACHER WORKLOAD MODAL WORKFLOW
+    // ============================================
+    
+    function openTeacherWorkloadModal() {
+        currentSelectedTeacher = null;
+        currentSelectedTeacherFile = null;
+        
+        if (uploadTeacherSelect) uploadTeacherSelect.value = '';
+        if (teacherScheduleFileInput) teacherScheduleFileInput.value = '';
+        if (teacherSelectedFileInfo) teacherSelectedFileInfo.style.display = 'none';
+        
+        if (teacherWorkloadModal) teacherWorkloadModal.style.display = 'flex';
+    }
+    
+    function closeTeacherWorkloadModal() {
+        if (teacherWorkloadModal) teacherWorkloadModal.style.display = 'none';
+        currentSelectedTeacher = null;
+        currentSelectedTeacherFile = null;
+        if (teacherScheduleFileInput) teacherScheduleFileInput.value = '';
+        if (teacherSelectedFileInfo) teacherSelectedFileInfo.style.display = 'none';
+    }
+    
+    if (uploadTeacherSelect) {
+        uploadTeacherSelect.addEventListener('change', function() {
+            currentSelectedTeacher = teachers.find(t => t.id === this.value) || null;
+        });
+    }
+    
+    if (teacherScheduleDropZone && teacherScheduleFileInput) {
+        teacherScheduleDropZone.addEventListener('click', () => teacherScheduleFileInput.click());
+
+        teacherScheduleDropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            teacherScheduleDropZone.classList.add('dragover');
+        });
+
+        teacherScheduleDropZone.addEventListener('dragleave', () => {
+            teacherScheduleDropZone.classList.remove('dragover');
+        });
+
+        teacherScheduleDropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            teacherScheduleDropZone.classList.remove('dragover');
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                handleTeacherFileSelection(e.dataTransfer.files[0]);
+            }
+        });
+
+        teacherScheduleFileInput.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files.length > 0) {
+                handleTeacherFileSelection(e.target.files[0]);
+            }
+        });
+    }
+    
+    function handleTeacherFileSelection(file) {
+        if (!file) return;
+        if (file.size > 20 * 1024 * 1024) {
+            alert('File exceeds 20MB size limit.');
+            return;
+        }
+
+        currentSelectedTeacherFile = file;
+        const sizeFormatted = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
+
+        if (teacherSelectedFileName) teacherSelectedFileName.textContent = file.name;
+        if (teacherSelectedFileSize) teacherSelectedFileSize.textContent = `(${sizeFormatted})`;
+        if (teacherSelectedFileInfo) teacherSelectedFileInfo.style.display = 'block';
+    }
+    
+    if (btnSubmitTeacherWorkload) {
+        btnSubmitTeacherWorkload.addEventListener('click', async function() {
+            if (!currentSelectedTeacher) {
+                alert('Please select a teacher first.');
+                return;
+            }
+            if (!currentSelectedTeacherFile) {
+                alert('Please select a workload document (PDF or Image) to upload.');
+                return;
+            }
+
+            const originalBtnHtml = btnSubmitTeacherWorkload.innerHTML;
+            btnSubmitTeacherWorkload.disabled = true;
+            btnSubmitTeacherWorkload.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+
+            try {
+                const file = currentSelectedTeacherFile;
+                const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+                const fileType = file.type || (isPdf ? 'application/pdf' : 'image/png');
+
+                const dataUrl = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+
+                let publicUrl = null;
+                try {
+                    const cleanFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+                    const storagePath = `teacher_individual_workloads/${currentSelectedTeacher.id}/${Date.now()}_${cleanFileName}`;
+
+                    const { data: uploadData, error: upErr } = await supabase
+                        .storage
+                        .from('teacher-schedules')
+                        .upload(storagePath, file, { cacheControl: '3600', upsert: true });
+
+                    if (!upErr && uploadData) {
+                        const { data: pubData } = supabase.storage.from('teacher-schedules').getPublicUrl(storagePath);
+                        if (pubData && pubData.publicUrl) publicUrl = pubData.publicUrl;
+                    }
+                } catch (stErr) {
+                    console.warn('Storage upload notice (fallback to DataURL):', stErr);
+                }
+
+                const finalUrl = publicUrl || dataUrl;
+                const uploadIso = new Date().toISOString();
+
+                // 1. Insert into the NEW teacher_workloads table
+                const { error: insErr } = await supabase
+                    .from('teacher_workloads')
+                    .insert([{
+                        teacher_id: currentSelectedTeacher.id,
+                        file_name: file.name,
+                        file_url: finalUrl,
+                        file_type: fileType,
+                        uploaded_by: 'Admin',
+                        created_at: uploadIso
+                    }]);
+
+                if (insErr) throw insErr;
+
+                showAlert(`✅ Official workload document uploaded for ${currentSelectedTeacher.fullname}!`, 'success');
+                closeTeacherWorkloadModal();
+                await loadTeachers();
+            } catch (err) {
+                console.error('Error uploading teacher workload:', err);
+                alert('Failed to upload teacher workload: ' + err.message);
+            } finally {
+                btnSubmitTeacherWorkload.disabled = false;
+                btnSubmitTeacherWorkload.innerHTML = originalBtnHtml;
+            }
+        });
+    }
+
+    // ============================================
+    // GENERAL PREVIEW FUNCTIONS
+    // ============================================
 
     function openSchedulePreview(url, title) {
         if (!schedulePreviewModal || !previewModalContainer) return;
@@ -669,9 +995,11 @@ document.addEventListener('DOMContentLoaded', async function() {
         schedulePreviewModal.style.display = 'flex';
     }
 
-    // Modal close listeners
     if (btnCloseScheduleModal) btnCloseScheduleModal.addEventListener('click', closeAttachScheduleModal);
     if (btnCancelScheduleModal) btnCancelScheduleModal.addEventListener('click', closeAttachScheduleModal);
+    
+    if (btnCloseTeacherWorkloadModal) btnCloseTeacherWorkloadModal.addEventListener('click', closeTeacherWorkloadModal);
+    if (btnCancelTeacherWorkload) btnCancelTeacherWorkload.addEventListener('click', closeTeacherWorkloadModal);
 
     if (btnClosePreviewModal) {
         btnClosePreviewModal.addEventListener('click', () => {
@@ -679,13 +1007,12 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
 
-    // Close on overlay backdrop click
     window.addEventListener('click', (e) => {
         if (e.target === attachScheduleModal) closeAttachScheduleModal();
+        if (e.target === teacherWorkloadModal) closeTeacherWorkloadModal();
         if (e.target === schedulePreviewModal && schedulePreviewModal) schedulePreviewModal.style.display = 'none';
     });
 
-    // Delete teacher
     async function deleteTeacher(id) {
         const teacher = teachers.find(t => t.id === id);
         if (!teacher) return;
@@ -700,11 +1027,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
 
         try {
-            const { error: tDelErr } = await supabase
-                .from('teachers')
-                .delete()
-                .eq('id', id);
-
+            const { error: tDelErr } = await supabase.from('teachers').delete().eq('id', id);
             if (tDelErr) throw tDelErr;
 
             if (teacher.user_id) {
@@ -719,7 +1042,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     }
 
-    // Show alert
     function showAlert(message, type = 'error') {
         if (!alertContainer) return;
         const alertDiv = document.createElement('div');
@@ -734,7 +1056,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         }, 5000);
     }
 
-    // Event listeners
     if (statusFilter) statusFilter.addEventListener('change', renderTable);
     if (searchInput) searchInput.addEventListener('input', renderTable);
 
@@ -749,6 +1070,14 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     });
 
-    // Initial load
+    const btnGlobalUpload = document.getElementById('btnGlobalUpload');
+    if (btnGlobalUpload) {
+        btnGlobalUpload.addEventListener('click', openAttachScheduleModal);
+    }
+    
+    if (btnUploadTeacherWorkload) {
+        btnUploadTeacherWorkload.addEventListener('click', openTeacherWorkloadModal);
+    }
+
     await loadTeachers();
 });
