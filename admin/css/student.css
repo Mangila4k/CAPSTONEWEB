@@ -334,6 +334,8 @@
 .students-table td.cell-strand,
 .students-table th.th-status,
 .students-table td.cell-status,
+.students-table th.th-academic-status,
+.students-table td.cell-academic-status,
 .students-table th.th-actions,
 .students-table td.cell-actions,
 .cell-center {
@@ -411,6 +413,14 @@
 .th-status,
 .cell-status {
     width: 100px;
+    text-align: center !important;
+    white-space: nowrap;
+}
+
+/* Academic Status Column */
+.th-academic-status,
+.cell-academic-status {
+    width: 120px;
     text-align: center !important;
     white-space: nowrap;
 }
@@ -749,6 +759,67 @@
     background: #ef4444;
 }
 
+/* ===== ACADEMIC STATUS SELECT DROPDOWN ===== */
+.academic-status-select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    padding: 4px 24px 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.2px;
+    outline: none;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+    background-repeat: no-repeat;
+    background-position: right 6px center;
+    background-size: 10px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    font-family: inherit;
+}
+
+.academic-status-select option {
+    background: #fff;
+    color: #0f172a;
+    font-weight: 600;
+    text-transform: capitalize;
+    font-size: 13px;
+}
+
+.academic-status-select.badge-unassigned {
+    background-color: #f1f5f9;
+    color: #475569;
+    border-color: #cbd5e1;
+}
+.academic-status-select.badge-unassigned:hover {
+    background-color: #e2e8f0;
+}
+
+.academic-status-select.badge-passed {
+    background-color: #ecfdf5;
+    color: #065f46;
+    border-color: #a7f3d0;
+}
+.academic-status-select.badge-passed:hover {
+    background-color: #d1fae5;
+}
+
+.academic-status-select.badge-failed {
+    background-color: #fef2f2;
+    color: #991b1b;
+    border-color: #fecaca;
+}
+.academic-status-select.badge-failed:hover {
+    background-color: #fee2e2;
+}
+
+.academic-status-select:focus {
+    box-shadow: 0 0 0 3px rgba(11, 43, 74, 0.15);
+}
+
 /* ===== MANAGE DROPDOWN BUTTON & MENU ===== */
 .cell-actions {
     position: relative;
@@ -923,92 +994,6 @@ tr.dropdown-open,
 tr:has(.manage-dropdown.show) {
     position: relative;
     z-index: 100 !important;
-}
-
-/* Modern Action Toolbar (Legacy Fallback) */
-.action-btns-group {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    margin: 0 auto;
-    white-space: nowrap;
-}
-
-.action-btn-pill {
-    width: 30px;
-    height: 30px;
-    border-radius: 7px;
-    border: 1px solid transparent;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-    text-decoration: none;
-    font-size: 12px;
-    background: transparent;
-    flex-shrink: 0;
-}
-
-.action-btn-pill.btn-gmail {
-    background: #fef2f2;
-    color: #ea4335 !important;
-    border-color: #fecaca;
-}
-
-.action-btn-pill.btn-gmail:hover {
-    background: #ea4335;
-    color: #ffffff !important;
-    border-color: #ea4335;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(234, 67, 53, 0.3);
-}
-
-.action-btn-pill.btn-view {
-    background: #eff6ff;
-    color: #2563eb !important;
-    border-color: #bfdbfe;
-}
-
-.action-btn-pill.btn-view:hover {
-    background: #2563eb;
-    color: #ffffff !important;
-    border-color: #2563eb;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
-}
-
-.action-btn-pill.btn-edit {
-    background: #fffbeb;
-    color: #d97706 !important;
-    border-color: #fde68a;
-}
-
-.action-btn-pill.btn-edit:hover {
-    background: #d97706;
-    color: #ffffff !important;
-    border-color: #d97706;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(217, 119, 6, 0.3);
-}
-
-.action-btn-pill.btn-delete {
-    background: #fff1f2;
-    color: #dc2626 !important;
-    border-color: #fecdd3;
-}
-
-.action-btn-pill.btn-delete:hover {
-    background: #dc2626;
-    color: #ffffff !important;
-    border-color: #dc2626;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(220, 38, 38, 0.3);
-}
-
-.action-btn-pill:hover i {
-    color: #ffffff !important;
 }
 
 .cell-index {
@@ -1275,17 +1260,6 @@ tr:has(.manage-dropdown.show) {
     }
 }
 
-/* ID Card Action Button */
-.action-btn.id-card {
-    color: #f59e0b;
-    background: rgba(245, 158, 11, 0.12);
-}
-.action-btn.id-card:hover {
-    background: #f59e0b;
-    color: #070526;
-    transform: translateY(-2px);
-}
-
 /* Enroll Student Button & Badges */
 .btn-add-student {
     padding: 8px 18px;
@@ -1311,18 +1285,4 @@ tr:has(.manage-dropdown.show) {
     box-shadow: 0 4px 14px rgba(27, 42, 74, 0.35);
     transform: translateY(-1px);
     color: #fff !important;
-}
-
-.badge-transferee {
-    background: #e0f2fe;
-    color: #0369a1;
-    border: 1px solid #bae6fd;
-    font-weight: 700;
-}
-
-.badge-new {
-    background: #dcfce7;
-    color: #15803d;
-    border: 1px solid #bbf7d0;
-    font-weight: 700;
 }

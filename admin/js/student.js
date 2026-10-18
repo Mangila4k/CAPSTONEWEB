@@ -109,7 +109,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
 
         tableBody.innerHTML = `
             <tr>
-                <td colspan="9" class="loading-cell">
+                <td colspan="10" class="loading-cell">
                     <i class="fas fa-spinner fa-spin"></i> Loading students...
                 </td>
             </tr>
@@ -175,6 +175,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
                     section: sectionName,
                     gender: student.gender || '—',
                     student_type: student.student_type || 'New Student',
+                    academic_status: student.academic_status || 'Unassigned', // Connected to DB
                     avatar_url: student.two_by_two_picture_url || student.avatar_url || null,
                     status: student.status || 'Active'
                 };
@@ -192,7 +193,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
 
             tableBody.innerHTML = `
                 <tr>
-                    <td colspan="9" class="empty-cell">
+                    <td colspan="10" class="empty-cell">
                         <i class="fas fa-exclamation-triangle"></i>
                         <p>Error loading students. Please try again.</p>
                     </td>
@@ -257,7 +258,6 @@ import { EmailNotificationService } from '../../js/email_service.js';
 
         gradeSummary.innerHTML = html;
 
-        // Click listeners on chips
         gradeSummary.querySelectorAll('.grade-summary-item').forEach(chip => {
             chip.addEventListener('click', function() {
                 const selectedGrade = this.dataset.grade;
@@ -316,6 +316,8 @@ import { EmailNotificationService } from '../../js/email_service.js';
                     matchStudentType = sType.includes('transfer');
                 } else if (studentType === 'New Student') {
                     matchStudentType = !sType.includes('transfer');
+                } else if (studentType === 'Repeater') {
+                    matchStudentType = sType.includes('repeater');
                 }
             }
 
@@ -333,7 +335,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
         if (filteredStudents.length === 0) {
             tableBody.innerHTML = `
                 <tr>
-                    <td colspan="9" class="empty-cell">
+                    <td colspan="10" class="empty-cell">
                         <i class="fas fa-inbox"></i>
                         <p>No students found for the selected criteria</p>
                     </td>
@@ -344,13 +346,13 @@ import { EmailNotificationService } from '../../js/email_service.js';
         }
 
         const avatarGradients = [
-            'linear-gradient(135deg, #4f46e5, #7c3aed)', // Indigo to Purple
-            'linear-gradient(135deg, #0284c7, #2563eb)', // Sky to Blue
-            'linear-gradient(135deg, #059669, #10b981)', // Emerald to Teal
-            'linear-gradient(135deg, #d97706, #f59e0b)', // Amber to Orange
-            'linear-gradient(135deg, #db2777, #f43f5e)', // Pink to Rose
-            'linear-gradient(135deg, #7c3aed, #9333ea)', // Purple to Violet
-            'linear-gradient(135deg, #0d9488, #06b6d4)'  // Teal to Cyan
+            'linear-gradient(135deg, #4f46e5, #7c3aed)',
+            'linear-gradient(135deg, #0284c7, #2563eb)',
+            'linear-gradient(135deg, #059669, #10b981)',
+            'linear-gradient(135deg, #d97706, #f59e0b)',
+            'linear-gradient(135deg, #db2777, #f43f5e)',
+            'linear-gradient(135deg, #7c3aed, #9333ea)',
+            'linear-gradient(135deg, #0d9488, #06b6d4)'
         ];
 
         tableBody.innerHTML = filteredStudents.map((s, index) => {
@@ -359,7 +361,6 @@ import { EmailNotificationService } from '../../js/email_service.js';
             const grad = avatarGradients[index % avatarGradients.length];
             const isSHS = ['Grade 11', 'Grade 12'].includes(s.grade);
 
-            // Strand styling
             const strandKey = (s.strand || '').toUpperCase();
             let strandClass = 'strand-general';
             if (strandKey.includes('TVL') || strandKey.includes('ICT')) strandClass = 'strand-ict';
@@ -371,25 +372,40 @@ import { EmailNotificationService } from '../../js/email_service.js';
             const strandDisplay = s.strand && s.strand !== '—' ? s.strand : (isSHS ? 'Unspecified' : 'General');
             const strandBadge = `<span class="strand-chip ${strandClass}">${strandDisplay}</span>`;
 
-            // Student Type Badge
-            const isTransferee = String(s.student_type || '').toLowerCase().includes('transfer');
-            const typeBadge = isTransferee 
-                ? `<span class="student-type-pill pill-transferee" title="Transferee Student"><i class="fas fa-right-left"></i> Transferee</span>`
-                : `<span class="student-type-pill pill-new" title="New Enrolled Student"><i class="fas fa-sparkles"></i> New</span>`;
+            const sTypeRaw = String(s.student_type || '').toLowerCase();
+            let typeBadge = '';
+            if (sTypeRaw.includes('transfer')) {
+                typeBadge = `<span class="student-type-pill pill-transferee" title="Transferee Student"><i class="fas fa-right-left"></i> Transferee</span>`;
+            } else if (sTypeRaw.includes('repeater')) {
+                typeBadge = `<span class="student-type-pill pill-repeater" style="background:#fef2f2; color:#991b1b; border:1px solid #fecaca;" title="Repeater Student"><i class="fas fa-rotate-left"></i> Repeater</span>`;
+            } else {
+                typeBadge = `<span class="student-type-pill pill-new" title="New Enrolled Student"><i class="fas fa-sparkles"></i> New</span>`;
+            }
 
-            // Gender icon & label
             const isMale = (s.gender || '').toLowerCase() === 'male';
             const isFemale = (s.gender || '').toLowerCase() === 'female';
             const genderIcon = isMale ? 'fa-mars' : (isFemale ? 'fa-venus' : 'fa-circle-user');
             const genderClass = isMale ? 'gender-male' : (isFemale ? 'gender-female' : 'gender-neutral');
 
-            // Status Badge
             const isActive = (s.status || 'Active').toLowerCase() === 'active';
             const statusBadge = `
                 <span class="student-status-pill ${isActive ? 'status-active' : 'status-inactive'}">
                     <span class="status-dot"></span>
                     ${s.status || 'Active'}
                 </span>
+            `;
+
+            // Academic Status Dropdown Logic
+            let badgeClass = 'badge-unassigned';
+            if (s.academic_status === 'Passed') badgeClass = 'badge-passed';
+            else if (s.academic_status === 'Failed') badgeClass = 'badge-failed';
+
+            const academicBadge = `
+                <select class="academic-status-select ${badgeClass}" data-id="${s.id}">
+                    <option value="Unassigned" ${s.academic_status === 'Unassigned' ? 'selected' : ''}>Unassigned</option>
+                    <option value="Passed" ${s.academic_status === 'Passed' ? 'selected' : ''}>Passed</option>
+                    <option value="Failed" ${s.academic_status === 'Failed' ? 'selected' : ''}>Failed</option>
+                </select>
             `;
 
             return `
@@ -440,6 +456,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
                             : `<span class="text-muted">—</span>`}
                     </td>
                     <td class="cell-center cell-status">${statusBadge}</td>
+                    <td class="cell-center cell-academic-status">${academicBadge}</td>
                     <td class="cell-center cell-actions">
                         <div class="manage-dropdown">
                             <button type="button" class="btn-manage" aria-expanded="false" title="Manage Student Record">
@@ -475,6 +492,39 @@ import { EmailNotificationService } from '../../js/email_service.js';
             recordCount.textContent = `Showing ${filteredStudents.length} of ${allStudents.length} records`;
         }
 
+        // Academic Status Dropdown Change Listener
+        tableBody.querySelectorAll('.academic-status-select').forEach(select => {
+            select.addEventListener('change', async function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const studentId = this.dataset.id;
+                const newStatus = this.value;
+
+                // Optimistic UI update
+                this.className = `academic-status-select ${newStatus === 'Passed' ? 'badge-passed' : (newStatus === 'Failed' ? 'badge-failed' : 'badge-unassigned')}`;
+
+                try {
+                    const { error } = await supabase
+                        .from('students')
+                        .update({ academic_status: newStatus })
+                        .eq('id', studentId);
+
+                    if (error) throw error;
+
+                    // Update local state
+                    const student = allStudents.find(s => s.id === studentId);
+                    if (student) student.academic_status = newStatus;
+
+                    showAlert(`✅ Student academic status updated to ${newStatus.toUpperCase()}`, 'success');
+                } catch (err) {
+                    console.error('Update academic status error:', err);
+                    showAlert('❌ Failed to update status: ' + err.message, 'error');
+                    applyFilters(); // Revert UI on error
+                }
+            });
+        });
+
         // Manage Dropdown Toggle
         tableBody.querySelectorAll('.btn-manage').forEach(btn => {
             btn.addEventListener('click', function(e) {
@@ -484,7 +534,6 @@ import { EmailNotificationService } from '../../js/email_service.js';
                 const row = this.closest('tr');
                 const isOpen = dropdown.classList.contains('show');
 
-                // Close all open dropdowns
                 document.querySelectorAll('.manage-dropdown.show').forEach(d => {
                     d.classList.remove('show');
                     d.classList.remove('dropup');
@@ -529,7 +578,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
                     schoolYear: '2026-2027'
                 });
                 EmailNotificationService.sendViaGmailWeb(emailPayload);
-                showAlert(`Gmail compose opened for ${st.firstName} ${st.lastName}! (Username: ${st.email}, Password: ${st.password || st.lastName})`, 'success');
+                showAlert(`Gmail compose opened for ${st.firstName} ${st.lastName}!`, 'success');
             });
         });
 
@@ -824,7 +873,6 @@ import { EmailNotificationService } from '../../js/email_service.js';
             }
 
             try {
-                // 1. If Transfer, record in transferees registry
                 if (reason === 'Transferred to Another School') {
                     try {
                         await supabase.from('transferees').insert([{
@@ -837,13 +885,11 @@ import { EmailNotificationService } from '../../js/email_service.js';
                             requested_date: new Date(effDate).toISOString(),
                             created_at: new Date().toISOString()
                         }]);
-                        console.log('✅ Recorded to transferees registry');
                     } catch (tErr) {
                         console.warn('Transferees table insert warning:', tErr);
                     }
                 }
 
-                // 2. Perform Removal or Archival
                 if (removalMode === 'permanent') {
                     const { error: delErr } = await supabase
                         .from('students')
@@ -874,7 +920,6 @@ import { EmailNotificationService } from '../../js/email_service.js';
                     }
                 }
 
-                // 3. Log to activity_logs table
                 try {
                     await supabase.from('activity_logs').insert([{
                         user_id: currentUser?.id && currentUser.id.length === 36 ? currentUser.id : null,
@@ -887,7 +932,6 @@ import { EmailNotificationService } from '../../js/email_service.js';
                     console.warn('activity_logs logging warning:', logErr);
                 }
 
-                // 4. Update local state
                 if (removalMode === 'permanent') {
                     allStudents = allStudents.filter(s => s.id !== studentId);
                 } else {
@@ -978,6 +1022,29 @@ import { EmailNotificationService } from '../../js/email_service.js';
                 const r = d.closest('tr');
                 if (r) r.classList.remove('dropdown-open');
             });
+        }
+    });
+
+    // ============================================
+    // LIVE REFRESH (SUPABASE REALTIME & CROSS-TAB)
+    // ============================================
+
+    try {
+        supabase
+            .channel('schema-db-changes')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'students' }, payload => {
+                console.log('🔄 Realtime update detected on students table:', payload);
+                loadStudents();
+            })
+            .subscribe();
+    } catch (e) {
+        console.warn('Realtime subscription not available:', e);
+    }
+
+    window.addEventListener('storage', function(e) {
+        if (!e.key || e.key.includes('hes_enrollment_updated') || e.key.includes('hes_latest_notification')) {
+            console.log('🔄 Storage event detected, refreshing list...');
+            loadStudents();
         }
     });
 

@@ -1,14 +1,13 @@
 /**
  * Student Enrollment Form - Supabase Integration
- * HES - HES, Hiraya Enrollment System
+ * HES - Hiraya Enrollment System
  *
- * FIXED: All 6 requirement files are now uploaded to Supabase Storage
- *        and their public URLs are saved to the `enrollments` table
- *        in the correct columns (form_137_url, report_card_url, etc.)
+ * Allows re-enrollment if the student is Passed/Failed or changing school years.
+ * Respects the Admin's Enrollment Window (Open/Closed) toggle — now backed by
+ * the app_settings table (global + realtime).
  */
 
 import { supabase } from '../../supabase/config.js';
-import { EmailNotificationService } from '../../js/email_service.js';
 
 // ============================================================
 // REQUIREMENTS DATA
@@ -16,90 +15,124 @@ import { EmailNotificationService } from '../../js/email_service.js';
 const requirementsData = {
     'Grade 7': {
         'new': [
-            { name: '2x2 ID Picture for Official School ID (White Background)', required: true, can_follow: false, field: 'two_by_two_picture' },
-            { name: 'Form 137 (Permanent Record)', required: true, can_follow: false, field: 'form_137' },
-            { name: 'Report Card', required: true, can_follow: false, field: 'report_card' },
-            { name: 'Certificate of Completion (Elementary)', required: true, can_follow: false, field: 'certificate_of_completion' },
-            { name: 'PSA Birth Certificate', required: true, can_follow: false, field: 'psa_birth_cert' },
-            { name: 'Good Moral Certificate', required: true, can_follow: false, field: 'good_moral_cert' }
+            { name: '2x2 ID Picture for Official School ID (White Background)', required: true, field: 'two_by_two_picture' },
+            { name: 'Form 137 (Permanent Record)', required: true, field: 'form_137' },
+            { name: 'Report Card', required: true, field: 'report_card' },
+            { name: 'Certificate of Completion (Elementary)', required: true, field: 'certificate_of_completion' },
+            { name: 'PSA Birth Certificate', required: true, field: 'psa_birth_cert' },
+            { name: 'Good Moral Certificate', required: true, field: 'good_moral_cert' }
         ],
         'transferee': [
-            { name: '2x2 ID Picture for Official School ID (White Background)', required: true, can_follow: false, field: 'two_by_two_picture' },
-            { name: 'Form 137 (Permanent Record)', required: true, can_follow: false, field: 'form_137' },
-            { name: 'Report Card', required: true, can_follow: false, field: 'report_card' },
-            { name: 'Certificate of Completion (Elementary)', required: true, can_follow: false, field: 'certificate_of_completion' },
-            { name: 'PSA Birth Certificate', required: true, can_follow: false, field: 'psa_birth_cert' },
-            { name: 'Good Moral Certificate', required: true, can_follow: false, field: 'good_moral_cert' }
+            { name: '2x2 ID Picture for Official School ID (White Background)', required: true, field: 'two_by_two_picture' },
+            { name: 'Form 137 (Permanent Record)', required: true, field: 'form_137' },
+            { name: 'Report Card', required: true, field: 'report_card' },
+            { name: 'Certificate of Completion (Elementary)', required: true, field: 'certificate_of_completion' },
+            { name: 'PSA Birth Certificate', required: true, field: 'psa_birth_cert' },
+            { name: 'Good Moral Certificate', required: true, field: 'good_moral_cert' }
+        ],
+        'continuing': [
+            { name: '2x2 ID Picture for Official School ID (White Background)', required: true, field: 'two_by_two_picture' },
+            { name: 'Report Card', required: true, field: 'report_card' }
+        ],
+        'repeater': [
+            { name: 'Report Card', required: true, field: 'report_card' }
         ]
     },
     'Grade 8': {
         'continuing': [
-            { name: '2x2 ID Picture for Official School ID (White Background)', required: true, can_follow: false, field: 'two_by_two_picture' },
-            { name: 'Report Card', required: true, can_follow: false, field: 'report_card' }
+            { name: '2x2 ID Picture for Official School ID (White Background)', required: true, field: 'two_by_two_picture' },
+            { name: 'Report Card', required: true, field: 'report_card' }
         ],
         'transferee': [
-            { name: '2x2 ID Picture for Official School ID (White Background)', required: true, can_follow: false, field: 'two_by_two_picture' },
-            { name: 'Form 137 (Permanent Record)', required: true, can_follow: false, field: 'form_137' },
-            { name: 'Report Card', required: true, can_follow: false, field: 'report_card' },
-            { name: 'Certificate of Completion', required: true, can_follow: false, field: 'certificate_of_completion' },
-            { name: 'PSA Birth Certificate', required: true, can_follow: false, field: 'psa_birth_cert' },
-            { name: 'Good Moral Certificate', required: true, can_follow: false, field: 'good_moral_cert' }
+            { name: '2x2 ID Picture for Official School ID (White Background)', required: true, field: 'two_by_two_picture' },
+            { name: 'Form 137 (Permanent Record)', required: true, field: 'form_137' },
+            { name: 'Report Card', required: true, field: 'report_card' },
+            { name: 'Certificate of Completion', required: true, field: 'certificate_of_completion' },
+            { name: 'PSA Birth Certificate', required: true, field: 'psa_birth_cert' },
+            { name: 'Good Moral Certificate', required: true, field: 'good_moral_cert' }
+        ],
+        'repeater': [
+            { name: 'Report Card', required: true, field: 'report_card' }
         ]
     },
     'Grade 9': {
         'continuing': [
-            { name: '2x2 ID Picture for Official School ID (White Background)', required: true, can_follow: false, field: 'two_by_two_picture' },
-            { name: 'Report Card', required: true, can_follow: false, field: 'report_card' }
+            { name: '2x2 ID Picture for Official School ID (White Background)', required: true, field: 'two_by_two_picture' },
+            { name: 'Report Card', required: true, field: 'report_card' }
         ],
         'transferee': [
-            { name: '2x2 ID Picture for Official School ID (White Background)', required: true, can_follow: false, field: 'two_by_two_picture' },
-            { name: 'Form 137 (Permanent Record)', required: true, can_follow: false, field: 'form_137' },
-            { name: 'Report Card', required: true, can_follow: false, field: 'report_card' },
-            { name: 'Certificate of Completion', required: true, can_follow: false, field: 'certificate_of_completion' },
-            { name: 'PSA Birth Certificate', required: true, can_follow: false, field: 'psa_birth_cert' },
-            { name: 'Good Moral Certificate', required: true, can_follow: false, field: 'good_moral_cert' }
+            { name: '2x2 ID Picture for Official School ID (White Background)', required: true, field: 'two_by_two_picture' },
+            { name: 'Form 137 (Permanent Record)', required: true, field: 'form_137' },
+            { name: 'Report Card', required: true, field: 'report_card' },
+            { name: 'Certificate of Completion', required: true, field: 'certificate_of_completion' },
+            { name: 'PSA Birth Certificate', required: true, field: 'psa_birth_cert' },
+            { name: 'Good Moral Certificate', required: true, field: 'good_moral_cert' }
+        ],
+        'repeater': [
+            { name: 'Report Card', required: true, field: 'report_card' }
         ]
     },
     'Grade 10': {
         'continuing': [
-            { name: '2x2 ID Picture for Official School ID (White Background)', required: true, can_follow: false, field: 'two_by_two_picture' },
-            { name: 'Report Card', required: true, can_follow: false, field: 'report_card' }
+            { name: '2x2 ID Picture for Official School ID (White Background)', required: true, field: 'two_by_two_picture' },
+            { name: 'Report Card', required: true, field: 'report_card' }
         ],
         'transferee': [
-            { name: '2x2 ID Picture for Official School ID (White Background)', required: true, can_follow: false, field: 'two_by_two_picture' },
-            { name: 'Form 137 (Permanent Record)', required: true, can_follow: false, field: 'form_137' },
-            { name: 'Report Card', required: true, can_follow: false, field: 'report_card' },
-            { name: 'Certificate of Completion', required: true, can_follow: false, field: 'certificate_of_completion' },
-            { name: 'PSA Birth Certificate', required: true, can_follow: false, field: 'psa_birth_cert' },
-            { name: 'Good Moral Certificate', required: true, can_follow: false, field: 'good_moral_cert' }
+            { name: '2x2 ID Picture for Official School ID (White Background)', required: true, field: 'two_by_two_picture' },
+            { name: 'Form 137 (Permanent Record)', required: true, field: 'form_137' },
+            { name: 'Report Card', required: true, field: 'report_card' },
+            { name: 'Certificate of Completion', required: true, field: 'certificate_of_completion' },
+            { name: 'PSA Birth Certificate', required: true, field: 'psa_birth_cert' },
+            { name: 'Good Moral Certificate', required: true, field: 'good_moral_cert' }
+        ],
+        'repeater': [
+            { name: 'Report Card', required: true, field: 'report_card' }
         ]
     },
     'Grade 11': {
         'same_school': [
-            { name: '2x2 ID Picture for Official School ID (White Background)', required: true, can_follow: false, field: 'two_by_two_picture' },
-            { name: 'Report Card', required: true, can_follow: false, field: 'report_card' }
+            { name: '2x2 ID Picture for Official School ID (White Background)', required: true, field: 'two_by_two_picture' },
+            { name: 'Report Card', required: true, field: 'report_card' }
+        ],
+        'continuing': [
+            { name: '2x2 ID Picture for Official School ID (White Background)', required: true, field: 'two_by_two_picture' },
+            { name: 'Report Card', required: true, field: 'report_card' }
         ],
         'different_school': [
-            { name: '2x2 ID Picture for Official School ID (White Background)', required: true, can_follow: false, field: 'two_by_two_picture' },
-            { name: 'Form 137 (Permanent Record)', required: true, can_follow: false, field: 'form_137' },
-            { name: 'Report Card', required: true, can_follow: false, field: 'report_card' },
-            { name: 'Certificate of Completion (Junior High)', required: true, can_follow: false, field: 'certificate_of_completion' },
-            { name: 'PSA Birth Certificate', required: true, can_follow: false, field: 'psa_birth_cert' },
-            { name: 'Good Moral Certificate', required: true, can_follow: false, field: 'good_moral_cert' }
+            { name: '2x2 ID Picture for Official School ID (White Background)', required: true, field: 'two_by_two_picture' },
+            { name: 'Form 137 (Permanent Record)', required: true, field: 'form_137' },
+            { name: 'Report Card', required: true, field: 'report_card' },
+            { name: 'Certificate of Completion (Junior High)', required: true, field: 'certificate_of_completion' },
+            { name: 'PSA Birth Certificate', required: true, field: 'psa_birth_cert' },
+            { name: 'Good Moral Certificate', required: true, field: 'good_moral_cert' }
+        ],
+        'transferee': [
+            { name: '2x2 ID Picture for Official School ID (White Background)', required: true, field: 'two_by_two_picture' },
+            { name: 'Form 137 (Permanent Record)', required: true, field: 'form_137' },
+            { name: 'Report Card', required: true, field: 'report_card' },
+            { name: 'Certificate of Completion (Junior High)', required: true, field: 'certificate_of_completion' },
+            { name: 'PSA Birth Certificate', required: true, field: 'psa_birth_cert' },
+            { name: 'Good Moral Certificate', required: true, field: 'good_moral_cert' }
+        ],
+        'repeater': [
+            { name: 'Report Card', required: true, field: 'report_card' }
         ]
     },
     'Grade 12': {
         'continuing': [
-            { name: '2x2 ID Picture for Official School ID (White Background)', required: true, can_follow: false, field: 'two_by_two_picture' },
-            { name: 'Report Card', required: true, can_follow: false, field: 'report_card' }
+            { name: '2x2 ID Picture for Official School ID (White Background)', required: true, field: 'two_by_two_picture' },
+            { name: 'Report Card', required: true, field: 'report_card' }
         ],
         'transferee': [
-            { name: '2x2 ID Picture for Official School ID (White Background)', required: true, can_follow: false, field: 'two_by_two_picture' },
-            { name: 'Form 137 (Permanent Record)', required: true, can_follow: false, field: 'form_137' },
-            { name: 'Report Card', required: true, can_follow: false, field: 'report_card' },
-            { name: 'Certificate of Completion', required: true, can_follow: false, field: 'certificate_of_completion' },
-            { name: 'PSA Birth Certificate', required: true, can_follow: false, field: 'psa_birth_cert' },
-            { name: 'Good Moral Certificate', required: true, can_follow: false, field: 'good_moral_cert' }
+            { name: '2x2 ID Picture for Official School ID (White Background)', required: true, field: 'two_by_two_picture' },
+            { name: 'Form 137 (Permanent Record)', required: true, field: 'form_137' },
+            { name: 'Report Card', required: true, field: 'report_card' },
+            { name: 'Certificate of Completion', required: true, field: 'certificate_of_completion' },
+            { name: 'PSA Birth Certificate', required: true, field: 'psa_birth_cert' },
+            { name: 'Good Moral Certificate', required: true, field: 'good_moral_cert' }
+        ],
+        'repeater': [
+            { name: 'Report Card', required: true, field: 'report_card' }
         ]
     }
 };
@@ -110,8 +143,6 @@ const requirementsData = {
 const $ = (id) => document.getElementById(id);
 
 const gradeRadios = document.querySelectorAll('input[name="gradeLevel"]');
-const studentTypeGroup = $('studentTypeGroup');
-const studentTypeSelect = $('student_type');
 const strandDiv = $('strandDiv');
 const tvlSpecializationDiv = $('tvlSpecializationDiv');
 const schoolYearInput = $('school_year');
@@ -124,6 +155,89 @@ const enrollmentDisplay = $('enrollmentDisplay');
 const logoutBtn = $('logoutBtn');
 const backBtn = $('backBtn');
 const submitBtn = $('submitBtn');
+
+// ============================================================
+// ENROLLMENT WINDOW CHECK — SUPABASE-BACKED (app_settings)
+// ============================================================
+const ENROLLMENT_KEY = 'enrollment_open';
+let enrollmentIsOpen = true;
+
+async function checkEnrollmentWindow() {
+    try {
+        const { data, error } = await supabase
+            .from('app_settings')
+            .select('value')
+            .eq('key', ENROLLMENT_KEY)
+            .maybeSingle();
+        if (error) throw error;
+        return data ? data.value === 'true' : true;  // fail-open
+    } catch (e) {
+        console.warn('Could not read enrollment window, assuming OPEN:', e);
+        return true;
+    }
+}
+
+function applyEnrollmentWindow(isOpen) {
+    enrollmentIsOpen = isOpen;
+
+    const closedMessageHTML = `
+        <div style="background: white; border-radius: 12px; padding: 30px 22px; border: 1px solid #e2e8f0; margin-top: 10px; text-align: center;">
+            <div style="font-size: 40px; color: #dc2626; margin-bottom: 12px;"><i class="fas fa-lock"></i></div>
+            <h3 style="color: #0f172a; margin-bottom: 8px; font-size: 18px;">Enrollment is now closed</h3>
+            <p style="color: #64748b; font-size: 14px; max-width: 400px; margin: 0 auto;">You can enroll now through walk-in at the school registrar's office.</p>
+        </div>
+    `;
+
+    if (!isOpen) {
+        if (existingEnrollmentDiv) existingEnrollmentDiv.style.display = 'block';
+        if (enrollmentForm) enrollmentForm.style.display = 'none';
+        if (enrollmentDisplay) enrollmentDisplay.innerHTML = closedMessageHTML;
+    } else {
+        if (enrollmentDisplay) enrollmentDisplay.innerHTML = '';
+        if (existingEnrollmentDiv) existingEnrollmentDiv.style.display = 'none';
+        if (enrollmentForm) enrollmentForm.style.display = 'block';
+        // Re-check for existing enrollment now that the form is visible
+        loadExistingEnrollment();
+    }
+}
+
+// Inject the Student Type selection UI above the Grade Level
+const gradeSection = document.querySelector('input[name="gradeLevel"]').closest('.form-group');
+const typeSelectorHTML = `
+    <div class="form-group" id="studentTypeSelectionGroup" style="margin-bottom: 24px;">
+        <label style="font-size: 15px; font-weight: 700; color: #1a225a; margin-bottom: 12px; display: block;">
+            Select Student Type <span>*</span>
+        </label>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <button type="button" class="btn-type-select" data-type="new" style="flex: 1; padding: 15px; border: 2px solid #e2e8f0; border-radius: 10px; background: #fff; cursor: pointer; text-align: center; transition: all 0.2s; min-width: 100px;">
+                <i class="fas fa-user-plus" style="font-size: 24px; color: #0b2b4a; margin-bottom: 8px; display: block;"></i>
+                <strong style="color: #0b2b4a;">New Student</strong>
+            </button>
+            <button type="button" class="btn-type-select" data-type="old" style="flex: 1; padding: 15px; border: 2px solid #e2e8f0; border-radius: 10px; background: #fff; cursor: pointer; text-align: center; transition: all 0.2s; min-width: 100px;">
+                <i class="fas fa-user-graduate" style="font-size: 24px; color: #0b2b4a; margin-bottom: 8px; display: block;"></i>
+                <strong style="color: #0b2b4a;">Old Student</strong>
+            </button>
+            <button type="button" class="btn-type-select" data-type="repeater" style="flex: 1; padding: 15px; border: 2px solid #e2e8f0; border-radius: 10px; background: #fff; cursor: pointer; text-align: center; transition: all 0.2s; min-width: 100px;">
+                <i class="fas fa-rotate-left" style="font-size: 24px; color: #0b2b4a; margin-bottom: 8px; display: block;"></i>
+                <strong style="color: #0b2b4a;">Repeater</strong>
+            </button>
+            <button type="button" class="btn-type-select" data-type="transferee" style="flex: 1; padding: 15px; border: 2px solid #e2e8f0; border-radius: 10px; background: #fff; cursor: pointer; text-align: center; transition: all 0.2s; min-width: 100px;">
+                <i class="fas fa-school" style="font-size: 24px; color: #0b2b4a; margin-bottom: 8px; display: block;"></i>
+                <strong style="color: #0b2b4a;">Transferee</strong>
+            </button>
+        </div>
+        <input type="hidden" id="global_student_type" value="">
+        <input type="hidden" id="is_repeater_flag" value="false">
+    </div>
+`;
+
+if (gradeSection) {
+    gradeSection.insertAdjacentHTML('beforebegin', typeSelectorHTML);
+}
+
+const globalTypeInput = $('global_student_type');
+const repeaterFlagInput = $('is_repeater_flag');
+const typeButtons = document.querySelectorAll('.btn-type-select');
 
 let sessionUser = null;
 try {
@@ -147,20 +261,9 @@ if (schoolYearInput) {
     schoolYearInput.value = year + '-' + (year + 1);
 }
 
-function getStudentTypeOptions(gradeName) {
-    const map = {
-        'Grade 7': { 'new': 'New Student (From Elementary)', 'transferee': 'Transferee (From another school)' },
-        'Grade 8': { 'continuing': 'Continuing Student', 'transferee': 'Transferee (From another school)' },
-        'Grade 9': { 'continuing': 'Continuing Student', 'transferee': 'Transferee (From another school)' },
-        'Grade 10': { 'continuing': 'Continuing Student', 'transferee': 'Transferee (From another school)' },
-        'Grade 11': {
-            'same_school': 'From PLSNHS',
-            'different_school': 'From a different school (Transferee)'
-        },
-        'Grade 12': { 'continuing': 'Continuing Student (From Grade 11)', 'transferee': 'Transferee (From another school)' }
-    };
-    return map[gradeName] || {};
-}
+// ============================================================
+// UI HELPER FUNCTIONS
+// ============================================================
 
 function getSelectedGrade() {
     const checked = document.querySelector('input[name="gradeLevel"]:checked');
@@ -172,9 +275,7 @@ function getSelectedStrand() {
     if (!checked) return '';
     if (checked.value === 'TVL') {
         const specChecked = document.querySelector('input[name="tvl_specialization"]:checked');
-        if (specChecked) {
-            return specChecked.value;
-        }
+        if (specChecked) return specChecked.value;
         return 'TVL_NEED_SPEC';
     }
     return checked.value;
@@ -184,34 +285,197 @@ function showAlert(message, type = 'success') {
     if (!alertContainer) return;
     const alertDiv = document.createElement('div');
     alertDiv.className = `alert alert-${type}`;
-    alertDiv.innerHTML = `
-        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
-        <span>${message}</span>
-    `;
+    alertDiv.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> <span>${message}</span>`;
     alertContainer.appendChild(alertDiv);
-
     setTimeout(() => {
         alertDiv.style.opacity = '0';
         setTimeout(() => alertDiv.remove(), 300);
     }, 5000);
 }
 
-function updateStudentTypeOptions() {
-    const gradeName = getSelectedGrade();
+function highlightTypeButton(type) {
+    typeButtons.forEach(b => {
+        b.style.borderColor = '#e2e8f0';
+        b.style.background = '#fff';
+        b.style.boxShadow = 'none';
+    });
+    const btn = document.querySelector(`.btn-type-select[data-type="${type}"]`);
+    if (btn) {
+        btn.style.borderColor = '#0b2b4a';
+        btn.style.background = '#eff6ff';
+        btn.style.boxShadow = '0 0 0 3px rgba(11,43,74,0.1)';
+    }
+}
 
-    if (gradeName) {
-        const options = getStudentTypeOptions(gradeName);
-        studentTypeSelect.innerHTML = '<option value="">-- Select Student Type --</option>';
+// ============================================================
+// HANDLE TYPE SELECTION (Manual)
+// ============================================================
+typeButtons.forEach(btn => {
+    btn.addEventListener('click', async function() {
+        const type = this.dataset.type;
+        highlightTypeButton(type);
 
-        for (const [value, label] of Object.entries(options)) {
-            const option = document.createElement('option');
-            option.value = value;
-            option.textContent = label;
-            studentTypeSelect.appendChild(option);
+        if (type === 'old') {
+            const email = $('email')?.value.trim();
+            if (!email) {
+                showAlert('⚠️ Please enter your Email Address first to verify your Old Student status.', 'error');
+                highlightTypeButton(null);
+                globalTypeInput.value = '';
+                return;
+            }
+
+            const { data, error } = await supabase.from('enrollments').select('id').ilike('email', email).limit(1);
+            if (error || !data || data.length === 0) {
+                showAlert(`⚠️ No past record found for ${email}. Please select "New Student" or "Transferee".`, 'error');
+                highlightTypeButton(null);
+                globalTypeInput.value = '';
+                return;
+            }
+            
+            globalTypeInput.value = 'continuing';
+            repeaterFlagInput.value = 'false';
+            showAlert('✅ Old Student verified!', 'success');
+        } else if (type === 'repeater') {
+            globalTypeInput.value = 'repeater';
+            repeaterFlagInput.value = 'true';
+            showAlert('✅ Repeater selected. Only Report Card required.', 'success');
+        } else {
+            globalTypeInput.value = type;
+            repeaterFlagInput.value = 'false';
         }
 
-        studentTypeGroup.style.display = 'block';
+        updateRequirements();
+    });
+});
 
+// ============================================================
+// AUTO-DETECT ON EMAIL OR NAME BLUR
+// ============================================================
+async function autoIdentifyStudent() {
+    const email = $('email')?.value.trim();
+    const fName = $('firstName')?.value.trim();
+    const lName = $('lastName')?.value.trim();
+
+    if (!email && !fName) return;
+
+    // 1. Check if the student is in the students table (to check their academic_status)
+    let studentQuery = supabase.from('students').select('id, academic_status');
+    
+    if (email) {
+        studentQuery = studentQuery.ilike('email', email);
+    } else if (fName && lName) {
+        studentQuery = studentQuery.ilike('first_name', fName).ilike('last_name', lName);
+    } else if (fName) {
+        studentQuery = studentQuery.ilike('first_name', fName);
+    }
+
+    const { data: studentData } = await studentQuery.limit(1);
+
+    if (studentData && studentData.length > 0) {
+        const st = studentData[0];
+        
+        // Check if Admin marked them as Failed
+        if (st.academic_status === 'Failed') {
+            highlightTypeButton('repeater');
+            globalTypeInput.value = 'repeater';
+            repeaterFlagInput.value = 'true';
+            showAlert(`⚠️ Student is marked as "Failed". Auto-selected "Repeater".`, 'error');
+            updateRequirements();
+            return;
+        }
+    }
+
+    // 2. If not failed, check if they have past enrollment records to mark as Old Student
+    let enrollQuery = supabase.from('enrollments').select('id');
+    if (email) {
+        enrollQuery = enrollQuery.ilike('email', email);
+    } else if (fName && lName) {
+        enrollQuery = enrollQuery.ilike('first_name', fName).ilike('last_name', lName);
+    } else if (fName) {
+        enrollQuery = enrollQuery.ilike('first_name', fName);
+    }
+
+    const { data: enrollData } = await enrollQuery.limit(1);
+
+    if (enrollData && enrollData.length > 0) {
+        highlightTypeButton('old');
+        globalTypeInput.value = 'continuing';
+        repeaterFlagInput.value = 'false';
+        showAlert(`✅ Welcome back! Record found. Auto-selected "Old Student".`, 'success');
+        updateRequirements();
+    }
+}
+
+// Attach auto-identify listeners
+['email', 'firstName', 'lastName'].forEach(id => {
+    const el = $(id);
+    if (el) {
+        el.addEventListener('blur', autoIdentifyStudent);
+    }
+});
+
+// ============================================================
+// UPDATE REQUIREMENTS
+// ============================================================
+function updateRequirements() {
+    const gradeName = getSelectedGrade();
+    const studentType = globalTypeInput.value;
+
+    if (gradeName && studentType) {
+        const typeKey = (studentType === 'old') ? 'continuing' : studentType;
+
+        if (requirementsData[gradeName] && requirementsData[gradeName][typeKey]) {
+            requirementsSection.style.display = 'block';
+            const requirements = requirementsData[gradeName][typeKey];
+
+            requirementsList.innerHTML = '';
+            requirements.forEach(req => {
+                const reqDiv = document.createElement('div');
+                reqDiv.className = 'requirement-item';
+
+                const isPhoto = req.field === 'two_by_two_picture';
+                const iconClass = isPhoto ? 'fa-id-badge' : 'fa-file';
+                const acceptTypes = isPhoto ? '.jpg,.jpeg,.png' : '.pdf,.jpg,.jpeg,.png';
+                const formatHint = isPhoto ? 'JPG or PNG (Formal attire with plain white background).' : 'PDF, JPG, JPEG, or PNG';
+
+                reqDiv.innerHTML = `
+                    <div class="requirement-name">
+                        <span><i class="fas ${iconClass}"></i> ${req.name}</span>
+                        <div><span class="req-badge badge-required">Required</span></div>
+                    </div>
+                    <div class="file-upload-area" onclick="document.getElementById('${req.field}').click()">
+                        <i class="fas ${isPhoto ? 'fa-camera' : 'fa-cloud-upload-alt'}"></i> Click to upload
+                        <p style="font-size: 11px; color: #666; margin-top: 5px;">${formatHint}</p>
+                    </div>
+                    <input type="file" name="${req.field}" id="${req.field}" accept="${acceptTypes}" style="display: none;" required>
+                    <div class="file-name" id="${req.field}_name"></div>
+                `;
+                requirementsList.appendChild(reqDiv);
+            });
+
+            document.querySelectorAll('input[type="file"]').forEach(input => {
+                input.addEventListener('change', function() {
+                    const fileNameDiv = document.getElementById(this.id + '_name');
+                    if (this.files && this.files.length > 0) {
+                        fileNameDiv.innerHTML = '<i class="fas fa-check-circle" style="color: #28a745;"></i> ' + this.files[0].name;
+                    } else {
+                        fileNameDiv.innerHTML = '';
+                    }
+                });
+            });
+        } else {
+            requirementsSection.style.display = 'none';
+        }
+    } else {
+        requirementsSection.style.display = 'none';
+    }
+}
+
+// Grade and Strand Listeners
+gradeRadios.forEach(radio => {
+    radio.addEventListener('change', function() {
+        const gradeName = getSelectedGrade();
+        
         if (gradeName === 'Grade 11' || gradeName === 'Grade 12') {
             strandDiv.style.display = 'block';
             const tvlRadio = document.querySelector('input[name="strand"][value="TVL"]');
@@ -226,89 +490,15 @@ function updateStudentTypeOptions() {
                 document.querySelectorAll('input[name="tvl_specialization"]').forEach(r => r.checked = false);
             }
         }
-
-        requirementsSection.style.display = 'none';
-        requirementsList.innerHTML = '';
-
-    } else {
-        studentTypeGroup.style.display = 'none';
-        strandDiv.style.display = 'none';
-        if (tvlSpecializationDiv) {
-            tvlSpecializationDiv.style.display = 'none';
-            document.querySelectorAll('input[name="tvl_specialization"]').forEach(r => r.checked = false);
-        }
-        requirementsSection.style.display = 'none';
-    }
-}
-
-function updateRequirements() {
-    const gradeName = getSelectedGrade();
-    const studentType = studentTypeSelect.value;
-
-    if (gradeName && studentType && requirementsData[gradeName] && requirementsData[gradeName][studentType]) {
-        requirementsSection.style.display = 'block';
-        const requirements = requirementsData[gradeName][studentType];
-
-        requirementsList.innerHTML = '';
-        requirements.forEach(req => {
-            const reqDiv = document.createElement('div');
-            reqDiv.className = 'requirement-item';
-
-            const isPhoto = req.field === 'two_by_two_picture';
-            const iconClass = isPhoto ? 'fa-id-badge' : 'fa-file';
-            const acceptTypes = isPhoto ? '.jpg,.jpeg,.png' : '.pdf,.jpg,.jpeg,.png';
-            const formatHint = isPhoto ? 'JPG or PNG (Formal attire with plain white background). Uploaded photo is used by the Registrar to generate your official school ID card with QR code upon enrollment approval.' : 'PDF, JPG, JPEG, or PNG';
-
-            let badgeHtml = req.required ? 
-                '<span class="req-badge badge-required">Required</span>' : 
-                '<span class="req-badge badge-optional">Optional</span>';
-
-            reqDiv.innerHTML = `
-                <div class="requirement-name">
-                    <span><i class="fas ${iconClass}"></i> ${req.name}</span>
-                    <div>${badgeHtml}</div>
-                </div>
-                <div class="file-upload-area" onclick="document.getElementById('${req.field}').click()">
-                    <i class="fas ${isPhoto ? 'fa-camera' : 'fa-cloud-upload-alt'}"></i> Click to upload
-                    <p style="font-size: 11px; color: #666; margin-top: 5px;">${formatHint}</p>
-                </div>
-                <input type="file" name="${req.field}" id="${req.field}" accept="${acceptTypes}" style="display: none;" 
-                       ${req.required ? 'required' : ''}>
-                <div class="file-name" id="${req.field}_name"></div>
-            `;
-            requirementsList.appendChild(reqDiv);
-        });
-
-        document.querySelectorAll('input[type="file"]').forEach(input => {
-            input.addEventListener('change', function() {
-                const fileNameDiv = document.getElementById(this.id + '_name');
-                if (this.files && this.files.length > 0) {
-                    fileNameDiv.innerHTML = '<i class="fas fa-check-circle" style="color: #28a745;"></i> ' + this.files[0].name;
-                } else {
-                    fileNameDiv.innerHTML = '';
-                }
-            });
-        });
-
-    } else {
-        requirementsSection.style.display = 'none';
-    }
-}
-
-gradeRadios.forEach(radio => {
-    radio.addEventListener('change', function() {
-        updateStudentTypeOptions();
-        studentTypeSelect.value = '';
-        requirementsSection.style.display = 'none';
+        
+        updateRequirements();
     });
 });
 
 document.querySelectorAll('input[name="strand"]').forEach(radio => {
     radio.addEventListener('change', function() {
         if (this.value === 'TVL') {
-            if (tvlSpecializationDiv) {
-                tvlSpecializationDiv.style.display = 'block';
-            }
+            if (tvlSpecializationDiv) tvlSpecializationDiv.style.display = 'block';
         } else {
             if (tvlSpecializationDiv) {
                 tvlSpecializationDiv.style.display = 'none';
@@ -318,12 +508,8 @@ document.querySelectorAll('input[name="strand"]').forEach(radio => {
     });
 });
 
-if (studentTypeSelect) {
-    studentTypeSelect.addEventListener('change', updateRequirements);
-}
-
 // ============================================================
-// RENDER & LOAD EXISTING ENROLLMENT FROM SUPABASE
+// LOAD EXISTING ENROLLMENT (If any)
 // ============================================================
 function renderExistingEnrollmentCard(enr) {
     if (!existingEnrollmentDiv || !enrollmentDisplay) return;
@@ -332,187 +518,103 @@ function renderExistingEnrollmentCard(enr) {
     const isEnrolled = rawStatus === 'enrolled' || rawStatus === 'approved';
     const statusText = isEnrolled ? 'OFFICIALLY ENROLLED' : (rawStatus === 'rejected' ? 'REJECTED' : 'PENDING REVIEW');
     const badgeClass = isEnrolled ? 'status-approved' : (rawStatus === 'rejected' ? 'status-rejected' : 'status-pending');
-    const studentFullName = `${enr.first_name || ''} ${enr.last_name || ''}`.trim() || 'Student Applicant';
-    const strandText = enr.strand ? ` • ${enr.strand}` : '';
-    const dateFormatted = enr.created_at ? new Date(enr.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'Recently';
-
+    
     enrollmentDisplay.innerHTML = `
-        <div style="background: white; border-radius: 12px; padding: 22px; border: 1px solid #e2e8f0; margin-top: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.04);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;">
-                <span class="enrollment-badge ${badgeClass}" style="margin: 0; font-size: 13px; font-weight: 700; padding: 6px 16px; border-radius: 20px;">
-                    <i class="fas ${isEnrolled ? 'fa-check-circle' : 'fa-hourglass-half'}"></i> ${statusText}
-                </span>
-                <span style="font-size: 12px; color: #64748b;">
-                    <i class="fas fa-calendar"></i> Submitted: ${dateFormatted}
-                </span>
-            </div>
-            <div class="enrollment-details" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; font-size: 14px; color: #334155;">
-                <div>
-                    <span style="display: block; font-size: 12px; color: #64748b; font-weight: 600;">Student Name</span>
-                    <strong style="color: #0f172a; font-size: 15px;">${studentFullName}</strong>
-                </div>
-                <div>
-                    <span style="display: block; font-size: 12px; color: #64748b; font-weight: 600;">Grade & Track</span>
-                    <strong style="color: #0f172a; font-size: 15px;">${enr.grade_level || 'N/A'}${strandText}</strong>
-                </div>
-                <div>
-                    <span style="display: block; font-size: 12px; color: #64748b; font-weight: 600;">School Year</span>
-                    <strong>${enr.school_year || enr.last_school_year || '2026-2027'}</strong>
-                </div>
-                <div>
-                    <span style="display: block; font-size: 12px; color: #64748b; font-weight: 600;">Registered Email</span>
-                    <strong>${enr.email || 'N/A'}</strong>
-                </div>
-                ${enr.tracking_number ? `
-                <div style="grid-column: 1 / -1;">
-                    <span style="display: block; font-size: 12px; color: #64748b; font-weight: 600;">Reference Tracking #</span>
-                    <code style="background: #f1f5f9; padding: 4px 10px; border-radius: 6px; color: #0f172a; font-size: 13px; font-weight: 600;">${enr.tracking_number}</code>
-                </div>` : ''}
-            </div>
-
-            <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #f1f5f9; display: flex; gap: 12px; flex-wrap: wrap;">
-                ${isEnrolled ? `
-                    <a href="dashboard.html" class="btn btn-submit" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; padding: 10px 20px; font-size: 14px; background: #0b2b4a; color: #fff; border-radius: 8px; font-weight: 600;">
-                        <i class="fas fa-th-large"></i> Go to Student Dashboard
-                    </a>
-                ` : ''}
-                <a href="../auth/homepage.html" class="btn btn-prev" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; padding: 10px 20px; font-size: 14px; background: #f1f5f9; color: #334155; border-radius: 8px; font-weight: 600;">
-                    <i class="fas fa-home"></i> Back to Home
-                </a>
-            </div>
+        <div style="background: white; border-radius: 12px; padding: 22px; border: 1px solid #e2e8f0; margin-top: 10px;">
+            <span class="enrollment-badge ${badgeClass}" style="font-size: 13px; font-weight: 700; padding: 6px 16px; border-radius: 20px;">
+                <i class="fas ${isEnrolled ? 'fa-check-circle' : 'fa-hourglass-half'}"></i> ${statusText}
+            </span>
+            <p style="margin-top: 10px; font-size: 14px;">You already have an application for <strong>${enr.grade_level}</strong> (SY ${enr.school_year}).</p>
+            ${isEnrolled ? `<a href="dashboard.html" class="btn btn-submit" style="margin-top: 15px; display: inline-block; text-decoration: none; padding: 10px 20px; background: #0b2b4a; color: #fff; border-radius: 8px;">Go to Dashboard</a>` : ''}
         </div>
     `;
 
-    if (existingEnrollmentDiv) {
-        existingEnrollmentDiv.style.display = 'block';
-        const h3 = existingEnrollmentDiv.querySelector('h3');
-        if (h3) {
-            h3.innerHTML = isEnrolled 
-                ? '<i class="fas fa-user-graduate" style="color: #10b981; margin-right: 8px;"></i> You are Already Officially Enrolled' 
-                : '<i class="fas fa-file-signature" style="color: #f59e0b; margin-right: 8px;"></i> Enrollment Application Already Submitted';
-        }
-        const noteP = existingEnrollmentDiv.querySelector('p');
-        if (noteP) {
-            noteP.textContent = isEnrolled
-                ? 'Your enrollment application has already been approved and registered. You cannot submit multiple enrollment copies.'
-                : 'You already have an enrollment application submitted and recorded in the system. You can only have one application copy.';
-        }
-    }
+    if (existingEnrollmentDiv) existingEnrollmentDiv.style.display = 'block';
     if (enrollmentForm) enrollmentForm.style.display = 'none';
 }
 
-async function loadExistingEnrollment(targetEmail = null) {
-    const userEmail = targetEmail || sessionUser?.email || document.getElementById('email')?.value.trim() || '';
-    const userUid = sessionUser?.id || sessionUser?.uid || '';
-    const studentTableId = sessionUser?.studentTableId || sessionUser?.student_id || '';
+async function loadExistingEnrollment() {
+    // 1. FIRST — always check the enrollment window from Supabase
+    const isOpen = await checkEnrollmentWindow();
+    enrollmentIsOpen = isOpen;
 
-    if (!userEmail && !userUid && !studentTableId) {
+    if (!isOpen) {
+        applyEnrollmentWindow(false);
+        return; // Stop — enrollment is closed
+    }
+
+    // 2. Enrollment is open — check for existing applications
+    const userEmail = $('email')?.value.trim() || sessionUser?.email;
+    if (!userEmail) {
+        // No email yet — just show the form
         if (existingEnrollmentDiv) existingEnrollmentDiv.style.display = 'none';
         if (enrollmentForm) enrollmentForm.style.display = 'block';
         return;
     }
 
-    try {
-        let query = supabase.from('enrollments').select('*');
-        if (userEmail) {
-            query = query.ilike('email', userEmail.trim());
-        } else if (studentTableId) {
-            query = query.eq('student_id', studentTableId);
-        } else if (userUid) {
-            query = query.or(`applicant_id.eq.${userUid},student_id.eq.${userUid}`);
+    const { data } = await supabase
+        .from('enrollments')
+        .select('*')
+        .ilike('email', userEmail)
+        .order('created_at', { ascending: false });
+
+    if (data && data.length > 0) {
+        const currentSY = schoolYearInput?.value.trim() || '';
+        
+        // Only block if they have a pending/enrolled/approved record for the *current* school year.
+        const blockRecord = data.find(r => 
+            (r.school_year === currentSY || r.last_school_year === currentSY) && 
+            ['enrolled', 'approved', 'pending'].includes((r.status || '').toLowerCase())
+        );
+
+        if (blockRecord) {
+            renderExistingEnrollmentCard(blockRecord);
+        } else {
+            // If they don't have a block record for this year, show the form!
+            if (existingEnrollmentDiv) existingEnrollmentDiv.style.display = 'none';
+            if (enrollmentForm) enrollmentForm.style.display = 'block';
         }
-
-        const { data, error } = await query.order('created_at', { ascending: false }).limit(1);
-        if (!error && data && data.length > 0) {
-            const latestEnr = data[0];
-            const st = (latestEnr.status || '').toLowerCase();
-            if (st === 'enrolled' || st === 'approved' || st === 'pending') {
-                renderExistingEnrollmentCard(latestEnr);
-                return;
-            }
-        }
-    } catch(err) {
-        console.warn('Error checking existing enrollment:', err);
-    }
-
-    if (existingEnrollmentDiv) existingEnrollmentDiv.style.display = 'none';
-    if (enrollmentForm) enrollmentForm.style.display = 'block';
-}
-
-// ============================================================
-// HELPER — Upload one requirement file to Supabase Storage
-// ============================================================
-async function uploadRequirementFile(inputId, labelKey, bucket, folder, safeEmail, tsBase) {
-    const input = document.getElementById(inputId);
-    if (!input || !input.files || !input.files[0]) return null;
-
-    const file = input.files[0];
-    const ext = (file.name.split('.').pop() || 'bin').toLowerCase();
-    const path = `${folder}/${safeEmail}_${labelKey}_${tsBase}.${ext}`;
-
-    try {
-        const { error: upErr } = await supabase.storage
-            .from(bucket)
-            .upload(path, file, {
-                cacheControl: '3600',
-                upsert: true,
-                contentType: file.type || undefined
-            });
-
-        if (upErr) {
-            console.warn(`⚠️ Upload failed for ${labelKey}:`, upErr.message);
-            return null;
-        }
-
-        const { data: pub } = supabase.storage.from(bucket).getPublicUrl(path);
-        return pub?.publicUrl || null;
-    } catch (err) {
-        console.warn(`⚠️ Upload exception for ${labelKey}:`, err);
-        return null;
+    } else {
+        // No records at all — show the form
+        if (existingEnrollmentDiv) existingEnrollmentDiv.style.display = 'none';
+        if (enrollmentForm) enrollmentForm.style.display = 'block';
     }
 }
 
 // ============================================================
-// SUBMIT ENROLLMENT TO SUPABASE
+// SUBMIT
 // ============================================================
 async function submitEnrollment(e) {
     e.preventDefault();
 
+    // Final safety check: block submission if closed (Supabase-backed)
+    const isOpen = await checkEnrollmentWindow();
+    if (!isOpen) {
+        applyEnrollmentWindow(false);
+        showAlert('❌ Enrollment is currently closed. Please enroll through walk-in.', 'error');
+        return;
+    }
+
     const gradeName = getSelectedGrade();
-    if (!gradeName) {
-        showAlert('⚠️ Please select your grade level', 'error');
-        return;
-    }
-
-    const studentType = studentTypeSelect.value;
-    if (!studentType) {
-        showAlert('⚠️ Please select your student type', 'error');
-        return;
-    }
-
+    const studentType = globalTypeInput.value;
+    const isRepeater = repeaterFlagInput.value === 'true';
     const schoolYear = schoolYearInput.value.trim();
-    if (!schoolYear) {
-        showAlert('⚠️ Please enter the school year', 'error');
-        return;
-    }
+
+    if (!studentType) { showAlert('⚠️ Please select a Student Type (New, Old, Repeater, or Transferee).', 'error'); return; }
+    if (!gradeName) { showAlert('⚠️ Please select your grade level.', 'error'); return; }
+    if (!schoolYear) { showAlert('⚠️ Please enter the school year.', 'error'); return; }
 
     let strand = '';
-    if (gradeName === 'Grade 11' || gradeName === 'Grade 12') {
-        const selectedStrand = getSelectedStrand();
-        if (!selectedStrand) {
-            showAlert('⚠️ Please select your strand', 'error');
-            return;
-        }
-        if (selectedStrand === 'TVL_NEED_SPEC') {
-            showAlert('⚠️ Please select a TVL Specialization (Cookery or ICT)', 'error');
-            return;
-        }
-        strand = selectedStrand;
+    if (['Grade 11', 'Grade 12'].includes(gradeName)) {
+        strand = getSelectedStrand();
+        if (!strand) { showAlert('⚠️ Please select your strand.', 'error'); return; }
+        if (strand === 'TVL_NEED_SPEC') { showAlert('⚠️ Please select a TVL Specialization.', 'error'); return; }
     }
 
-    const requirements = requirementsData[gradeName]?.[studentType] || [];
+    const typeKey = (studentType === 'old') ? 'continuing' : studentType;
+    const requirements = requirementsData[gradeName]?.[typeKey] || [];
+    
     const missingFiles = [];
-
     requirements.forEach(req => {
         if (req.required) {
             const fileInput = document.getElementById(req.field);
@@ -533,351 +635,156 @@ async function submitEnrollment(e) {
     }
 
     try {
-        const lastName = document.getElementById('lastName')?.value.trim() || sessionUser?.lastName || '';
-        const firstName = document.getElementById('firstName')?.value.trim() || sessionUser?.firstName || '';
-        const middleName = document.getElementById('middleName')?.value.trim() || '';
-        const userEmail = document.getElementById('email')?.value.trim() || sessionUser?.email || '';
+        const userEmail = $('email')?.value.trim();
+        const firstName = $('firstName')?.value.trim();
+        const lastName = $('lastName')?.value.trim();
 
-        if (!userEmail) {
-            showAlert('⚠️ Please enter your email address', 'error');
-            if (submitBtn) {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="fas fa-paper-plane" style="margin-right:8px;"></i> Submit Enrollment';
-            }
-            return;
-        }
+        // --- RE-ENROLLMENT LOGIC ---
+        // Check if they have an existing record that is PENDING or ENROLLED for the SAME school year.
+        // If it's a DIFFERENT school year, we allow them to submit.
+        const { data: existingCheck } = await supabase
+            .from('enrollments')
+            .select('*')
+            .ilike('email', userEmail)
+            .eq('school_year', schoolYear)
+            .order('created_at', { ascending: false })
+            .limit(1);
 
-        // Prevent duplicate copies: A student can only have ONE enrollment record
-        try {
-            const { data: existingCheck } = await supabase
-                .from('enrollments')
-                .select('*')
-                .ilike('email', userEmail.trim())
-                .order('created_at', { ascending: false })
-                .limit(1);
-
-            if (existingCheck && existingCheck.length > 0) {
-                const cur = existingCheck[0];
-                const curStatus = (cur.status || '').toLowerCase();
-                if (curStatus === 'enrolled' || curStatus === 'approved' || curStatus === 'pending') {
-                    showAlert(`⚠️ You already have an enrollment record on file (Status: ${curStatus.toUpperCase()}). You can only have one copy.`, 'error');
-                    renderExistingEnrollmentCard(cur);
-                    if (submitBtn) {
-                        submitBtn.disabled = false;
-                        submitBtn.innerHTML = '<i class="fas fa-paper-plane" style="margin-right:8px;"></i> Submit Enrollment';
-                    }
-                    return;
+        if (existingCheck && existingCheck.length > 0) {
+            const cur = existingCheck[0];
+            const curStatus = (cur.status || '').toLowerCase();
+            // Block only if it's the EXACT same school year and not rejected
+            if (curStatus === 'enrolled' || curStatus === 'approved' || curStatus === 'pending') {
+                showAlert(`⚠️ You already have an application for ${schoolYear} (Status: ${curStatus.toUpperCase()}).`, 'error');
+                renderExistingEnrollmentCard(cur);
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = 'Submit Enrollment';
                 }
+                return;
             }
-        } catch (checkErr) {
-            console.warn('Duplicate enrollment check warning:', checkErr);
         }
 
-        const dob = document.getElementById('dob')?.value || null;
-        const ageVal = parseInt(document.getElementById('age')?.value, 10) || null;
-        const birthplace = document.getElementById('birthplace')?.value.trim() || '';
-        const gender = document.getElementById('gender')?.value || '';
-        const nationality = document.getElementById('nationality')?.value.trim() || 'Filipino';
-        const religion = document.getElementById('religion')?.value.trim() || '';
-        const address = document.getElementById('address')?.value.trim() || '';
-
-        const motherName = document.getElementById('motherName')?.value.trim() || '';
-        const motherOccupation = document.getElementById('motherOccupation')?.value.trim() || '';
-        const fatherName = document.getElementById('fatherName')?.value.trim() || '';
-        const fatherOccupation = document.getElementById('fatherOccupation')?.value.trim() || '';
-
-        const guardian = document.getElementById('guardian')?.value.trim() || '';
-        const guardianRelationship = document.getElementById('guardianRelationship')?.value || 'Parent / Guardian';
-        const guardianContact = document.getElementById('guardianContact')?.value.trim() || '';
-        const guardianEmail = document.getElementById('guardianEmail')?.value.trim() || '';
-        const guardianAddress = document.getElementById('guardianAddress')?.value.trim() || '';
-
-        const enrolledStudentType = document.getElementById('student_type')?.value || studentType || (gradeName.includes('7') ? 'New Student' : 'Continuing');
-        const previousSchool = document.getElementById('previousSchool')?.value.trim() || (enrolledStudentType === 'Transferee' ? 'Previous School' : 'Placido L. Señor National High School (PLSNHS)');
-        const previousGrade = document.getElementById('previousGrade')?.value.trim() || 'N/A';
-
-        // ============================================================
-        // 1a. Resolve student_id (FOREIGN KEY → students.id)
-        // ============================================================
+        // 1. Resolve student_id
         let resolvedStudentId = null;
-        const isValidUuid = (val) => typeof val === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val.trim());
+        const { data: stByEmail } = await supabase.from('students').select('id').ilike('email', userEmail).limit(1);
+        if (stByEmail && stByEmail.length > 0) resolvedStudentId = stByEmail[0].id;
 
-        const candidateStudentId = sessionUser?.studentTableId || sessionUser?.student_id;
-        if (isValidUuid(candidateStudentId)) {
-            try {
-                const { data: stRow } = await supabase
-                    .from('students')
-                    .select('id')
-                    .eq('id', candidateStudentId.trim())
-                    .maybeSingle();
-                if (stRow && stRow.id) resolvedStudentId = stRow.id;
-            } catch (err) {
-                console.warn('Candidate student_id check notice:', err);
-            }
-        }
-
-        if (!resolvedStudentId && userEmail) {
-            try {
-                const { data: stByEmail } = await supabase
-                    .from('students')
-                    .select('id')
-                    .ilike('email', userEmail.trim())
-                    .limit(1);
-                if (stByEmail && stByEmail.length > 0) resolvedStudentId = stByEmail[0].id;
-            } catch (err) {
-                console.warn('Student email lookup notice:', err);
-            }
-        }
-
-        const sessionUserId = sessionUser?.id || sessionUser?.uid;
-        if (!resolvedStudentId && isValidUuid(sessionUserId)) {
-            try {
-                const { data: stByUid } = await supabase
-                    .from('students')
-                    .select('id')
-                    .eq('id', sessionUserId.trim())
-                    .maybeSingle();
-                if (stByUid && stByUid.id) resolvedStudentId = stByUid.id;
-            } catch (err) {
-                console.warn('Session UID student lookup notice:', err);
-            }
-        }
-
-        const applicantId = isValidUuid(sessionUserId) ? sessionUserId.trim() : null;
-
-        // ============================================================
-        // 1b. UPLOAD ALL REQUIREMENT FILES TO SUPABASE STORAGE
-        //     → returns public URL per field (or null if not uploaded)
-        // ============================================================
-
+        // 2. Upload Files
+        showAlert('📤 Uploading your documents...', 'info');
         const BUCKET = 'student_documents';
         const FOLDER = 'student_requirements';
         const safeEmail = userEmail.replace(/[^a-z0-9]/gi, '_').toLowerCase();
         const tsBase = Date.now();
 
-        showAlert('📤 Uploading your documents to secure storage...', 'info');
+        const uploadFile = async (inputId, labelKey) => {
+            const input = document.getElementById(inputId);
+            if (!input || !input.files || !input.files[0]) return null;
+            const file = input.files[0];
+            const ext = (file.name.split('.').pop() || 'bin').toLowerCase();
+            const path = `${FOLDER}/${safeEmail}_${labelKey}_${tsBase}.${ext}`;
+            const { error } = await supabase.storage.from(BUCKET).upload(path, file, { upsert: true });
+            if (error) return null;
+            const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
+            return data?.publicUrl || null;
+        };
 
         const [
-            twoByTwoUrl,
-            form137Url,
-            reportCardUrl,
-            certCompletionUrl,
-            psaBirthCertUrl,
-            goodMoralCertUrl
+            twoByTwoUrl, form137Url, reportCardUrl, 
+            certCompletionUrl, psaBirthCertUrl, goodMoralCertUrl
         ] = await Promise.all([
-            uploadRequirementFile('two_by_two_picture',        'two_by_two_picture',        BUCKET, FOLDER, safeEmail, tsBase),
-            uploadRequirementFile('form_137',                  'form_137',                  BUCKET, FOLDER, safeEmail, tsBase),
-            uploadRequirementFile('report_card',               'report_card',               BUCKET, FOLDER, safeEmail, tsBase),
-            uploadRequirementFile('certificate_of_completion', 'certificate_of_completion', BUCKET, FOLDER, safeEmail, tsBase),
-            uploadRequirementFile('psa_birth_cert',            'psa_birth_cert',            BUCKET, FOLDER, safeEmail, tsBase),
-            uploadRequirementFile('good_moral_cert',           'good_moral_cert',           BUCKET, FOLDER, safeEmail, tsBase)
+            uploadFile('two_by_two_picture', 'two_by_two_picture'),
+            uploadFile('form_137', 'form_137'),
+            uploadFile('report_card', 'report_card'),
+            uploadFile('certificate_of_completion', 'certificate_of_completion'),
+            uploadFile('psa_birth_cert', 'psa_birth_cert'),
+            uploadFile('good_moral_cert', 'good_moral_cert')
         ]);
 
-        // ============================================================
-        // 1c. INSERT ENROLLMENT — saving ALL requirement URLs
-        // ============================================================
+        // 3. Insert to DB
+        const finalStudentType = isRepeater ? 'repeater' : ((studentType === 'old') ? 'continuing' : studentType);
 
-        const { data: newEnr, error: enrError } = await supabase
-            .from('enrollments')
-            .insert([{
-                student_id: resolvedStudentId || null,
-                applicant_id: applicantId,
-                email: userEmail,
-                first_name: firstName,
-                last_name: lastName,
-                middle_name: middleName,
-                dob: dob,
-                date_of_birth: dob || null,
-                age: ageVal,
-                birthplace: birthplace,
-                gender: gender,
-                nationality: nationality,
-                religion: religion,
-                address: address,
-                contact_number: guardianContact,
-                mother_name: motherName,
-                mother_occupation: motherOccupation,
-                father_name: fatherName,
-                father_occupation: fatherOccupation,
-                guardian_name: guardian,
-                guardian_relationship: guardianRelationship,
-                guardian_contact: guardianContact,
-                guardian_email: guardianEmail,
-                guardian_address: guardianAddress,
-                student_type: enrolledStudentType,
-                grade_level: gradeName,
-                strand: strand || null,
-                previous_school: previousSchool,
-                previous_grade: previousGrade,
-                last_school_year: schoolYear,
-                school_year: schoolYear,
-                status: 'pending',
-                // ✅ ALL requirement URLs saved to enrollments table:
-                two_by_two_picture_url:         twoByTwoUrl,
-                form_137_url:                   form137Url,
-                report_card_url:                reportCardUrl,
-                certificate_of_completion_url:  certCompletionUrl,
-                psa_birth_cert_url:             psaBirthCertUrl,
-                good_moral_cert_url:            goodMoralCertUrl,
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
-            }])
-            .select();
+        const { error: enrError } = await supabase.from('enrollments').insert([{
+            student_id: resolvedStudentId,
+            email: userEmail,
+            first_name: firstName,
+            last_name: lastName,
+            student_type: finalStudentType,
+            grade_level: gradeName,
+            strand: strand || null,
+            school_year: schoolYear,
+            last_school_year: schoolYear,
+            status: 'pending',
+            two_by_two_picture_url: twoByTwoUrl,
+            form_137_url: form137Url,
+            report_card_url: reportCardUrl,
+            certificate_of_completion_url: certCompletionUrl,
+            psa_birth_cert_url: psaBirthCertUrl,
+            good_moral_cert_url: goodMoralCertUrl,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+        }]);
 
         if (enrError) throw enrError;
 
-        const createdEnrollmentId = (newEnr && newEnr[0]) ? newEnr[0].id : null;
-        const studentFullName = `${firstName} ${lastName}`.trim() || 'Applicant';
-        const notifTitle = `📋 New Enrollment: ${studentFullName}`;
-        const notifMessage = `New student ${studentFullName} has submitted an enrollment application for ${gradeName}${strand ? ' - ' + strand : ''}. Click to review complete information and credentials.`;
-
-        // ============================================================
-        // 1d. Cache 2x2 picture as base64 for local avatar display
-        //     (secondary — the URL was already saved above)
-        // ============================================================
-        const twoByTwoInput = document.getElementById('two_by_two_picture');
-        if (twoByTwoInput && twoByTwoInput.files && twoByTwoInput.files[0]) {
-            try {
-                const picFile = twoByTwoInput.files[0];
-                const reader = new FileReader();
-                reader.onload = function(evt) {
-                    const dataUrl = evt.target.result;
-                    if (dataUrl) {
-                        try {
-                            localStorage.setItem('hes_student_avatar', dataUrl);
-                        } catch(e) {
-                            console.warn('Avatar cache too large, skipping:', e);
-                        }
-                    }
-                };
-                reader.readAsDataURL(picFile);
-            } catch (picErr) {
-                console.warn('2x2 picture avatar cache notice:', picErr);
-            }
-        }
-
-        // ============================================================
-        // 2. Notify Admin and Registrar
-        // ============================================================
-        try {
-            await supabase
-                .from('notifications')
-                .insert([
-                    {
-                        role: 'admin',
-                        title: notifTitle,
-                        message: notifMessage,
-                        type: 'new_enrollment',
-                        enrollment_id: createdEnrollmentId,
-                        is_read: false,
-                        read: false,
-                        priority: 'high',
-                        created_at: new Date().toISOString()
-                    },
-                    {
-                        role: 'registrar',
-                        title: notifTitle,
-                        message: notifMessage,
-                        type: 'new_enrollment',
-                        enrollment_id: createdEnrollmentId,
-                        is_read: false,
-                        read: false,
-                        priority: 'high',
-                        created_at: new Date().toISOString()
-                    }
-                ]);
-        } catch (notifErr) {
-            console.warn('Notification insert warning:', notifErr);
-        }
-
-        // ============================================================
-        // 3. Cross-tab storage events
-        // ============================================================
-        try {
-            const notifPayload = {
-                role: 'all',
-                roles: ['admin', 'registrar'],
-                title: notifTitle,
-                message: notifMessage,
-                type: 'new_enrollment',
-                enrollment_id: createdEnrollmentId,
-                enrollmentId: createdEnrollmentId,
-                student_name: studentFullName,
-                grade_level: gradeName,
-                timestamp: Date.now()
-            };
-            localStorage.setItem('hes_latest_notification', JSON.stringify(notifPayload));
-            localStorage.setItem('hes_admin_latest_notification', JSON.stringify(notifPayload));
-            localStorage.setItem('hes_enrollment_updated', Date.now().toString());
-        } catch (storageErr) {}
-
-        // ============================================================
-        // 4. Success + redirect
-        // ============================================================
-        showAlert('✅ Enrollment form submitted successfully! Your application is now on the Admin & Registrar dashboard for review and approval.', 'success');
-
-        setTimeout(() => {
-            if (sessionUser && sessionUser.role === 'student' && (sessionUser.status === 'Enrolled' || sessionUser.status === 'approved')) {
-                window.location.href = 'dashboard.html';
-            } else {
-                window.location.href = '../auth/login.html';
-            }
-        }, 1500);
+        showAlert('✅ Enrollment submitted successfully!', 'success');
+        setTimeout(() => window.location.href = '../auth/login.html', 1500);
 
     } catch (error) {
-        console.error('❌ Error submitting enrollment:', error);
-        showAlert('❌ Error: ' + error.message, 'error');
+        console.error('❌ Error:', error);
+        showAlert('❌ Error submitting enrollment: ' + error.message, 'error');
     } finally {
         if (submitBtn) {
             submitBtn.disabled = false;
-            submitBtn.innerHTML = '<i class="fas fa-paper-plane" style="margin-right:8px;"></i> Submit Enrollment';
+            submitBtn.innerHTML = 'Submit Enrollment';
         }
     }
 }
 
-if (enrollmentForm) {
-    enrollmentForm.addEventListener('submit', submitEnrollment);
-}
+if (enrollmentForm) enrollmentForm.addEventListener('submit', submitEnrollment);
 
 if (logoutBtn) {
     logoutBtn.addEventListener('click', async function(e) {
         e.preventDefault();
         localStorage.removeItem('currentUser');
-        localStorage.removeItem('hes_student_avatar');
-        localStorage.removeItem('hes_student_name');
-        try {
-            await supabase.auth.signOut();
-        } catch(err) {}
+        try { await supabase.auth.signOut(); } catch(err) {}
         window.location.replace('../auth/login.html');
     });
 }
 
-if (backBtn) {
-    backBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        if (sessionUser) {
-            window.location.href = 'dashboard.html';
-        } else {
-            window.location.href = '../auth/homepage.html';
-        }
-    });
-}
-
+// Trigger existing enrollment check on email blur
 const emailInputField = document.getElementById('email');
 if (emailInputField) {
-    emailInputField.addEventListener('blur', function() {
-        const val = this.value.trim();
-        if (val && val.includes('@')) {
-            loadExistingEnrollment(val);
-        }
-    });
-    emailInputField.addEventListener('change', function() {
-        const val = this.value.trim();
-        if (val && val.includes('@')) {
-            loadExistingEnrollment(val);
-        }
-    });
+    emailInputField.addEventListener('blur', loadExistingEnrollment);
 }
 
-// Initialize
-loadExistingEnrollment();
+// ============================================================
+// REALTIME — react live when admin toggles the window
+// ============================================================
+supabase.channel('enrollment-window-student')
+    .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'app_settings', filter: `key=eq.${ENROLLMENT_KEY}` },
+        (payload) => {
+            const isOpen = payload.new?.value === 'true';
+            enrollmentIsOpen = isOpen;
+            if (!isOpen) {
+                applyEnrollmentWindow(false);
+                showAlert('⚠️ Enrollment has just been closed. Please enroll through walk-in.', 'error');
+            } else {
+                applyEnrollmentWindow(true);
+                showAlert('✅ Enrollment has been re-opened. You may continue.', 'success');
+            }
+        })
+    .subscribe();
+
+// Initialize — check the window BEFORE loading existing enrollment
+(async () => {
+    const isOpen = await checkEnrollmentWindow();
+    enrollmentIsOpen = isOpen;
+
+    if (!isOpen) {
+        applyEnrollmentWindow(false);
+    } else {
+        loadExistingEnrollment();
+    }
+})();
