@@ -19,11 +19,8 @@ import { EmailNotificationService } from '../../js/email_service.js';
     let currentUser = null;
     const currentUserStr = localStorage.getItem('currentUser');
     if (currentUserStr) {
-        try {
-            currentUser = JSON.parse(currentUserStr);
-        } catch (e) {
-            console.warn('Session parse error:', e);
-        }
+        try { currentUser = JSON.parse(currentUserStr); }
+        catch (e) { console.warn('Session parse error:', e); }
     }
 
     if (!currentUser) {
@@ -50,16 +47,13 @@ import { EmailNotificationService } from '../../js/email_service.js';
     const strandFilter = document.getElementById('strandFilter');
     const searchInput = document.getElementById('searchInput');
 
-    // Enrollment Toggle
     const toggleEnrollmentBtn = document.getElementById('toggleEnrollmentBtn');
 
-    // Stats Counters
     const totalEnrollmentsEl = document.getElementById('totalEnrollments');
     const pendingCountEl = document.getElementById('pendingCount');
     const enrolledCountEl = document.getElementById('enrolledCount');
     const rejectedCountEl = document.getElementById('rejectedCount');
 
-    // Reject Modal Elements
     const rejectModal = document.getElementById('rejectModal');
     const rejectForm = document.getElementById('rejectForm');
     const rejectEnrollmentId = document.getElementById('rejectEnrollmentId');
@@ -68,7 +62,6 @@ import { EmailNotificationService } from '../../js/email_service.js';
     const closeRejectModalBtn = document.getElementById('closeRejectModalBtn');
     const cancelRejectBtn = document.getElementById('cancelRejectBtn');
 
-    // Mobile Menu
     const menuToggle = document.getElementById('menuToggle');
     const sidebar = document.getElementById('sidebar');
 
@@ -78,8 +71,8 @@ import { EmailNotificationService } from '../../js/email_service.js';
 
     let rawEnrollments = [];
     let filteredEnrollments = [];
-    let selectedLevel = 'all'; // 'all', 'jhs', 'shs'
-    let selectedGrade = 'all'; // 'all', 'Grade 7', 'Grade 8', etc.
+    let selectedLevel = 'all';   // 'all', 'jhs', 'shs'
+    let selectedGrade = 'all';   // 'all', 'Grade 7', ...
 
     function getSchoolLevel(gradeName) {
         if (!gradeName) return 'jhs';
@@ -118,7 +111,6 @@ import { EmailNotificationService } from '../../js/email_service.js';
         const icon = type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle';
         alertDiv.innerHTML = `<i class="fas ${icon}"></i> <span>${message}</span>`;
         alertContainer.appendChild(alertDiv);
-
         setTimeout(() => {
             alertDiv.style.opacity = '0';
             setTimeout(() => alertDiv.remove(), 300);
@@ -126,22 +118,20 @@ import { EmailNotificationService } from '../../js/email_service.js';
     }
 
     // ============================================
-    // ENROLLMENT WINDOW TOGGLE — SUPABASE-BACKED (app_settings)
+    // ENROLLMENT WINDOW TOGGLE
     // ============================================
 
     const ENROLLMENT_KEY = 'enrollment_open';
-    let enrollmentToggleState = true;   // local cache of truth
-    let enrollmentToggleBusy  = false;  // debounce guard
+    let enrollmentToggleState = true;
+    let enrollmentToggleBusy = false;
 
     async function readEnrollmentOpen() {
         try {
             const { data, error } = await supabase
-                .from('app_settings')
-                .select('value')
-                .eq('key', ENROLLMENT_KEY)
-                .maybeSingle();
+                .from('app_settings').select('value')
+                .eq('key', ENROLLMENT_KEY).maybeSingle();
             if (error) throw error;
-            return data ? data.value === 'true' : true;  // default open
+            return data ? data.value === 'true' : true;
         } catch (err) {
             console.warn('Read enrollment_open failed, using cache:', err);
             return enrollmentToggleState;
@@ -149,12 +139,10 @@ import { EmailNotificationService } from '../../js/email_service.js';
     }
 
     async function writeEnrollmentOpen(isOpen) {
-        const { error } = await supabase
-            .from('app_settings')
-            .upsert(
-                { key: ENROLLMENT_KEY, value: String(isOpen), updated_at: new Date().toISOString() },
-                { onConflict: 'key' }
-            );
+        const { error } = await supabase.from('app_settings').upsert(
+            { key: ENROLLMENT_KEY, value: String(isOpen), updated_at: new Date().toISOString() },
+            { onConflict: 'key' }
+        );
         if (error) throw error;
     }
 
@@ -186,16 +174,13 @@ import { EmailNotificationService } from '../../js/email_service.js';
 
             const prev = enrollmentToggleState;
             const next = !prev;
-            paintEnrollmentToggle(next);  // optimistic update
+            paintEnrollmentToggle(next);
 
             try {
                 await writeEnrollmentOpen(next);
-                showAlert(
-                    `✅ Enrollment is now ${next ? 'OPEN' : 'CLOSED'}. All student devices update instantly.`,
-                    'success'
-                );
+                showAlert(`✅ Enrollment is now ${next ? 'OPEN' : 'CLOSED'}. All student devices update instantly.`, 'success');
             } catch (err) {
-                paintEnrollmentToggle(prev);  // rollback
+                paintEnrollmentToggle(prev);
                 showAlert('Failed to update enrollment window: ' + err.message, 'error');
             } finally {
                 enrollmentToggleBusy = false;
@@ -203,17 +188,12 @@ import { EmailNotificationService } from '../../js/email_service.js';
         });
     }
 
-    // Initial paint from DB
     refreshEnrollmentToggle();
 
-    // Realtime — reflect changes from other admin tabs/devices
     supabase.channel('enrollment-window-admin')
         .on('postgres_changes',
             { event: '*', schema: 'public', table: 'app_settings', filter: `key=eq.${ENROLLMENT_KEY}` },
-            (payload) => {
-                const isOpen = payload.new?.value === 'true';
-                paintEnrollmentToggle(isOpen);
-            })
+            (payload) => paintEnrollmentToggle(payload.new?.value === 'true'))
         .subscribe();
 
     // ============================================
@@ -223,10 +203,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
     function computeEnrollmentRequirements(enr) {
         const submitted = [];
         const missing = [];
-
-        if (!enr) {
-            return { submitted, missing, isComplete: false };
-        }
+        if (!enr) return { submitted, missing, isComplete: false };
 
         const rawStudentType = String(enr.student_type || '').toLowerCase();
         const isTransferee =
@@ -234,52 +211,35 @@ import { EmailNotificationService } from '../../js/email_service.js';
             rawStudentType.includes('different') ||
             rawStudentType.includes('transferee');
 
-        const gradeLevelStr = String(enr.grade_level || '');
-        const isSeniorHigh =
-            gradeLevelStr.includes('11') ||
-            gradeLevelStr.includes('12');
-
         const has = (v) => typeof v === 'string' && v.trim().length > 0;
 
-        if (has(enr.form_138_url) || has(enr.report_card_url)) {
-            submitted.push('Report Card (Form 138)');
-        } else {
-            missing.push('Report Card (Form 138)');
-        }
+        (has(enr.form_138_url) || has(enr.report_card_url))
+            ? submitted.push('Report Card (Form 138)')
+            : missing.push('Report Card (Form 138)');
 
-        if (has(enr.psa_birth_cert_url)) {
-            submitted.push('PSA Birth Certificate');
-        } else {
-            missing.push('PSA Birth Certificate');
-        }
+        has(enr.psa_birth_cert_url)
+            ? submitted.push('PSA Birth Certificate')
+            : missing.push('PSA Birth Certificate');
 
-        if (has(enr.good_moral_cert_url)) {
-            submitted.push('Good Moral Certificate');
-        } else {
-            missing.push('Good Moral Certificate');
-        }
+        has(enr.good_moral_cert_url)
+            ? submitted.push('Good Moral Certificate')
+            : missing.push('Good Moral Certificate');
 
-        if (has(enr.two_by_two_picture_url)) {
-            submitted.push('2x2 ID Picture (White Background)');
-        } else {
-            missing.push('2x2 ID Picture (White Background)');
-        }
+        has(enr.two_by_two_picture_url)
+            ? submitted.push('2x2 ID Picture (White Background)')
+            : missing.push('2x2 ID Picture (White Background)');
 
         if (isTransferee) {
-            if (has(enr.form_137_url)) {
-                submitted.push('Form 137 (Permanent Record)');
-            } else {
-                missing.push('Form 137 (Permanent Record)');
-            }
+            has(enr.form_137_url)
+                ? submitted.push('Form 137 (Permanent Record)')
+                : missing.push('Form 137 (Permanent Record)');
         }
 
         if (has(enr.certificate_of_completion_url)) {
             submitted.push('JHS Certificate of Completion');
         }
 
-        const isComplete = missing.length === 0;
-
-        return { submitted, missing, isComplete };
+        return { submitted, missing, isComplete: missing.length === 0 };
     }
 
     // ============================================
@@ -302,31 +262,34 @@ import { EmailNotificationService } from '../../js/email_service.js';
             let enrollmentsData = [];
             try {
                 const { data: eData, error: eErr } = await supabase
-                    .from('enrollments')
-                    .select('*')
-                    .order('created_at', { ascending: false });
+                    .from('enrollments').select('*').order('created_at', { ascending: false });
                 if (!eErr && eData) enrollmentsData = eData;
             } catch (e) { console.warn('Enrollments fetch error:', e); }
 
             let studentsData = [];
             try {
-                const { data: sData, error: sErr } = await supabase.from('students').select('*');
-                if (!sErr && sData) studentsData = sData;
+                const { data: sData } = await supabase.from('students').select('*');
+                if (sData) studentsData = sData;
             } catch (e) { console.warn('Students fetch error:', e); }
 
             let usersData = [];
             try {
-                const { data: uData } = await supabase.from('users').select('id, first_name, last_name, email, role, student_id');
+                const { data: uData } = await supabase
+                    .from('users').select('id, first_name, last_name, email, role, student_id');
                 if (uData) usersData = uData;
             } catch (e) { }
 
             const items = [];
-            const seenStudentIds = new Set();
             const seenEnrollmentKeys = new Set();
 
             enrollmentsData.forEach(enr => {
-                const student = studentsData.find(s => s.id === enr.student_id || (s.email && enr.email && s.email.toLowerCase() === enr.email.toLowerCase())) || {};
-                const user = usersData.find(u => u.id === student.user_id || u.student_id === student.id || (u.email && enr.email && u.email.toLowerCase() === enr.email.toLowerCase())) || {};
+                const student = studentsData.find(s =>
+                    s.id === enr.student_id ||
+                    (s.email && enr.email && s.email.toLowerCase() === enr.email.toLowerCase())) || {};
+                const user = usersData.find(u =>
+                    u.id === student.user_id ||
+                    u.student_id === student.id ||
+                    (u.email && enr.email && u.email.toLowerCase() === enr.email.toLowerCase())) || {};
 
                 const email = (enr.email || student.email || user.email || '').trim().toLowerCase();
                 const dedupeKey = email || (student.id ? `sid_${student.id}` : enr.id);
@@ -335,22 +298,20 @@ import { EmailNotificationService } from '../../js/email_service.js';
                     seenEnrollmentKeys.add(dedupeKey);
                 }
 
-                if (student.id) seenStudentIds.add(student.id);
-
                 const fName = (enr.first_name || student.first_name || user.first_name || '').trim();
                 const lName = (enr.last_name || student.last_name || user.last_name || '').trim();
                 const fullName = `${fName} ${lName}`.trim() || 'Student Applicant';
                 const displayEmail = enr.email || student.email || user.email || '—';
                 const lrn = student.lrn || enr.lrn || 'Not assigned';
                 const gradeLevel = enr.grade_level || student.grade_level || 'Grade 11';
-                const strand = enr.strand || student.strand || (gradeLevel.includes('11') || gradeLevel.includes('12') ? 'TVL-ICT' : '');
+                const strand = enr.strand || student.strand ||
+                    ((gradeLevel.includes('11') || gradeLevel.includes('12')) ? 'TVL-ICT' : '');
                 const schoolYear = enr.school_year || enr.last_school_year || '2025-2026';
 
                 let status = 'Pending';
                 const rawStatus = (enr.status || '').toLowerCase();
                 if (rawStatus === 'approved' || rawStatus === 'enrolled') status = 'Enrolled';
                 else if (rawStatus === 'rejected') status = 'Rejected';
-                else status = 'Pending';
 
                 const { submitted, missing, isComplete } = computeEnrollmentRequirements(enr);
 
@@ -423,11 +384,9 @@ import { EmailNotificationService } from '../../js/email_service.js';
         filteredEnrollments = rawEnrollments.filter(item => {
             if (statusVal && item.status.toLowerCase() !== statusVal.toLowerCase()) return false;
 
-            // Year level filter (JHS vs SHS)
             if (selectedLevel === 'jhs' && getSchoolLevel(item.grade_name) !== 'jhs') return false;
             if (selectedLevel === 'shs' && getSchoolLevel(item.grade_name) !== 'shs') return false;
 
-            // Specific Grade Level filter
             if (selectedGrade && selectedGrade !== 'all') {
                 const sNum = selectedGrade.replace(/\D/g, '');
                 const iNum = (item.grade_name || '').replace(/\D/g, '');
@@ -437,6 +396,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
             }
 
             if (strandVal && !item.strand.toLowerCase().includes(strandVal.toLowerCase())) return false;
+
             if (searchVal) {
                 const matchName = item.fullname.toLowerCase().includes(searchVal);
                 const matchEmail = item.email.toLowerCase().includes(searchVal);
@@ -456,12 +416,82 @@ import { EmailNotificationService } from '../../js/email_service.js';
     // RENDER TABLE (GROUPED BY YEAR LEVEL)
     // ============================================
 
+    function buildRequirementsCell(enrollment) {
+        if (enrollment.has_missing && enrollment.status === 'Pending') {
+            return `
+                <div class="requirements-warning" style="display: flex; align-items: center; gap: 8px;">
+                    <span class="missing-badge" style="background: #fee2e2; color: #dc2626; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">
+                        <i class="fas fa-exclamation-triangle"></i> ${enrollment.missing_count} missing
+                    </span>
+                    <button class="btn-notify-missing"
+                            data-student-name="${enrollment.fullname.replace(/"/g, '&quot;')}"
+                            data-user-id="${enrollment.user_id || ''}"
+                            data-student-id="${enrollment.student_id || enrollment.id || ''}"
+                            data-email="${(enrollment.email || '').replace(/"/g, '&quot;')}"
+                            data-missing-list="${JSON.stringify(enrollment.missing_list).replace(/"/g, '&quot;')}"
+                            style="background: #0b2b4a; color: #FFD700; border: none; padding: 3px 8px; border-radius: 6px; font-size: 11px; cursor: pointer;">
+                        <i class="fas fa-bell"></i> Notify
+                    </button>
+                </div>
+            `;
+        }
+        if (enrollment.status === 'Pending') {
+            return `<span class="complete-badge" style="background: #d1fae5; color: #065f46; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;"><i class="fas fa-check-circle"></i> Complete</span>`;
+        }
+        return `<span class="grade-tag" style="color: #64748b;">Complete</span>`;
+    }
+
+    function buildManageDropdown(enrollment) {
+        let menuItemsHtml = `
+            <a href="view_enrollment.html?id=${enrollment.id}" class="manage-item view-item" title="View Full Details">
+                <i class="fas fa-eye"></i><span>View Details</span>
+            </a>
+        `;
+
+        if (enrollment.status === 'Pending') {
+            menuItemsHtml += `
+                <button type="button" class="manage-item approve-item" onclick="window.approveEnrollment('${enrollment.id}')" title="Approve Enrollment${enrollment.has_missing ? ' (Has missing requirements)' : ''}">
+                    <i class="fas fa-check-circle"></i><span>Approve Application</span>
+                </button>
+                <button type="button" class="manage-item reject-item" onclick="window.openRejectModal('${enrollment.id}', '${enrollment.fullname.replace(/'/g, "\\'")}')" title="Reject Application">
+                    <i class="fas fa-times-circle"></i><span>Reject Application</span>
+                </button>
+            `;
+        } else if (enrollment.status === 'Enrolled') {
+            menuItemsHtml += `
+                <a href="generate_id.html?enrollment_id=${enrollment.id}${enrollment.student_id ? '&id=' + enrollment.student_id : ''}" class="manage-item id-item" title="Generate Official Student ID">
+                    <i class="fas fa-id-card"></i><span>Generate Student ID</span>
+                </a>
+            `;
+        } else if (enrollment.status === 'Rejected') {
+            menuItemsHtml += `
+                <button type="button" class="manage-item approve-item" onclick="window.approveEnrollment('${enrollment.id}')" title="Reconsider & Approve Application">
+                    <i class="fas fa-check-circle"></i><span>Approve Application</span>
+                </button>
+            `;
+        }
+
+        menuItemsHtml += `
+            <div class="manage-divider"></div>
+            <button type="button" class="manage-item delete-item" onclick="window.deleteEnrollment('${enrollment.id}', '${enrollment.fullname.replace(/'/g, "\\'")}')" title="Delete Record">
+                <i class="fas fa-trash-alt"></i><span>Delete Record</span>
+            </button>
+        `;
+
+        return `
+            <div class="manage-dropdown">
+                <button type="button" class="btn-manage" aria-expanded="false" title="Manage Enrollment Actions">
+                    <span>Manage</span><i class="fas fa-chevron-down"></i>
+                </button>
+                <div class="manage-menu">${menuItemsHtml}</div>
+            </div>
+        `;
+    }
+
     function renderTable() {
         if (!tableBody) return;
 
-        if (recordCount) {
-            recordCount.textContent = `Total: ${filteredEnrollments.length} records`;
-        }
+        if (recordCount) recordCount.textContent = `Total: ${filteredEnrollments.length} records`;
 
         if (filteredEnrollments.length === 0) {
             tableBody.innerHTML = `
@@ -478,7 +508,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
             return;
         }
 
-        // Sort rows by natural academic grade order (Grade 7 -> 8 -> 9 -> 10 -> 11 -> 12), then by student name
+        // Sort by natural grade order, then by name
         const sortedRows = [...filteredEnrollments].sort((a, b) => {
             const gA = getGradeNumber(a.grade_name);
             const gB = getGradeNumber(b.grade_name);
@@ -486,7 +516,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
             return (a.fullname || '').localeCompare(b.fullname || '');
         });
 
-        // Group rows by Year Level / Grade
+        // Group by grade
         const groups = {};
         sortedRows.forEach(row => {
             const gName = (row.grade_name || 'Other').trim();
@@ -497,100 +527,16 @@ import { EmailNotificationService } from '../../js/email_service.js';
         let html = '';
         const groupKeys = Object.keys(groups);
 
-<<<<<<< HEAD
-            let requirementsHtml = '';
-            if (enrollment.has_missing && enrollment.status === 'Pending') {
-                requirementsHtml = `
-                    <div class="requirements-warning" style="display: flex; align-items: center; gap: 8px;">
-                        <span class="missing-badge" style="background: #fee2e2; color: #dc2626; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">
-                            <i class="fas fa-exclamation-triangle"></i> ${enrollment.missing_count} missing
-                        </span>
-                        <button class="btn-notify-missing" 
-                                data-student-name="${enrollment.fullname.replace(/"/g, '&quot;')}"
-                                data-user-id="${enrollment.user_id || ''}"
-                                data-student-id="${enrollment.student_id || enrollment.id || ''}"
-                                data-email="${(enrollment.email || '').replace(/"/g, '&quot;')}"
-                                data-missing-list="${JSON.stringify(enrollment.missing_list).replace(/"/g, '&quot;')}"
-                                style="background: #0b2b4a; color: #FFD700; border: none; padding: 3px 8px; border-radius: 6px; font-size: 11px; cursor: pointer;">
-                            <i class="fas fa-bell"></i> Notify
-                        </button>
-                    </div>
-                `;
-            } else if (enrollment.status === 'Pending') {
-                requirementsHtml = `<span class="complete-badge" style="background: #d1fae5; color: #065f46; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;"><i class="fas fa-check-circle"></i> Complete</span>`;
-            } else {
-                requirementsHtml = `<span class="grade-tag" style="color: #64748b;">Complete</span>`;
-            }
-
-            const statusLower = enrollment.status.toLowerCase();
-            const statusClass = `badge-${statusLower}`;
-
-            let menuItemsHtml = `
-                <a href="view_enrollment.html?id=${enrollment.id}" class="manage-item view-item" title="View Full Details">
-                    <i class="fas fa-eye"></i>
-                    <span>View Details</span>
-                </a>
-            `;
-
-            if (enrollment.status === 'Pending') {
-                menuItemsHtml += `
-                    <button type="button" class="manage-item approve-item" onclick="window.approveEnrollment('${enrollment.id}')" title="Approve Enrollment${enrollment.has_missing ? ' (Has missing requirements)' : ''}">
-                        <i class="fas fa-check-circle"></i>
-                        <span>Approve Application</span>
-                    </button>
-                    <button type="button" class="manage-item reject-item" onclick="window.openRejectModal('${enrollment.id}', '${enrollment.fullname.replace(/'/g, "\\'")}')" title="Reject Application">
-                        <i class="fas fa-times-circle"></i>
-                        <span>Reject Application</span>
-                    </button>
-                `;
-            } else if (enrollment.status === 'Enrolled') {
-                menuItemsHtml += `
-                    <a href="generate_id.html?enrollment_id=${enrollment.id}${enrollment.student_id ? '&id=' + enrollment.student_id : ''}" class="manage-item id-item" title="Generate Official Student ID">
-                        <i class="fas fa-id-card"></i>
-                        <span>Generate Student ID</span>
-                    </a>
-                `;
-            } else if (enrollment.status === 'Rejected') {
-                menuItemsHtml += `
-                    <button type="button" class="manage-item approve-item" onclick="window.approveEnrollment('${enrollment.id}')" title="Reconsider & Approve Application">
-                        <i class="fas fa-check-circle"></i>
-                        <span>Approve Application</span>
-                    </button>
-                `;
-            }
-
-            menuItemsHtml += `
-                <div class="manage-divider"></div>
-                <button type="button" class="manage-item delete-item" onclick="window.deleteEnrollment('${enrollment.id}', '${enrollment.fullname.replace(/'/g, "\\'")}')" title="Delete Record">
-                    <i class="fas fa-trash-alt"></i>
-                    <span>Delete Record</span>
-                </button>
-            `;
-
-            const manageDropdownHtml = `
-                <div class="manage-dropdown">
-                    <button type="button" class="btn-manage" aria-expanded="false" title="Manage Enrollment Actions">
-                        <span>Manage</span>
-                        <i class="fas fa-chevron-down"></i>
-                    </button>
-                    <div class="manage-menu">
-                        ${menuItemsHtml}
-                    </div>
-                </div>
-            `;
-
-            const gradeNum = parseInt(String(enrollment.grade_level || '').replace(/\D/g, ''), 10);
-            const showStrand = gradeNum >= 11 && enrollment.strand;
-=======
+        // FIXED: proper forEach over groupKeys
         groupKeys.forEach(gradeKey => {
             const gradeRows = groups[gradeKey];
-            const isShs = getSchoolLevel(gradeKey) === 'shs';
-            const subLabel = isShs ? 'Senior High School' : 'Junior High School';
-            const iconClass = isShs ? 'shs' : 'jhs';
-            const iconFa = isShs ? 'fa-graduation-cap' : 'fa-school';
->>>>>>> b239393 (pacheckkocole)
+            const gradeNum = getGradeNumber(gradeKey);
+            const isSHS = gradeNum >= 11;
+            const iconClass = isSHS ? 'shs' : 'jhs';
+            const iconFa = isSHS ? 'fa-user-graduate' : 'fa-book-reader';
+            const subLabel = isSHS ? 'Senior High School' : 'Junior High School';
 
-            // Visual Year Level Section Header
+            // Year group header row
             html += `
                 <tr class="year-group-row">
                     <td colspan="8">
@@ -608,97 +554,20 @@ import { EmailNotificationService } from '../../js/email_service.js';
                 </tr>
             `;
 
+            // Rows within this group
             gradeRows.forEach(enrollment => {
                 const dateObj = new Date(enrollment.created_at);
-                const formattedDate = isNaN(dateObj.getTime()) ? '—' : dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                const formattedDate = isNaN(dateObj.getTime())
+                    ? '—'
+                    : dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
                 const initial = enrollment.fullname.charAt(0).toUpperCase();
 
-                // Requirements badge — driven entirely by enrollments table
-                let requirementsHtml = '';
-                if (enrollment.has_missing && enrollment.status === 'Pending') {
-                    requirementsHtml = `
-                        <div class="requirements-warning" style="display: flex; align-items: center; gap: 8px;">
-                            <span class="missing-badge" style="background: #fee2e2; color: #dc2626; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">
-                                <i class="fas fa-exclamation-triangle"></i> ${enrollment.missing_count} missing
-                            </span>
-                            <button class="btn-notify-missing" 
-                                    data-student-name="${enrollment.fullname.replace(/"/g, '&quot;')}"
-                                    data-user-id="${enrollment.user_id || ''}"
-                                    data-student-id="${enrollment.student_id || enrollment.id || ''}"
-                                    data-email="${(enrollment.email || '').replace(/"/g, '&quot;')}"
-                                    data-missing-list="${JSON.stringify(enrollment.missing_list).replace(/"/g, '&quot;')}"
-                                    style="background: #0b2b4a; color: #FFD700; border: none; padding: 3px 8px; border-radius: 6px; font-size: 11px; cursor: pointer;">
-                                <i class="fas fa-bell"></i> Notify
-                            </button>
-                        </div>
-                    `;
-                } else if (enrollment.status === 'Pending') {
-                    requirementsHtml = `<span class="complete-badge" style="background: #d1fae5; color: #065f46; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;"><i class="fas fa-check-circle"></i> Complete</span>`;
-                } else {
-                    requirementsHtml = `<span class="grade-tag" style="color: #64748b;">Complete</span>`;
-                }
+                const requirementsHtml = buildRequirementsCell(enrollment);
+                const statusClass = `badge-${enrollment.status.toLowerCase()}`;
+                const manageDropdownHtml = buildManageDropdown(enrollment);
 
-                // Status badge
-                const statusLower = enrollment.status.toLowerCase();
-                const statusClass = `badge-${statusLower}`;
-
-                // Action Menu Items for Manage Dropdown
-                let menuItemsHtml = `
-                    <a href="view_enrollment.html?id=${enrollment.id}" class="manage-item view-item" title="View Full Details">
-                        <i class="fas fa-eye"></i>
-                        <span>View Details</span>
-                    </a>
-                `;
-
-                if (enrollment.status === 'Pending') {
-                    menuItemsHtml += `
-                        <button type="button" class="manage-item approve-item" onclick="window.approveEnrollment('${enrollment.id}')" title="Approve Enrollment${enrollment.has_missing ? ' (Has missing requirements)' : ''}">
-                            <i class="fas fa-check-circle"></i>
-                            <span>Approve Application</span>
-                        </button>
-                        <button type="button" class="manage-item reject-item" onclick="window.openRejectModal('${enrollment.id}', '${enrollment.fullname.replace(/'/g, "\\'")}')" title="Reject Application">
-                            <i class="fas fa-times-circle"></i>
-                            <span>Reject Application</span>
-                        </button>
-                    `;
-                } else if (enrollment.status === 'Enrolled') {
-                    menuItemsHtml += `
-                        <a href="generate_id.html?enrollment_id=${enrollment.id}${enrollment.student_id ? '&id=' + enrollment.student_id : ''}" class="manage-item id-item" title="Generate Official Student ID">
-                            <i class="fas fa-id-card"></i>
-                            <span>Generate Student ID</span>
-                        </a>
-                    `;
-                } else if (enrollment.status === 'Rejected') {
-                    menuItemsHtml += `
-                        <button type="button" class="manage-item approve-item" onclick="window.approveEnrollment('${enrollment.id}')" title="Reconsider & Approve Application">
-                            <i class="fas fa-check-circle"></i>
-                            <span>Approve Application</span>
-                        </button>
-                    `;
-                }
-
-                menuItemsHtml += `
-                    <div class="manage-divider"></div>
-                    <button type="button" class="manage-item delete-item" onclick="window.deleteEnrollment('${enrollment.id}', '${enrollment.fullname.replace(/'/g, "\\'")}')" title="Delete Record">
-                        <i class="fas fa-trash-alt"></i>
-                        <span>Delete Record</span>
-                    </button>
-                `;
-
-                const manageDropdownHtml = `
-                    <div class="manage-dropdown">
-                        <button type="button" class="btn-manage" aria-expanded="false" title="Manage Enrollment Actions">
-                            <span>Manage</span>
-                            <i class="fas fa-chevron-down"></i>
-                        </button>
-                        <div class="manage-menu">
-                            ${menuItemsHtml}
-                        </div>
-                    </div>
-                `;
-
-                const gradeNum = parseInt(String(enrollment.grade_level || '').replace(/\D/g, ''), 10);
-                const showStrand = gradeNum >= 11 && enrollment.strand;
+                const gNum = parseInt(String(enrollment.grade_level || '').replace(/\D/g, ''), 10);
+                const showStrand = gNum >= 11 && enrollment.strand;
 
                 html += `
                     <tr>
@@ -712,7 +581,9 @@ import { EmailNotificationService } from '../../js/email_service.js';
                             </div>
                         </td>
                         <td>
-                            ${enrollment.id_number ? `<span class="id-badge" style="font-family: monospace; font-weight: 600; color: #0b2b4a;">${enrollment.id_number}</span>` : `<span class="grade-tag" style="color: #94a3b8;">Not assigned</span>`}
+                            ${enrollment.id_number
+                                ? `<span class="id-badge" style="font-family: monospace; font-weight: 600; color: #0b2b4a;">${enrollment.id_number}</span>`
+                                : `<span class="grade-tag" style="color: #94a3b8;">Not assigned</span>`}
                         </td>
                         <td>
                             <span class="grade-tag" style="font-weight: 600;">${enrollment.grade_name}</span>
@@ -722,9 +593,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
                         <td><span class="badge ${statusClass}">${enrollment.status}</span></td>
                         <td>${requirementsHtml}</td>
                         <td><span class="grade-tag">${formattedDate}</span></td>
-                        <td class="cell-center cell-actions">
-                            ${manageDropdownHtml}
-                        </td>
+                        <td class="cell-center cell-actions">${manageDropdownHtml}</td>
                     </tr>
                 `;
             });
@@ -732,6 +601,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
 
         tableBody.innerHTML = html;
 
+        // Manage dropdown toggle
         tableBody.querySelectorAll('.btn-manage').forEach(btn => {
             btn.addEventListener('click', function (e) {
                 e.preventDefault();
@@ -741,36 +611,33 @@ import { EmailNotificationService } from '../../js/email_service.js';
                 const isOpen = dropdown.classList.contains('show');
 
                 document.querySelectorAll('.manage-dropdown.show').forEach(d => {
-                    d.classList.remove('show');
-                    d.classList.remove('dropup');
+                    d.classList.remove('show', 'dropup');
                     const r = d.closest('tr');
                     if (r) r.classList.remove('dropdown-open');
                 });
 
                 if (!isOpen) {
                     const rect = this.getBoundingClientRect();
-                    const spaceBelow = window.innerHeight - rect.bottom;
-                    if (spaceBelow < 200) {
-                        dropdown.classList.add('dropup');
-                    } else {
-                        dropdown.classList.remove('dropup');
-                    }
+                    if (window.innerHeight - rect.bottom < 200) dropdown.classList.add('dropup');
                     dropdown.classList.add('show');
                     if (row) row.classList.add('dropdown-open');
                 }
             });
         });
 
-        document.querySelectorAll('.btn-notify-missing').forEach(btn => {
+        // Notify-missing buttons
+        tableBody.querySelectorAll('.btn-notify-missing').forEach(btn => {
             btn.addEventListener('click', function (e) {
                 e.stopPropagation();
-                const studentName = this.dataset.studentName;
-                const userId = this.dataset.userId;
-                const studentId = this.dataset.studentId;
-                const email = this.dataset.email;
                 let missingList = [];
-                try { missingList = JSON.parse(this.dataset.missingList || '[]'); } catch { missingList = []; }
-                notifyMissing(studentName, missingList, userId, studentId, email);
+                try { missingList = JSON.parse(this.dataset.missingList || '[]'); } catch { }
+                notifyMissing(
+                    this.dataset.studentName,
+                    missingList,
+                    this.dataset.userId,
+                    this.dataset.studentId,
+                    this.dataset.email
+                );
             });
         });
     }
@@ -778,8 +645,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
     document.addEventListener('click', function (e) {
         if (!e.target.closest('.manage-dropdown')) {
             document.querySelectorAll('.manage-dropdown.show').forEach(d => {
-                d.classList.remove('show');
-                d.classList.remove('dropup');
+                d.classList.remove('show', 'dropup');
                 const r = d.closest('tr');
                 if (r) r.classList.remove('dropdown-open');
             });
@@ -787,7 +653,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
     });
 
     // ============================================
-    // SUPABASE ACTIONS (Approve, Reject, Delete, etc.)
+    // SUPABASE ACTIONS
     // ============================================
 
     window.approveEnrollment = async function (id) {
@@ -830,9 +696,10 @@ import { EmailNotificationService } from '../../js/email_service.js';
                     }).eq('id', studentUserId);
                 } else {
                     const { data: newUser } = await supabase.from('users').insert([{
-                        email: email, password: lastName, role: 'student',
+                        email, password: lastName, role: 'student',
                         first_name: firstName, last_name: lastName,
-                        created_at: new Date().toISOString(), updated_at: new Date().toISOString()
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString()
                     }]).select();
                     if (newUser && newUser.length > 0) studentUserId = newUser[0].id;
                 }
@@ -840,13 +707,16 @@ import { EmailNotificationService } from '../../js/email_service.js';
 
             let studentTableId = item.student_id;
             const studentPayload = {
-                first_name: firstName, last_name: lastName, middle_name: item.middle_name || null,
-                email: email, grade_level: gradeName, strand: strand || null,
+                first_name: firstName, last_name: lastName,
+                middle_name: item.middle_name || null,
+                email, grade_level: gradeName, strand: strand || null,
                 lrn: item.lrn || item.id_number || ('141525' + String(Date.now()).slice(-6)),
                 date_of_birth: item.date_of_birth || '2008-01-01',
                 contact_number: item.contact_number || '09000000000',
-                enrollment_id: id, two_by_two_picture_url: item.two_by_two_picture_url || null,
-                avatar_url: item.two_by_two_picture_url || null, documents_status: 'complete',
+                enrollment_id: id,
+                two_by_two_picture_url: item.two_by_two_picture_url || null,
+                avatar_url: item.two_by_two_picture_url || null,
+                documents_status: 'complete',
                 updated_at: new Date().toISOString()
             };
 
@@ -854,32 +724,40 @@ import { EmailNotificationService } from '../../js/email_service.js';
                 await supabase.from('students').update(studentPayload).eq('id', studentTableId);
             } else if (email) {
                 studentPayload.created_at = new Date().toISOString();
-                const { data: createdStudent, error: sErr } = await supabase.from('students').insert([studentPayload]).select();
+                const { data: createdStudent, error: sErr } =
+                    await supabase.from('students').insert([studentPayload]).select();
                 if (createdStudent && createdStudent.length > 0) studentTableId = createdStudent[0].id;
                 else if (sErr) console.warn('Students insert notice:', sErr);
             }
 
             if (studentUserId && studentTableId) {
-                try { await supabase.from('users').update({ student_id: studentTableId }).eq('id', studentUserId); } catch (uErr) { }
+                try { await supabase.from('users').update({ student_id: studentTableId }).eq('id', studentUserId); }
+                catch (uErr) { }
             }
 
             await supabase.from('enrollments').update({
-                status: 'enrolled', student_id: studentTableId || null, updated_at: new Date().toISOString()
+                status: 'enrolled', student_id: studentTableId || null,
+                updated_at: new Date().toISOString()
             }).eq('id', id);
 
             const credsMsg = `Congratulations ${firstName}! Your enrollment application for ${gradeName} (${strand || 'General'}) S.Y. ${item.school_year || '2026-2027'} has been approved by the Administration.\n\nYour Student Portal Login Credentials:\n• Username (Gmail): ${email}\n• Initial Password: ${lastName}\n\nYou can now log in to the HES Student Portal. Upon your first login, please visit "My Profile" to update your password.`;
 
             const targetStudentId = studentUserId || studentTableId || null;
             await supabase.from('notifications').insert([{
-                user_id: targetStudentId, role: 'student', title: '🎉 Enrollment Approved!',
-                message: credsMsg, type: 'action', enrollment_id: id, read: false, is_read: false,
+                user_id: targetStudentId, role: 'student',
+                title: '🎉 Enrollment Approved!', message: credsMsg,
+                type: 'action', enrollment_id: id,
+                read: false, is_read: false,
                 created_at: new Date().toISOString()
             }]);
 
             const credsPayload = {
-                email, lastName, firstName, studentFullName: item.fullname || `${firstName} ${lastName}`,
-                gradeLevel: gradeName, strand: strand || '', schoolYear: item.school_year || '2026-2027',
-                enrollmentId: id, studentId: studentTableId || studentUserId
+                email, lastName, firstName,
+                studentFullName: item.fullname || `${firstName} ${lastName}`,
+                gradeLevel: gradeName, strand: strand || '',
+                schoolYear: item.school_year || '2026-2027',
+                enrollmentId: id,
+                studentId: studentTableId || studentUserId
             };
 
             try {
@@ -896,20 +774,75 @@ import { EmailNotificationService } from '../../js/email_service.js';
         }
     };
 
-    let activeCredentialsData = null;
-    function showCredentialsModal(creds) { /* (Existing modal logic) */ }
-    function closeCredentialsModal() { /* (Existing modal logic) */ }
+    // ============================================
+    // PLACEHOLDERS — IMPLEMENT AS NEEDED
+    // ============================================
 
-    // Modals & Reject Logic (Already existing in your file)
-    window.openRejectModal = function (id, name) { /* ... */ };
-    window.closeRejectModal = function () { /* ... */ };
-    window.deleteEnrollment = async function (id, name) { /* ... */ };
-    window.pendingEnrollment = async function (id) { /* ... */ };
+    function showCredentialsModal(creds) { console.log('showCredentialsModal', creds); }
+    function closeCredentialsModal() { }
+    function notifyMissing(name, list, userId, studentId, email) {
+        console.log('notifyMissing', { name, list, userId, studentId, email });
+    }
 
-    if (rejectForm) { /* ... */ }
+    window.openRejectModal = function (id, name) {
+        if (rejectEnrollmentId) rejectEnrollmentId.value = id;
+        if (rejectStudentName) rejectStudentName.textContent = name;
+        if (rejectionReason) rejectionReason.value = '';
+        if (rejectModal) rejectModal.style.display = 'flex';
+    };
+
+    window.closeRejectModal = function () {
+        if (rejectModal) rejectModal.style.display = 'none';
+    };
+
+    window.deleteEnrollment = async function (id, name) {
+        if (!confirm(`Delete enrollment record for ${name}? This cannot be undone.`)) return;
+        try {
+            const { error } = await supabase.from('enrollments').delete().eq('id', id);
+            if (error) throw error;
+            showAlert('Enrollment record deleted.', 'success');
+            await loadEnrollments();
+        } catch (err) {
+            showAlert('Failed to delete: ' + err.message, 'error');
+        }
+    };
+
+    window.pendingEnrollment = async function (id) {
+        try {
+            await supabase.from('enrollments').update({
+                status: 'pending', updated_at: new Date().toISOString()
+            }).eq('id', id);
+            await loadEnrollments();
+        } catch (err) {
+            showAlert('Failed to set pending: ' + err.message, 'error');
+        }
+    };
+
+    if (rejectForm) {
+        rejectForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const id = rejectEnrollmentId?.value;
+            const reason = rejectionReason?.value?.trim() || '';
+            if (!id) return;
+            try {
+                await supabase.from('enrollments').update({
+                    status: 'rejected', rejection_reason: reason,
+                    updated_at: new Date().toISOString()
+                }).eq('id', id);
+                window.closeRejectModal();
+                showAlert('Enrollment rejected.', 'success');
+                await loadEnrollments();
+            } catch (err) {
+                showAlert('Failed to reject: ' + err.message, 'error');
+            }
+        });
+    }
+
+    if (closeRejectModalBtn) closeRejectModalBtn.addEventListener('click', window.closeRejectModal);
+    if (cancelRejectBtn) cancelRejectBtn.addEventListener('click', window.closeRejectModal);
 
     // ============================================
-    // FILTERS & MOBILE MENU
+    // FILTERS
     // ============================================
 
     window.resetFilters = function () {
@@ -931,21 +864,18 @@ import { EmailNotificationService } from '../../js/email_service.js';
         showAlert('Filters reset to default.', 'info');
     };
 
-    if (filterForm) filterForm.addEventListener('submit', function (e) { e.preventDefault(); applyFilters(); });
+    if (filterForm) filterForm.addEventListener('submit', e => { e.preventDefault(); applyFilters(); });
     if (statusFilter) statusFilter.addEventListener('change', applyFilters);
     if (strandFilter) strandFilter.addEventListener('change', applyFilters);
     if (searchInput) searchInput.addEventListener('input', applyFilters);
 
-<<<<<<< HEAD
-=======
-    // Setup Level Navigation Tabs (All, Junior High, Senior High)
+    // Level tabs (All / JHS / SHS) — kept from incoming branch
     document.querySelectorAll('.level-tab-btn').forEach(btn => {
         btn.addEventListener('click', function () {
             document.querySelectorAll('.level-tab-btn').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
             selectedLevel = this.dataset.level || 'all';
 
-            // Reset grade pill
             document.querySelectorAll('.grade-pill-tag').forEach(p => p.classList.remove('active'));
             const allPill = document.querySelector('.grade-pill-tag[data-grade="all"]');
             if (allPill) allPill.classList.add('active');
@@ -956,7 +886,7 @@ import { EmailNotificationService } from '../../js/email_service.js';
         });
     });
 
-    // Setup Fast Grade Pills (All, Grade 7, Grade 8, etc.)
+    // Grade pills
     document.querySelectorAll('.grade-pill-tag').forEach(pill => {
         pill.addEventListener('click', function () {
             document.querySelectorAll('.grade-pill-tag').forEach(p => p.classList.remove('active'));
@@ -979,13 +909,17 @@ import { EmailNotificationService } from '../../js/email_service.js';
         });
     });
 
+    // Grade dropdown filter (single handler — removed duplicate)
     if (gradeFilter) {
         gradeFilter.addEventListener('change', function () {
             const val = this.value;
             selectedGrade = val ? (val.startsWith('Grade') ? val : `Grade ${val}`) : 'all';
 
             document.querySelectorAll('.grade-pill-tag').forEach(p => {
-                p.classList.toggle('active', (val ? (p.dataset.grade === `Grade ${val}` || p.dataset.grade === val) : p.dataset.grade === 'all'));
+                p.classList.toggle('active',
+                    val
+                        ? (p.dataset.grade === `Grade ${val}` || p.dataset.grade === val)
+                        : p.dataset.grade === 'all');
             });
 
             if (val) {
@@ -1009,7 +943,6 @@ import { EmailNotificationService } from '../../js/email_service.js';
     // MOBILE MENU & MODAL DISMISS
     // ============================================
 
->>>>>>> b239393 (pacheckkocole)
     if (menuToggle && sidebar) {
         menuToggle.addEventListener('click', function (e) {
             e.stopPropagation();
@@ -1018,7 +951,9 @@ import { EmailNotificationService } from '../../js/email_service.js';
     }
 
     document.addEventListener('click', function (e) {
-        if (sidebar && sidebar.classList.contains('active') && !sidebar.contains(e.target) && (!menuToggle || !menuToggle.contains(e.target))) {
+        if (sidebar && sidebar.classList.contains('active')
+            && !sidebar.contains(e.target)
+            && (!menuToggle || !menuToggle.contains(e.target))) {
             sidebar.classList.remove('active');
         }
         if (e.target === rejectModal) window.closeRejectModal();
@@ -1028,14 +963,18 @@ import { EmailNotificationService } from '../../js/email_service.js';
     // REALTIME & NOTIFICATIONS
     // ============================================
 
+    async function loadNotifications() {
+        // TODO: implement if you need notifications feed on this page
+    }
+
     function setupRealtimeSubscription() {
         try {
             supabase.channel('admin-enrollments-realtime')
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'enrollments' }, (payload) => {
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'enrollments' }, () => {
                     loadEnrollments();
                     loadNotifications();
                 })
-                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, (payload) => {
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, () => {
                     loadEnrollments();
                     loadNotifications();
                 })
@@ -1049,9 +988,6 @@ import { EmailNotificationService } from '../../js/email_service.js';
             }
         });
     }
-
-    // (Notifications code remains the same from your previous version)
-    async function loadNotifications() { /* ... */ }
 
     // ============================================
     // INIT
