@@ -123,6 +123,7 @@ import { supabase } from '../../supabase/config.js';
     const modalSessionMode = document.getElementById('modalSessionMode');
     const modalRecordedBy = document.getElementById('modalRecordedBy');
     const modalRemarks = document.getElementById('modalRemarks');
+    const modalQrData = document.getElementById('modalQrData');
     const modalGuardianBox = document.getElementById('modalGuardianBox');
     const modalGuardianName = document.getElementById('modalGuardianName');
     const modalGuardianPhone = document.getElementById('modalGuardianPhone');
@@ -545,7 +546,9 @@ import { supabase } from '../../supabase/config.js';
         if (matchedStudent) {
             return {
                 ...matchedStudent,
-                matched: true
+                matched: true,
+                rawQr: text,
+                qrPayload: text
             };
         }
 
@@ -562,7 +565,9 @@ import { supabase } from '../../supabase/config.js';
                 parent_name: parentName || 'PARENT / GUARDIAN',
                 parent_contact: parentContact || '09XXXXXXXXX',
                 photo_url: '',
-                matched: false
+                matched: false,
+                rawQr: text,
+                qrPayload: text
             };
         }
 
@@ -572,9 +577,11 @@ import { supabase } from '../../supabase/config.js';
     // ============================================
     // PROCESS ATTENDANCE SCAN EVENT
     // ============================================
-    async function handleStudentScan(student) {
+    async function handleStudentScan(student, rawQr = '') {
         if (!student) return;
 
+        const qrData = rawQr || student.rawQr || student.qrPayload || (student.lrn ? `PLSNHS-STUDENT|LRN:${student.lrn}` : '');
+        const qrToken = 'qr_' + Date.now();
         const now = new Date();
         const timeRecorded = getCurrentTimeString();
         const todayStr = getTodayDateString();
@@ -622,7 +629,7 @@ import { supabase } from '../../supabase/config.js';
             }
         }
 
-        // Create scan record
+        // Create scan record with full QR Code payload
         const scanRecord = {
             id: 'scan_' + Date.now(),
             studentId: student.id,
@@ -639,7 +646,10 @@ import { supabase } from '../../supabase/config.js';
             time: timeRecorded,
             date: todayStr,
             status: status,
-            mode: sessionMode
+            mode: sessionMode,
+            qrCode: qrData,
+            rawQr: qrData,
+            qrToken: qrToken
         };
 
         // Add to top of today's scans list
@@ -664,6 +674,9 @@ import { supabase } from '../../supabase/config.js';
             date: scanRecord.date,
             status: scanRecord.status,
             mode: scanRecord.mode,
+            qrCode: qrData,
+            rawQr: qrData,
+            qrToken: qrToken,
             remarks: scanRecord.status === 'Late' ? 'Late arrival recorded via QR Scanner' : 'On-time QR scan',
             recordedBy: displayName || 'Teacher'
         };
@@ -691,7 +704,7 @@ import { supabase } from '../../supabase/config.js';
             showAlert(`✅ <strong>${student.full_name}</strong> (${student.lrn}) recorded as <strong>PRESENT</strong> at ${timeRecorded}.`, 'success');
         }
 
-        // Sync to Supabase & Notifications in background
+        // Sync to Supabase & Notifications in background (persisting QR data to database)
         syncAttendanceToSupabase(scanRecord);
     }
 
@@ -699,11 +712,116 @@ import { supabase } from '../../supabase/config.js';
     // SYNC ATTENDANCE TO SUPABASE & NOTIFICATIONS
     // ============================================
     async function syncAttendanceToSupabase(record) {
-        // 1. Unified Shared Storage for instant Student & Parent portal availability
+        const qrData = record.qrCode || record.rawQr || (record.lrn ? `PLSNHS-STUDENT|LRN:${record.lrn}` : '');
+        const qrToken = record.qrToken || record.id || ('qr_' + Date.now());
+
+        // UUID validator helper
+        const isValidUUID = (str) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(str || '');
+
+        // 1. Resolve real database student UUID from Supabase if needed
+        let resolvedStudentId = record.studentId;
+        if (!isValidUUID(resolvedStudentId)) {
+            const cachedStudent = allStudents.find(s => 
+                (s.lrn && record.lrn && s.lrn === record.lrn) || 
+                (s.id_number && record.idNo && s.id_number === record.idNo) ||
+                (s.email && record.email && s.email.toLowerCase() === record.email.toLowerCase()) ||
+                (s.full_name && record.name && s.full_name.toLowerCase().trim() === record.name.toLowerCase().trim())
+            );
+            if (cachedStudent && isValidUUID(cachedStudent.id)) {
+                resolvedStudentId = cachedStudent.id;
+            } else {
+                try {
+                    let q = supabase.from('students').select('id, lrn, email, first_name, last_name');
+                    if (record.lrn) q = q.eq('lrn', record.lrn);
+                    else if (record.email) q = q.ilike('email', record.email);
+                    const { data: dbStu } = await q.maybeSingle();
+                    if (dbStu && isValidUUID(dbStu.id)) {
+                        resolvedStudentId = dbStu.id;
+                    }
+                } catch (e) {}
+            }
+        }
+
+        // 2. Persist Student's official QR code in Supabase 'students' table
+        if (isValidUUID(resolvedStudentId) && qrData) {
+            try {
+                await supabase
+                    .from('students')
+                    .update({ qr_code: qrData })
+                    .eq('id', resolvedStudentId);
+                console.log(`💾 Student attendance QR code persisted to students table in database: ${record.name}`);
+            } catch (stuQrErr) {
+                console.warn('Student table qr_code update notice:', stuQrErr);
+            }
+        }
+
+        // 3. Save QR code and attendance into 'attendance' table in Supabase
+        if (isValidUUID(resolvedStudentId)) {
+            try {
+                const cleanStatus = (record.status || 'present').toLowerCase();
+                // Check if record exists for this date and student
+                const { data: existingAtt } = await supabase
+                    .from('attendance')
+                    .select('id')
+                    .eq('student_id', resolvedStudentId)
+                    .eq('date', record.date)
+                    .maybeSingle();
+
+                if (existingAtt && existingAtt.id) {
+                    await supabase
+                        .from('attendance')
+                        .update({
+                            status: cleanStatus,
+                            time_in: record.mode === 'time_in' ? record.time : undefined,
+                            time_out: record.mode === 'time_out' ? record.time : undefined,
+                            qr_code: qrData,
+                            qr_token: qrToken,
+                            remarks: record.status === 'Late' ? 'Late arrival recorded via QR Scanner' : 'On-time QR scan'
+                        })
+                        .eq('id', existingAtt.id);
+                    console.log(`☁️ Attendance record updated with QR code in database`);
+                } else {
+                    const attendanceRow = {
+                        student_id: resolvedStudentId,
+                        date: record.date,
+                        status: cleanStatus,
+                        time_in: record.mode === 'time_in' ? record.time : (record.time || null),
+                        time_out: record.mode === 'time_out' ? record.time : null,
+                        qr_code: qrData,
+                        qr_token: qrToken,
+                        remarks: record.status === 'Late' ? 'Late arrival recorded via QR Scanner' : 'On-time QR scan'
+                    };
+                    await supabase
+                        .from('attendance')
+                        .upsert([attendanceRow], { onConflict: 'student_id,date' });
+                    console.log(`☁️ Attendance record upserted with QR code to database`);
+                }
+            } catch (attErr) {
+                console.warn('Supabase attendance table sync notice:', attErr);
+            }
+        }
+
+        // 4. Log QR Attendance Event into Supabase 'activity_logs' table
+        try {
+            await supabase
+                .from('activity_logs')
+                .insert([{
+                    role: 'teacher',
+                    user_id: isValidUUID(teacherId) ? teacherId : null,
+                    action: `Student QR Attendance (${record.status || 'Present'})`,
+                    details: `Student ${record.name} (LRN: ${record.lrn || 'N/A'}, ${record.grade || ''} - ${record.section || ''}) attendance recorded as ${record.status || 'Present'} at ${record.time}. Scanned QR Data: ${qrData}`,
+                    timestamp: new Date().toISOString()
+                }]);
+            console.log(`📋 Logged QR attendance to activity_logs table in database`);
+        } catch (actErr) {
+            console.warn('Activity log sync notice:', actErr);
+        }
+
+        // 5. Unified Shared Storage for instant Student & Parent portal availability
         const unifiedRecord = {
             id: record.id || ('scan_' + Date.now()),
-            student_id: record.studentId,
-            studentId: record.studentId,
+            student_id: resolvedStudentId || record.studentId,
+            studentId: resolvedStudentId || record.studentId,
             lrn: record.lrn,
             student_name: record.name,
             name: record.name,
@@ -715,6 +833,9 @@ import { supabase } from '../../supabase/config.js';
             status: record.status,
             time_in: record.mode === 'time_in' ? record.time : (record.time || null),
             time_out: record.mode === 'time_out' ? record.time : null,
+            qr_code: qrData,
+            qrCode: qrData,
+            qr_token: qrToken,
             remarks: record.status === 'Late' ? 'Late arrival recorded via QR Scanner' : 'On-time QR scan',
             recorded_by: teacherId,
             teacher_name: displayName,
@@ -744,6 +865,9 @@ import { supabase } from '../../supabase/config.js';
             if (record.studentId) {
                 localStorage.setItem(`hes_student_attendance_${record.studentId}`, JSON.stringify(unifiedRecord));
             }
+            if (resolvedStudentId && resolvedStudentId !== record.studentId) {
+                localStorage.setItem(`hes_student_attendance_${resolvedStudentId}`, JSON.stringify(unifiedRecord));
+            }
             if (record.lrn) {
                 localStorage.setItem(`hes_student_attendance_${record.lrn}`, JSON.stringify(unifiedRecord));
             }
@@ -771,6 +895,7 @@ import { supabase } from '../../supabase/config.js';
             rosterMap[record.studentId] = {
                 status: record.status,
                 timeIn: record.time,
+                qr_code: qrData,
                 remarks: record.status === 'Late' ? 'Late arrival (QR)' : 'On time (QR)',
                 notified: true,
                 saved: true
@@ -782,22 +907,23 @@ import { supabase } from '../../supabase/config.js';
 
             // E. Broadcast storage event so open student/parent tabs react dynamically
             localStorage.setItem('hes_latest_attendance_event', JSON.stringify({
-                studentId: record.studentId,
+                studentId: resolvedStudentId || record.studentId,
                 lrn: record.lrn,
                 name: record.name,
                 email: record.email || '',
                 date: record.date,
                 status: record.status,
                 time: record.time,
+                qr_code: qrData,
                 timestamp: Date.now()
             }));
         } catch (storageErr) {
             console.warn('Attendance storage cache notice:', storageErr);
         }
 
-        // 2. Notifications to Student
-        const notifTitle = `Attendance: ${record.status} recorded`;
-        const notifMsg = `Your attendance was recorded as "${record.status}" on ${record.date} at ${record.time} by Teacher ${displayName}.`;
+        // 6. Notifications to Student in Supabase
+        const notifTitle = `Attendance: ${record.status} recorded (QR Verified)`;
+        const notifMsg = `Your attendance was recorded as "${record.status}" on ${record.date} at ${record.time} by Teacher ${displayName}. Verified via Student ID QR Code.`;
 
         try {
             // Local notification cache
@@ -816,49 +942,39 @@ import { supabase } from '../../supabase/config.js';
 
         // Query student's user_id in Supabase users table to insert database notification
         try {
-            let targetUserId = record.studentId;
-            const { data: uData } = await supabase
-                .from('users')
-                .select('id')
-                .eq('student_id', record.studentId)
-                .maybeSingle();
-
-            if (uData && uData.id) {
-                targetUserId = uData.id;
+            let targetUserId = isValidUUID(resolvedStudentId) ? resolvedStudentId : null;
+            if (record.studentId && isValidUUID(record.studentId)) {
+                targetUserId = record.studentId;
             }
 
-            await supabase
-                .from('notifications')
-                .insert([{
-                    user_id: targetUserId,
-                    role: 'student',
-                    title: notifTitle,
-                    message: notifMsg,
-                    type: 'attendance',
-                    is_read: false,
-                    read: false,
-                    created_at: new Date().toISOString()
-                }]);
+            if (isValidUUID(targetUserId)) {
+                const { data: uData } = await supabase
+                    .from('users')
+                    .select('id')
+                    .eq('student_id', targetUserId)
+                    .maybeSingle();
+
+                if (uData && uData.id && isValidUUID(uData.id)) {
+                    targetUserId = uData.id;
+                }
+            }
+
+            if (isValidUUID(targetUserId)) {
+                await supabase
+                    .from('notifications')
+                    .insert([{
+                        user_id: targetUserId,
+                        role: 'student',
+                        title: notifTitle,
+                        message: notifMsg,
+                        type: 'attendance',
+                        is_read: false,
+                        read: false,
+                        created_at: new Date().toISOString()
+                    }]);
+            }
         } catch (notifErr) {
             console.warn('Database notification sync notice:', notifErr);
-        }
-
-        // 3. Upsert clean attendance record to Supabase attendance table
-        try {
-            const cleanStatus = (record.status || 'present').toLowerCase();
-            const attendanceRow = {
-                student_id: record.studentId,
-                date: record.date,
-                status: cleanStatus,
-                time_in: record.mode === 'time_in' ? record.time : (record.time || null),
-                remarks: record.status === 'Late' ? 'Late arrival recorded via QR Scanner' : 'On-time QR scan'
-            };
-
-            await supabase
-                .from('attendance')
-                .upsert([attendanceRow], { onConflict: 'student_id,date' });
-        } catch (attErr) {
-            console.warn('Supabase attendance table sync notice:', attErr);
         }
     }
 
@@ -1007,6 +1123,9 @@ import { supabase } from '../../supabase/config.js';
                 date: s.date,
                 status: s.status,
                 mode: s.mode || 'time_in',
+                qrCode: s.qrCode || s.rawQr || s.qr_code || '',
+                rawQr: s.rawQr || s.qrCode || s.qr_code || '',
+                qrToken: s.qrToken || s.id || '',
                 remarks: s.status === 'Late' ? 'Late arrival recorded via QR Scanner' : 'On-time QR scan',
                 recordedBy: displayName || 'Teacher'
             });
@@ -1041,6 +1160,9 @@ import { supabase } from '../../supabase/config.js';
                                         date: s.date || datePart,
                                         status: s.status,
                                         mode: s.mode || 'time_in',
+                                        qrCode: s.qrCode || s.rawQr || s.qr_code || '',
+                                        rawQr: s.rawQr || s.qrCode || s.qr_code || '',
+                                        qrToken: s.qrToken || s.id || '',
                                         remarks: s.status === 'Late' ? 'Late arrival recorded via QR Scanner' : 'On-time QR scan',
                                         recordedBy: displayName || 'Teacher'
                                     });
@@ -1091,6 +1213,9 @@ import { supabase } from '../../supabase/config.js';
                                 date: sDate,
                                 status: sStatus,
                                 mode: sMode,
+                                qrCode: r.qr_code || r.qrCode || r.rawQr || '',
+                                rawQr: r.rawQr || r.qr_code || r.qrCode || '',
+                                qrToken: r.qr_token || r.qrToken || '',
                                 remarks: r.remarks || (sStatus === 'Late' ? 'Late arrival' : 'On-time record'),
                                 recordedBy: r.teacher_name || displayName || 'Teacher'
                             });
@@ -1121,6 +1246,7 @@ import { supabase } from '../../supabase/config.js';
                         const stu = allStudents.find(s => s.id === sId || s.lrn === sId);
                         const sStatus = row.status ? (row.status.charAt(0).toUpperCase() + row.status.slice(1).toLowerCase()) : 'Present';
                         const sTime = row.time_in || row.time_out || '07:30 AM';
+                        const qrCodeVal = row.qr_code || (stu ? stu.qr_code : null) || (row.lrn ? `PLSNHS-STUDENT|LRN:${row.lrn}` : '');
 
                         historyMap.set(key, {
                             id: row.id || ('db_' + sId + '_' + sDate),
@@ -1138,6 +1264,9 @@ import { supabase } from '../../supabase/config.js';
                             date: sDate,
                             status: sStatus,
                             mode: sMode,
+                            qrCode: qrCodeVal,
+                            rawQr: qrCodeVal,
+                            qrToken: row.qr_token || null,
                             remarks: row.remarks || (sStatus === 'Late' ? 'Late arrival' : 'Cloud attendance record'),
                             recordedBy: displayName || 'Teacher'
                         });
@@ -1359,6 +1488,9 @@ import { supabase } from '../../supabase/config.js';
                     date: todayItem.date,
                     status: todayItem.status,
                     mode: todayItem.mode,
+                    qrCode: todayItem.qrCode || todayItem.rawQr || '',
+                    rawQr: todayItem.rawQr || todayItem.qrCode || '',
+                    qrToken: todayItem.qrToken || todayItem.id || '',
                     remarks: todayItem.status === 'Late' ? 'Late arrival recorded via QR Scanner' : 'On-time QR scan',
                     recordedBy: displayName || 'Teacher'
                 };
@@ -1396,6 +1528,9 @@ import { supabase } from '../../supabase/config.js';
         }
         if (modalRemarks) {
             modalRemarks.textContent = rec.remarks || (isLate ? 'Late arrival recorded via QR Scanner' : 'On-time QR scan');
+        }
+        if (modalQrData) {
+            modalQrData.textContent = rec.qrCode || rec.rawQr || (rec.lrn ? `PLSNHS-STUDENT|LRN:${rec.lrn}` : 'Verified via Student ID QR Code');
         }
 
         if (modalGuardianName) modalGuardianName.textContent = rec.parentName || 'PARENT / GUARDIAN';
@@ -1652,7 +1787,7 @@ import { supabase } from '../../supabase/config.js';
 
                     const student = parseStudentPayload(decodedText);
                     if (student) {
-                        handleStudentScan(student);
+                        handleStudentScan(student, decodedText);
                     } else {
                         playSound('error');
                         showAlert(`⚠️ Scanned QR code data is unrecognized or invalid format: "${decodedText}"`, 'warning');
@@ -1720,7 +1855,7 @@ import { supabase } from '../../supabase/config.js';
                 if (decoded) {
                     const student = parseStudentPayload(decoded);
                     if (student) {
-                        handleStudentScan(student);
+                        handleStudentScan(student, decoded);
                     } else {
                         showAlert('⚠️ QR code detected but could not identify a valid student ID payload.', 'warning');
                     }
@@ -1751,7 +1886,7 @@ import { supabase } from '../../supabase/config.js';
                 barcodeBuffer = '';
                 const student = parseStudentPayload(payload);
                 if (student) {
-                    handleStudentScan(student);
+                    handleStudentScan(student, payload);
                 }
             }
         } else if (e.key.length === 1) {
@@ -1792,7 +1927,7 @@ import { supabase } from '../../supabase/config.js';
             hardwareScanInput.value = '';
             const student = parseStudentPayload(raw);
             if (student) {
-                handleStudentScan(student);
+                handleStudentScan(student, raw);
             } else {
                 showAlert(`⚠️ Could not find student matching "${raw}".`, 'warning');
             }
@@ -1969,6 +2104,7 @@ import { supabase } from '../../supabase/config.js';
                 const rawCentral = localStorage.getItem('hes_attendance_records');
                 let centralRecords = rawCentral ? JSON.parse(rawCentral) : [];
                 todayScans.forEach(r => {
+                    const qrData = r.qrCode || r.rawQr || (r.lrn ? `PLSNHS-STUDENT|LRN:${r.lrn}` : '');
                     const uRec = {
                         id: r.id || ('scan_' + Date.now()),
                         student_id: r.studentId,
@@ -1983,6 +2119,9 @@ import { supabase } from '../../supabase/config.js';
                         status: r.status,
                         time_in: r.mode === 'time_in' ? r.time : (r.time || null),
                         time_out: r.mode === 'time_out' ? r.time : null,
+                        qr_code: qrData,
+                        qrCode: qrData,
+                        qr_token: r.qrToken || r.id,
                         remarks: r.status === 'Late' ? 'Late arrival (QR)' : 'On-time (QR)',
                         recorded_by: teacherId,
                         teacher_name: displayName,
@@ -1993,20 +2132,12 @@ import { supabase } from '../../supabase/config.js';
                 });
                 localStorage.setItem('hes_attendance_records', JSON.stringify(centralRecords.slice(0, 500)));
 
-                const upserts = todayScans.map(r => ({
-                    student_id: r.studentId,
-                    date: r.date,
-                    status: (r.status || 'present').toLowerCase(),
-                    time_in: r.mode === 'time_in' ? r.time : (r.time || null),
-                    time_out: r.mode === 'time_out' ? r.time : null,
-                    remarks: r.status === 'Late' ? 'Late arrival (QR)' : 'On-time (QR)'
-                }));
+                // Persist each record to Supabase database (students.qr_code, attendance.qr_code, activity_logs)
+                for (const r of todayScans) {
+                    await syncAttendanceToSupabase(r);
+                }
 
-                await supabase
-                    .from('attendance')
-                    .upsert(upserts, { onConflict: 'student_id,date' });
-
-                showAlert(`☁️ Successfully synchronized ${todayScans.length} scanned attendance records to database!`, 'success');
+                showAlert(`☁️ Successfully synchronized ${todayScans.length} scanned attendance records and QR codes to database!`, 'success');
             } catch (err) {
                 console.warn('Sync notice:', err);
                 showAlert(`✅ Local records verified and saved.`, 'success');

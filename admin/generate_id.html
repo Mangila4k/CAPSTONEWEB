@@ -112,29 +112,603 @@
                         <p style="margin-top: 14px; font-weight: 600;">Loading Student ID Generator...</p>
                     </div>
                 </div>
+
+                <!-- CREATED STUDENT IDS SECTION -->
+                <section id="createdIdsSection" aria-label="Created Student IDs">
+                    <div class="section-header">
+                        <div class="title-wrap">
+                            <i class="fas fa-id-card"></i>
+                            <h2>Created Student IDs</h2>
+                            <span class="count-badge" id="createdIdsCount">0</span>
+                        </div>
+                        <div class="section-actions">
+                            <input type="text" id="createdIdsSearch" class="section-search" placeholder="Search name or LRN..." />
+                            <button type="button" class="btn-section" id="btnRefreshCreatedIds">
+                                <i class="fas fa-rotate"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="createdIdsTableWrap">
+                        <div class="ids-loading-state" id="createdIdsLoading">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p>Loading created IDs…</p>
+                        </div>
+                    </div>
+                </section>
             </div>
         </main>
     </div>
 
-    <!-- External QR & Canvas Libraries -->
+    <!-- ID PREVIEW MODAL -->
+    <div id="idPreviewModal" role="dialog" aria-modal="true" aria-labelledby="idPreviewTitle">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 id="idPreviewTitle">
+                    <i class="fas fa-id-card"></i>
+                    <span>Official Student ID Card Preview</span>
+                </h3>
+                <button type="button" class="modal-close" id="idPreviewClose" aria-label="Close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="idPreviewStage">
+                    <!-- Filled dynamically with a clone or preview of the ID card -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="modal-btn secondary" id="idPreviewCancel">
+                    <i class="fas fa-times"></i> Close
+                </button>
+                <button type="button" class="modal-btn primary" id="idPreviewPrint">
+                    <i class="fas fa-print"></i> Print ID Card
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="idToast"></div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-    <!-- Initialize Generator -->
     <script type="module">
+        import { supabase } from '../supabase/config.js';
         import { StudentIdGenerator } from '../js/student_id_generator.js';
+
+        // ============================================================
+        // TOAST NOTIFICATIONS
+        // ============================================================
+        const toastEl = document.getElementById('idToast');
+        let toastTimer = null;
+        function showToast(message, type = 'info', duration = 3000) {
+            if (!toastEl) return;
+            toastEl.textContent = message;
+            toastEl.className = 'show ' + type;
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                toastEl.classList.remove('show');
+            }, duration);
+        }
+
+        // ============================================================
+        // QR HELPERS (PLSNHS-STUDENT|LRN:XXXXXXXXXXXX)
+        // ============================================================
+        function buildQrToken(student) {
+            if (!student) return null;
+            const lrn = String(student.lrn || '').trim();
+            if (lrn) {
+                return `PLSNHS-STUDENT|LRN:${lrn}`;
+            }
+
+            const id = String(student.id || student.student_id || '').trim();
+            if (!id) return null;
+
+            let hash = 0;
+            for (let i = 0; i < id.length; i++) {
+                hash = ((hash << 5) - hash) + id.charCodeAt(i);
+                hash |= 0;
+            }
+            const code = Math.abs(hash).toString(16).toUpperCase().padStart(8, '0').slice(0, 8);
+            return `PLSNHS-STUDENT|LRN:${code}`;
+        }
+
+        async function saveStudentQrCode(student) {
+            if (!student) return null;
+            const studentId = student.id || student.student_id;
+            if (!studentId) return null;
+            const qrToken = student.qr_code || buildQrToken(student);
+            if (!qrToken) return null;
+
+            try {
+                const { error: stuErr } = await supabase
+                    .from('students')
+                    .update({ qr_code: qrToken, updated_at: new Date().toISOString() })
+                    .eq('id', studentId);
+                if (stuErr) throw stuErr;
+
+                await supabase.from('attendance').update({ qr_code: qrToken }).eq('student_id', studentId);
+                return qrToken;
+            } catch (err) {
+                console.error('❌ Failed to save QR:', err);
+                return null;
+            }
+        }
+
+        window.__hes_saveStudentQrCode = saveStudentQrCode;
+        window.__hes_buildQrToken = buildQrToken;
+        window.__hes_showToast = showToast;
+
+
+        // ============================================================
+        // ID PREVIEW MODAL
+        // ============================================================
+        const previewModal = document.getElementById('idPreviewModal');
+        const previewStage = document.getElementById('idPreviewStage');
+        const previewClose = document.getElementById('idPreviewClose');
+        const previewCancel = document.getElementById('idPreviewCancel');
+        const previewPrint = document.getElementById('idPreviewPrint');
+        let currentPreviewStudent = null;
+        let currentPreviewCardEl = null;
+
+        function escapeHtml(s) {
+            return String(s == null ? '' : s)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function getInitial(name) {
+            const n = String(name || '').trim().replace(/^[^a-zA-Z0-9]+/, '');
+            return n ? n.charAt(0).toUpperCase() : 'J';
+        }
+
+        function formatPretty(d) {
+            if (!d) return '—';
+            const date = new Date(d);
+            if (isNaN(date.getTime())) return '—';
+            return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+        }
+
+        async function openIdPreview(studentId) {
+            const cached = createdIdsCache.find(s => s.id === studentId);
+            if (!cached) {
+                showToast('Student not found.', 'error');
+                return;
+            }
+
+            currentPreviewStudent = cached;
+            currentPreviewCardEl = null;
+
+            previewModal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+
+            previewStage.innerHTML = `
+                <div class="preview-loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Preparing preview…</p>
+                </div>
+            `;
+
+            try {
+                const gen = window.idGen;
+                if (gen) {
+                    const fullName = [cached.first_name, cached.last_name].filter(Boolean).join(' ').trim() || 'Student';
+                    const matched = (gen.students && gen.students.find(s => s.id === studentId)) || {
+                        id: cached.id,
+                        student_id: cached.id,
+                        lrn: cached.lrn || '141525872196',
+                        id_number: cached.id,
+                        first_name: cached.first_name || '',
+                        last_name: cached.last_name || '',
+                        fullname: fullName,
+                        grade_level: cached.grade_level || 'Grade 10',
+                        level_category: cached.grade_level || 'Grade 10',
+                        school_year: '2026-2027',
+                        photo_url: cached.two_by_two_picture_url || cached.avatar_url || '',
+                        parent_name: cached.parent_name || 'MARIANNE E. SANTOS',
+                        parent_contact: cached.parent_contact || '09076726568',
+                        principal_name: 'Dr. Ryan R. Quiroga',
+                        principal_sig: 'Dr. Ryan R. Quiroga',
+                        status: 'Active'
+                    };
+                    gen.selectStudent(matched);
+                }
+
+                await new Promise(r => setTimeout(r, 150));
+
+                const showcase = document.getElementById('idShowcaseContainer');
+                if (showcase) {
+                    const clone = showcase.cloneNode(true);
+                    clone.removeAttribute('id');
+                    clone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+
+                    clone.style.margin = '0 auto';
+                    clone.style.background = 'transparent';
+                    clone.style.border = 'none';
+                    clone.style.padding = '10px 0';
+
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'preview-clone-wrapper';
+                    wrapper.appendChild(clone);
+
+                    const note = document.createElement('div');
+                    note.className = 'preview-note';
+                    note.innerHTML = `
+                        <i class="fas fa-info-circle"></i>
+                        Official CR80 Student ID Card (Front & Back). Click <strong>Print ID Card</strong> to print or export.
+                    `;
+
+                    previewStage.innerHTML = '';
+                    previewStage.appendChild(wrapper);
+                    previewStage.appendChild(note);
+                    currentPreviewCardEl = clone;
+                    return;
+                }
+
+                buildFallbackPreview(cached);
+            } catch (err) {
+                console.error('Preview render notice:', err);
+                buildFallbackPreview(cached);
+            }
+        }
+
+        function buildFallbackPreview(student) {
+            const fullName = `${student.first_name || ''} ${student.last_name || ''}`.trim() || 'Student';
+            const initial = getInitial(fullName);
+            const lrn = student.lrn || '—';
+            const grade = student.grade_level || '—';
+            const strand = student.strand || '';
+            const token = student.qr_code || buildQrToken(student) || '';
+            const photoUrl = student.two_by_two_picture_url || student.avatar_url || '';
+
+            previewStage.innerHTML = `
+                <div class="preview-clone-wrapper">
+                    <div style="
+                        width: 500px; max-width: 100%; aspect-ratio: 1.582 / 1;
+                        border-radius: 18px; overflow: hidden; position: relative;
+                        background: #152e69; color: #ffffff;
+                        box-shadow: 0 12px 40px rgba(15,23,42,0.3);
+                        padding: 18px; box-sizing: border-box; display: flex;
+                        flex-direction: column; font-family: 'Inter', sans-serif;
+                    ">
+                        <div style="display:flex;align-items:center;gap:12px;padding-bottom:10px;border-bottom:2px solid rgba(245,183,46,0.6);margin-bottom:12px;">
+                            <div style="width:42px;height:42px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;">
+                                <img src="../pictures/logo sa skwelahan.jpg" alt="logo" style="width:100%;height:100%;object-fit:cover;"
+                                    onerror="this.parentElement.innerHTML='<span style=\\'color:#152e69;font-weight:900;font-size:14px;\\'>PLS</span>';" />
+                            </div>
+                            <div style="flex:1;line-height:1.2;">
+                                <div style="font-size:13px;font-weight:800;">Placido L. Señor National High School</div>
+                                <div style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;color:rgba(255,255,255,0.72);margin-top:2px;">OFFICIAL STUDENT ID</div>
+                                <div style="font-size:9.5px;color:#f5b72e;font-weight:800;letter-spacing:0.05em;margin-top:3px;">S.Y. 2026-2027</div>
+                            </div>
+                        </div>
+
+                        <div style="display:flex;gap:14px;flex:1;">
+                            <div style="width:96px;height:96px;border-radius:10px;background:rgba(255,255,255,0.1);border:2px solid #f5b72e;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;">
+                                ${photoUrl
+                                    ? `<img src="${escapeHtml(photoUrl)}" alt="photo" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none';this.parentElement.innerHTML='<span style=\\'font-size:36px;font-weight:900;color:#f5b72e;\\'>${escapeHtml(initial)}</span>';" />`
+                                    : `<span style="font-size:36px;font-weight:900;color:#f5b72e;">${escapeHtml(initial)}</span>`}
+                            </div>
+                            <div style="flex:1;min-width:0;">
+                                <div style="font-size:16px;font-weight:900;line-height:1.15;margin-bottom:4px;color:#ffffff;">${escapeHtml(fullName)}</div>
+                                <div style="font-size:9.5px;font-weight:800;letter-spacing:0.12em;color:#f5b72e;text-transform:uppercase;margin-bottom:8px;">STUDENT</div>
+                                <div style="display:flex;gap:6px;font-size:11px;line-height:1.4;margin-bottom:2px;color:rgba(255,255,255,0.92);">
+                                    <span style="font-weight:800;font-size:9.5px;min-width:44px;letter-spacing:0.06em;color:#f5b72e;text-transform:uppercase;">LRN:</span>
+                                    <span style="font-weight:600;">${escapeHtml(lrn)}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.15);">
+                            <div style="flex:1;line-height:1.2;text-align:center;">
+                                <div style="font-size:13px;font-weight:800;color:#ffffff;">Dr. Ryan R. Quiroga</div>
+                                <div style="font-size:8.5px;letter-spacing:0.08em;color:#f5b72e;font-weight:700;text-transform:uppercase;margin-top:2px;">SCHOOL PRINCIPAL</div>
+                            </div>
+                            <div id="previewFallbackQr" style="width:72px;height:72px;border-radius:8px;background:#fff;padding:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            const qrBox = document.getElementById('previewFallbackQr');
+            if (qrBox && token && typeof QRCode !== 'undefined') {
+                new QRCode(qrBox, {
+                    text: token,
+                    width: 64,
+                    height: 64,
+                    colorDark: '#152e69',
+                    colorLight: '#FFFFFF',
+                    correctLevel: QRCode.CorrectLevel.M,
+                });
+            }
+        }
+
+        function closeIdPreview() {
+            previewModal.classList.remove('show');
+            document.body.style.overflow = '';
+            currentPreviewStudent = null;
+            currentPreviewCardEl = null;
+        }
+
+        if (previewClose) previewClose.addEventListener('click', closeIdPreview);
+        if (previewCancel) previewCancel.addEventListener('click', closeIdPreview);
+        if (previewModal) {
+            previewModal.addEventListener('click', (e) => {
+                if (e.target === previewModal) closeIdPreview();
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && previewModal.classList.contains('show')) closeIdPreview();
+            });
+        }
+
+        if (previewPrint) {
+            previewPrint.addEventListener('click', () => {
+                closeIdPreview();
+                window.print();
+            });
+        }
+
+        // ============================================================
+        // CREATED STUDENT IDS LIST & TABLE
+        // ============================================================
+        const createdIdsWrap = document.getElementById('createdIdsTableWrap');
+        const createdIdsCount = document.getElementById('createdIdsCount');
+        const createdIdsSearch = document.getElementById('createdIdsSearch');
+        const btnRefreshCreatedIds = document.getElementById('btnRefreshCreatedIds');
+        let createdIdsCache = [];
+        let createdIdsSearchTerm = '';
+
+        async function loadCreatedIds() {
+            if (!createdIdsWrap) return;
+            createdIdsWrap.innerHTML = `
+                <div class="ids-loading-state">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Loading created IDs…</p>
+                </div>
+            `;
+
+            try {
+                const { data, error } = await supabase
+                    .from('students')
+                    .select('id, first_name, last_name, lrn, grade_level, strand, qr_code, two_by_two_picture_url, avatar_url, created_at, updated_at')
+                    .not('qr_code', 'is', null)
+                    .order('updated_at', { ascending: false });
+
+                if (error) throw error;
+                createdIdsCache = (data || []).filter(s => !!s.qr_code);
+                renderCreatedIds();
+            } catch (err) {
+                console.error('Failed to load created IDs:', err);
+                createdIdsWrap.innerHTML = `
+                    <div class="ids-empty-state">
+                        <i class="fas fa-triangle-exclamation"></i>
+                        <h3>Could not load created IDs</h3>
+                        <p>${escapeHtml(err.message || 'Unknown error')}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function renderCreatedIds() {
+            if (!createdIdsWrap) return;
+            const term = createdIdsSearchTerm.trim().toLowerCase();
+            const filtered = createdIdsCache.filter(s => {
+                if (!term) return true;
+                const name = `${s.first_name || ''} ${s.last_name || ''}`.toLowerCase();
+                const lrn = String(s.lrn || '').toLowerCase();
+                const token = String(s.qr_code || '').toLowerCase();
+                return name.includes(term) || lrn.includes(term) || token.includes(term);
+            });
+
+            if (createdIdsCount) createdIdsCount.textContent = String(filtered.length);
+
+            if (filtered.length === 0) {
+                createdIdsWrap.innerHTML = `
+                    <div class="ids-empty-state">
+                        <i class="fas fa-id-card"></i>
+                        <h3>No IDs ${term ? 'match your search' : 'created yet'}</h3>
+                        <p>${term ? 'Try a different name or LRN.' : 'Generate an ID above and click Save QR to add it here.'}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `
+                <table id="createdIdsTable">
+                    <thead>
+                        <tr>
+                            <th>STUDENT</th>
+                            <th>LRN</th>
+                            <th>GRADE & STRAND</th>
+                            <th>QR CODE</th>
+                            <th>CREATED</th>
+                            <th style="text-align:right;">ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            filtered.forEach(s => {
+                const fullName = `${s.first_name || ''} ${s.last_name || ''}`.trim() || 'Student';
+                const initial = getInitial(fullName);
+                const lrn = s.lrn || '—';
+                const grade = s.grade_level || '—';
+                const strand = s.strand ? ` · ${s.strand}` : '';
+                const token = s.qr_code || '';
+                const createdPretty = formatPretty(s.updated_at || s.created_at);
+
+                // Format token nicely with spaces around | and after LRN:
+                let displayToken = token;
+                if (displayToken.includes('|') && !displayToken.includes(' | ')) {
+                    displayToken = displayToken.replace(/\|/g, ' | ');
+                }
+                displayToken = displayToken.replace(/LRN:([^\s])/g, 'LRN: $1');
+
+                html += `
+                    <tr data-student-id="${escapeHtml(s.id)}">
+                        <td>
+                            <div class="student-cell">
+                                <div class="student-avatar">${escapeHtml(initial)}</div>
+                                <div>
+                                    <div class="student-name">${escapeHtml(fullName)}</div>
+                                    <div class="student-meta">ID: ${escapeHtml(s.id)}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span style="font-size: 13px; font-weight: 600; color: #1e293b;">${escapeHtml(lrn)}</span>
+                        </td>
+                        <td>
+                            <span style="font-weight: 700; color: #0f172a;">${escapeHtml(grade)}</span>${strand ? `<span style="color:#64748b;font-size:12.5px;font-weight:500;">${escapeHtml(strand)}</span>` : ''}
+                        </td>
+                        <td>
+                            <span class="qr-token" title="${escapeHtml(token)}">${escapeHtml(displayToken)}</span>
+                        </td>
+                        <td>
+                            <span style="color:#64748b;font-size:12.5px;">${escapeHtml(createdPretty)}</span>
+                        </td>
+                        <td>
+                            <div class="cell-actions" style="justify-content:flex-end;">
+                                <button type="button" class="row-action-btn view"
+                                    data-action="view" data-id="${escapeHtml(s.id)}"
+                                    title="View Student ID"><i class="fas fa-eye"></i></button>
+                                <button type="button" class="row-action-btn regen"
+                                    data-action="regen" data-id="${escapeHtml(s.id)}"
+                                    title="Regenerate QR"><i class="fas fa-rotate"></i></button>
+                                <button type="button" class="row-action-btn delete"
+                                    data-action="delete" data-id="${escapeHtml(s.id)}"
+                                    title="Delete ID QR"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `</tbody></table>`;
+            createdIdsWrap.innerHTML = html;
+
+            createdIdsWrap.querySelectorAll('.row-action-btn').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    const action = btn.dataset.action;
+                    const id = btn.dataset.id;
+                    if (!id) return;
+                    if (action === 'view') {
+                        await openIdPreview(id);
+                    } else if (action === 'regen') {
+                        await regenerateQr(id);
+                    } else if (action === 'delete') {
+                        await deleteIdRecord(id);
+                    }
+                });
+            });
+        }
+
+        async function regenerateQr(studentId) {
+            const ok = confirm('Regenerate QR code for this student?\n\nThe existing QR token will be replaced with a new one.');
+            if (!ok) return;
+
+            try {
+                const { error: clearErr } = await supabase
+                    .from('students')
+                    .update({ qr_code: null, updated_at: new Date().toISOString() })
+                    .eq('id', studentId);
+                if (clearErr) throw clearErr;
+
+                const { data: row, error: getErr } = await supabase
+                    .from('students')
+                    .select('id, first_name, last_name, lrn')
+                    .eq('id', studentId)
+                    .single();
+                if (getErr) throw getErr;
+
+                const newToken = buildQrToken(row);
+                if (!newToken) throw new Error('Could not build new token');
+
+                const { error: setErr } = await supabase
+                    .from('students')
+                    .update({ qr_code: newToken, updated_at: new Date().toISOString() })
+                    .eq('id', studentId);
+                if (setErr) throw setErr;
+
+                await supabase.from('attendance').update({ qr_code: newToken }).eq('student_id', studentId);
+                showToast('QR regenerated successfully.', 'success');
+                await loadCreatedIds();
+            } catch (err) {
+                console.error('Regenerate failed:', err);
+                showToast('Failed to regenerate QR: ' + (err.message || 'unknown'), 'error');
+            }
+        }
+
+        async function deleteIdRecord(studentId) {
+            const ok = confirm(
+                'Delete the QR code for this student?\n\n' +
+                'This will only clear the QR token (the student record stays). ' +
+                'You can generate a new QR afterwards.'
+            );
+            if (!ok) return;
+
+            try {
+                const { error } = await supabase
+                    .from('students')
+                    .update({ qr_code: null, updated_at: new Date().toISOString() })
+                    .eq('id', studentId);
+                if (error) throw error;
+
+                await supabase.from('attendance').update({ qr_code: null }).eq('student_id', studentId);
+                showToast('QR code cleared. You can regenerate it now.', 'success');
+                await loadCreatedIds();
+            } catch (err) {
+                console.error('Delete failed:', err);
+                showToast('Failed to delete: ' + (err.message || 'unknown'), 'error');
+            }
+        }
+
+        if (createdIdsSearch) {
+            let searchTimer = null;
+            createdIdsSearch.addEventListener('input', (e) => {
+                createdIdsSearchTerm = e.target.value || '';
+                clearTimeout(searchTimer);
+                searchTimer = setTimeout(renderCreatedIds, 180);
+            });
+        }
+
+        if (btnRefreshCreatedIds) {
+            btnRefreshCreatedIds.addEventListener('click', async () => {
+                btnRefreshCreatedIds.disabled = true;
+                btnRefreshCreatedIds.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing';
+                await loadCreatedIds();
+                btnRefreshCreatedIds.disabled = false;
+                btnRefreshCreatedIds.innerHTML = '<i class="fas fa-rotate"></i> Refresh';
+            });
+        }
+
+        function refreshCreatedIds() {
+            loadCreatedIds();
+        }
+        window.__hes_refreshCreatedIds = refreshCreatedIds;
 
         function initApp() {
             try {
                 window.idGen = new StudentIdGenerator({
                     containerId: 'idGeneratorApp',
                     defaultPrincipal: 'Dr. Ryan R. Quiroga',
-                    defaultSchoolYear: '2024-2025'
+                    defaultSchoolYear: '2026-2027'
                 });
+
+                console.log('✅ StudentIdGenerator initialized with Created IDs list');
             } catch (err) {
                 console.error('Initialization error:', err);
             }
         }
+
+        // Initial fetch of created IDs table
+        loadCreatedIds();
 
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', initApp);

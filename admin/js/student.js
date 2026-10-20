@@ -136,20 +136,42 @@ import { EmailNotificationService } from '../../js/email_service.js';
     async function loadStudents() {
         console.log('🔍 Loading students...');
 
-        tableBody.innerHTML = `
-            <tr>
-                <td colspan="10" class="loading-cell">
-                    <i class="fas fa-spinner fa-spin"></i> Loading students...
-                </td>
-            </tr>
-        `;
+        // If we have cached students, show them immediately to avoid stuck spinner
+        if (allStudents.length === 0) {
+            try {
+                const cachedStr = localStorage.getItem('hes_admin_students_cache');
+                if (cachedStr) {
+                    const parsed = JSON.parse(cachedStr);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        allStudents = parsed;
+                        populateSectionFilter();
+                        renderGradeSummary();
+                        applyFilters();
+                        updateStats();
+                    }
+                }
+            } catch (e) {
+                console.warn('Cache read notice:', e);
+            }
+        }
+
+        if (allStudents.length === 0) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="9" class="loading-cell">
+                        <i class="fas fa-spinner fa-spin"></i> Loading students...
+                    </td>
+                </tr>
+            `;
+        }
 
         try {
             // STEP 1: Fetch students table
             console.log('📁 Fetching students table...');
             const { data: studentsData, error: studentsError } = await supabase
                 .from('students')
-                .select('*');
+                .select('*')
+                .order('last_name', { ascending: true });
 
             if (studentsError) {
                 console.error('❌ Students query error:', studentsError);
@@ -158,20 +180,20 @@ import { EmailNotificationService } from '../../js/email_service.js';
 
             console.log('✅ Found', studentsData?.length || 0, 'student records');
 
-            // STEP 2: Fetch users table
-            console.log('📁 Fetching users table...');
-            const { data: usersData, error: usersError } = await supabase
-                .from('users')
-                .select('id, first_name, last_name, email, role');
-
-            if (usersError) {
-                console.error('❌ Users query error:', usersError);
-                throw usersError;
+            // STEP 2: Fetch users table (non-fatal)
+            let usersData = [];
+            try {
+                const { data: uData, error: usersError } = await supabase
+                    .from('users')
+                    .select('id, first_name, last_name, email, role');
+                if (!usersError && uData) {
+                    usersData = uData;
+                }
+            } catch (uErr) {
+                console.warn('Users table query notice (non-fatal):', uErr);
             }
 
-            console.log('✅ Found', usersData?.length || 0, 'users');
-
-            // STEP 2.5: Fetch sections table to resolve section_id
+            // STEP 2.5: Fetch sections table to resolve section_id (non-fatal)
             let sectionsMap = new Map();
             try {
                 const { data: sectionsData } = await supabase
@@ -204,13 +226,18 @@ import { EmailNotificationService } from '../../js/email_service.js';
                     section: sectionName,
                     gender: student.gender || '—',
                     student_type: student.student_type || 'New Student',
-                    academic_status: student.academic_status || 'Unassigned', // Connected to DB
+                    academic_status: student.academic_status || 'Unassigned',
                     avatar_url: student.two_by_two_picture_url || student.avatar_url || null,
                     status: student.status || 'Active'
                 };
             });
 
             console.log('✅ Total students loaded:', allStudents.length);
+
+            // Save to local cache for instant subsequent loading
+            try {
+                localStorage.setItem('hes_admin_students_cache', JSON.stringify(allStudents));
+            } catch (cErr) {}
 
             populateSectionFilter();
             renderGradeSummary();
@@ -220,14 +247,16 @@ import { EmailNotificationService } from '../../js/email_service.js';
         } catch (error) {
             console.error('❌ Error loading students:', error);
 
-            tableBody.innerHTML = `
-                <tr>
-                    <td colspan="10" class="empty-cell">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <p>Error loading students. Please try again.</p>
-                    </td>
-                </tr>
-            `;
+            if (allStudents.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="empty-cell">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <p>Error loading students. Please try refreshing.</p>
+                        </td>
+                    </tr>
+                `;
+            }
         }
     }
 
@@ -262,46 +291,44 @@ import { EmailNotificationService } from '../../js/email_service.js';
     // ============================================
 
     function renderGradeSummary() {
-<<<<<<< HEAD
-        if (!gradeSummary) return;
+        updateLevelBadges();
 
-        const activeGrade = filterGrade ? filterGrade.value : '';
-        const total = allStudents.length;
+        if (gradeSummary) {
+            const activeGrade = filterGrade ? filterGrade.value : '';
+            const total = allStudents.length;
 
-        let html = `
-            <div class="grade-summary-item ${activeGrade === '' ? 'active' : ''}" data-grade="">
-                <span class="grade-name">All School</span>
-                <span class="grade-count">${total}</span>
-            </div>
-        `;
-
-        gradeLevels.forEach(grade => {
-            const count = allStudents.filter(s => s.grade === grade).length;
-            const isActive = activeGrade === grade;
-            html += `
-                <div class="grade-summary-item ${isActive ? 'active' : ''}" data-grade="${grade}">
-                    <span class="grade-name">${grade}</span>
-                    <span class="grade-count">${count}</span>
+            let html = `
+                <div class="grade-summary-item ${activeGrade === '' ? 'active' : ''}" data-grade="">
+                    <span class="grade-name">All School</span>
+                    <span class="grade-count">${total}</span>
                 </div>
             `;
-        });
 
-        gradeSummary.innerHTML = html;
-
-        gradeSummary.querySelectorAll('.grade-summary-item').forEach(chip => {
-            chip.addEventListener('click', function() {
-                const selectedGrade = this.dataset.grade;
-                if (filterGrade) {
-                    filterGrade.value = selectedGrade;
-                }
-                populateSectionFilter();
-                renderGradeSummary();
-                applyFilters();
+            gradeLevels.forEach(grade => {
+                const count = allStudents.filter(s => s.grade === grade).length;
+                const isActive = activeGrade === grade;
+                html += `
+                    <div class="grade-summary-item ${isActive ? 'active' : ''}" data-grade="${grade}">
+                        <span class="grade-name">${grade}</span>
+                        <span class="grade-count">${count}</span>
+                    </div>
+                `;
             });
-        });
-=======
-        updateLevelBadges();
->>>>>>> b239393 (pacheckkocole)
+
+            gradeSummary.innerHTML = html;
+
+            gradeSummary.querySelectorAll('.grade-summary-item').forEach(chip => {
+                chip.addEventListener('click', function() {
+                    const selectedGrade = this.dataset.grade;
+                    if (filterGrade) {
+                        filterGrade.value = selectedGrade;
+                    }
+                    populateSectionFilter();
+                    renderGradeSummary();
+                    applyFilters();
+                });
+            });
+        }
     }
 
     // ============================================
@@ -366,18 +393,9 @@ import { EmailNotificationService } from '../../js/email_service.js';
 
             if (studentType) {
                 const sType = String(s.student_type || '').toLowerCase();
-<<<<<<< HEAD
-                if (studentType === 'Transferee') {
-                    matchStudentType = sType.includes('transfer');
-                } else if (studentType === 'New Student') {
-                    matchStudentType = !sType.includes('transfer');
-                } else if (studentType === 'Repeater') {
-                    matchStudentType = sType.includes('repeater');
-                }
-=======
                 if (studentType === 'Transferee' && !sType.includes('transfer')) return false;
                 if (studentType === 'New Student' && sType.includes('transfer')) return false;
->>>>>>> b239393 (pacheckkocole)
+                if (studentType === 'Repeater' && !sType.includes('repeater')) return false;
             }
 
             return true;
@@ -425,15 +443,6 @@ import { EmailNotificationService } from '../../js/email_service.js';
             return nameA.localeCompare(nameB);
         });
 
-<<<<<<< HEAD
-            const strandKey = (s.strand || '').toUpperCase();
-            let strandClass = 'strand-general';
-            if (strandKey.includes('TVL') || strandKey.includes('ICT')) strandClass = 'strand-ict';
-            else if (strandKey.includes('STEM')) strandClass = 'strand-stem';
-            else if (strandKey.includes('HUMSS')) strandClass = 'strand-humss';
-            else if (strandKey.includes('GAS')) strandClass = 'strand-gas';
-            else if (strandKey.includes('ABM')) strandClass = 'strand-abm';
-=======
         // Group students by Year Level
         const groups = {};
         sortedStudents.forEach(s => {
@@ -441,123 +450,10 @@ import { EmailNotificationService } from '../../js/email_service.js';
             if (!groups[gKey]) groups[gKey] = [];
             groups[gKey].push(s);
         });
->>>>>>> b239393 (pacheckkocole)
 
         let runningIndex = 1;
         let html = '';
 
-<<<<<<< HEAD
-            const sTypeRaw = String(s.student_type || '').toLowerCase();
-            let typeBadge = '';
-            if (sTypeRaw.includes('transfer')) {
-                typeBadge = `<span class="student-type-pill pill-transferee" title="Transferee Student"><i class="fas fa-right-left"></i> Transferee</span>`;
-            } else if (sTypeRaw.includes('repeater')) {
-                typeBadge = `<span class="student-type-pill pill-repeater" style="background:#fef2f2; color:#991b1b; border:1px solid #fecaca;" title="Repeater Student"><i class="fas fa-rotate-left"></i> Repeater</span>`;
-            } else {
-                typeBadge = `<span class="student-type-pill pill-new" title="New Enrolled Student"><i class="fas fa-sparkles"></i> New</span>`;
-            }
-
-            const isMale = (s.gender || '').toLowerCase() === 'male';
-            const isFemale = (s.gender || '').toLowerCase() === 'female';
-            const genderIcon = isMale ? 'fa-mars' : (isFemale ? 'fa-venus' : 'fa-circle-user');
-            const genderClass = isMale ? 'gender-male' : (isFemale ? 'gender-female' : 'gender-neutral');
-
-            const isActive = (s.status || 'Active').toLowerCase() === 'active';
-            const statusBadge = `
-                <span class="student-status-pill ${isActive ? 'status-active' : 'status-inactive'}">
-                    <span class="status-dot"></span>
-                    ${s.status || 'Active'}
-                </span>
-            `;
-
-            // Academic Status Dropdown Logic
-            let badgeClass = 'badge-unassigned';
-            if (s.academic_status === 'Passed') badgeClass = 'badge-passed';
-            else if (s.academic_status === 'Failed') badgeClass = 'badge-failed';
-
-            const academicBadge = `
-                <select class="academic-status-select ${badgeClass}" data-id="${s.id}">
-                    <option value="Unassigned" ${s.academic_status === 'Unassigned' ? 'selected' : ''}>Unassigned</option>
-                    <option value="Passed" ${s.academic_status === 'Passed' ? 'selected' : ''}>Passed</option>
-                    <option value="Failed" ${s.academic_status === 'Failed' ? 'selected' : ''}>Failed</option>
-                </select>
-            `;
-
-            return `
-                <tr class="student-row" data-id="${s.id}">
-                    <td class="cell-center cell-index">${index + 1}</td>
-                    <td class="cell-student">
-                        <div class="student-cell">
-                            <div class="student-avatar" style="background: ${grad}" title="${fullName}">
-                                ${s.avatar_url ? `
-                                    <img src="${s.avatar_url}" alt="${fullName}" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
-                                    <span style="display:none;">${initial}</span>
-                                ` : `
-                                    <span>${initial}</span>
-                                `}
-                            </div>
-                            <div class="student-info-cell">
-                                <div class="student-name-row">
-                                    <span class="student-full-name">${fullName}</span>
-                                    ${typeBadge}
-                                </div>
-                                <div class="student-sub-row">
-                                    <span class="student-gender-chip ${genderClass}">
-                                        <i class="fas ${genderIcon}"></i> ${s.gender || '—'}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="cell-center cell-lrn">
-                        <span class="lrn-code-pill" title="LRN: ${s.lrn || 'None'}">
-                            ${s.lrn && s.lrn !== '—' ? s.lrn : '<span class="text-muted">—</span>'}
-                        </span>
-                    </td>
-                    <td class="cell-center cell-grade">
-                        <span class="grade-pill grade-${(s.grade || '').toLowerCase().replace(/\s+/g, '-')}">
-                            ${s.grade || '—'}
-                        </span>
-                    </td>
-                    <td class="cell-center cell-section">
-                        ${s.section && s.section !== '—' 
-                            ? `<span class="section-pill"><i class="fas fa-users"></i> ${s.section}</span>` 
-                            : `<span class="section-pill unassigned">—</span>`}
-                    </td>
-                    <td class="cell-center cell-strand">${strandBadge}</td>
-                    <td class="cell-email">
-                        ${s.email && s.email !== '—' 
-                            ? `<a href="mailto:${s.email}" class="student-email-link" title="${s.email}"><i class="far fa-envelope"></i> <span>${s.email}</span></a>` 
-                            : `<span class="text-muted">—</span>`}
-                    </td>
-                    <td class="cell-center cell-status">${statusBadge}</td>
-                    <td class="cell-center cell-academic-status">${academicBadge}</td>
-                    <td class="cell-center cell-actions">
-                        <div class="manage-dropdown">
-                            <button type="button" class="btn-manage" aria-expanded="false" title="Manage Student Record">
-                                <span>Manage</span>
-                                <i class="fas fa-chevron-down"></i>
-                            </button>
-                            <div class="manage-menu">
-                                <a href="view_student.html?id=${s.id}" class="manage-item view-item" title="View Student Profile">
-                                    <i class="fas fa-eye"></i>
-                                    <span>View Profile</span>
-                                </a>
-                                <a href="edit_student.html?id=${s.id}" class="manage-item edit-item" title="Edit Student Record">
-                                    <i class="fas fa-pen-to-square"></i>
-                                    <span>Edit Record</span>
-                                </a>
-                                <button type="button" class="manage-item gmail-item notify-gmail" data-id="${s.id}" title="Send Login Credentials to Student's Gmail">
-                                    <i class="fab fa-google"></i>
-                                    <span>Send to Gmail</span>
-                                </button>
-                                <div class="manage-divider"></div>
-                                <button type="button" class="manage-item delete-item delete" data-id="${s.id}" title="Delete Student Record">
-                                    <i class="fas fa-trash-can"></i>
-                                    <span>Delete Student</span>
-                                </button>
-                            </div>
-=======
         Object.keys(groups).forEach(gradeKey => {
             const groupStudents = groups[gradeKey];
             const schoolLvl = getSchoolLevel(gradeKey);
@@ -580,7 +476,6 @@ import { EmailNotificationService } from '../../js/email_service.js';
                                 </div>
                             </div>
                             <span class="year-group-badge">${groupStudents.length} ${groupStudents.length === 1 ? 'Student' : 'Students'}</span>
->>>>>>> b239393 (pacheckkocole)
                         </div>
                     </td>
                 </tr>

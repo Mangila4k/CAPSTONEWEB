@@ -517,6 +517,7 @@ import { supabase } from '../../supabase/config.js';
                                         date: r.date,
                                         status: r.status,
                                         time_in: r.time || r.time_in,
+                                        qr_code: r.qr_code || r.qrCode || r.rawQr || '',
                                         teacher_name: r.teacher_name || localStorage.getItem('hes_teacher_name') || 'Class Adviser',
                                         remarks: r.remarks || (r.status === 'Late' ? 'Late arrival recorded via QR Scanner' : 'On-time QR scan')
                                     });
@@ -849,6 +850,9 @@ import { supabase } from '../../supabase/config.js';
             }
 
             const timeInHtml = item.time_in ? `<div style="font-size: 11px; color: #64748b; margin-top: 3px;"><i class="far fa-clock"></i> ${item.time_in}</div>` : '';
+            const qrBadgeHtml = (item.qr_code || (item.remarks && item.remarks.includes('QR')))
+                ? `<div style="display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 600; background: #e0e7ff; color: #4338ca; border-radius: 4px; padding: 2px 6px; margin-top: 4px;" title="Scanned & verified via Student ID QR Code: ${item.qr_code || 'QR Verified'}"><i class="fas fa-qrcode"></i> QR Verified</div>`
+                : '';
             const teacherNote = item.teacher_name 
                 ? `<div style="font-size: 11px; color: #0284c7; margin-top: 4px; font-weight: 500;"><i class="fas fa-chalkboard-teacher"></i> Recorded by: <strong>Teacher ${item.teacher_name}</strong></div>`
                 : `<div style="font-size: 11px; color: #64748b; margin-top: 4px;"><i class="fas fa-user-check"></i> Recorded with Teacher</div>`;
@@ -864,6 +868,7 @@ import { supabase } from '../../supabase/config.js';
                             <i class="fas ${icon}"></i> ${status}
                         </span>
                         ${timeInHtml}
+                        ${qrBadgeHtml}
                     </td>
                     <td class="remarks-cell">${remarksFmt}</td>
                 </tr>
