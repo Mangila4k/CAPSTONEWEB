@@ -384,14 +384,15 @@ import { supabase } from '../../supabase/config.js';
                 // 1. Update Supabase users table
                 if (userUid || userEmail) {
                     try {
-                        let uUpdate = supabase.from('users').update({
+                        const userPayload = {
                             first_name: newFirst,
                             last_name: newLast,
-                            gender: newGender,
-                            phone: newPhone,
-                            address: newAddr,
                             updated_at: new Date().toISOString()
-                        });
+                        };
+                        if (newPhone) userPayload.contact_number = newPhone;
+                        if (newAddr) userPayload.address = newAddr;
+
+                        let uUpdate = supabase.from('users').update(userPayload);
                         if (userUid) {
                             uUpdate = uUpdate.eq('id', userUid);
                         } else {
@@ -405,29 +406,35 @@ import { supabase } from '../../supabase/config.js';
                 }
 
                 // 2. Update Supabase teachers table
-                if (userEmail || userUid) {
+                if (userUid) {
                     try {
-                        let tUpdate = supabase.from('teachers').update({
-                            first_name: newFirst,
-                            last_name: newLast,
-                            gender: newGender,
-                            department: newDept,
-                            specialization: newDept,
-                            contact_number: newPhone,
-                            address: newAddr,
+                        const teacherPayload = {
                             updated_at: new Date().toISOString()
-                        });
-                        if (userUid) {
-                            tUpdate = tUpdate.or(`user_id.eq.${userUid},email.eq.${userEmail}`);
-                        } else {
-                            tUpdate = tUpdate.eq('email', userEmail);
-                        }
-                        const { error: tErr } = await tUpdate;
+                        };
+                        if (newDept) teacherPayload.specialization = newDept;
+                        if (newPhone) teacherPayload.phone = newPhone;
+                        if (newAddr) teacherPayload.address = newAddr;
+
+                        const { error: tErr } = await supabase
+                            .from('teachers')
+                            .update(teacherPayload)
+                            .eq('user_id', userUid);
                         if (tErr) console.warn('Teachers table update note:', tErr);
                     } catch(e) {
                         console.warn('Teachers table update fallback:', e);
                     }
                 }
+
+                // 3. Update sections table adviser_name
+                try {
+                    const newFullName = `${newFirst} ${newLast}`.trim();
+                    if (userUid) {
+                        await supabase
+                            .from('sections')
+                            .update({ adviser_name: newFullName })
+                            .eq('adviser_id', userUid);
+                    }
+                } catch(e) {}
 
                 // 3. Update localStorage session
                 const newFullName = `${newFirst} ${newLast}`.trim();

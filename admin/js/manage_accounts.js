@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     const searchInput = document.getElementById('searchInput');
     const roleFilter = document.getElementById('roleFilter');
     const statusFilter = document.getElementById('statusFilter');
+    const sortFilter = document.getElementById('sortFilter');
     const usersTableBody = document.getElementById('usersTableBody');
     const pendingTableBody = document.getElementById('pendingTableBody');
 
@@ -21,6 +22,38 @@ document.addEventListener('DOMContentLoaded', async function() {
     // State
     let users = [];
     let currentUserSession = null;
+    let currentSort = 'role_hierarchy';
+
+    // Role Hierarchy and Display Configuration
+    const ROLE_HIERARCHY = {
+        'admin': 1,
+        'registrar': 2,
+        'principal': 3,
+        'guidance': 4,
+        'teacher': 5,
+        'student': 6,
+        'parent': 7
+    };
+
+    const ROLE_ICONS = {
+        'admin': 'fa-user-shield',
+        'registrar': 'fa-clipboard-list',
+        'principal': 'fa-award',
+        'guidance': 'fa-compass',
+        'teacher': 'fa-chalkboard-teacher',
+        'student': 'fa-user-graduate',
+        'parent': 'fa-user-friends'
+    };
+
+    const ROLE_NAMES = {
+        'admin': 'Administrators',
+        'registrar': 'Registrars',
+        'principal': 'Principals',
+        'guidance': 'Guidance Counselors',
+        'teacher': 'Teachers',
+        'student': 'Students',
+        'parent': 'Parents / Guardians'
+    };
 
     try {
         const stored = localStorage.getItem('currentUser');
@@ -54,11 +87,70 @@ document.addEventListener('DOMContentLoaded', async function() {
         switch((role || '').toLowerCase()) {
             case 'admin': return '#dc3545';
             case 'registrar': return '#fd7e14';
+            case 'principal': return '#0d9488';
             case 'guidance': return '#1D4ED8';
             case 'teacher': return '#28a745';
             case 'student': return '#007bff';
             case 'parent': return '#8b5cf6';
             default: return '#6c757d';
+        }
+    }
+
+    function updateSortIcons() {
+        const roleIcon = document.getElementById('roleSortIcon');
+        const nameIcon = document.getElementById('nameSortIcon');
+        const dateIcon = document.getElementById('dateSortIcon');
+
+        if (roleIcon) {
+            if (currentSort === 'role_hierarchy') {
+                roleIcon.className = 'fas fa-sort-down sort-icon';
+                roleIcon.style.color = '#1B2A4A';
+                roleIcon.style.opacity = '1';
+            } else if (currentSort === 'role_asc') {
+                roleIcon.className = 'fas fa-sort-up sort-icon';
+                roleIcon.style.color = '#1B2A4A';
+                roleIcon.style.opacity = '1';
+            } else if (currentSort === 'role_desc') {
+                roleIcon.className = 'fas fa-sort-down sort-icon';
+                roleIcon.style.color = '#1B2A4A';
+                roleIcon.style.opacity = '1';
+            } else {
+                roleIcon.className = 'fas fa-sort sort-icon';
+                roleIcon.style.color = '';
+                roleIcon.style.opacity = '0.5';
+            }
+        }
+
+        if (nameIcon) {
+            if (currentSort === 'name_asc') {
+                nameIcon.className = 'fas fa-sort-up sort-icon';
+                nameIcon.style.color = '#1B2A4A';
+                nameIcon.style.opacity = '1';
+            } else if (currentSort === 'name_desc') {
+                nameIcon.className = 'fas fa-sort-down sort-icon';
+                nameIcon.style.color = '#1B2A4A';
+                nameIcon.style.opacity = '1';
+            } else {
+                nameIcon.className = 'fas fa-sort sort-icon';
+                nameIcon.style.color = '';
+                nameIcon.style.opacity = '0.5';
+            }
+        }
+
+        if (dateIcon) {
+            if (currentSort === 'created_asc') {
+                dateIcon.className = 'fas fa-sort-up sort-icon';
+                dateIcon.style.color = '#1B2A4A';
+                dateIcon.style.opacity = '1';
+            } else if (currentSort === 'created_desc') {
+                dateIcon.className = 'fas fa-sort-down sort-icon';
+                dateIcon.style.color = '#1B2A4A';
+                dateIcon.style.opacity = '1';
+            } else {
+                dateIcon.className = 'fas fa-sort sort-icon';
+                dateIcon.style.color = '';
+                dateIcon.style.opacity = '0.5';
+            }
         }
     }
 
@@ -143,6 +235,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
             updateStats();
             renderPendingUsers();
+            updateSortIcons();
             renderUsers();
         } catch (err) {
             console.error('Error loading accounts:', err);
@@ -261,6 +354,33 @@ document.addEventListener('DOMContentLoaded', async function() {
             filtered = filtered.filter(u => u.status.toLowerCase() === status.toLowerCase());
         }
 
+        // Apply Sorting / Arrangement
+        filtered.sort((a, b) => {
+            if (currentSort === 'role_hierarchy') {
+                const rankA = ROLE_HIERARCHY[(a.role || '').toLowerCase()] || 99;
+                const rankB = ROLE_HIERARCHY[(b.role || '').toLowerCase()] || 99;
+                if (rankA !== rankB) return rankA - rankB;
+                return (a.fullname || '').localeCompare(b.fullname || '');
+            } else if (currentSort === 'role_asc') {
+                const roleComp = (a.role || '').localeCompare(b.role || '');
+                if (roleComp !== 0) return roleComp;
+                return (a.fullname || '').localeCompare(b.fullname || '');
+            } else if (currentSort === 'role_desc') {
+                const roleComp = (b.role || '').localeCompare(a.role || '');
+                if (roleComp !== 0) return roleComp;
+                return (a.fullname || '').localeCompare(b.fullname || '');
+            } else if (currentSort === 'name_asc') {
+                return (a.fullname || '').localeCompare(b.fullname || '');
+            } else if (currentSort === 'name_desc') {
+                return (b.fullname || '').localeCompare(a.fullname || '');
+            } else if (currentSort === 'created_asc') {
+                return new Date(a.created_at || 0) - new Date(b.created_at || 0);
+            } else if (currentSort === 'created_desc') {
+                return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+            }
+            return 0;
+        });
+
         if (filtered.length === 0) {
             usersTableBody.innerHTML = `
                 <tr>
@@ -276,11 +396,37 @@ document.addEventListener('DOMContentLoaded', async function() {
             return;
         }
 
+        const isArrangedByRole = currentSort.startsWith('role');
+        let lastRole = null;
         let html = '';
+
         filtered.forEach(user => {
+            const roleKey = (user.role || '').toLowerCase();
             const roleColor = getRoleColor(user.role);
             const statusClass = `status-${user.status}`;
             const isSelf = currentUserSession && currentUserSession.email && currentUserSession.email.toLowerCase() === user.email.toLowerCase();
+
+            // Insert role group header when arranging by role
+            if (isArrangedByRole && roleKey !== lastRole) {
+                lastRole = roleKey;
+                const roleCount = filtered.filter(u => (u.role || '').toLowerCase() === roleKey).length;
+                const icon = ROLE_ICONS[roleKey] || 'fa-user';
+                const roleTitle = ROLE_NAMES[roleKey] || (user.role.endsWith('s') ? user.role : `${user.role}s`);
+
+                html += `
+                    <tr class="role-group-header-row">
+                        <td colspan="7">
+                            <div class="role-group-header-content">
+                                <span class="role-group-icon" style="background: ${roleColor};">
+                                    <i class="fas ${icon}"></i>
+                                </span>
+                                <span class="role-group-title">${roleTitle}</span>
+                                <span class="role-group-count">${roleCount} ${roleCount === 1 ? 'account' : 'accounts'}</span>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
 
             html += `
                 <tr>
@@ -414,6 +560,9 @@ document.addEventListener('DOMContentLoaded', async function() {
         if (searchInput) searchInput.value = '';
         if (roleFilter) roleFilter.value = '';
         if (statusFilter) statusFilter.value = '';
+        currentSort = 'role_hierarchy';
+        if (sortFilter) sortFilter.value = 'role_hierarchy';
+        updateSortIcons();
         renderUsers();
     };
 
@@ -428,6 +577,33 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (searchInput) searchInput.addEventListener('input', renderUsers);
     if (roleFilter) roleFilter.addEventListener('change', renderUsers);
     if (statusFilter) statusFilter.addEventListener('change', renderUsers);
+
+    if (sortFilter) {
+        sortFilter.addEventListener('change', function() {
+            currentSort = this.value;
+            updateSortIcons();
+            renderUsers();
+        });
+    }
+
+    // Sortable column headers
+    document.querySelectorAll('.sortable-th').forEach(th => {
+        th.addEventListener('click', function() {
+            const sortType = this.dataset.sort;
+            if (sortType === 'role') {
+                if (currentSort === 'role_hierarchy') currentSort = 'role_asc';
+                else if (currentSort === 'role_asc') currentSort = 'role_desc';
+                else currentSort = 'role_hierarchy';
+            } else if (sortType === 'name') {
+                currentSort = currentSort === 'name_asc' ? 'name_desc' : 'name_asc';
+            } else if (sortType === 'date') {
+                currentSort = currentSort === 'created_desc' ? 'created_asc' : 'created_desc';
+            }
+            if (sortFilter) sortFilter.value = currentSort;
+            updateSortIcons();
+            renderUsers();
+        });
+    });
 
     document.addEventListener('click', function(e) {
         if (e.target === rejectModal) window.closeRejectModal();

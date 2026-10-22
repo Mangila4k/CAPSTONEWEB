@@ -496,17 +496,38 @@ import { supabase } from '../../supabase/config.js';
                     console.warn('Enrollment sync notice:', enrSyncErr);
                 }
 
-                // 3. Update users table if user exists
-                if (currentUserId) {
-                    await supabase
-                        .from('users')
-                        .update({
-                            first_name: firstname,
-                            last_name: lastname,
-                            email: email,
-                            updated_at: new Date().toISOString()
-                        })
-                        .eq('id', currentUserId);
+                // 3. Update users table to keep in sync
+                try {
+                    const userUpdatePayload = {
+                        first_name: firstname,
+                        last_name: lastname,
+                        email: email,
+                        updated_at: new Date().toISOString()
+                    };
+
+                    if (currentUserId) {
+                        await supabase
+                            .from('users')
+                            .update(userUpdatePayload)
+                            .eq('id', currentUserId);
+                    }
+
+                    if (currentStudent?.id) {
+                        await supabase
+                            .from('users')
+                            .update(userUpdatePayload)
+                            .eq('student_id', currentStudent.id);
+                    }
+
+                    const searchEmails = [currentStudent?.email, email].filter(Boolean);
+                    for (const em of searchEmails) {
+                        await supabase
+                            .from('users')
+                            .update(userUpdatePayload)
+                            .eq('email', em);
+                    }
+                } catch(uErr) {
+                    console.warn('Users table update sync notice:', uErr);
                 }
 
                 // Broadcast update so other tabs / views sync

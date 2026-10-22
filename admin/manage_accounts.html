@@ -199,6 +199,15 @@
                         <option value="rejected">Rejected</option>
                     </select>
 
+                    <select name="sort" id="sortFilter" class="filter-select">
+                        <option value="role_hierarchy" selected>Arrange: By Role</option>
+                        <option value="role_asc">Role (A → Z)</option>
+                        <option value="name_asc">Name (A → Z)</option>
+                        <option value="name_desc">Name (Z → A)</option>
+                        <option value="created_desc">Date (Newest First)</option>
+                        <option value="created_asc">Date (Oldest First)</option>
+                    </select>
+
                     <button type="submit" class="btn-search"><i class="fas fa-search"></i> Filter</button>
                     <button type="reset" class="btn-reset" onclick="resetFilters()"><i class="fas fa-redo-alt"></i>
                         Reset</button>
@@ -211,11 +220,11 @@
                     <thead>
                         <tr>
                             <th>ID Number</th>
-                            <th>Full Name</th>
+                            <th class="sortable-th" data-sort="name" title="Click to sort by Name">Full Name <i class="fas fa-sort sort-icon" id="nameSortIcon"></i></th>
                             <th>Email</th>
-                            <th>Role</th>
+                            <th class="sortable-th" data-sort="role" title="Click to sort by Role">Role <i class="fas fa-sort-down sort-icon" id="roleSortIcon"></i></th>
                             <th>Status</th>
-                            <th>Created At</th>
+                            <th class="sortable-th" data-sort="date" title="Click to sort by Date">Created At <i class="fas fa-sort sort-icon" id="dateSortIcon"></i></th>
                             <th>Actions</th>
                         </tr>
                     </thead>

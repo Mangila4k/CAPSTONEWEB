@@ -393,11 +393,10 @@ import { supabase } from '../../supabase/config.js';
                     const updatePayload = {
                         first_name: firstName,
                         last_name: lastName,
-                        gender: gender,
-                        phone: phone,
-                        address: address,
                         updated_at: new Date().toISOString()
                     };
+                    if (phone) updatePayload.contact_number = phone;
+                    if (address) updatePayload.address = address;
 
                     let uUpdate = supabase.from('users').update(updatePayload);
                     if (userUid) {

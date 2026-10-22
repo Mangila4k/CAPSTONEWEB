@@ -256,15 +256,143 @@ document.addEventListener('DOMContentLoaded', async function() {
 
                 if (error) throw error;
 
-                // Update teacher employee_id if teacher
-                if (role.toLowerCase() === 'teacher' && idNumber) {
-                    await supabase
-                        .from('teachers')
-                        .update({ employee_id: idNumber })
-                        .eq('user_id', accountId);
+                // Sync students and enrollments table if student
+                const roleLower = role.toLowerCase();
+                const wasStudent = accountData?.role?.toLowerCase() === 'student' || accountData?.student_id;
+                if (roleLower === 'student' || wasStudent) {
+                    try {
+                        const studentUpdate = {
+                            first_name: firstName,
+                            last_name: lastName,
+                            email: email,
+                            updated_at: new Date().toISOString()
+                        };
+                        if (idNumber && !idNumber.startsWith('HES-')) {
+                            studentUpdate.lrn = idNumber;
+                        }
+
+                        if (accountData?.student_id) {
+                            await supabase
+                                .from('students')
+                                .update(studentUpdate)
+                                .eq('id', accountData.student_id);
+                        }
+
+                        // Also update students by matching email (current and previous)
+                        const searchEmails = [accountData?.email, email].filter(Boolean);
+                        for (const em of searchEmails) {
+                            await supabase
+                                .from('students')
+                                .update(studentUpdate)
+                                .eq('email', em);
+                        }
+
+                        // Sync enrollment records as well
+                        const enrUpdate = {
+                            first_name: firstName,
+                            last_name: lastName,
+                            email: email,
+                            updated_at: new Date().toISOString()
+                        };
+                        for (const em of searchEmails) {
+                            await supabase
+                                .from('enrollments')
+                                .update(enrUpdate)
+                                .eq('email', em);
+                        }
+                        if (accountData?.student_id) {
+                            await supabase
+                                .from('enrollments')
+                                .update(enrUpdate)
+                                .eq('student_id', accountData.student_id);
+                        }
+                    } catch (sSyncErr) {
+                        console.warn('Student profile sync notice:', sSyncErr);
+                    }
                 }
 
-                showAlert('✅ Account updated successfully!', 'success');
+                // Sync teachers and sections table if teacher
+                if (roleLower === 'teacher') {
+                    try {
+                        if (idNumber && !idNumber.startsWith('HES-')) {
+                            const { data: existingT } = await supabase
+                                .from('teachers')
+                                .select('id')
+                                .eq('user_id', accountId)
+                                .maybeSingle();
+
+                            if (existingT) {
+                                await supabase
+                                    .from('teachers')
+                                    .update({ employee_id: idNumber, updated_at: new Date().toISOString() })
+                                    .eq('user_id', accountId);
+                            } else {
+                                await supabase
+                                    .from('teachers')
+                                    .insert([{
+                                        user_id: accountId,
+                                        employee_id: idNumber
+                                    }]);
+                            }
+                        }
+
+                        // Update sections where teacher is adviser
+                        await supabase
+                            .from('sections')
+                            .update({ adviser_name: fullname })
+                            .eq('adviser_id', accountId);
+
+                        const oldFullName = `${accountData?.first_name || ''} ${accountData?.last_name || ''}`.trim();
+                        if (oldFullName && oldFullName !== fullname) {
+                            await supabase
+                                .from('sections')
+                                .update({ adviser_name: fullname })
+                                .eq('adviser_name', oldFullName);
+                        }
+                    } catch (tSyncErr) {
+                        console.warn('Teacher sync notice:', tSyncErr);
+                    }
+                }
+
+                // Update session if editing current user
+                try {
+                    const sessionStr = localStorage.getItem('currentUser');
+                    if (sessionStr) {
+                        const session = JSON.parse(sessionStr);
+                        if (session && (session.id === accountId || session.email === accountData?.email || session.email === email)) {
+                            session.first_name = firstName;
+                            session.last_name = lastName;
+                            session.firstName = firstName;
+                            session.lastName = lastName;
+                            session.displayName = fullname;
+                            session.email = email;
+                            session.role = roleLower;
+                            localStorage.setItem('currentUser', JSON.stringify(session));
+                            if (roleLower === 'admin') {
+                                localStorage.setItem('hes_admin_name', fullname);
+                            }
+                        }
+                    }
+                } catch(e) {}
+
+                // Broadcast update event to all open tabs / pages
+                try {
+                    localStorage.setItem('hes_account_updated', JSON.stringify({
+                        id: accountId,
+                        fullname: fullname,
+                        email: email,
+                        role: roleLower,
+                        timestamp: Date.now()
+                    }));
+                } catch(e) {}
+
+                // Update accountData reference
+                accountData.first_name = firstName;
+                accountData.last_name = lastName;
+                accountData.email = email;
+                accountData.role = roleLower;
+
+                showAlert('✅ Account updated successfully and synced with database!', 'success');
                 updatePreview();
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             } catch (err) {

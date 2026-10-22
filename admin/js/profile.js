@@ -358,17 +358,17 @@ document.addEventListener('DOMContentLoaded', async function() {
                 const userEmail = sessionUser?.email || currentUser?.email || userData?.email;
 
                 if (userUid || userEmail) {
+                    const userPayload = {
+                        first_name: firstName,
+                        last_name: lastName,
+                        updated_at: new Date().toISOString()
+                    };
+                    if (phone) userPayload.contact_number = phone;
+                    if (address) userPayload.address = address;
+
                     let uUpdate = supabase
                         .from('users')
-                        .update({
-                            first_name: firstName,
-                            last_name: lastName,
-                            gender: gender,
-                            phone: phone,
-                            address: address,
-                            id_number: idNumber,
-                            updated_at: new Date().toISOString()
-                        });
+                        .update(userPayload);
 
                     if (userUid) {
                         uUpdate = uUpdate.eq('id', userUid);
@@ -377,7 +377,10 @@ document.addEventListener('DOMContentLoaded', async function() {
                     }
 
                     const { error } = await uUpdate;
-                    if (error) console.warn('Supabase update note:', error);
+                    if (error) {
+                        console.error('Supabase profile update error:', error);
+                        throw new Error(error.message || 'Failed to update profile in database');
+                    }
                 }
 
                 // Update session

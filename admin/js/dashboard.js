@@ -1733,7 +1733,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             renderAdminActions();
             renderAccountApprovals();
             renderEnrollmentApprovals();
-            renderProfileUpdates();
             renderUsers();
             initChart(enrolledMonthly, pendingMonthly);
         } catch (err) {
@@ -1865,7 +1864,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     renderAdminActions();
     renderAccountApprovals();
     renderEnrollmentApprovals();
-    renderProfileUpdates();
     renderUsers();
     initChart();
     await syncLiveDashboardData();

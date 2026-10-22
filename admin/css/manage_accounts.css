@@ -334,6 +334,71 @@ tr:has(.manage-dropdown.show) {
     border-bottom: 2px solid #e9edf4;
 }
 
+.sortable-th {
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.sortable-th:hover {
+    background: #eef2f7;
+    color: #1B2A4A;
+}
+
+.sortable-th .sort-icon {
+    font-size: 11px;
+    margin-left: 5px;
+    opacity: 0.5;
+    vertical-align: middle;
+    transition: opacity 0.15s, color 0.15s;
+}
+
+.sortable-th:hover .sort-icon {
+    opacity: 1;
+}
+
+/* Role Group Section in Table */
+.role-group-header-row td {
+    background: #f8fafc;
+    padding: 9px 14px !important;
+    border-top: 1.5px solid #e2e8f0;
+    border-bottom: 1.5px solid #e2e8f0;
+}
+
+.role-group-header-content {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.role-group-icon {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 10px;
+}
+
+.role-group-title {
+    font-weight: 700;
+    font-size: 12px;
+    color: #1e293b;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.role-group-count {
+    font-size: 11px;
+    background: #e2e8f0;
+    color: #475569;
+    padding: 2px 7px;
+    border-radius: 10px;
+    font-weight: 600;
+}
+
 .data-table td {
     padding: 10px 14px;
     border-bottom: 1px solid #f1f5f9;
@@ -370,6 +435,9 @@ tr:has(.manage-dropdown.show) {
 .role-badge.registrar { background: #fd7e14 !important; }
 .role-badge.teacher { background: #28a745 !important; }
 .role-badge.student { background: #007bff !important; }
+.role-badge.guidance { background: #1D4ED8 !important; }
+.role-badge.parent { background: #8b5cf6 !important; }
+.role-badge.principal { background: #0d9488 !important; }
 
 .status-badge {
     display: inline-block;

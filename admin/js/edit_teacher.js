@@ -444,23 +444,30 @@ document.addEventListener('DOMContentLoaded', async function() {
                 const lastName = nameParts.slice(1).join(' ') || '';
 
                 // Update users table
-                if (currentUserId) {
-                    const userPayload = {
-                        first_name: firstName,
-                        last_name: lastName,
-                        email: email,
-                        updated_at: new Date().toISOString()
-                    };
-                    if (isChangePass && passVal) {
-                        userPayload.password = passVal;
-                    }
+                const userPayload = {
+                    first_name: firstName,
+                    last_name: lastName,
+                    email: email,
+                    updated_at: new Date().toISOString()
+                };
+                if (phone) userPayload.contact_number = phone;
+                if (address) userPayload.address = address;
+                if (isChangePass && passVal) {
+                    userPayload.password = passVal;
+                }
 
+                if (currentUserId) {
                     const { error: uErr } = await supabase
                         .from('users')
                         .update(userPayload)
                         .eq('id', currentUserId);
 
                     if (uErr) throw uErr;
+                } else if (email) {
+                    await supabase
+                        .from('users')
+                        .update(userPayload)
+                        .eq('email', email);
                 }
 
                 // Update or insert teachers table

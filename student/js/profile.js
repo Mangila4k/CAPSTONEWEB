@@ -605,13 +605,15 @@ import { supabase } from '../../supabase/config.js';
                 // 2. Update Supabase users table
                 if (userUid || userEmail) {
                     try {
-                        let uUpdate = supabase.from('users').update({
+                        const userPayload = {
                             first_name: firstName,
                             last_name: lastName,
-                            phone: phone,
-                            address: address,
                             updated_at: new Date().toISOString()
-                        });
+                        };
+                        if (phone) userPayload.contact_number = phone;
+                        if (address) userPayload.address = address;
+
+                        let uUpdate = supabase.from('users').update(userPayload);
                         if (userUid) {
                             uUpdate = uUpdate.eq('id', userUid);
                         } else {
@@ -622,6 +624,23 @@ import { supabase } from '../../supabase/config.js';
                     } catch(e) {
                         console.warn('Users table update fallback:', e);
                     }
+                }
+
+                // 3. Sync Supabase enrollments table
+                if (studentData?.id || userEmail) {
+                    try {
+                        let eUpdate = supabase.from('enrollments').update({
+                            first_name: firstName,
+                            last_name: lastName,
+                            updated_at: new Date().toISOString()
+                        });
+                        if (studentData?.id) {
+                            eUpdate = eUpdate.or(`student_id.eq.${studentData.id},email.eq.${userEmail}`);
+                        } else {
+                            eUpdate = eUpdate.eq('email', userEmail);
+                        }
+                        await eUpdate;
+                    } catch(e) {}
                 }
 
                 // 3. Update local session & memory

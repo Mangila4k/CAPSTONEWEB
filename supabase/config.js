@@ -1,15 +1,8 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-// ============================================
-// SUPABASE CONFIGURATION & CREDENTIALS
-// ============================================
-
 const SUPABASE_URL = 'https://tuujlqrfyuazvbvoribz.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_dYaVB2zNcNNj5gwjzJ4ZRw_N55Djq0D';
 
-// ============================================
-// CREATE SUPABASE CLIENT
-// ============================================
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: {

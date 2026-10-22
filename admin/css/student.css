@@ -1285,9 +1285,6 @@ tr:has(.manage-dropdown.show) {
     box-shadow: 0 4px 14px rgba(27, 42, 74, 0.35);
     transform: translateY(-1px);
     color: #fff !important;
-<<<<<<< HEAD
-}
-=======
 }
 
 .badge-transferee {
@@ -1512,5 +1509,3 @@ tr:has(.manage-dropdown.show) {
         min-width: 100%;
     }
 }
-
->>>>>>> b239393 (pacheckkocole)
