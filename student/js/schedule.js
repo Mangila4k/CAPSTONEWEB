@@ -233,7 +233,33 @@ import { supabase } from '../../supabase/config.js';
             if (gradeDisplay) gradeDisplay.textContent = currentEnrollment?.grade_level || studentRow?.grade_level || sectionRecord?.grade_level || 'Grade 11';
             if (schoolYearDisplay) schoolYearDisplay.textContent = currentEnrollment?.school_year || currentEnrollment?.last_school_year || '2025-2026';
 
-            // 4. Load schedules, subjects, and users from Supabase
+            // 4. Load official uploaded schedule document from teacher 
+            // STRICT CHECK: Must match section and be officially shared (shared_at exists)
+            let uploadedDoc = null;
+            
+            if (sectionRecord && sectionRecord.schedule_doc_url && sectionRecord.shared_at) {
+                const isGDocs = sectionRecord.schedule_doc_type === 'google_docs' ||
+                                (sectionRecord.schedule_doc_url || '').includes('docs.google.com') ||
+                                (sectionRecord.schedule_doc_url || '').includes('drive.google.com');
+                const isImg = (sectionRecord.schedule_doc_type || '').startsWith('image/') ||
+                              /\.(png|jpe?g|webp|gif)$/i.test(sectionRecord.schedule_doc_name || '') ||
+                              (sectionRecord.schedule_doc_url && sectionRecord.schedule_doc_url.startsWith('data:image/'));
+
+                uploadedDoc = {
+                    sectionId: sectionRecord.id || sectionId,
+                    sectionName: sectionRecord.name || secName,
+                    fileName: sectionRecord.schedule_doc_name || (isGDocs ? `${secName || 'Section'} Student Load (Google Docs)` : isImg ? `${secName || 'Section'}_Student_Load_Schedule.png` : 'Section_Student_Load.pdf'),
+                    fileType: sectionRecord.schedule_doc_type || (isGDocs ? 'google_docs' : isImg ? 'image/png' : 'application/pdf'),
+                    fileData: sectionRecord.schedule_doc_url,
+                    url: sectionRecord.schedule_doc_url,
+                    isGoogleDocs: isGDocs,
+                    isImage: isImg,
+                    uploadDate: sectionRecord.schedule_doc_updated_at || new Date().toISOString(),
+                    uploadedBy: sectionRecord.shared_by || sectionRecord.schedule_doc_uploaded_by || 'Class Adviser'
+                };
+            }
+
+            // 5. Load schedules, subjects, and users from Supabase
             let hasDatabaseSchedules = false;
             try {
                 const [{ data: schedData }, { data: subjectsData }, { data: usersData }] = await Promise.all([
@@ -250,7 +276,6 @@ import { supabase } from '../../supabase/config.js';
                     }
 
                     schedules = filtered.map(s => {
-                        // 1. Resolve Subject Name
                         let subName = s.subject || s.subject_name || s.subject_title || s.name || s.title || s.subject_code;
                         if (!subName && s.subject_id) {
                             const foundSub = subjectsData?.find(sub => sub.id === s.subject_id || sub.code === s.subject_id);
@@ -262,7 +287,6 @@ import { supabase } from '../../supabase/config.js';
                             subName = 'General Subject';
                         }
 
-                        // 2. Resolve Teacher Name
                         let teacherName = s.teacher || s.teacher_name;
                         if (!teacherName && s.teacher_id) {
                             const foundUser = usersData?.find(u => u.id === s.teacher_id);
@@ -294,18 +318,25 @@ import { supabase } from '../../supabase/config.js';
                 console.warn('Error loading schedule rows:', e);
             }
 
-            // Load official uploaded schedule document from teacher (PDF, Google Docs, or Image)
-            const uploadedDoc = loadUploadedScheduleBanner(sectionId, secName, sectionRecord);
-
-            // Handle when student is missing individual timetable entries
-            if (!hasDatabaseSchedules) {
-                // If teacher uploaded a document (PDF or Google Docs), use fallback UI with embedded preview
-                if (uploadedDoc) {
-                    renderMissingTimetableWithDocFallback(uploadedDoc, secName);
-                } else {
-                    // If no uploaded document either, show empty notice
-                    renderEmptyTimetableNotice(secName);
-                }
+            // 6. Handle display logic:
+            // If the teacher shared an official Student Load document, it takes PRIORITY
+            if (uploadedDoc) {
+                // Show the uploaded document fallback view & hide the timetable grid
+                renderMissingTimetableWithDocFallback(uploadedDoc, secName);
+                
+                setupPrintScheduleHandler({
+                    fullName: studentName?.textContent || 'Student',
+                    lrn: studentRow?.lrn || currentEnrollment?.lrn || '108472910482',
+                    section: secName || 'Section 11 - C',
+                    grade: gradeDisplay?.textContent || 'Grade 11',
+                    strand: studentRow?.strand || currentEnrollment?.strand || 'TVL - ICT',
+                    schoolYear: schoolYearDisplay?.textContent || '2025-2026',
+                    adviser: sectionRecord?.adviser_name || studentRow?.adviser || 'Class Adviser',
+                    schedules: [] // Clear schedules so it doesn't print the generic grid
+                });
+            } else if (!hasDatabaseSchedules) {
+                // No shared doc and no grid schedules -> show empty notice
+                renderEmptyTimetableNotice(secName);
             } else {
                 // Normal timetable rendering with active table
                 const noticeEl = document.getElementById('scheduleFallbackNotice');
@@ -314,44 +345,24 @@ import { supabase } from '../../supabase/config.js';
                 if (tableWrap) tableWrap.style.display = 'block';
 
                 renderScheduleUI(secName);
-            }
 
-            // Setup print schedule handler & letterhead with full metadata for official 1-page bond paper printing
-            const curStudentName = studentName?.textContent || (sessionUser.firstName ? `${sessionUser.firstName} ${sessionUser.lastName || ''}`.trim() : 'Student');
-            setupPrintScheduleHandler({
-                fullName: curStudentName,
-                lrn: studentRow?.lrn || currentEnrollment?.lrn || '108472910482',
-                section: secName || 'Section 11 - C',
-                grade: gradeDisplay?.textContent || studentRow?.grade_level || currentEnrollment?.grade_level || 'Grade 11',
-                strand: studentRow?.strand || currentEnrollment?.strand || 'TVL - ICT',
-                schoolYear: schoolYearDisplay?.textContent || currentEnrollment?.school_year || '2025-2026',
-                adviser: studentRow?.adviser || currentEnrollment?.adviser || 'Mrs. Carmen Santos',
-                schedules: schedules
-            });
+                // Setup print handler
+                setupPrintScheduleHandler({
+                    fullName: studentName?.textContent || 'Student',
+                    lrn: studentRow?.lrn || currentEnrollment?.lrn || '108472910482',
+                    section: secName || 'Section 11 - C',
+                    grade: gradeDisplay?.textContent || 'Grade 11',
+                    strand: studentRow?.strand || currentEnrollment?.strand || 'TVL - ICT',
+                    schoolYear: schoolYearDisplay?.textContent || '2025-2026',
+                    adviser: sectionRecord?.adviser_name || studentRow?.adviser || 'Class Adviser',
+                    schedules: schedules
+                });
+            }
 
         } catch (error) {
             console.error('Error loading schedule data:', error);
             showAlert('❌ Error loading schedule: ' + error.message, 'error');
         }
-    }
-
-    function getDefaultSchedule(grade) {
-        return [
-            { day: 'Monday', subject: 'Oral Communication in Context', start_time: '07:30', end_time: '08:30', room: 'Room 201', teacher: 'Mrs. Santos' },
-            { day: 'Monday', subject: 'General Mathematics', start_time: '08:30', end_time: '09:30', room: 'Room 201', teacher: 'Mr. Cruz' },
-            { day: 'Monday', subject: 'Computer Systems Servicing', start_time: '10:00', end_time: '12:00', room: 'ICT Lab 1', teacher: 'Engr. Reyes' },
-            { day: 'Tuesday', subject: 'Earth and Life Science', start_time: '07:30', end_time: '08:30', room: 'Science Lab', teacher: 'Ms. Garcia' },
-            { day: 'Tuesday', subject: 'Komunikasyon at Pananaliksik', start_time: '08:30', end_time: '09:30', room: 'Room 201', teacher: 'G. Ramos' },
-            { day: 'Tuesday', subject: 'Programming (Java/Web)', start_time: '10:00', end_time: '12:00', room: 'ICT Lab 2', teacher: 'Mr. Destinado' },
-            { day: 'Wednesday', subject: 'Oral Communication in Context', start_time: '07:30', end_time: '08:30', room: 'Room 201', teacher: 'Mrs. Santos' },
-            { day: 'Wednesday', subject: 'General Mathematics', start_time: '08:30', end_time: '09:30', room: 'Room 201', teacher: 'Mr. Cruz' },
-            { day: 'Wednesday', subject: 'Physical Education 1', start_time: '10:00', end_time: '11:00', room: 'Gymnasium', teacher: 'Coach Perez' },
-            { day: 'Thursday', subject: 'Earth and Life Science', start_time: '07:30', end_time: '08:30', room: 'Science Lab', teacher: 'Ms. Garcia' },
-            { day: 'Thursday', subject: 'Komunikasyon at Pananaliksik', start_time: '08:30', end_time: '09:30', room: 'Room 201', teacher: 'G. Ramos' },
-            { day: 'Thursday', subject: 'Empowerment Technologies', start_time: '10:00', end_time: '12:00', room: 'ICT Lab 1', teacher: 'Ms. Sellar' },
-            { day: 'Friday', subject: 'Homeroom Guidance', start_time: '07:30', end_time: '08:30', room: 'Room 201', teacher: 'Mrs. Santos' },
-            { day: 'Friday', subject: 'Computer Systems Servicing', start_time: '08:30', end_time: '10:30', room: 'ICT Lab 1', teacher: 'Engr. Reyes' }
-        ];
     }
 
     function renderScheduleUI(secName) {
@@ -404,7 +415,6 @@ import { supabase } from '../../supabase/config.js';
                 { start: '11:00', end: '12:00', label: '11:00 - 12:00 PM', isRecess: false }
             ];
 
-            // Check if there are afternoon classes in schedules (e.g. starting after 12:00)
             const hasAfternoon = schedules.some(s => {
                 const h = parseInt(String(s.start_time).split(':')[0], 10);
                 return h >= 12;
@@ -498,8 +508,6 @@ import { supabase } from '../../supabase/config.js';
     // OFFICIAL UPLOADED SCHEDULE & PRINT HANDLERS
     // ============================================
 
-    let currentSectionUploadedDoc = null;
-
     function getGoogleDocsEmbedUrl(url) {
         if (!url) return '';
         if (url.includes('/edit')) {
@@ -512,125 +520,6 @@ import { supabase } from '../../supabase/config.js';
             return url.replace(/\/?$/, '/preview');
         }
         return url;
-    }
-
-    function loadUploadedScheduleBanner(sectionId, secName, sectionRecord) {
-        const banner = document.getElementById('uploadedDocBanner');
-        const udbTitle = document.getElementById('udbTitle');
-        const udbMeta = document.getElementById('udbMeta');
-        const udbIcon = document.getElementById('udbIcon');
-        const udbBadge = document.getElementById('udbBadge');
-        const btnOpenGDocs = document.getElementById('btnOpenGDocsSchedule');
-        const btnView = document.getElementById('btnViewUploadedSchedule');
-        const btnDownload = document.getElementById('btnDownloadUploadedSchedule');
-        const btnPrintDoc = document.getElementById('btnPrintUploadedSchedule');
-
-        let docData = null;
-
-        // 1. Check Supabase section record first
-        if (sectionRecord && sectionRecord.schedule_doc_url) {
-            const isGDocs = sectionRecord.schedule_doc_type === 'google_docs' ||
-                            (sectionRecord.schedule_doc_url || '').includes('docs.google.com') ||
-                            (sectionRecord.schedule_doc_url || '').includes('drive.google.com');
-            const isImg = (sectionRecord.schedule_doc_type || '').startsWith('image/') ||
-                          /\.(png|jpe?g|webp|gif)$/i.test(sectionRecord.schedule_doc_name || '') ||
-                          (sectionRecord.schedule_doc_url && sectionRecord.schedule_doc_url.startsWith('data:image/'));
-
-            docData = {
-                sectionId: sectionRecord.id || sectionId,
-                sectionName: sectionRecord.name || secName,
-                fileName: sectionRecord.schedule_doc_name || (isGDocs ? `${secName || 'Section'} Student Load (Google Docs)` : isImg ? `${secName || 'Section'}_Student_Load_Schedule.png` : 'Section_Student_Load.pdf'),
-                fileType: sectionRecord.schedule_doc_type || (isGDocs ? 'google_docs' : isImg ? 'image/png' : 'application/pdf'),
-                fileData: sectionRecord.schedule_doc_url,
-                url: sectionRecord.schedule_doc_url,
-                isGoogleDocs: isGDocs,
-                isImage: isImg,
-                uploadDate: sectionRecord.schedule_doc_updated_at || new Date().toISOString(),
-                uploadedBy: sectionRecord.schedule_doc_uploaded_by || 'Class Adviser / Teacher'
-            };
-        } else {
-            // 2. Fallback to localStorage
-            const raw = (sectionId ? localStorage.getItem('hes_section_schedule_' + sectionId) : null) ||
-                        (secName ? localStorage.getItem('hes_section_schedule_' + secName.trim().toUpperCase()) : null);
-
-            if (raw) {
-                try {
-                    const parsed = JSON.parse(raw);
-                    if (parsed && (parsed.fileData || parsed.url)) {
-                        docData = parsed;
-                    }
-                } catch(e) {}
-            }
-        }
-
-        if (!docData || (!docData.fileData && !docData.url)) {
-            if (banner) banner.style.display = 'none';
-            currentSectionUploadedDoc = null;
-            return null;
-        }
-
-        currentSectionUploadedDoc = docData;
-        const isGoogleDocs = docData.isGoogleDocs || docData.fileType === 'google_docs' || (docData.url && (docData.url.includes('docs.google.com') || docData.url.includes('drive.google.com')));
-        const isPdf = (docData.fileType || '').includes('pdf') || (docData.fileName || '').toLowerCase().endsWith('.pdf');
-        const isImg = docData.isImage || (docData.fileType || '').startsWith('image/') || /\.(png|jpe?g|webp|gif)$/i.test(docData.fileName || '') || (docData.url && docData.url.startsWith('data:image/'));
-
-        if (banner) banner.style.display = 'flex';
-        if (udbTitle) udbTitle.textContent = docData.fileName || (isGoogleDocs ? 'Official Student Load (Google Docs)' : isImg ? 'Official Student Load Schedule Image' : 'Official Student Load Document');
-        
-        if (udbMeta) {
-            const dateStr = docData.uploadDate ? new Date(docData.uploadDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Recently';
-            const sizeStr = docData.fileSizeFormatted ? ` • ${docData.fileSizeFormatted}` : '';
-            const byStr = docData.uploadedBy ? `Sent by ${docData.uploadedBy}` : 'Sent by Teacher';
-            udbMeta.textContent = `${isGoogleDocs ? 'Google Docs Link' : isImg ? 'Schedule Image' : 'Official File'} • ${byStr} • ${dateStr}${sizeStr}`;
-        }
-
-        if (udbBadge) {
-            udbBadge.innerHTML = isGoogleDocs ? '<i class="fab fa-google-drive"></i> Active Google Doc' : isImg ? '<i class="fas fa-file-image"></i> Schedule Image' : '<i class="fas fa-file-pdf"></i> Official PDF';
-            udbBadge.style.background = isGoogleDocs ? 'rgba(37, 99, 235, 0.1)' : isImg ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)';
-            udbBadge.style.color = isGoogleDocs ? '#2563eb' : isImg ? '#059669' : '#dc2626';
-            udbBadge.style.borderColor = isGoogleDocs ? 'rgba(37, 99, 235, 0.3)' : isImg ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)';
-        }
-
-        if (udbIcon) {
-            if (isGoogleDocs) {
-                udbIcon.innerHTML = '<i class="fab fa-google-drive" style="color: #4285F4;"></i>';
-                udbIcon.style.background = 'rgba(66, 133, 244, 0.1)';
-            } else if (isImg) {
-                udbIcon.innerHTML = '<i class="fas fa-file-image" style="color: #10b981;"></i>';
-                udbIcon.style.background = 'rgba(16, 185, 129, 0.1)';
-            } else {
-                udbIcon.innerHTML = '<i class="fas fa-file-pdf" style="color: #ef4444;"></i>';
-                udbIcon.style.background = 'rgba(239, 68, 68, 0.1)';
-            }
-        }
-
-        // Action buttons
-        if (btnOpenGDocs) {
-            if (isGoogleDocs) {
-                btnOpenGDocs.style.display = 'inline-flex';
-                btnOpenGDocs.href = docData.url || docData.fileData;
-            } else {
-                btnOpenGDocs.style.display = 'none';
-            }
-        }
-
-        if (btnView) {
-            btnView.style.display = 'inline-flex';
-            btnView.innerHTML = isGoogleDocs ? '<i class="fas fa-eye"></i> Preview Doc' : '<i class="fas fa-eye"></i> View Full';
-            btnView.onclick = () => openStudentDocViewer(docData);
-        }
-
-        if (btnDownload) {
-            btnDownload.style.display = isGoogleDocs ? 'none' : 'inline-flex';
-            btnDownload.onclick = () => downloadStudentDoc(docData);
-        }
-
-        if (btnPrintDoc) {
-            btnPrintDoc.style.display = isGoogleDocs ? 'none' : 'inline-flex';
-            btnPrintDoc.onclick = () => printUploadedDoc(docData);
-        }
-
-        return docData;
     }
 
     function renderMissingTimetableWithDocFallback(doc, secName) {
@@ -767,21 +656,25 @@ import { supabase } from '../../supabase/config.js';
         if (printAdviser) printAdviser.textContent = data.adviser || 'Mrs. Carmen Santos';
         if (printSigAdviser) printSigAdviser.textContent = (data.adviser || 'Mrs. Carmen Santos').toUpperCase();
 
-        if (printList && data.schedules) {
-            const uniqueSubjs = [];
-            const seen = new Set();
-            data.schedules.forEach(s => {
-                if (s.subject && !seen.has(s.subject)) {
-                    seen.add(s.subject);
-                    uniqueSubjs.push(s);
-                }
-            });
+        if (printList) {
+            if (data.schedules && data.schedules.length > 0) {
+                const uniqueSubjs = [];
+                const seen = new Set();
+                data.schedules.forEach(s => {
+                    if (s.subject && !seen.has(s.subject)) {
+                        seen.add(s.subject);
+                        uniqueSubjs.push(s);
+                    }
+                });
 
-            printList.innerHTML = uniqueSubjs.map(s => `
-                <div class="pss-item">
-                    <strong>• ${s.subject}:</strong> ${s.teacher || 'Faculty'} <span style="color:#666;">(${s.room || 'Rm 101'})</span>
-                </div>
-            `).join('');
+                printList.innerHTML = uniqueSubjs.map(s => `
+                    <div class="pss-item">
+                        <strong>• ${s.subject}:</strong> ${s.teacher || 'Faculty'} <span style="color:#666;">(${s.room || 'Rm 101'})</span>
+                    </div>
+                `).join('');
+            } else {
+                printList.innerHTML = `<div class="pss-item"><strong>Official Section Student Load:</strong> Please refer to the uploaded document.</div>`;
+            }
         }
 
         if (btnPrint) {

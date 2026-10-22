@@ -7,7 +7,8 @@ import { supabase } from '../../supabase/config.js';
     let sessionUser = null;
     let currentTeacherRecord = null;
     let assignedSchedules = [];
-    let currentAdminDoc = null;
+    let myIndividualWorkloads = []; 
+    let scannedSchedules = []; // Holds the auto-generated schedule from OCR
     let selectedDayFilter = 'all';
 
     // DOM Elements
@@ -35,14 +36,6 @@ import { supabase } from '../../supabase/config.js';
     const visualTimetableContainer = document.getElementById('visualTimetableContainer');
 
     const adminDocCard = document.getElementById('adminDocCard');
-    const adminDocIcon = document.getElementById('adminDocIcon');
-    const adminDocTitle = document.getElementById('adminDocTitle');
-    const adminDocMeta = document.getElementById('adminDocMeta');
-    const btnAdminDocOpenGDocs = document.getElementById('btnAdminDocOpenGDocs');
-    const btnAdminDocPreview = document.getElementById('btnAdminDocPreview');
-    const btnAdminDocDownload = document.getElementById('btnAdminDocDownload');
-    const btnAdminDocPrint = document.getElementById('btnAdminDocPrint');
-
     const modalAdminDocViewer = document.getElementById('modalAdminDocViewer');
     const btnCloseAdminDocViewer = document.getElementById('btnCloseAdminDocViewer');
     const btnAdminDocViewerExternal = document.getElementById('btnAdminDocViewerExternal');
@@ -121,6 +114,11 @@ import { supabase } from '../../supabase/config.js';
             alert.style.color = '#065f46';
             alert.style.border = '1px solid #a7f3d0';
             alert.innerHTML = `<i class="fas fa-check-circle" style="color: #10b981;"></i> <span>${message}</span>`;
+        } else if (type === 'info') {
+            alert.style.background = '#eff6ff';
+            alert.style.color = '#1e40af';
+            alert.style.border = '1px solid #bfdbfe';
+            alert.innerHTML = `<i class="fas fa-info-circle" style="color: #3b82f6;"></i> <span>${message}</span>`;
         } else {
             alert.style.background = '#fef2f2';
             alert.style.color = '#991b1b';
@@ -136,33 +134,21 @@ import { supabase } from '../../supabase/config.js';
         }, 5000);
     }
 
-    // ===== LOAD TEACHER RECORD & ADMIN SCHEDULES =====
+    // ===== LOAD TEACHER RECORD, SCHEDULES, & TEACHER WORKLOADS =====
     async function loadTeacherLoadData() {
         try {
-            // 1. Fetch teacher record
             let teacherRecord = null;
             if (sessionUser?.id) {
-                const { data: tData } = await supabase
-                    .from('teachers')
-                    .select('*')
-                    .eq('user_id', sessionUser.id)
-                    .maybeSingle();
-
+                const { data: tData } = await supabase.from('teachers').select('*').eq('user_id', sessionUser.id).maybeSingle();
                 if (tData) {
                     teacherRecord = tData;
                 } else {
-                    const { data: tById } = await supabase
-                        .from('teachers')
-                        .select('*')
-                        .eq('id', sessionUser.id)
-                        .maybeSingle();
+                    const { data: tById } = await supabase.from('teachers').select('*').eq('id', sessionUser.id).maybeSingle();
                     if (tById) teacherRecord = tById;
                 }
             }
 
             currentTeacherRecord = teacherRecord;
-
-            // Update profile metadata
             const empId = teacherRecord?.employee_id || sessionUser?.employee_id || 'TCH-2026-001';
             const spec = teacherRecord?.specialization || teacherRecord?.subject || 'Secondary Education';
             
@@ -171,67 +157,38 @@ import { supabase } from '../../supabase/config.js';
             if (printEmployeeId) printEmployeeId.textContent = empId;
             if (printSpecialization) printSpecialization.textContent = spec;
 
-            // 2. Fetch admin-assigned schedules for this teacher
-            let schedulesData = [];
             const teacherId = teacherRecord?.id || sessionUser?.id;
-
+            
+            // 1. Fetch Manual Schedules (from DB)
+            let schedulesData = [];
             if (teacherId) {
-                const { data: sRows, error: sErr } = await supabase
-                    .from('schedules')
-                    .select('*')
-                    .eq('teacher_id', teacherId);
-
-                if (!sErr && sRows && sRows.length > 0) {
-                    schedulesData = sRows;
-                } else if (teacherRecord?.user_id && teacherRecord.user_id !== teacherId) {
-                    // Try by user_id
-                    const { data: sByUser } = await supabase
-                        .from('schedules')
-                        .select('*')
-                        .eq('teacher_id', teacherRecord.user_id);
-                    if (sByUser) schedulesData = sByUser;
-                }
+                const { data: sRows } = await supabase.from('schedules').select('*').eq('teacher_id', teacherId);
+                if (sRows) schedulesData = sRows;
             }
 
-            // 3. Fetch subjects and sections metadata
             const subjectIds = [...new Set(schedulesData.map(s => s.subject_id).filter(Boolean))];
             const sectionIds = [...new Set(schedulesData.map(s => s.section_id).filter(Boolean))];
-
             const subjectMap = {};
             const sectionMap = {};
 
-            const promises = [];
             if (subjectIds.length > 0) {
-                promises.push(
-                    supabase.from('subjects').select('id, name, code, grade_level').in('id', subjectIds)
-                        .then(({ data }) => {
-                            (data || []).forEach(sub => { subjectMap[sub.id] = sub; });
-                        })
-                );
+                const { data: subs } = await supabase.from('subjects').select('id, name, code, grade_level').in('id', subjectIds);
+                (subs || []).forEach(sub => { subjectMap[sub.id] = sub; });
             }
             if (sectionIds.length > 0) {
-                promises.push(
-                    supabase.from('sections').select('id, name, grade_level, strand, room').in('id', sectionIds)
-                        .then(({ data }) => {
-                            (data || []).forEach(sec => { sectionMap[sec.id] = sec; });
-                        })
-                );
+                const { data: secs } = await supabase.from('sections').select('*').in('id', sectionIds);
+                (secs || []).forEach(sec => { sectionMap[sec.id] = sec; });
             }
 
-            await Promise.all(promises);
-
-            // 4. Map & enrich schedules
             assignedSchedules = schedulesData.map((s, idx) => {
                 const sub = subjectMap[s.subject_id] || {};
                 const sec = sectionMap[s.section_id] || {};
-
                 const startStr = s.start_time || '07:30:00';
                 const endStr = s.end_time || '08:30:00';
                 const mins = calculateDurationMinutes(startStr, endStr);
 
                 return {
                     id: s.id || `sch-${idx}`,
-                    index: idx + 1,
                     subject_name: s.subject || sub.name || 'Subject',
                     subject_code: sub.code || '',
                     section_name: sec.name || 'Assigned Section',
@@ -241,33 +198,119 @@ import { supabase } from '../../supabase/config.js';
                     end_time: endStr,
                     time_formatted: `${formatTime(startStr)} - ${formatTime(endStr)}`,
                     room: s.room || sec.room || 'Room 101',
-                    duration_minutes: mins,
-                    is_admin_assigned: true
+                    duration_minutes: mins
                 };
             });
 
-            // 5. Update Statistics
-            updateLoadStatistics(assignedSchedules);
+            // 2. Fetch Teacher Workloads (Documents)
+            if (teacherId) {
+                const { data: twData } = await supabase.from('teacher_workloads').select('*').eq('teacher_id', teacherId).order('created_at', { ascending: false });
+                if (twData) myIndividualWorkloads = twData;
+            }
 
-            // 6. Check Admin-issued schedule document
-            checkAdminLoadDocument(teacherRecord, sessionUser);
+            renderAdminWorkloads();
 
-            // 7. Render Table & Visual Grid
-            renderTeachingLoadTable();
-            renderVisualTimetableGrid();
+            // 3. IF there are no manual schedules, but there is a workload image, SCAN IT!
+            if (assignedSchedules.length === 0 && myIndividualWorkloads.length > 0) {
+                const latestWorkload = myIndividualWorkloads[0];
+                const isImage = (latestWorkload.file_type || '').startsWith('image/') || /\.(png|jpe?g|webp)$/i.test(latestWorkload.file_name || '');
+                
+                if (isImage && typeof Tesseract !== 'undefined') {
+                    showAlert('info', 'Scanning your uploaded workload to automatically build your timetable...');
+                    await scanWorkloadImage(latestWorkload.file_url);
+                } else {
+                    showAlert('error', 'Please upload a clear Image (JPG/PNG) of your workload to auto-generate the timetable. PDFs cannot be scanned automatically.');
+                }
+            } else {
+                updateLoadStatistics(assignedSchedules);
+                renderTeachingLoadTable();
+                renderVisualTimetableGrid();
+            }
 
         } catch (err) {
             console.error('Error loading teacher load:', err);
             showAlert('error', 'Failed to load teacher load: ' + err.message);
-            if (teachingLoadTableBody) {
-                teachingLoadTableBody.innerHTML = `
-                    <tr>
-                        <td colspan="7" style="text-align: center; padding: 32px; color: #ef4444;">
-                            <i class="fas fa-exclamation-triangle"></i> Error loading official teacher load.
-                        </td>
-                    </tr>
-                `;
+        }
+    }
+
+    // ===== OCR SCANNER ENGINE =====
+    async function scanWorkloadImage(imageUrl) {
+        try {
+            const worker = await Tesseract.createWorker('eng');
+            
+            // Define expected subjects/rooms to help the parser
+            const knownSections = ['STEM', 'ABM', 'HUMSS', 'GAS', 'TVL', 'Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
+            const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+
+            const { data: { text } } = await worker.recognize(imageUrl);
+            await worker.terminate();
+
+            console.log("📄 OCR Text:", text);
+
+            // Parse the text
+            const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+            
+            let parsedSchedules = [];
+            let currentDay = 'Monday';
+            
+            // Very basic heuristic parser
+            lines.forEach(line => {
+                // Check if line is a day header
+                const foundDay = days.find(d => line.toUpperCase().includes(d.toUpperCase()));
+                if (foundDay) {
+                    currentDay = foundDay;
+                    return;
+                }
+
+                // Look for time patterns like "7:30 - 8:30" or "07:30-08:30"
+                const timeMatch = line.match(/(\d{1,2}:\d{2})\s*[-to]+\s*(\d{1,2}:\d{2})/i);
+                
+                // Look for a subject/section
+                const foundSubject = knownSections.find(s => line.toUpperCase().includes(s.toUpperCase())) || 'Class';
+
+                if (timeMatch) {
+                    let startStr = timeMatch[1];
+                    let endStr = timeMatch[2];
+                    
+                    // Convert to 24h for consistency if needed (basic check)
+                    if (!startStr.includes(':00')) startStr += ':00';
+                    if (!endStr.includes(':00')) endStr += ':00';
+
+                    // Clean up the text to find a potential subject name (remove time, day, room)
+                    let subjectName = line.replace(timeMatch[0], '').replace(/Room\s*\d+/i, '').replace(/\s+/g, ' ').trim();
+                    if (subjectName.length < 3) subjectName = foundSubject;
+
+                    parsedSchedules.push({
+                        id: `ocr-${Date.now()}-${Math.random()}`,
+                        subject_name: subjectName,
+                        section_name: 'Assigned Section', // OCR might not reliably grab this
+                        day: currentDay,
+                        start_time: startStr,
+                        end_time: endStr,
+                        time_formatted: `${formatTime(startStr)} - ${formatTime(endStr)}`,
+                        room: 'TBA',
+                        duration_minutes: calculateDurationMinutes(startStr, endStr),
+                        is_ocr_scanned: true
+                    });
+                }
+            });
+
+            if (parsedSchedules.length > 0) {
+                scannedSchedules = parsedSchedules;
+                // Merge with manually assigned (or use scanned if manual is empty)
+                assignedSchedules = parsedSchedules; 
+                showAlert('success', `Successfully scanned and extracted ${parsedSchedules.length} classes from your workload!`);
+            } else {
+                showAlert('error', 'Could not read the timetable from the image. Please ensure the image is clear and has a standard format (Time - Subject).');
             }
+
+            updateLoadStatistics(assignedSchedules);
+            renderTeachingLoadTable();
+            renderVisualTimetableGrid();
+
+        } catch (err) {
+            console.error('OCR Scan Error:', err);
+            showAlert('error', 'Failed to scan workload image: ' + err.message);
         }
     }
 
@@ -314,111 +357,80 @@ import { supabase } from '../../supabase/config.js';
         if (scheduleCountBadge) scheduleCountBadge.textContent = `${totalClasses} classes assigned`;
     }
 
-    // ===== CHECK ADMIN LOAD DOCUMENT (STRICT PRIVACY: ONLY THIS TEACHER) =====
-    function checkAdminLoadDocument(teacherRecord, sessionUser) {
-        let docData = null;
-        const teacherId = teacherRecord?.id;
-        const userId = sessionUser?.id || teacherRecord?.user_id;
-        const employeeId = teacherRecord?.employee_id;
-
-        // Purge any old global key to prevent leakage across different teachers
-        try { localStorage.removeItem('hes_teacher_load_admin_doc'); } catch(e) {}
-
-        // Priority 1: Check database column teacher_load_url from Supabase for THIS specific teacher
-        if (teacherRecord && teacherRecord.teacher_load_url) {
-            const isGDoc = (teacherRecord.teacher_load_url || '').includes('docs.google.com');
-            const isImg = /\.(png|jpe?g|webp|gif)$/i.test(teacherRecord.teacher_load_name || '') || (teacherRecord.teacher_load_url || '').startsWith('data:image/');
-            docData = {
-                teacherId: teacherId,
-                userId: userId,
-                fileName: teacherRecord.teacher_load_name || (isGDoc ? 'Official Teacher Load (Google Docs)' : isImg ? 'Official_Teacher_Load_Schedule.png' : 'Official_Teacher_Load.pdf'),
-                url: teacherRecord.teacher_load_url,
-                fileData: teacherRecord.teacher_load_url,
-                fileType: teacherRecord.teacher_load_file_type || (isImg ? 'image/png' : 'application/pdf'),
-                isGoogleDocs: isGDoc,
-                isImage: isImg,
-                uploadDate: teacherRecord.teacher_load_updated_at || new Date().toISOString()
-            };
-        }
-
-        // Priority 2: Check strictly scoped local storage keys for THIS teacher
-        if (!docData) {
-            const keys = [
-                teacherId ? `hes_teacher_load_doc_${teacherId}` : null,
-                userId ? `hes_teacher_load_doc_${userId}` : null,
-                employeeId ? `hes_teacher_load_doc_${employeeId}` : null
-            ].filter(Boolean);
-
-            for (const k of keys) {
-                const raw = localStorage.getItem(k);
-                if (raw) {
-                    try {
-                        const parsed = JSON.parse(raw);
-                        // Strict validation: Must belong to this teacher!
-                        if (parsed && (parsed.fileData || parsed.url)) {
-                            const isMatch = (!parsed.teacherId || parsed.teacherId === teacherId) &&
-                                            (!parsed.userId || parsed.userId === userId);
-                            if (isMatch) {
-                                docData = parsed;
-                                break;
-                            }
-                        }
-                    } catch(e) {}
-                }
-            }
-        }
-
+    // ===== RENDER ADMIN WORKLOADS =====
+    function renderAdminWorkloads() {
         const noDocNotice = document.getElementById('noAdminDocNotice');
+        const container = adminDocCard?.parentElement;
+        document.querySelectorAll('.dynamic-workload-card').forEach(el => el.remove());
 
-        if (!docData) {
+        if (myIndividualWorkloads.length === 0) {
             if (adminDocCard) adminDocCard.style.display = 'none';
             if (noDocNotice) noDocNotice.style.display = 'flex';
-            currentAdminDoc = null;
             return;
         }
 
         if (noDocNotice) noDocNotice.style.display = 'none';
-        currentAdminDoc = docData;
-        const isGDocs = docData.isGoogleDocs || (docData.url && docData.url.includes('docs.google.com'));
-        const isPdf = (docData.fileType || '').includes('pdf') || (docData.fileName || '').toLowerCase().endsWith('.pdf');
-        const isImg = docData.isImage || (docData.fileType || '').startsWith('image/') || /\.(png|jpe?g|webp|gif)$/i.test(docData.fileName || '') || (docData.fileData && docData.fileData.startsWith('data:image/'));
+        if (adminDocCard) adminDocCard.style.display = 'none';
 
-        if (adminDocCard) adminDocCard.style.display = 'flex';
-        if (adminDocTitle) adminDocTitle.textContent = docData.fileName || 'Official Teacher Load Schedule';
-        
-        if (adminDocMeta) {
-            const dateStr = docData.uploadDate ? new Date(docData.uploadDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Recently';
-            adminDocMeta.textContent = `${isGDocs ? 'Google Docs Memo' : isImg ? 'Schedule Image' : 'PDF Document'} • Issued on ${dateStr} • Placido L. Señor NHS Administration`;
-        }
-
-        if (adminDocIcon) {
-            if (isGDocs) {
-                adminDocIcon.innerHTML = '<i class="fab fa-google-drive" style="color: #4285F4;"></i>';
-                adminDocIcon.style.background = '#eff6ff';
-            } else if (isImg) {
-                adminDocIcon.innerHTML = '<i class="fas fa-file-image" style="color: #10b981;"></i>';
-                adminDocIcon.style.background = '#ecfdf5';
-            } else {
-                adminDocIcon.innerHTML = '<i class="fas fa-file-pdf" style="color: #ef4444;"></i>';
-                adminDocIcon.style.background = '#fef2f2';
+        let gridContainer = document.getElementById('adminWorkloadsGrid');
+        if (!gridContainer) {
+            gridContainer = document.createElement('div');
+            gridContainer.id = 'adminWorkloadsGrid';
+            gridContainer.className = 'dynamic-workload-card';
+            gridContainer.style.cssText = 'display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-bottom: 24px;';
+            
+            const loadTable = document.querySelector('.load-table-card');
+            if (loadTable && loadTable.parentNode) {
+                loadTable.parentNode.insertBefore(gridContainer, loadTable);
             }
         }
 
-        if (btnAdminDocOpenGDocs) {
-            if (isGDocs) {
-                btnAdminDocOpenGDocs.style.display = 'inline-flex';
-                btnAdminDocOpenGDocs.href = docData.url || docData.fileData;
-            } else {
-                btnAdminDocOpenGDocs.style.display = 'none';
-            }
-        }
+        gridContainer.innerHTML = '';
 
-        if (btnAdminDocDownload) {
-            btnAdminDocDownload.style.display = isGDocs ? 'none' : 'inline-flex';
-        }
-        if (btnAdminDocPrint) {
-            btnAdminDocPrint.style.display = isGDocs ? 'none' : 'inline-flex';
-        }
+        myIndividualWorkloads.forEach(workload => {
+            const url = workload.file_url;
+            const isGDocs = (url || '').includes('docs.google.com');
+            const isImg = (workload.file_type || '').startsWith('image/') || /\.(png|jpe?g|webp|gif)$/i.test(workload.file_name || '') || (url || '').startsWith('data:image/');
+            const fileName = workload.file_name || 'Official Teacher Workload';
+            const dateStr = workload.created_at ? new Date(workload.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Recently';
+
+            let iconHtml = '<i class="fas fa-file-pdf" style="color: #ef4444;"></i>';
+            if (isGDocs) iconHtml = '<i class="fab fa-google-drive" style="color: #4285F4;"></i>';
+            else if (isImg) iconHtml = '<i class="fas fa-file-image" style="color: #10b981;"></i>';
+
+            const card = document.createElement('div');
+            card.className = 'admin-doc-card';
+            card.style.display = 'flex';
+            card.innerHTML = `
+                <div class="admin-doc-left">
+                    <div class="admin-doc-icon" style="background: ${isGDocs ? '#eff6ff' : isImg ? '#ecfdf5' : '#fef2f2'}; color: inherit;">
+                        ${iconHtml}
+                    </div>
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                            <strong style="color: var(--primary); font-size: 1rem;">My Official Workload</strong>
+                            <span class="admin-verified-badge" style="background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; font-size: 0.7rem;"><i class="fas fa-check-circle"></i> Admin Uploaded</span>
+                        </div>
+                        <p style="color: var(--gray-500); font-size: 0.8rem; margin: 4px 0 0 0;">
+                            ${fileName} • Uploaded ${dateStr}
+                        </p>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px;">
+                    ${isGDocs ? `<a href="${url}" target="_blank" style="padding: 6px 10px; border-radius: 6px; font-weight: 600; background: #1a73e8; color: #fff; text-decoration: none; font-size: 0.78rem;"><i class="fab fa-google-drive"></i> Open Docs</a>` : ''}
+                    <button type="button" class="btn-preview-sec-doc" data-url="${url}" data-name="${fileName}" style="padding: 6px 10px; border-radius: 6px; font-weight: 600; background: var(--primary); color: #fff; border: none; cursor: pointer; font-size: 0.78rem;">
+                        <i class="fas fa-eye"></i> View
+                    </button>
+                </div>
+            `;
+            gridContainer.appendChild(card);
+        });
+
+        gridContainer.querySelectorAll('.btn-preview-sec-doc').forEach(btn => {
+            btn.onclick = () => {
+                openDocViewer(btn.dataset.url, btn.dataset.name);
+            };
+        });
     }
 
     // ===== RENDER TEACHING LOAD TABLE =====
@@ -439,7 +451,7 @@ import { supabase } from '../../supabase/config.js';
                         </div>
                         <h4 style="color: var(--primary); font-size: 1.05rem; margin-bottom: 4px;">No Teaching Load Found</h4>
                         <p style="font-size: 0.85rem; max-width: 440px; margin: 0 auto; line-height: 1.5;">
-                            ${selectedDayFilter !== 'all' ? `No classes assigned on ${selectedDayFilter}.` : 'The school administration has not configured your teaching schedule yet. Please check back later or consult your department head.'}
+                            ${selectedDayFilter !== 'all' ? `No classes assigned on ${selectedDayFilter}.` : 'The school administration has not configured your teaching schedule yet.'}
                         </p>
                     </td>
                 </tr>
@@ -447,7 +459,6 @@ import { supabase } from '../../supabase/config.js';
             return;
         }
 
-        // Sort by Day then Start Time
         const dayOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         filtered.sort((a, b) => {
             const dA = dayOrder.indexOf(a.day);
@@ -613,24 +624,6 @@ import { supabase } from '../../supabase/config.js';
             });
         }
 
-        if (btnAdminDocPreview) {
-            btnAdminDocPreview.addEventListener('click', () => {
-                openAdminDocViewer(currentAdminDoc);
-            });
-        }
-
-        if (btnAdminDocDownload) {
-            btnAdminDocDownload.addEventListener('click', () => {
-                downloadAdminDoc(currentAdminDoc);
-            });
-        }
-
-        if (btnAdminDocPrint) {
-            btnAdminDocPrint.addEventListener('click', () => {
-                printAdminDoc(currentAdminDoc);
-            });
-        }
-
         if (btnCloseAdminDocViewer && modalAdminDocViewer) {
             btnCloseAdminDocViewer.addEventListener('click', () => {
                 modalAdminDocViewer.style.display = 'none';
@@ -638,78 +631,37 @@ import { supabase } from '../../supabase/config.js';
         }
     }
 
-    // ===== DOCUMENT VIEWER & ACTIONS =====
-    function openAdminDocViewer(doc) {
-        if (!doc || (!doc.fileData && !doc.url)) return;
+    // ===== DOCUMENT VIEWER =====
+    function openDocViewer(url, name) {
+        if (!url) return;
         if (!modalAdminDocViewer || !adminDocViewerContent) return;
 
-        const isGDocs = doc.isGoogleDocs || (doc.url && doc.url.includes('docs.google.com'));
-        const isPdf = (doc.fileType || '').includes('pdf') || (doc.fileName || '').toLowerCase().endsWith('.pdf');
-        const fileUrl = doc.url || doc.fileData;
-
+        const isGDocs = url.includes('docs.google.com') || url.includes('drive.google.com');
+        const isPdf = name.toLowerCase().endsWith('.pdf') || url.startsWith('data:application/pdf');
+        
         if (adminDocViewerTitle) {
             adminDocViewerTitle.innerHTML = isGDocs 
-                ? `<i class="fab fa-google-drive" style="color: #4285F4;"></i> ${doc.fileName || 'Google Docs Teacher Load'}`
+                ? `<i class="fab fa-google-drive" style="color: #4285F4;"></i> ${name}`
                 : isPdf 
-                    ? `<i class="fas fa-file-pdf" style="color: #ef4444;"></i> ${doc.fileName || 'PDF Teacher Load'}`
-                    : `<i class="fas fa-file-image" style="color: #10b981;"></i> ${doc.fileName || 'Schedule Image'}`;
+                    ? `<i class="fas fa-file-pdf" style="color: #ef4444;"></i> ${name}`
+                    : `<i class="fas fa-file-image" style="color: #10b981;"></i> ${name}`;
         }
 
         if (btnAdminDocViewerExternal) {
-            btnAdminDocViewerExternal.href = fileUrl;
+            btnAdminDocViewerExternal.href = url;
         }
 
         if (isGDocs) {
-            let embedUrl = fileUrl;
+            let embedUrl = url;
             if (embedUrl.includes('/edit')) embedUrl = embedUrl.replace('/edit', '/preview');
             adminDocViewerContent.innerHTML = `<iframe src="${embedUrl}" style="width: 100%; height: 100%; border: none; border-radius: 8px;"></iframe>`;
         } else if (isPdf) {
-            adminDocViewerContent.innerHTML = `<iframe src="${fileUrl}" style="width: 100%; height: 100%; border: none; border-radius: 8px;"></iframe>`;
+            adminDocViewerContent.innerHTML = `<iframe src="${url}" style="width: 100%; height: 100%; border: none; border-radius: 8px;"></iframe>`;
         } else {
-            adminDocViewerContent.innerHTML = `<img src="${fileUrl}" alt="Teacher Load Schedule" style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">`;
+            adminDocViewerContent.innerHTML = `<img src="${url}" alt="Workload" style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">`;
         }
 
         modalAdminDocViewer.style.display = 'flex';
-    }
-
-    function downloadAdminDoc(doc) {
-        if (!doc || (!doc.fileData && !doc.url)) return;
-        const a = document.createElement('a');
-        a.href = doc.fileData || doc.url;
-        a.download = doc.fileName || 'Official_Teacher_Load_Schedule';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-    }
-
-    function printAdminDoc(doc) {
-        if (!doc || (!doc.fileData && !doc.url)) return;
-        const printWin = window.open('', '_blank');
-        const isPdf = (doc.fileType || '').includes('pdf') || (doc.fileName || '').toLowerCase().endsWith('.pdf');
-        const fileSrc = doc.fileData || doc.url;
-
-        if (isPdf) {
-            printWin.document.write(`
-                <html><head><title>Print Teacher Load - ${doc.fileName || 'Schedule'}</title></head>
-                <body style="margin:0;padding:0;">
-                    <iframe src="${fileSrc}" style="width:100vw;height:100vh;border:none;"></iframe>
-                </body></html>
-            `);
-        } else {
-            printWin.document.write(`
-                <html><head><title>Print Teacher Load - ${doc.fileName || 'Schedule Image'}</title>
-                <style>
-                    @page { size: letter portrait; margin: 6mm 8mm; }
-                    html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-                    img { max-width: 100%; max-height: 100%; object-fit: contain; }
-                </style>
-                </head>
-                <body onload="window.print();">
-                    <img src="${fileSrc}" alt="Teacher Load Schedule">
-                </body></html>
-            `);
-        }
-        printWin.document.close();
     }
 
     // Auto-update if storage updates

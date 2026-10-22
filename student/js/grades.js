@@ -26,18 +26,15 @@ import { supabase } from '../../supabase/config.js';
 
     // Stats
     const subjectsCount = document.getElementById('subjectsCount');
+    const gradeCount = document.getElementById('gradeCount');
     const gradeLevelDisplay = document.getElementById('gradeLevelDisplay');
     const schoolYearStat = document.getElementById('schoolYearStat');
 
-    // Subjects container
-    const subjectsGrid = document.getElementById('subjectsGrid');
-    const noGradesMsg = document.getElementById('noGradesMsg');
+    // Subjects table
+    const gradesTableBody = document.getElementById('gradesTableBody');
+    const generalAverageCell = document.getElementById('generalAverageCell');
+    const generalRemarksCell = document.getElementById('generalRemarksCell');
     const notEnrolledCard = document.getElementById('notEnrolledCard');
-
-    // Modal
-    const gradeModal = document.getElementById('gradeModal');
-    const modalSubjectTitle = document.getElementById('modalSubjectTitle');
-    const modalBody = document.getElementById('modalBody');
 
     const alertContainer = document.getElementById('alertContainer');
 
@@ -50,10 +47,8 @@ import { supabase } from '../../supabase/config.js';
     let subjectsList = [];
     let gradesData = {};
 
-    const quarterNames = ['1st Quarter', '2nd Quarter', '3rd Quarter', '4th Quarter'];
-
     // ============================================
-    // SESSION CHECK (Supabase / localStorage)
+    // SESSION CHECK
     // ============================================
 
     let sessionUser = null;
@@ -65,7 +60,6 @@ import { supabase } from '../../supabase/config.js';
     } catch(e) {}
 
     if (!sessionUser) {
-        console.warn('⚠️ No active user session found, redirecting to login...');
         window.location.replace('../auth/login.html');
         return;
     }
@@ -123,7 +117,7 @@ import { supabase } from '../../supabase/config.js';
     }
 
     // ============================================
-    // LOAD STUDENT DATA & GRADES FROM SUPABASE
+    // LOAD STUDENT DATA
     // ============================================
 
     async function loadStudentData() {
@@ -131,7 +125,6 @@ import { supabase } from '../../supabase/config.js';
             const userEmail = sessionUser.email || '';
             const userUid = sessionUser.uid || '';
 
-            // 1. Fetch student
             try {
                 const { data: sRows } = await supabase
                     .from('students')
@@ -149,7 +142,6 @@ import { supabase } from '../../supabase/config.js';
                 }
             } catch(e) {}
 
-            // 2. Fetch latest enrollment
             const studentId = studentRow?.id || userUid;
             try {
                 let query = supabase.from('enrollments').select('*');
@@ -172,10 +164,6 @@ import { supabase } from '../../supabase/config.js';
             showAlert('❌ Error loading data: ' + error.message, 'error');
         }
     }
-
-    // ============================================
-    // RENDER ENROLLMENT INFO
-    // ============================================
 
     function renderEnrollmentInfo(enrollment, student) {
         const classCard = document.querySelector('.class-info-card');
@@ -209,23 +197,16 @@ import { supabase } from '../../supabase/config.js';
             const gradeName = enrollment?.grade_level || student?.grade_level || 'Grade 11';
             const strandName = enrollment?.strand || student?.strand || 'TVL-ICT';
 
-            // 1. Fetch subjects from Supabase
             try {
-                const { data: dbSubjects } = await supabase
-                    .from('subjects')
-                    .select('*');
-
+                const { data: dbSubjects } = await supabase.from('subjects').select('*');
                 if (dbSubjects && dbSubjects.length > 0) {
                     subjectsList = dbSubjects.filter(s => {
                         return (s.grade_level === gradeName || s.grade_level?.includes(gradeName.replace('Grade ', ''))) &&
                                (!s.strand || s.strand === strandName || s.strand === 'General' || !strandName);
                     });
                 }
-            } catch (e) {
-                console.warn('Subjects fetch error:', e);
-            }
+            } catch (e) {}
 
-            // Fallback subjects if empty
             if (subjectsList.length === 0) {
                 const isSHS = gradeName.includes('11') || gradeName.includes('12');
                 const defaultSubjects = isSHS ? [
@@ -238,14 +219,8 @@ import { supabase } from '../../supabase/config.js';
                     'Empowerment Technologies (ICT for Professional Tracks)',
                     'Computer Systems Servicing NC II'
                 ] : [
-                    'Filipino',
-                    'English',
-                    'Mathematics',
-                    'Science',
-                    'Araling Panlipunan (AP / Social Studies)',
-                    'MAPEH',
-                    'Edukasyon sa Pagpapakatao (EsP / Values Education)',
-                    'Technology and Livelihood Education (TLE)'
+                    'Filipino', 'English', 'Mathematics', 'Science', 'Araling Panlipunan (AP / Social Studies)',
+                    'MAPEH', 'Edukasyon sa Pagpapakatao (EsP / Values Education)', 'Technology and Livelihood Education (TLE)'
                 ];
 
                 subjectsList = defaultSubjects.map((name, idx) => ({
@@ -255,33 +230,21 @@ import { supabase } from '../../supabase/config.js';
                 }));
             }
 
-            // Fetch real grades from Supabase for this student
             gradesData = {};
             const stuTargetId = student?.id || sessionUser?.id || sessionUser?.uid;
             try {
                 if (stuTargetId) {
-                    const { data: dbGrades } = await supabase
-                        .from('grades')
-                        .select('*')
-                        .eq('student_id', stuTargetId);
-
+                    const { data: dbGrades } = await supabase.from('grades').select('*').eq('student_id', stuTargetId);
                     if (dbGrades && dbGrades.length > 0) {
                         dbGrades.forEach(g => {
-                            if (!gradesData[g.subject_id]) {
-                                gradesData[g.subject_id] = {};
-                            }
+                            if (!gradesData[g.subject_id]) gradesData[g.subject_id] = {};
                             gradesData[g.subject_id][g.quarter] = parseFloat(g.grade);
                         });
                     }
                 }
-            } catch (err) {
-                console.warn('Real grades fetch notice:', err);
-            }
+            } catch (err) {}
 
-            renderSubjects();
-
-            if (noGradesMsg) noGradesMsg.style.display = 'none';
-            if (subjectsCount) subjectsCount.textContent = subjectsList.length;
+            renderSubjectsTable();
 
         } catch (error) {
             console.error('Error loading subjects:', error);
@@ -290,110 +253,102 @@ import { supabase } from '../../supabase/config.js';
     }
 
     // ============================================
-    // RENDER SUBJECTS
+    // RENDER SUBJECTS TABLE & CALCULATE AVERAGES
     // ============================================
 
-    function renderSubjects() {
-        if (!subjectsGrid) return;
-        subjectsGrid.innerHTML = '';
+    function renderSubjectsTable() {
+        if (!gradesTableBody) return;
+        gradesTableBody.innerHTML = '';
 
         if (subjectsList.length === 0) {
-            subjectsGrid.innerHTML = `
-                <div class="no-data" style="grid-column: 1/-1; padding: 30px;">
-                    <i class="fas fa-book"></i>
-                    <p>No subjects found for your grade level.</p>
-                </div>
-            `;
+            gradesTableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 2rem; color: var(--gray-500);">No subjects found.</td></tr>`;
             return;
         }
 
+        let totalFinalGrades = 0;
+        let subjectsWithFinalGrade = 0;
+
         subjectsList.forEach(subject => {
-            const subjectGrades = gradesData[subject.id] || {};
-            const hasGrades = Object.values(subjectGrades).some(g => g > 0);
+            const grades = gradesData[subject.id] || {};
+            
+            let q1 = grades[1] !== undefined ? grades[1] : null;
+            let q2 = grades[2] !== undefined ? grades[2] : null;
+            let q3 = grades[3] !== undefined ? grades[3] : null;
+            let q4 = grades[4] !== undefined ? grades[4] : null;
 
-            const itemDiv = document.createElement('div');
-            itemDiv.className = 'subject-item';
-            itemDiv.innerHTML = `
-                <div class="subject-info">
-                    <h4>${subject.name || subject.subject_name || 'Subject'}</h4>
-                    ${subject.code ? `<span style="font-size: 0.75rem; color: var(--gray-400); font-weight: 600;">${subject.code}</span>` : ''}
-                </div>
-                <button type="button" class="view-grade-btn" data-subject-id="${subject.id}" data-subject-name="${subject.name || subject.subject_name || 'Subject'}">
-                    <i class="fas fa-eye"></i> View Grades
-                </button>
-            `;
-            subjectsGrid.appendChild(itemDiv);
-        });
+            // STRICT RULE: Only compute Final Grade if ALL 4 quarters are present
+            const hasAllQuarters = (q1 !== null && q2 !== null && q3 !== null && q4 !== null);
 
-        document.querySelectorAll('.view-grade-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const subjectId = this.dataset.subjectId;
-                const subjectName = this.dataset.subjectName;
-                openGradeModal(subjectId, subjectName);
-            });
-        });
-    }
+            let finalGrade = '—';
+            let remarksHtml = `<span style="background: var(--gray-200); color: var(--gray-600); padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 600;">Pending</span>`;
 
-    // ============================================
-    // GRADE MODAL
-    // ============================================
+            if (hasAllQuarters) {
+                const avg = (q1 + q2 + q3 + q4) / 4;
+                finalGrade = avg.toFixed(0); // Round to nearest whole number for display
+                
+                totalFinalGrades += avg;
+                subjectsWithFinalGrade++;
 
-    function openGradeModal(subjectId, subjectName) {
-        if (modalSubjectTitle) modalSubjectTitle.textContent = `${subjectName} - Grades`;
-
-        const grades = gradesData[subjectId] || {};
-        let html = '';
-        let total = 0;
-        let count = 0;
-
-        for (let i = 1; i <= 4; i++) {
-            const grade = grades[i] || null;
-            const hasGrade = grade && grade > 0;
-            let gradeClass = '';
-            if (hasGrade) {
-                if (grade >= 90) gradeClass = 'high';
-                else if (grade >= 75) gradeClass = 'medium';
-                else gradeClass = 'low';
-                total += grade;
-                count++;
+                if (avg >= 75) {
+                    remarksHtml = `<span style="display:inline-flex; align-items:center; gap:4px; color: #059669; font-size: 0.85rem; font-weight: 700;"><i class="fas fa-check-circle"></i> Passed</span>`;
+                } else {
+                    remarksHtml = `<span style="display:inline-flex; align-items:center; gap:4px; color: #dc2626; font-size: 0.85rem; font-weight: 700;"><i class="fas fa-times-circle"></i> Failed</span>`;
+                }
             }
 
-            html += `
-                <div class="grade-item">
-                    <span class="quarter-label">${quarterNames[i-1]}</span>
-                    <span class="grade-value ${hasGrade ? gradeClass : ''}">${hasGrade ? grade : '—'}</span>
-                </div>
+            // Format display values (show — if null)
+            const formatQ = (val) => val !== null ? val : '—';
+            const qColor = (val) => val !== null ? 'color: var(--gray-800); font-weight: 600;' : 'color: var(--gray-400);';
+
+            const tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid var(--gray-200)';
+            tr.innerHTML = `
+                <td style="padding: 1rem 1.5rem; font-size: 0.9rem; color: var(--gray-800); font-weight: 500;">
+                    ${subject.name || subject.subject_name || 'Subject'}
+                </td>
+                <td style="padding: 1rem; text-align: center; font-size: 0.9rem; ${qColor(q1)}">${formatQ(q1)}</td>
+                <td style="padding: 1rem; text-align: center; font-size: 0.9rem; ${qColor(q2)}">${formatQ(q2)}</td>
+                <td style="padding: 1rem; text-align: center; font-size: 0.9rem; ${qColor(q3)}">${formatQ(q3)}</td>
+                <td style="padding: 1rem; text-align: center; font-size: 0.9rem; ${qColor(q4)}">${formatQ(q4)}</td>
+                <td style="padding: 1rem; text-align: center; font-size: 0.95rem; font-weight: 700; color: var(--gray-800);">${finalGrade}</td>
+                <td style="padding: 1rem 1.5rem;">${remarksHtml}</td>
             `;
-        }
-
-        const average = count > 0 ? (total / count).toFixed(2) : null;
-
-        html += `
-            <div class="average-display">
-                <div class="avg-label">Overall Average</div>
-                <div class="avg-value">${average !== null ? average + '%' : 'No grades'}</div>
-            </div>
-        `;
-
-        if (modalBody) modalBody.innerHTML = html;
-        if (gradeModal) gradeModal.classList.add('show');
-    }
-
-    function closeModal() {
-        if (gradeModal) gradeModal.classList.remove('show');
-    }
-
-    if (gradeModal) {
-        gradeModal.addEventListener('click', function(e) {
-            if (e.target === this) closeModal();
+            gradesTableBody.appendChild(tr);
         });
+
+        // Update the badges and General Average
+        if (subjectsCount) subjectsCount.textContent = subjectsList.length;
+        if (gradeCount) gradeCount.textContent = `${subjectsWithFinalGrade} subjects evaluated`;
+
+        if (subjectsWithFinalGrade > 0) {
+            const generalAvg = totalFinalGrades / subjectsWithFinalGrade;
+            
+            if (generalAverageCell) {
+                generalAverageCell.textContent = generalAvg.toFixed(0) + '%';
+                generalAverageCell.style.color = generalAvg >= 75 ? '#059669' : '#dc2626';
+            }
+
+            if (generalRemarksCell) {
+                let honorText = '';
+                if (generalAvg >= 98) honorText = 'With Highest Honors';
+                else if (generalAvg >= 95) honorText = 'With High Honors';
+                else if (generalAvg >= 90) honorText = 'With Honors';
+                else if (generalAvg >= 75) honorText = 'Passed';
+                else honorText = 'Failed';
+
+                generalRemarksCell.innerHTML = `<span style="background: ${generalAvg >= 75 ? '#d1fae5' : '#fee2e2'}; color: ${generalAvg >= 75 ? '#065f46' : '#991b1b'}; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 700;">${honorText}</span>`;
+            }
+        } else {
+            // If no subjects have all 4 quarters
+            if (generalAverageCell) {
+                generalAverageCell.textContent = '—';
+                generalAverageCell.style.color = 'var(--gray-400)';
+            }
+            if (generalRemarksCell) {
+                generalRemarksCell.innerHTML = `<span style="background: var(--gray-200); color: var(--gray-600); padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 600;">Pending</span>`;
+            }
+        }
     }
-
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') closeModal();
-    });
-
-    window.closeModal = closeModal;
 
     function showAlert(message, type = 'success') {
         if (!alertContainer) return;
