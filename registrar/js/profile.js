@@ -38,8 +38,13 @@ import { supabase } from '../../supabase/config.js';
     const processingRateFill = document.getElementById('processingRateFill');
 
     // Edit form
-    const editFullname = document.getElementById('editFullname');
     const editProfileForm = document.getElementById('editProfileForm');
+    const editFirstName = document.getElementById('editFirstName');
+    const editLastName = document.getElementById('editLastName');
+    const editRegistrarGender = document.getElementById('editRegistrarGender');
+    const editPhone = document.getElementById('editPhone');
+    const editRegistrarAddress = document.getElementById('editRegistrarAddress');
+    const saveProfileBtn = document.getElementById('saveProfileBtn');
 
     // Password form
     const changePasswordCheckbox = document.getElementById('changePasswordCheckbox');
@@ -292,13 +297,20 @@ import { supabase } from '../../supabase/config.js';
         const editFirstName = document.getElementById('editFirstName');
         const editLastName = document.getElementById('editLastName');
         const editRegistrarGender = document.getElementById('editRegistrarGender');
+        const editPhone = document.getElementById('editPhone');
         const editRegistrarAddress = document.getElementById('editRegistrarAddress');
 
-        if (editFirstName) editFirstName.value = firstName || sessionUser.firstName || '';
-        if (editLastName) editLastName.value = lastName || sessionUser.lastName || '';
-        if (editRegistrarGender) editRegistrarGender.value = data?.gender || sessionUser.gender || '';
-        if (editPhone) editPhone.value = data?.phone || data?.contact_number || sessionUser.phone || '';
-        if (editRegistrarAddress) editRegistrarAddress.value = data?.address || sessionUser.address || '';
+        const fVal = firstName || data?.first_name || data?.firstName || sessionUser?.first_name || sessionUser?.firstName || '';
+        const lVal = lastName || data?.last_name || data?.lastName || sessionUser?.last_name || sessionUser?.lastName || '';
+        const gVal = data?.gender || sessionUser?.gender || '';
+        const pVal = data?.phone || data?.contact_number || sessionUser?.phone || sessionUser?.contact_number || '';
+        const aVal = data?.address || sessionUser?.address || '';
+
+        if (editFirstName) editFirstName.value = fVal;
+        if (editLastName) editLastName.value = lVal;
+        if (editRegistrarGender) editRegistrarGender.value = gVal;
+        if (editPhone) editPhone.value = pVal;
+        if (editRegistrarAddress) editRegistrarAddress.value = aVal;
     }
 
     // ============================================
@@ -312,10 +324,14 @@ import { supabase } from '../../supabase/config.js';
     function setRegistrarEditMode(isEditing) {
         if (!registrarInfoViewContainer || !registrarInfoEditContainer || !editRegistrarInfoToggleBtn) return;
         if (isEditing) {
+            const currentData = { ...sessionUser, ...userData };
+            populateRegistrarEditForm(currentData);
             registrarInfoViewContainer.style.display = 'none';
             registrarInfoEditContainer.style.display = 'block';
             editRegistrarInfoToggleBtn.innerHTML = '<i class="fas fa-times"></i> Cancel';
             editRegistrarInfoToggleBtn.classList.add('is-editing');
+            const fInput = document.getElementById('editFirstName');
+            if (fInput) fInput.focus();
         } else {
             registrarInfoViewContainer.style.display = 'block';
             registrarInfoEditContainer.style.display = 'none';
@@ -334,6 +350,115 @@ import { supabase } from '../../supabase/config.js';
     if (cancelRegistrarEditBtn) {
         cancelRegistrarEditBtn.addEventListener('click', function() {
             setRegistrarEditMode(false);
+        });
+    }
+
+    // ============================================
+    // SAVE PROFILE CHANGES (SUBMIT HANDLER)
+    // ============================================
+    if (editProfileForm) {
+        editProfileForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const fInput = document.getElementById('editFirstName');
+            const lInput = document.getElementById('editLastName');
+            const gInput = document.getElementById('editRegistrarGender');
+            const pInput = document.getElementById('editPhone');
+            const aInput = document.getElementById('editRegistrarAddress');
+            const saveBtn = document.getElementById('saveProfileBtn');
+
+            const firstName = fInput ? fInput.value.trim() : '';
+            const lastName = lInput ? lInput.value.trim() : '';
+            const gender = gInput ? gInput.value : '';
+            const phone = pInput ? pInput.value.trim() : '';
+            const address = aInput ? aInput.value.trim() : '';
+
+            if (!firstName || !lastName) {
+                showAlert('First name and last name are required.', 'error');
+                return;
+            }
+
+            const originalBtnHtml = saveBtn ? saveBtn.innerHTML : '<i class="fas fa-save"></i> Save Changes';
+            if (saveBtn) {
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            }
+
+            try {
+                const userUid = sessionUser?.uid || sessionUser?.id || userData?.id;
+                const userEmail = sessionUser?.email || userData?.email;
+
+                // 1. Update Supabase users table if user is in database
+                if (userUid || userEmail) {
+                    const updatePayload = {
+                        first_name: firstName,
+                        last_name: lastName,
+                        gender: gender,
+                        phone: phone,
+                        address: address,
+                        updated_at: new Date().toISOString()
+                    };
+
+                    let uUpdate = supabase.from('users').update(updatePayload);
+                    if (userUid) {
+                        uUpdate = uUpdate.eq('id', userUid);
+                    } else {
+                        uUpdate = uUpdate.eq('email', userEmail);
+                    }
+
+                    const { error } = await uUpdate;
+                    if (error) {
+                        console.warn('Supabase profile update warning:', error);
+                    }
+                }
+
+                // 2. Update session and local storage
+                const fullName = `${firstName} ${lastName}`.trim();
+                sessionUser.first_name = firstName;
+                sessionUser.last_name = lastName;
+                sessionUser.firstName = firstName;
+                sessionUser.lastName = lastName;
+                sessionUser.displayName = fullName;
+                sessionUser.gender = gender;
+                sessionUser.phone = phone;
+                sessionUser.contact_number = phone;
+                sessionUser.address = address;
+
+                localStorage.setItem('currentUser', JSON.stringify(sessionUser));
+                localStorage.setItem('registrarName', fullName);
+                localStorage.setItem('hes_registrar_name', fullName);
+
+                if (userData) {
+                    userData.first_name = firstName;
+                    userData.last_name = lastName;
+                    userData.gender = gender;
+                    userData.phone = phone;
+                    userData.address = address;
+                }
+
+                // 3. Update DOM display across the page
+                updateUI({ ...sessionUser, ...userData });
+
+                // 4. Trigger sidebar and avatar sync
+                if (typeof window.syncRegistrarAvatarAndName === 'function') {
+                    window.syncRegistrarAvatarAndName();
+                }
+
+                // 5. Exit edit mode back to view mode
+                setRegistrarEditMode(false);
+
+                // 6. Show success alert
+                showAlert('Profile information updated successfully!', 'success');
+
+            } catch (err) {
+                console.error('Error saving registrar profile:', err);
+                showAlert(err.message || 'Failed to update profile. Please try again.', 'error');
+            } finally {
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = originalBtnHtml;
+                }
+            }
         });
     }
 

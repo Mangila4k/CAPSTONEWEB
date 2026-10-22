@@ -1,23 +1,14 @@
-
-
 import { supabase } from '../supabase/config.js';
-
-const DEFAULT_AVATAR = "";
-const FALLBACK_SVG_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23f1f5f9'/%3E%3Ccircle cx='60' cy='46' r='22' fill='%23cbd5e1'/%3E%3Cpath d='M 24,106 C 24,84 40,74 60,74 C 80,74 96,84 96,106 Z' fill='%23cbd5e1'/%3E%3C/svg%3E";
 
 export class StudentIdGenerator {
     constructor(config = {}) {
         this.containerId = config.containerId || 'idGeneratorApp';
         this.defaultPrincipal = config.defaultPrincipal || 'Dr. Ryan R. Quiroga';
-        this.defaultPrincipalSig = 'Dr. Ryan R. Quiroga';
-        this.defaultSchoolYear = config.defaultSchoolYear || '2024-2025';
+        this.defaultSchoolYear = config.defaultSchoolYear || '2026-2027';
         this.students = [];
         this.selectedStudent = this.getDefaultStudent();
         this.qrCodeInstance = null;
-        this.showLanyard = false;
         this.customPhotoUploaded = false;
-        this.hasCustomFrontChanges = false;
-        this.hasCustomBackChanges = false;
 
         this.init();
     }
@@ -26,31 +17,32 @@ export class StudentIdGenerator {
         return {
             id: '',
             student_id: '',
-            lrn: '000000000000',
-            id_number: '2024-ST-00000',
-            first_name: 'STUDENT',
-            last_name: 'NAME',
-            fullname: 'STUDENT NAME',
-            grade_level: 'Grade 7',
-            level_category: 'GRADE 7',
+            lrn: '',
+            id_number: '',
+            first_name: '',
+            last_name: '',
+            fullname: '',
+            grade_level: 'Junior High',
+            level_category: 'Junior High',
+            strand: '',
+            school_year: this.defaultSchoolYear || '2026-2027',
             photo_url: '',
-            parent_name: 'PARENT / GUARDIAN',
-            parent_contact: '09XXXXXXXXX',
+            parent_name: '',
+            parent_contact: '',
             principal_name: this.defaultPrincipal || 'Dr. Ryan R. Quiroga',
             principal_sig: this.defaultPrincipal || 'Dr. Ryan R. Quiroga',
-            status: 'Unassigned'
+            status: 'Active'
         };
     }
 
     init() {
         console.log('🎓 Initializing PLSNHS Official Student ID Generator...');
-
         this.renderInterface();
         this.setupEvents();
         this.selectStudent(this.selectedStudent);
-
         this.loadStudentsAsync();
     }
+
     async loadStudentsAsync() {
         if (!supabase) return;
 
@@ -79,22 +71,21 @@ export class StudentIdGenerator {
 
                     const fName = (st.first_name || enr.first_name || '').trim();
                     const lName = (st.last_name || enr.last_name || '').trim();
-                    const fullName = `${fName} ${lName}`.trim() || st.fullname || 'Student';
-                    let grade = st.grade_level || enr.grade_level || 'Grade 7';
+                    let fullName = `${fName} ${lName}`.trim() || st.fullname || 'Student';
+                    fullName = this.formatTitleCase(fullName);
+
+                    let grade = st.grade_level || enr.grade_level || 'Grade 10';
                     const numMatch = String(grade).match(/\d+/);
                     if (numMatch) {
                         grade = `Grade ${numMatch[0]}`;
                     }
-                    const isSHS = String(grade).includes('11') || String(grade).includes('12') || String(grade).toUpperCase().includes('SENIOR');
-                    const levelCat = isSHS ? 'SENIOR HIGH' : 'JUNIOR HIGH';
-                    const lrn = st.lrn || enr.lrn || '141525100086';
 
+                    const strand = (st.strand || enr.strand || st.track || enr.track || '').trim();
+                    const lrn = st.lrn || enr.lrn || '';
                     const photo = st.two_by_two_picture_url || enr.two_by_two_picture_url || st.avatar_url || '';
-                    const parentName = st.parent_name || enr.guardian_name || enr.mother_name || enr.father_name || 'MARIANNE E. SANTOS';
-                    const parentContact = st.parent_contact || enr.guardian_contact || enr.contact_number || '09076726568';
-
-                    const rawNum = st.lrn ? st.lrn.slice(-5) : (st.id ? st.id.replace(/[^0-9]/g, '').slice(-5) : '00123');
-                    const idNumber = st.id_number || `2024-ST-${rawNum.padStart(5, '0')}`;
+                    const parentName = st.parent_name || enr.guardian_name || enr.mother_name || enr.father_name || '';
+                    const parentContact = st.parent_contact || enr.guardian_contact || enr.contact_number || '';
+                    const idNumber = st.id || st.student_id || st.id_number || '';
 
                     return {
                         id: st.id,
@@ -106,12 +97,14 @@ export class StudentIdGenerator {
                         last_name: lName,
                         fullname: fullName,
                         grade_level: grade,
-                        level_category: levelCat,
+                        level_category: grade,
+                        strand: strand,
                         photo_url: photo,
                         parent_name: parentName,
                         parent_contact: parentContact,
-                        principal_name: 'Dr. Ryan R. Quiroga',
-                        principal_sig: 'Dr. Ryan R. Quiroga',
+                        principal_name: this.defaultPrincipal || 'Dr. Ryan R. Quiroga',
+                        principal_sig: this.defaultPrincipal || 'Dr. Ryan R. Quiroga',
+                        school_year: this.defaultSchoolYear || '2026-2027',
                         status: st.status || enr.status || 'Active'
                     };
                 });
@@ -129,10 +122,12 @@ export class StudentIdGenerator {
                 } else if (enrId) {
                     const found = this.students.find(s => s.enrollment_id === enrId);
                     if (found) this.selectStudent(found);
+                } else if (this.students.length > 0) {
+                    this.selectStudent(this.students[0]);
                 }
             }
         } catch (err) {
-            console.warn('Notice during background student fetch:', err);
+            console.warn('Notice during student fetch:', err);
         }
     }
 
@@ -156,7 +151,6 @@ export class StudentIdGenerator {
             });
         }
 
-        // Group filtered students by Year Level
         const gradesOrder = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
         const groups = {};
         gradesOrder.forEach(g => groups[g] = []);
@@ -205,7 +199,7 @@ export class StudentIdGenerator {
 
         const currentVal = sel.value;
         sel.innerHTML = `
-            <option value="">-- Select Student / Blank ID --</option>
+            <option value="">-- Select Student / Default Template --</option>
             ${optgroupsHtml}
         `;
 
@@ -218,17 +212,18 @@ export class StudentIdGenerator {
         }
     }
 
-    // Helper: Split name into 2 impactful uppercase lines
-    formatNameLines(fullName) {
-        if (!fullName) return ['STUDENT', 'NAME'];
-        const parts = fullName.trim().toUpperCase().split(/\s+/);
-        if (parts.length === 1) return [parts[0], ''];
-        if (parts.length === 2) return [parts[0], parts[1]];
-        const mid = Math.ceil(parts.length / 2);
-        return [
-            parts.slice(0, mid).join(' '),
-            parts.slice(mid).join(' ')
-        ];
+    formatTitleCase(str) {
+        if (!str) return '';
+        if (str !== str.toUpperCase() && str !== str.toLowerCase()) {
+            return str;
+        }
+        return str.toLowerCase().replace(/(?:^|\s|-)\S/g, (char) => char.toUpperCase());
+    }
+
+    getStudentInitial(name) {
+        if (!name) return '—';
+        const clean = name.trim().replace(/^[^a-zA-Z0-9]+/, '');
+        return clean ? clean.charAt(0).toUpperCase() : '—';
     }
 
     // ============================================
@@ -246,7 +241,7 @@ export class StudentIdGenerator {
                 <!-- LEFT COLUMN: LIVE PREVIEW AREA -->
                 <div class="id-preview-pane">
                     <div class="id-preview-header">
-                        <h3><i class="fas fa-id-badge" style="color: #c89b27;"></i> Official Student ID Card Preview</h3>
+                        <h3><i class="fas fa-id-badge" style="color: #f3b723;"></i> Official Student ID Card Preview</h3>
                         <div style="display:flex; gap:8px; align-items:center;">
                             <button type="button" id="btnFlipPreview" class="btn-id-action btn-id-download" style="padding: 6px 14px; font-size: 12px;">
                                 <i class="fas fa-sync-alt"></i> Flip View
@@ -259,79 +254,49 @@ export class StudentIdGenerator {
                         
                         <!-- FRONT CARD UNIT -->
                         <div class="id-badge-unit" id="unitFront">
-                            <!-- ACTUAL FRONT CARD (CR80 EXACT RATIO: 318px x 485px) -->
                             <div class="student-id-card id-card-front" id="cardFrontElement">
-                                <!-- Header -->
-                                <div class="id-front-header">
-                                    <h2>PLACIDO L. SEÑOR<br>NATIONAL HIGH SCHOOL</h2>
-                                    <div class="id-school-id-tag">SCHOOL ID: 303035</div>
-                                </div>
-                                <img class="id-front-logo" src="../pictures/logo sa skwelahan.png" alt="School Seal" onerror="this.src='../pictures/logo sa skwelahan.jpg'">
-
-                                <!-- Background Curves SVG -->
-                                <svg class="id-card-bg-svg" viewBox="0 0 320 500" preserveAspectRatio="none">
-                                    <defs>
-                                        <linearGradient id="goldGradFront" x1="0%" y1="0%" x2="100%" y2="100%">
-                                            <stop offset="0%" stop-color="#f5d77f" />
-                                            <stop offset="35%" stop-color="#b8861d" />
-                                            <stop offset="70%" stop-color="#8c6109" />
-                                            <stop offset="100%" stop-color="#e8bf54" />
-                                        </linearGradient>
-                                        <linearGradient id="blueGradFront" x1="0%" y1="0%" x2="100%" y2="100%">
-                                            <stop offset="0%" stop-color="#0b2255" />
-                                            <stop offset="50%" stop-color="#12408c" />
-                                            <stop offset="100%" stop-color="#081738" />
-                                        </linearGradient>
-                                    </defs>
-                                    <!-- Gold Sweeping Arch across top, behind 2x2 photo, and across both Left & Right flanks -->
-                                    <path d="M 0,85 C 45,115 90,165 160,165 C 230,165 275,115 320,85 L 320,295 C 255,270 210,240 160,240 C 95,240 45,325 0,430 L 0,85 Z" fill="url(#goldGradFront)" />
-                                    <!-- Left Navy Blue Wave with Gold Trim Accent -->
-                                    <path d="M 0,235 C 35,270 60,320 60,380 C 60,420 35,450 0,465 L 0,235 Z" fill="url(#blueGradFront)" />
-                                    <path d="M 0,235 C 35,270 60,320 60,380 C 60,420 35,450 0,465" fill="none" stroke="url(#goldGradFront)" stroke-width="2.5" />
-                                    <!-- Right Navy Blue Wave with Metallic Gold Trim -->
-                                    <path d="M 320,95 C 265,135 225,175 225,215 C 225,255 265,275 320,295 L 320,95 Z" fill="url(#blueGradFront)" />
-                                    <path d="M 320,95 C 265,135 225,175 225,215 C 225,255 265,275 320,295" fill="none" stroke="url(#goldGradFront)" stroke-width="3.5" stroke-linecap="round" />
-                                </svg>
-
-                                <!-- Subtle Official School Logo Watermark in Center Background -->
-                                <div class="id-watermark-logo">
-                                    <img src="../pictures/logo sa skwelahan.png" alt="School Seal Watermark" onerror="this.src='../pictures/logo sa skwelahan.jpg'">
-                                </div>
-
-                                <!-- Student 2x2 Photo Frame (Gold Box) -->
-                                <div class="id-photo-custom-wrap">
-                                    <img id="previewPhoto" src="" alt="Student Photo" style="display: none;">
-                                    <div id="photoEmptyPlaceholder" class="photo-empty-placeholder">
-                                        <i class="fas fa-camera"></i>
-                                        <span>2x2 Photo</span>
+                                <!-- Top Header -->
+                                <div class="id-front-header-row">
+                                    <img class="id-school-logo" src="../pictures/logo sa skwelahan.png" alt="School Seal" onerror="this.src='../pictures/logo sa skwelahan.jpg'">
+                                    <div class="id-school-info">
+                                        <div class="id-school-title">Placido L. Señor National High School</div>
+                                        <div class="id-school-subtitle">OFFICIAL STUDENT ID</div>
                                     </div>
                                 </div>
 
-                                <!-- Student Name (Centered Bold Navy) -->
-                                <div class="id-name-custom-wrap">
-                                    <div id="previewStudentName">
-                                        <span class="id-name-line">STUDENT</span>
-                                        <span class="id-name-line">NAME</span>
+                                <!-- Body Row: Photo / Initial & Student Info -->
+                                <div class="id-card-body-row">
+                                    <!-- Photo Box with Gold Border -->
+                                    <div class="id-photo-box">
+                                        <img id="previewPhoto" src="" alt="Student Photo" style="display: none;">
+                                        <div id="photoInitial" class="id-photo-initial">—</div>
+                                    </div>
+
+                                    <!-- Student Metadata -->
+                                    <div class="id-student-info">
+                                        <div id="previewStudentName" class="id-student-fullname">Select a Student</div>
+
+                                        <div class="id-meta-list">
+                                            <div class="id-meta-item">
+                                                <span class="id-meta-lbl">LRN:</span>
+                                                <span class="id-meta-val" id="previewLrn">—</span>
+                                            </div>
+                                            <span id="previewStudentLevel" style="display: none;">Junior High</span>
+                                            <span id="previewIdNumber" style="display: none;"></span>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <!-- Student Level Category -->
-                                <div class="id-level-custom-wrap">
-                                    <span id="previewStudentLevel">GRADE 7</span>
-                                </div>
+                                <!-- Bottom Row: Signature & QR Code -->
+                                <div class="id-card-bottom-row">
+                                    <div class="id-principal-wrap">
+                                        <div class="id-principal-sig" id="previewPrincipalSig">${this.defaultPrincipal}</div>
+                                        <div class="id-principal-title">SCHOOL PRINCIPAL</div>
+                                    </div>
 
-                                <!-- Gold Horizontal Divider -->
-                                <div class="id-front-gold-divider"></div>
-
-                                <!-- ID Number & LRN -->
-                                <div class="id-meta-grid">
-                                    <span class="meta-lbl">ID NO</span>
-                                    <span class="meta-col">:</span>
-                                    <span class="meta-val" id="previewIdNumber">2024-ST-00000</span>
-
-                                    <span class="meta-lbl">LRN</span>
-                                    <span class="meta-col">:</span>
-                                    <span class="meta-val" id="previewLrn">000000000000</span>
+                                    <div class="id-qr-box-wrap">
+                                        <div id="qrCodeContainer" class="id-qr-code-box"></div>
+                                    </div>
                                 </div>
                             </div>
                             <span class="card-face-tag">Front Side</span>
@@ -339,88 +304,69 @@ export class StudentIdGenerator {
 
                         <!-- BACK CARD UNIT -->
                         <div class="id-badge-unit" id="unitBack">
-                            <!-- ACTUAL BACK CARD (CR80 EXACT RATIO: 318px x 485px) -->
                             <div class="student-id-card id-card-back" id="cardBackElement">
-                                <!-- Background Wave SVG (Clean corner accents, leaving all text/signatures 100% crisp and readable) -->
-                                <svg class="id-card-bg-svg" viewBox="0 0 320 500" preserveAspectRatio="none">
-                                    <defs>
-                                        <linearGradient id="backBlueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                                            <stop offset="0%" stop-color="#0a1d48" />
-                                            <stop offset="50%" stop-color="#12408c" />
-                                            <stop offset="100%" stop-color="#081738" />
-                                        </linearGradient>
-                                        <linearGradient id="backGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                                            <stop offset="0%" stop-color="#f5d77f" />
-                                            <stop offset="50%" stop-color="#b8861d" />
-                                            <stop offset="100%" stop-color="#e8bf54" />
-                                        </linearGradient>
-                                    </defs>
-                                    <!-- Top Right Blue Corner Accent -->
-                                    <path d="M 320,0 L 250,0 C 270,35 295,70 320,100 Z" fill="url(#backBlueGrad)" />
-                                    <path d="M 250,0 C 270,35 295,70 320,100" fill="none" stroke="url(#backGoldGrad)" stroke-width="3" />
-                                    <!-- Bottom Left Decorative Corner Accent -->
-                                    <path d="M 0,400 C 20,425 38,460 45,500 L 0,500 Z" fill="url(#backBlueGrad)" />
-                                    <path d="M 0,400 C 20,425 38,460 45,500" fill="none" stroke="url(#backGoldGrad)" stroke-width="2.5" />
-                                </svg>
-
-                                <!-- Subtle Official School Logo Watermark on Back -->
-                                <div class="id-watermark-logo back-watermark">
-                                    <img src="../pictures/logo sa skwelahan.png" alt="School Seal Watermark" onerror="this.src='../pictures/logo sa skwelahan.jpg'">
-                                </div>
-
-                                <!-- Emergency Info -->
-                                <div class="id-back-emergency">
-                                    <div class="emergency-sub">Please contact in case of emergency</div>
-                                    <div class="emergency-title">NAME OF PARENT OR GUARDIAN</div>
-                                    <div class="emergency-guardian">
-                                        <span class="guardian-lbl">Parent / Guardian:</span>
-                                        <div class="guardian-val">
-                                            <span id="previewParentName">[PARENT / GUARDIAN,</span>
-                                            <span id="previewParentPhone">09XXXXXXXXX]</span>
+                                <div class="id-back-header">
+                                    <div class="id-back-header-left">
+                                        <img class="id-back-logo" src="../pictures/logo sa skwelahan.png" alt="School Seal" onerror="this.src='../pictures/logo sa skwelahan.jpg'">
+                                        <div>
+                                            <div class="id-back-school-name">PLACIDO L. SEÑOR NATIONAL HIGH SCHOOL</div>
+                                            <div class="id-back-school-sub">Langtad, City of Naga, Cebu • School ID: 303035</div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <!-- Student Attendance QR Code Section (Centered & Clean) -->
-                                <div class="id-attendance-qr-section">
-                                    <div class="id-qr-custom-wrap">
-                                        <div class="qr-corner qr-tl"></div>
-                                        <div class="qr-corner qr-tr"></div>
-                                        <div class="qr-corner qr-bl"></div>
-                                        <div class="qr-corner qr-br"></div>
-                                        <div id="qrCodeContainer" class="id-qr-code-box"></div>
-                                    </div>
-                                    <div class="qr-attendance-badge"><i class="fas fa-qrcode"></i> FOR STUDENT ATTENDANCE</div>
-                                </div>
-
-                                <!-- Official Rules List -->
-                                <div class="id-back-rules">
-                                    <div class="rules-header">IMPORTANT REMINDERS & REGULATIONS</div>
-                                    <ol class="rules-list">
-                                        <li>This card is for official school identification and daily attendance.</li>
-                                        <li>Always wear this ID visibly while inside school grounds.</li>
-                                        <li>Report a lost ID immediately to the Principal's Office:
-                                            <div class="rules-contact-row">
-                                                <span><strong>Phone:</strong> 09123456789</span>
-                                                <span><strong>Email:</strong> info@placidosenornhs.com</span>
+                                <div class="id-back-body-grid">
+                                    <!-- Left Column: Academic & Emergency Info -->
+                                    <div class="id-back-col">
+                                        <div class="id-back-level-card">
+                                            <div class="id-back-level-hdr">
+                                                <i class="fas fa-graduation-cap"></i> ACADEMIC CLASSIFICATION
                                             </div>
-                                        </li>
-                                        <li>If found, please return to PLSNHS, Langtad, City of Naga, Cebu.</li>
-                                    </ol>
+                                            <div class="id-back-level-row">
+                                                <span class="id-back-level-main" id="previewBackLevelVal">Junior High</span>
+                                                <span class="id-back-level-pill" id="previewBackDeptPill">JHS</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="id-back-section-title">
+                                            <i class="fas fa-phone-alt"></i> IN CASE OF EMERGENCY
+                                        </div>
+                                        <div class="id-back-field">
+                                            <span class="id-back-field-lbl">Parent / Guardian:</span>
+                                            <span class="id-back-field-val" id="previewParentName">—</span>
+                                        </div>
+                                        <div class="id-back-field">
+                                            <span class="id-back-field-lbl">Emergency Contact:</span>
+                                            <span class="id-back-field-val" id="previewParentPhone">—</span>
+                                        </div>
+
+                                        <!-- Student Signature Block -->
+                                        <div class="id-back-sig-box">
+                                            <div class="id-back-sig-line"></div>
+                                            <div class="id-back-sig-name" id="previewStudentSigName">—</div>
+                                            <div class="id-back-sig-role">STUDENT SIGNATURE</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Reminders Column -->
+                                    <div class="id-back-col">
+                                        <div class="id-back-section-title">
+                                            <i class="fas fa-shield-alt"></i> IMPORTANT REMINDERS
+                                        </div>
+                                        <ul class="id-back-rules-list">
+                                            <li>This card is official school property and non-transferable.</li>
+                                            <li>Must be worn visibly at all times within school grounds.</li>
+                                            <li>Use QR code on front for gate attendance tracking.</li>
+                                            <li>Report immediately to the Principal's Office if lost.</li>
+                                            <li>If found, return to PLSNHS, Langtad, Naga, Cebu.</li>
+                                        </ul>
+                                    </div>
                                 </div>
 
-                                <!-- Dual Signatures Grid (Left: Student Name | Right: Principal Name) -->
-                                <div class="id-signatures-grid">
-                                    <div class="sig-col">
-                                        <div class="sig-label-name" id="previewStudentSigName">STUDENT NAME</div>
-                                        <div class="sig-line"></div>
-                                        <div class="sig-role-label">Student Signature</div>
-                                    </div>
-                                    <div class="sig-col">
-                                        <div class="sig-label-name" id="previewPrincipalName">DR. RYAN R. QUIROGA</div>
-                                        <div class="sig-line"></div>
-                                        <div class="sig-role-label">School Principal</div>
-                                    </div>
+                                <!-- Back Footer -->
+                                <div class="id-back-footer">
+                                    <span>PROPERTY OF PLSNHS • OFFICIAL STUDENT IDENTIFICATION</span>
+                                    <span>VALID S.Y. <span id="previewBackSchoolYear">${this.defaultSchoolYear}</span></span>
                                 </div>
                             </div>
                             <span class="card-face-tag">Back Side</span>
@@ -431,13 +377,13 @@ export class StudentIdGenerator {
 
                 <!-- RIGHT COLUMN: SELECTION & CUSTOMIZATION CONTROLS -->
                 <div class="id-controls-pane">
-                    <h3 style="font-size: 16px; font-weight: 800; color: #0f172a; margin-bottom: 16px;">
-                        <i class="fas fa-sliders-h" style="color: #2563eb;"></i> Student ID Controls
+                    <h3 style="font-size: 16px; font-weight: 800; color: #0f172a; margin-bottom: 14px; min-height: 32px; display: flex; align-items: center;">
+                        <i class="fas fa-sliders-h" style="color: #162d6b;"></i> Student ID Controls
                     </h3>
 
                     <!-- Quick Student Search / Select by Year Level -->
                     <div class="id-form-group">
-                        <label><i class="fas fa-filter" style="color: #2563eb;"></i> Filter by Year Level</label>
+                        <label><i class="fas fa-filter" style="color: #162d6b;"></i> Filter by Year Level</label>
                         <select id="filterStudentGrade">
                             <option value="all">All Year Levels</option>
                             <option value="Grade 7">Grade 7 (Junior High)</option>
@@ -450,68 +396,69 @@ export class StudentIdGenerator {
                     </div>
 
                     <div class="id-form-group">
-                        <label><i class="fas fa-search" style="color: #2563eb;"></i> Select Student (By Year Level)</label>
+                        <label><i class="fas fa-search" style="color: #162d6b;"></i> Select Student</label>
                         <select id="studentSelect">
-                            <option value="">-- Select Student / Blank ID --</option>
-                            ${this.students.map(s => `
-                                <option value="${s.id}">
-                                    ${s.fullname} (${s.lrn}) - ${s.grade_level || s.level_category}
-                                </option>
-                            `).join('')}
+                            <option value="">-- Select Student / Default Template --</option>
                         </select>
+                    </div>
+
+                    <!-- School Year -->
+                    <div class="id-form-group">
+                        <label><i class="fas fa-calendar-alt" style="color: #162d6b;"></i> School Year (S.Y.)</label>
+                        <input type="text" id="inputSchoolYear" value="${this.defaultSchoolYear}" placeholder="e.g. 2026-2027">
                     </div>
 
                     <!-- Photo Upload / Replace -->
                     <div class="id-form-group">
-                        <label><i class="fas fa-camera"></i> 2x2 Student Photo</label>
+                        <label><i class="fas fa-camera"></i> Student Photo (2x2 / ID Picture)</label>
                         <input type="file" id="idPhotoUpload" accept="image/*" style="padding: 8px;">
                         <small style="font-size: 11px; color: #64748b; margin-top: 4px; display: block;">
-                            Uploaded 2x2 picture from enrollment is automatically loaded. You can also upload a new high-res photo.
+                            If no photo is provided, the card displays the student's initial letter in school gold automatically.
                         </small>
                     </div>
 
                     <!-- Student Name -->
                     <div class="id-form-group">
                         <label>Student Full Name</label>
-                        <input type="text" id="inputStudentName" placeholder="e.g. STUDENT NAME">
+                        <input type="text" id="inputStudentName" placeholder="e.g. Student Full Name" value="">
                     </div>
 
                     <!-- Year Level -->
                     <div class="id-form-group">
-                        <label><i class="fas fa-layer-group" style="color: #2563eb;"></i> Year Level</label>
+                        <label><i class="fas fa-layer-group" style="color: #162d6b;"></i> Academic Classification / Level</label>
                         <select id="inputLevelCategory">
-                            <option value="GRADE 7">Grade 7 (Junior High)</option>
-                            <option value="GRADE 8">Grade 8 (Junior High)</option>
-                            <option value="GRADE 9">Grade 9 (Junior High)</option>
-                            <option value="GRADE 10">Grade 10 (Junior High)</option>
-                            <option value="GRADE 11">Grade 11 (Senior High)</option>
-                            <option value="GRADE 12">Grade 12 (Senior High)</option>
-                            <option value="JUNIOR HIGH">Junior High School</option>
-                            <option value="SENIOR HIGH">Senior High School</option>
+                            <option value="Junior High" selected>Junior High (Grades 7–10)</option>
+                            <option value="Senior High">Senior High (Grades 11–12)</option>
+                            <option value="Grade 7">Grade 7</option>
+                            <option value="Grade 8">Grade 8</option>
+                            <option value="Grade 9">Grade 9</option>
+                            <option value="Grade 10">Grade 10</option>
+                            <option value="Grade 11">Grade 11</option>
+                            <option value="Grade 12">Grade 12</option>
                         </select>
                     </div>
 
                     <!-- ID Number & LRN -->
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                         <div class="id-form-group">
-                            <label>ID Number</label>
-                            <input type="text" id="inputIdNumber" placeholder="2024-ST-00000">
+                            <label>LRN</label>
+                            <input type="text" id="inputLrn" placeholder="e.g. 12-digit LRN" value="">
                         </div>
                         <div class="id-form-group">
-                            <label>LRN</label>
-                            <input type="text" id="inputLrn" placeholder="000000000000">
+                            <label>Student ID</label>
+                            <input type="text" id="inputIdNumber" placeholder="e.g. Student ID / UUID" value="">
                         </div>
                     </div>
 
                     <!-- Emergency Guardian & Contact -->
                     <div class="id-form-group">
                         <label>Emergency Parent / Guardian</label>
-                        <input type="text" id="inputGuardianName" placeholder="PARENT / GUARDIAN NAME">
+                        <input type="text" id="inputGuardianName" placeholder="e.g. Parent / Guardian Name" value="">
                     </div>
 
                     <div class="id-form-group">
                         <label>Emergency Contact Phone</label>
-                        <input type="text" id="inputGuardianPhone" placeholder="09XXXXXXXXX">
+                        <input type="text" id="inputGuardianPhone" placeholder="e.g. 09XXXXXXXXX" value="">
                     </div>
 
                     <!-- Principal Name -->
@@ -520,16 +467,13 @@ export class StudentIdGenerator {
                         <input type="text" id="inputPrincipal" value="${this.defaultPrincipal}">
                     </div>
 
-                    <!-- Automatic QR Code Identification Mode -->
+                    <!-- QR Code Identification Mode -->
                     <div class="id-form-group">
-                        <label><i class="fas fa-qrcode" style="color: #2563eb;"></i> QR Code Identification Mode</label>
+                        <label><i class="fas fa-qrcode" style="color: #162d6b;"></i> QR Code Identification Mode</label>
                         <select id="selectQrMode">
-                            <option value="url" selected>📱 Automatic Mobile Verification (Opens Student Profile)</option>
+                            <option value="url" selected>📱 Mobile Verification (Opens Student Profile)</option>
                             <option value="raw">🏢 Hardware Gate Scanner (Raw Barcode Text)</option>
                         </select>
-                        <small style="font-size: 11px; color: #64748b; margin-top: 4px; display: block;">
-                            <i class="fas fa-check-circle" style="color: #10b981;"></i> <strong>Automatic Identification:</strong> Instantly encodes student record into the QR code in real-time.
-                        </small>
                     </div>
 
                     <!-- Action Buttons -->
@@ -548,9 +492,9 @@ export class StudentIdGenerator {
                     </div>
 
                     <!-- Official Verification Note -->
-                    <div style="margin-top: 20px; padding: 14px; background: #eff6ff; border-left: 4px solid #0b1a3d; border-radius: 8px; font-size: 11.5px; color: #1e3a8a; line-height: 1.5;">
-                        <i class="fas fa-shield-alt" style="margin-right: 4px; color: #c89b27;"></i>
-                        <strong>Official PLSNHS QR ID Verification:</strong> This is the official school ID design equipped with a real-time QR security code for gate attendance, library tracking, and emergency parent contact.
+                    <div style="margin-top: auto; padding: 14px; background: #eff6ff; border-left: 4px solid #162d6b; border-radius: 8px; font-size: 11.5px; color: #1e3a8a; line-height: 1.5;">
+                        <i class="fas fa-shield-alt" style="margin-right: 4px; color: #f3b723;"></i>
+                        <strong>Official PLSNHS Student ID:</strong> Generates landscape CR80 high-resolution student IDs with scannable QR security for gate attendance and official school verification.
                     </div>
                 </div>
             </div>
@@ -587,7 +531,6 @@ export class StudentIdGenerator {
             });
         }
 
-        // Real-time input updates
         const bindInput = (id, callback) => {
             const el = document.getElementById(id);
             if (el) el.addEventListener('input', callback);
@@ -596,44 +539,45 @@ export class StudentIdGenerator {
         bindInput('inputStudentName', (e) => {
             const raw = e.target.value.trim();
             this.updateStudentNameDisplay(raw);
-            this.hasCustomFrontChanges = true;
-            this.syncOverlays();
             this.generateQrCode();
         });
 
+        bindInput('inputSchoolYear', (e) => {
+            const val = e.target.value.trim() || this.defaultSchoolYear;
+            const syEl = document.getElementById('previewSchoolYear');
+            if (syEl) syEl.textContent = val;
+            const bsyEl = document.getElementById('previewBackSchoolYear');
+            if (bsyEl) bsyEl.textContent = val;
+        });
+
         bindInput('inputLevelCategory', (e) => {
-            document.getElementById('previewStudentLevel').textContent = e.target.value;
-            this.hasCustomFrontChanges = true;
-            this.syncOverlays();
+            const val = e.target.value;
+            const strand = this.selectedStudent?.strand || '';
+            this.updateGradeDisplay(val, strand);
             this.generateQrCode();
         });
 
         bindInput('inputIdNumber', (e) => {
-            const val = e.target.value.trim() || '2024-ST-00000';
-            document.getElementById('previewIdNumber').textContent = val;
-            this.hasCustomFrontChanges = true;
-            this.syncOverlays();
+            const val = e.target.value.trim();
+            const idEl = document.getElementById('previewIdNumber');
+            if (idEl) idEl.textContent = val;
             this.generateQrCode();
         });
 
         bindInput('inputLrn', (e) => {
-            const val = e.target.value.trim() || '000000000000';
-            document.getElementById('previewLrn').textContent = val;
-            this.hasCustomFrontChanges = true;
-            this.syncOverlays();
+            const val = e.target.value.trim() || '—';
+            const lrnEl = document.getElementById('previewLrn');
+            if (lrnEl) lrnEl.textContent = val;
             this.generateQrCode();
         });
 
         const updateEmergencyInfo = () => {
-            const name = document.getElementById('inputGuardianName')?.value.trim().toUpperCase() || 'PARENT / GUARDIAN';
-            const phone = document.getElementById('inputGuardianPhone')?.value.trim() || '09XXXXXXXXX';
+            const name = document.getElementById('inputGuardianName')?.value.trim().toUpperCase() || '—';
+            const phone = document.getElementById('inputGuardianPhone')?.value.trim() || '—';
             const nameEl = document.getElementById('previewParentName');
-            if (nameEl) nameEl.textContent = `[${name},`;
+            if (nameEl) nameEl.textContent = name;
             const phoneEl = document.getElementById('previewParentPhone');
-            if (phoneEl) phoneEl.textContent = `${phone}]`;
-            this.hasCustomBackChanges = true;
-            this.syncOverlays();
-            this.generateQrCode();
+            if (phoneEl) phoneEl.textContent = phone;
         };
 
         bindInput('inputGuardianName', updateEmergencyInfo);
@@ -648,13 +592,13 @@ export class StudentIdGenerator {
 
         bindInput('inputPrincipal', (e) => {
             const val = e.target.value || this.defaultPrincipal;
-            this.updatePrincipalDisplay(val);
-            this.hasCustomBackChanges = (val !== this.defaultPrincipal);
-            this.syncOverlays();
+            const pSigEl = document.getElementById('previewPrincipalSig');
+            if (pSigEl) pSigEl.textContent = val;
         });
 
         // 2x2 Photo Upload Preview
         const photoUpload = document.getElementById('idPhotoUpload');
+        const uploadFileNameEl = document.getElementById('uploadFileName');
         if (photoUpload) {
             photoUpload.addEventListener('change', (e) => {
                 const file = e.target.files[0];
@@ -663,19 +607,18 @@ export class StudentIdGenerator {
                     reader.onload = (evt) => {
                         const dataUrl = evt.target.result;
                         const photoEl = document.getElementById('previewPhoto');
-                        const emptyPlaceholder = document.getElementById('photoEmptyPlaceholder');
+                        const initialEl = document.getElementById('photoInitial');
                         if (photoEl) {
                             photoEl.src = dataUrl;
                             photoEl.style.display = 'block';
                         }
-                        if (emptyPlaceholder) {
-                            emptyPlaceholder.style.display = 'none';
+                        if (initialEl) {
+                            initialEl.style.display = 'none';
                         }
                         this.customPhotoUploaded = true;
                         if (this.selectedStudent) {
                             this.selectedStudent.photo_url = dataUrl;
                         }
-                        this.syncOverlays();
                     };
                     reader.readAsDataURL(file);
                 }
@@ -699,15 +642,14 @@ export class StudentIdGenerator {
         const btnPrint = document.getElementById('btnPrintId');
         if (btnPrint) {
             btnPrint.addEventListener('click', () => {
-                // Ensure both Front and Back are visible in side-by-side print layout
                 const front = document.getElementById('unitFront');
                 const back = document.getElementById('unitBack');
                 if (front) {
-                    front.style.display = 'block';
+                    front.style.display = 'flex';
                     front.style.order = '0';
                 }
                 if (back) {
-                    back.style.display = 'block';
+                    back.style.display = 'flex';
                     back.style.order = '1';
                 }
                 setTimeout(() => {
@@ -732,46 +674,91 @@ export class StudentIdGenerator {
         }
     }
 
-    // Helper: update student name on card front and signatures
     updateStudentNameDisplay(fullName) {
-        const displayName = (fullName && fullName.trim()) ? fullName.trim().toUpperCase() : 'STUDENT NAME';
-        const [line1, line2] = this.formatNameLines(displayName);
-        const nameContainer = document.getElementById('previewStudentName');
-        if (nameContainer) {
-            const maxLen = Math.max((line1 || '').length, (line2 || '').length);
-            let fontSize = '24px';
-            if (maxLen > 18) fontSize = '17px';
-            else if (maxLen > 14) fontSize = '20px';
-            else if (maxLen > 11) fontSize = '22px';
-
-            nameContainer.style.display = 'flex';
-            nameContainer.style.flexDirection = 'column';
-            nameContainer.style.alignItems = 'center';
-            nameContainer.style.textAlign = 'center';
-            nameContainer.style.width = '100%';
-
-            nameContainer.innerHTML = `
-                <span class="id-name-line" style="font-size: ${fontSize}; text-align: center;">${line1}</span>
-                ${line2 ? `<span class="id-name-line" style="font-size: ${fontSize}; text-align: center;">${line2}</span>` : ''}
-            `;
+        const displayName = fullName && fullName.trim() ? fullName.trim() : '—';
+        const nameEl = document.getElementById('previewStudentName');
+        if (nameEl) {
+            nameEl.textContent = displayName;
         }
 
         const sigName = document.getElementById('previewStudentSigName');
-        if (sigName) sigName.textContent = displayName;
-    }
+        if (sigName) {
+            sigName.textContent = displayName !== '—' ? displayName.toUpperCase() : '—';
+        }
 
-    // Helper: update principal signature and printed name on card back
-    updatePrincipalDisplay(principalName) {
-        const val = (principalName || this.defaultPrincipal || 'Dr. J. Ramos').trim();
-        const principalNameEl = document.getElementById('previewPrincipalName');
-        if (principalNameEl) {
-            principalNameEl.textContent = val.toUpperCase();
+        // If no custom uploaded photo or student photo, update the initial letter in the photo box
+        const photoEl = document.getElementById('previewPhoto');
+        const initialEl = document.getElementById('photoInitial');
+        const hasPhoto = !!(this.selectedStudent?.photo_url && this.selectedStudent.photo_url.trim().length > 0);
+
+        if (!hasPhoto && !this.customPhotoUploaded && initialEl) {
+            initialEl.textContent = this.getStudentInitial(displayName);
+            initialEl.style.display = 'flex';
+            if (photoEl) photoEl.style.display = 'none';
         }
     }
 
-    // Seamless sync: Keeps all dynamic elements active with crisp transparent rendering
-    syncOverlays() {
-        // All elements are rendered directly onto the clean template with transparent backgrounds
+    getGradeDetails(gradeStr, strandStr = '') {
+        const raw = String(gradeStr || 'Junior High').trim();
+        const numMatch = raw.match(/\d+/);
+        const num = numMatch ? parseInt(numMatch[0], 10) : null;
+
+        let isSenior = false;
+        if (num !== null) {
+            isSenior = num >= 11;
+        } else {
+            isSenior = raw.toLowerCase().includes('senior') || raw.toLowerCase().includes('shs');
+        }
+
+        const dept = isSenior ? 'Senior High School' : 'Junior High School';
+        const deptTag = isSenior ? 'SENIOR HIGH SCHOOL' : 'JUNIOR HIGH SCHOOL';
+
+        let cleanStrand = String(strandStr || '').trim();
+        if (!cleanStrand && this.selectedStudent && this.selectedStudent.strand) {
+            cleanStrand = String(this.selectedStudent.strand).trim();
+        }
+        if (cleanStrand.toUpperCase() === 'N/A' || cleanStrand.toUpperCase() === 'JHS') {
+            cleanStrand = '';
+        }
+
+        // Student ID cards display "Junior High" or "Senior High" instead of specific grade numbers (e.g. Grade 10)
+        const levelVal = isSenior ? 'Senior High' : 'Junior High';
+        const deptPill = isSenior && cleanStrand ? cleanStrand.toUpperCase() : (isSenior ? 'SHS' : 'JHS');
+        const gradeTag = isSenior && cleanStrand ? cleanStrand.toUpperCase() : 'STUDENT';
+
+        return {
+            num,
+            isSenior,
+            dept,
+            deptTag,
+            deptPill,
+            gradeLabel: levelVal,
+            gradeTag,
+            levelVal,
+            strand: cleanStrand
+        };
+    }
+
+    updateGradeDisplay(gradeValue, strandValue = '') {
+        const details = this.getGradeDetails(gradeValue, strandValue);
+
+        // Hidden front element for QR generator & external references
+        const previewLvl = document.getElementById('previewStudentLevel');
+        if (previewLvl) {
+            previewLvl.textContent = details.levelVal;
+        }
+
+
+        // Back card body level card
+        const backLevelVal = document.getElementById('previewBackLevelVal');
+        if (backLevelVal) {
+            backLevelVal.textContent = details.levelVal;
+        }
+
+        const backDeptPill = document.getElementById('previewBackDeptPill');
+        if (backDeptPill) {
+            backDeptPill.textContent = details.deptPill;
+        }
     }
 
     // ============================================
@@ -780,29 +767,21 @@ export class StudentIdGenerator {
     selectStudent(student) {
         if (!student) student = this.getDefaultStudent();
         this.selectedStudent = student;
-
-        const isUnassigned = !student.id || student.fullname === 'STUDENT NAME';
-        this.customPhotoUploaded = !isUnassigned && (student.photo_url && student.photo_url !== DEFAULT_AVATAR);
-        this.hasCustomFrontChanges = !isUnassigned;
-        this.hasCustomBackChanges = !isUnassigned;
+        this.customPhotoUploaded = false;
 
         const studentSelect = document.getElementById('studentSelect');
         if (studentSelect) studentSelect.value = student.id || '';
 
-        const rawGrade = student.grade_level || '';
-        let yearLevelVal = 'GRADE 7';
-        if (rawGrade) {
-            const numMatch = String(rawGrade).match(/\d+/);
-            if (numMatch) {
-                yearLevelVal = `GRADE ${numMatch[0]}`;
-            } else if (String(rawGrade).toUpperCase().includes('SENIOR')) {
-                yearLevelVal = 'SENIOR HIGH';
-            } else if (String(rawGrade).toUpperCase().includes('JUNIOR')) {
-                yearLevelVal = 'JUNIOR HIGH';
-            }
-        } else if (student.level_category) {
-            yearLevelVal = student.level_category.toUpperCase();
+        const rawGrade = student.grade_level || 'Junior High';
+        let gradeVal = 'Junior High';
+        const numMatch = String(rawGrade).match(/\d+/);
+        if (numMatch) {
+            gradeVal = parseInt(numMatch[0], 10) >= 11 ? 'Senior High' : 'Junior High';
+        } else if (String(rawGrade).toLowerCase().includes('senior')) {
+            gradeVal = 'Senior High';
         }
+
+        const syVal = student.school_year || this.defaultSchoolYear || '2026-2027';
 
         // Update inputs
         const setVal = (id, val) => {
@@ -810,29 +789,39 @@ export class StudentIdGenerator {
             if (el) el.value = val;
         };
 
-        setVal('inputStudentName', isUnassigned ? '' : student.fullname);
-        setVal('inputLevelCategory', yearLevelVal);
-        setVal('inputIdNumber', isUnassigned ? '' : student.id_number);
-        setVal('inputLrn', isUnassigned ? '' : student.lrn);
-        setVal('inputGuardianName', isUnassigned ? '' : student.parent_name);
-        setVal('inputGuardianPhone', isUnassigned ? '' : student.parent_contact);
+        setVal('inputStudentName', student.fullname || '');
+        setVal('inputLevelCategory', gradeVal);
+        setVal('inputIdNumber', student.id_number || student.id || '');
+        setVal('inputLrn', student.lrn || '');
+        setVal('inputSchoolYear', syVal);
+        setVal('inputGuardianName', student.parent_name || '');
+        setVal('inputGuardianPhone', student.parent_contact || '');
         setVal('inputPrincipal', student.principal_name || this.defaultPrincipal);
 
-        // Update Preview Card Front
+        // Update Front Preview Card
         this.updateStudentNameDisplay(student.fullname);
 
-        const previewLevel = document.getElementById('previewStudentLevel');
-        if (previewLevel) previewLevel.textContent = yearLevelVal;
+        // Update Grade & Classification on Back Preview Card
+        this.updateGradeDisplay(gradeVal, student.strand);
 
         const previewId = document.getElementById('previewIdNumber');
-        if (previewId) previewId.textContent = student.id_number || '2024-ST-00000';
+        if (previewId) previewId.textContent = student.id_number || student.id || '';
 
         const previewLrn = document.getElementById('previewLrn');
-        if (previewLrn) previewLrn.textContent = student.lrn || '000000000000';
+        if (previewLrn) previewLrn.textContent = student.lrn || '—';
 
-        // Photo Handling: Remains empty if no picture has been uploaded/registered yet
+        const previewSy = document.getElementById('previewSchoolYear');
+        if (previewSy) previewSy.textContent = syVal;
+
+        const previewBackSy = document.getElementById('previewBackSchoolYear');
+        if (previewBackSy) previewBackSy.textContent = syVal;
+
+        const previewSig = document.getElementById('previewPrincipalSig');
+        if (previewSig) previewSig.textContent = student.principal_name || this.defaultPrincipal;
+
+        // Photo / Initial Handling
         const photoEl = document.getElementById('previewPhoto');
-        const emptyPlaceholder = document.getElementById('photoEmptyPlaceholder');
+        const initialEl = document.getElementById('photoInitial');
         const hasPhoto = !!(student.photo_url && typeof student.photo_url === 'string' && student.photo_url.trim().length > 0);
 
         if (hasPhoto) {
@@ -841,36 +830,40 @@ export class StudentIdGenerator {
                 photoEl.style.display = 'block';
                 photoEl.onerror = () => {
                     photoEl.style.display = 'none';
-                    if (emptyPlaceholder) emptyPlaceholder.style.display = 'flex';
+                    if (initialEl) {
+                        initialEl.textContent = this.getStudentInitial(student.fullname);
+                        initialEl.style.display = 'flex';
+                    }
                 };
             }
-            if (emptyPlaceholder) emptyPlaceholder.style.display = 'none';
+            if (initialEl) initialEl.style.display = 'none';
         } else {
             if (photoEl) {
                 photoEl.src = '';
                 photoEl.style.display = 'none';
             }
-            if (emptyPlaceholder) emptyPlaceholder.style.display = 'flex';
+            if (initialEl) {
+                initialEl.textContent = this.getStudentInitial(student.fullname);
+                initialEl.style.display = 'flex';
+            }
         }
 
-        // Update Preview Card Back
+        // Update Back Preview Card
         const previewParentName = document.getElementById('previewParentName');
-        if (previewParentName) previewParentName.textContent = `[${student.parent_name || 'PARENT / GUARDIAN'},`;
+        if (previewParentName) previewParentName.textContent = student.parent_name || '—';
 
         const previewParentPhone = document.getElementById('previewParentPhone');
-        if (previewParentPhone) previewParentPhone.textContent = `${student.parent_contact || '09XXXXXXXXX'}]`;
+        if (previewParentPhone) previewParentPhone.textContent = student.parent_contact || '—';
 
-        this.updatePrincipalDisplay(student.principal_name || this.defaultPrincipal);
-
-        // Sync overlays visibility
-        this.syncOverlays();
+        const previewStudentSig = document.getElementById('previewStudentSigName');
+        if (previewStudentSig) previewStudentSig.textContent = student.fullname ? student.fullname.toUpperCase() : '—';
 
         // Generate Scannable QR Code
         this.generateQrCode();
     }
 
     // ============================================
-    // 5. QR CODE GENERATION (AUTOMATIC IDENTIFICATION)
+    // 5. QR CODE GENERATION
     // ============================================
     generateQrCode() {
         const qrContainer = document.getElementById('qrCodeContainer');
@@ -878,36 +871,31 @@ export class StudentIdGenerator {
 
         qrContainer.innerHTML = '';
 
-        const name = (this.selectedStudent?.fullname && this.selectedStudent.fullname !== 'STUDENT NAME')
-            ? this.selectedStudent.fullname.toUpperCase()
-            : (document.getElementById('inputStudentName')?.value.trim().toUpperCase() || 'STUDENT NAME');
-
-        const lrn = document.getElementById('previewLrn')?.textContent || '000000000000';
-        const idNo = document.getElementById('previewIdNumber')?.textContent || '2024-ST-00000';
-        const level = document.getElementById('previewStudentLevel')?.textContent || 'SENIOR HIGH';
-        const contact = document.getElementById('inputGuardianPhone')?.value || '09XXXXXXXXX';
-        const guardian = document.getElementById('inputGuardianName')?.value || 'PARENT / GUARDIAN';
+        const name = document.getElementById('previewStudentName')?.textContent || '';
+        const lrn = document.getElementById('previewLrn')?.textContent || '';
+        const idNo = document.getElementById('previewIdNumber')?.textContent || '';
+        const level = document.getElementById('previewStudentLevel')?.textContent || 'Junior High';
+        const contact = document.getElementById('inputGuardianPhone')?.value || '';
+        const guardian = document.getElementById('inputGuardianName')?.value || '';
         const mode = document.getElementById('selectQrMode')?.value || 'url';
 
         let qrPayload = '';
         if (mode === 'raw') {
-            // Raw structured format for hardware barcode scanners
-            qrPayload = `PLSNHS-STUDENT|LRN:${lrn}|ID:${idNo}|NAME:${name}|LEVEL:${level}|CONTACT:${contact}|STATUS:OFFICIAL_ENROLLED`;
+            qrPayload = `PLSNHS-STUDENT|LRN:${lrn}|ID:${idNo}|NAME:${name}|GRADE:${level}|CONTACT:${contact}|STATUS:OFFICIAL_ENROLLED`;
         } else {
-            // Automatic mobile phone verification URL: scanning instantly opens student's digital record
             const origin = window.location.origin;
             const isSubPath = window.location.pathname.includes('/CAPSTONEWEB');
             const verifyPath = isSubPath ? '/CAPSTONEWEB/verify_id.html' : '/verify_id.html';
-            qrPayload = `${origin}${verifyPath}?lrn=${encodeURIComponent(lrn)}&id=${encodeURIComponent(idNo)}&name=${encodeURIComponent(name)}&level=${encodeURIComponent(level)}&guardian=${encodeURIComponent(guardian)}&contact=${encodeURIComponent(contact)}`;
+            qrPayload = `${origin}${verifyPath}?lrn=${encodeURIComponent(lrn)}&id=${encodeURIComponent(idNo)}&name=${encodeURIComponent(name)}&grade=${encodeURIComponent(level)}&guardian=${encodeURIComponent(guardian)}&contact=${encodeURIComponent(contact)}`;
         }
 
         if (typeof QRCode !== 'undefined') {
             try {
                 this.qrCodeInstance = new QRCode(qrContainer, {
                     text: qrPayload,
-                    width: 112,
-                    height: 112,
-                    colorDark: '#0c1a3a',
+                    width: 108,
+                    height: 108,
+                    colorDark: '#162d6b',
                     colorLight: '#ffffff',
                     correctLevel: QRCode.CorrectLevel.M
                 });
@@ -917,19 +905,40 @@ export class StudentIdGenerator {
             }
         }
 
-        // Robust Fallback via image
+        // Fallback via high-res API image
         const encoded = encodeURIComponent(qrPayload);
         const img = document.createElement('img');
-        img.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encoded}`;
+        img.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encoded}&color=16-45-107`;
         img.alt = 'Student QR Code';
         img.style.width = '100%';
         img.style.height = '100%';
         qrContainer.appendChild(img);
-    }
 
-    formatSignature(name) {
-        if (!name) return 'Student';
-        return name.toLowerCase().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        // Optionally persist generated QR code to Supabase
+        if (supabase && (this.selectedStudent?.id || lrn)) {
+            const studentId = this.selectedStudent?.id;
+            const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(studentId || '');
+
+            if (isValidUUID) {
+                supabase
+                    .from('students')
+                    .update({ qr_code: qrPayload })
+                    .eq('id', studentId)
+                    .then(({ error }) => {
+                        if (error) console.warn('Could not save QR code to student profile:', error);
+                    })
+                    .catch(e => console.warn('Student QR update notice:', e));
+            } else if (lrn && lrn !== '000000000000') {
+                supabase
+                    .from('students')
+                    .update({ qr_code: qrPayload })
+                    .eq('lrn', lrn)
+                    .then(({ error }) => {
+                        if (error) console.warn('Could not save QR code by LRN:', error);
+                    })
+                    .catch(e => console.warn('Student QR update by LRN notice:', e));
+            }
+        }
     }
 
     async exportCardAsImage(elementId, filename) {
@@ -942,7 +951,7 @@ export class StudentIdGenerator {
                     scale: 3,
                     useCORS: true,
                     allowTaint: true,
-                    backgroundColor: '#ffffff',
+                    backgroundColor: null,
                     logging: false,
                     scrollX: 0,
                     scrollY: 0

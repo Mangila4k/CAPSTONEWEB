@@ -147,7 +147,7 @@ import { supabase } from '../../supabase/config.js';
             registeredChildren = students.map(s => ({
                 id: s.id,
                 name: `${s.first_name || ''} ${s.last_name || ''}`.trim() || 'Student',
-                lrn: s.lrn || '109876543201',
+                lrn: s.lrn || '',
                 grade_level: s.grade_level || 'Grade 11'
             }));
 

@@ -36,12 +36,16 @@ body {
     background: var(--gray-50);
     color: var(--gray-800);
     min-height: 100vh;
+    overflow-x: hidden;
 }
 
 /* ===== APP CONTAINER ===== */
 .app-container {
     display: flex;
     min-height: 100vh;
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
 }
 
 /* ===== SIDEBAR ===== */
@@ -233,8 +237,12 @@ body {
 .main-content {
     flex: 1;
     margin-left: 260px;
-    padding: 2rem 2.5rem;
+    padding: 1.75rem 2.25rem;
     max-width: calc(100% - 260px);
+    width: calc(100% - 260px);
+    min-width: 0;
+    box-sizing: border-box;
+    overflow-x: hidden;
 }
 
 /* ===== PAGE HEADER ===== */
@@ -557,9 +565,11 @@ body {
 /* ===== DASHBOARD GRID ===== */
 .dashboard-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
-    margin-bottom: 2rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+    width: 100%;
+    min-width: 0;
 }
 
 /* ===== CHART CARDS ===== */
@@ -567,29 +577,43 @@ body {
     background: white;
     border-radius: var(--radius-lg);
     border: 1px solid var(--gray-200);
-    padding: 1.5rem;
+    padding: 1.1rem 1.25rem 0.9rem;
+    min-width: 0;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    transition: var(--transition);
 }
 
-.card-header {
+.chart-card:hover {
+    box-shadow: 0 4px 12px rgba(11, 43, 74, 0.06);
+    border-color: #cbd5e1;
+}
+
+.chart-card .card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1rem;
+    margin-bottom: 0.65rem;
 }
 
-.card-header h3 {
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--gray-800);
+.chart-card .card-header h3 {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--gray-900);
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin: 0;
 }
 
-.card-header h3 i {
+.chart-card .card-header h3 i {
     color: var(--primary);
-    margin-right: 0.5rem;
+    font-size: 0.85rem;
+    margin-right: 0;
 }
 
 .badge {
-    padding: 0.2rem 0.7rem;
+    padding: 0.2rem 0.65rem;
     border-radius: 40px;
     font-size: 0.65rem;
     font-weight: 600;
@@ -604,7 +628,10 @@ body {
 
 .chart-container {
     position: relative;
-    height: 250px;
+    height: 185px;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
 }
 
 /* ===== INFO CARDS ===== */
@@ -1430,9 +1457,22 @@ body {
     }
 }
 
-@media (max-width: 640px) {
-    .actions-grid {
+@media (max-width: 1024px) {
+    .dashboard-grid {
         grid-template-columns: 1fr;
+        gap: 1.15rem;
+    }
+    .chart-container {
+        height: 180px;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-content {
+        margin-left: 0 !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        padding: 1.25rem 1rem !important;
     }
 }
 

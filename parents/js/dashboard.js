@@ -339,7 +339,7 @@ import { supabase } from '../../supabase/config.js';
             const section = studentEnr?.section || student.section || 'Section A';
             const status = studentEnr?.status ? (studentEnr.status.charAt(0).toUpperCase() + studentEnr.status.slice(1)) : 'Enrolled';
             const schoolYear = studentEnr?.school_year || studentEnr?.schoolYear || '2025-2026';
-            const lrn = student.lrn || studentEnr?.lrn || '109876543201';
+            const lrn = student.lrn || studentEnr?.lrn || '';
 
             // Calculate student attendance from actual logs
             const myAtt = attendanceLogs.filter(a => a.student_id === student.id || a.lrn === lrn);

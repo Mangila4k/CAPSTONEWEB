@@ -424,12 +424,12 @@ import { supabase } from '../../supabase/config.js';
                 let lastName = matchedUser.last_name || '';
                 let fullName = `${firstName} ${lastName}`.trim() || (matchedUser.email ? matchedUser.email.split('@')[0] : 'User');
 
-                let studentLRN = '109876543201';
-                let studentGrade = 'Grade 11';
-                let studentStrand = 'TVL-ICT';
+                let studentLRN = '';
+                let studentGrade = '';
+                let studentStrand = '';
                 let studentSection = '';
                 let studentStatus = 'Enrolled';
-                let schoolYear = '2025-2026';
+                let schoolYear = '2026-2027';
 
                 // 3. Hydrate Student details from 'students' and 'enrollments'
                 let studentTableId = matchedUser.student_id || null;
