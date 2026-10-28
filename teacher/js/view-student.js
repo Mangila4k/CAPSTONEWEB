@@ -167,17 +167,6 @@ import { supabase } from '../../supabase/config.js';
                 student = studentByLrn;
             }
 
-            // Fallback realistic student roster if not yet in database
-            if (!student) {
-                const fallbackRoster = [
-                    { id: 'STU-001', lrn: '109876543201', first_name: 'Christian Paul', last_name: 'Aquino', email: 'c.aquino@student.hes.edu', grade_level: 'Grade 11', strand: 'STEM', documents_status: 'complete' },
-                    { id: 'STU-002', lrn: '109876543202', first_name: 'Maria Angela', last_name: 'Bautista', email: 'm.bautista@student.hes.edu', grade_level: 'Grade 11', strand: 'ABM', documents_status: 'complete' },
-                    { id: 'STU-003', lrn: '109876543203', first_name: 'John Kenneth', last_name: 'Cruz', email: 'jk.cruz@student.hes.edu', grade_level: 'Grade 11', strand: 'HUMSS', documents_status: 'complete' },
-                    { id: 'STU-004', lrn: '109876543204', first_name: 'Juan', last_name: 'Dela Cruz', email: 'j.delacruz@student.hes.edu', grade_level: 'Grade 11', strand: 'TVL-ICT', documents_status: 'complete' },
-                    { id: 'STU-005', lrn: '109876543205', first_name: 'Jasmine Nicole', last_name: 'Flores', email: 'j.flores@student.hes.edu', grade_level: 'Grade 11', strand: 'GAS', documents_status: 'complete' }
-                ];
-                student = fallbackRoster.find(s => s.id === targetStudentId || s.lrn === targetStudentId);
-            }
 
             if (!student) {
                 showAlert('❌ Student record not found in system.', 'error');

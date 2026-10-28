@@ -15,20 +15,20 @@ export class StudentIdGenerator {
 
     getDefaultStudent() {
         return {
-            id: '1167c85a-09c5-4a3f-9c07-dd21da0dc16c',
-            student_id: '1167c85a-09c5-4a3f-9c07-dd21da0dc16c',
-            lrn: '141525872196',
-            id_number: '1167c85a-09c5-4a3f-9c07-dd21da0dc16c',
-            first_name: 'Janrey',
-            last_name: 'Baylocon',
-            fullname: 'Janrey Baylocon',
-            grade_level: 'Grade 10',
-            level_category: 'Grade 10',
+            id: '',
+            student_id: '',
+            lrn: '',
+            id_number: '',
+            first_name: '',
+            last_name: '',
+            fullname: '',
+            grade_level: 'Junior High',
+            level_category: 'Junior High',
             strand: '',
             school_year: this.defaultSchoolYear || '2026-2027',
             photo_url: '',
-            parent_name: 'MARIANNE E. SANTOS',
-            parent_contact: '09076726568',
+            parent_name: '',
+            parent_contact: '',
             principal_name: this.defaultPrincipal || 'Dr. Ryan R. Quiroga',
             principal_sig: this.defaultPrincipal || 'Dr. Ryan R. Quiroga',
             status: 'Active'
@@ -81,11 +81,11 @@ export class StudentIdGenerator {
                     }
 
                     const strand = (st.strand || enr.strand || st.track || enr.track || '').trim();
-                    const lrn = st.lrn || enr.lrn || '141525872196';
+                    const lrn = st.lrn || enr.lrn || '';
                     const photo = st.two_by_two_picture_url || enr.two_by_two_picture_url || st.avatar_url || '';
-                    const parentName = st.parent_name || enr.guardian_name || enr.mother_name || enr.father_name || 'MARIANNE E. SANTOS';
-                    const parentContact = st.parent_contact || enr.guardian_contact || enr.contact_number || '09076726568';
-                    const idNumber = st.id || st.student_id || st.id_number || '1167c85a-09c5-4a3f-9c07-dd21da0dc16c';
+                    const parentName = st.parent_name || enr.guardian_name || enr.mother_name || enr.father_name || '';
+                    const parentContact = st.parent_contact || enr.guardian_contact || enr.contact_number || '';
+                    const idNumber = st.id || st.student_id || st.id_number || '';
 
                     return {
                         id: st.id,
@@ -122,6 +122,8 @@ export class StudentIdGenerator {
                 } else if (enrId) {
                     const found = this.students.find(s => s.enrollment_id === enrId);
                     if (found) this.selectStudent(found);
+                } else if (this.students.length > 0) {
+                    this.selectStudent(this.students[0]);
                 }
             }
         } catch (err) {
@@ -219,9 +221,9 @@ export class StudentIdGenerator {
     }
 
     getStudentInitial(name) {
-        if (!name) return 'J';
+        if (!name) return '—';
         const clean = name.trim().replace(/^[^a-zA-Z0-9]+/, '');
-        return clean ? clean.charAt(0).toUpperCase() : 'J';
+        return clean ? clean.charAt(0).toUpperCase() : '—';
     }
 
     // ============================================
@@ -259,33 +261,28 @@ export class StudentIdGenerator {
                                     <div class="id-school-info">
                                         <div class="id-school-title">Placido L. Señor National High School</div>
                                         <div class="id-school-subtitle">OFFICIAL STUDENT ID</div>
-                                        <div class="id-school-year">S.Y. <span id="previewSchoolYear">${this.defaultSchoolYear}</span></div>
                                     </div>
                                 </div>
-
-                                <!-- Gold Horizontal Divider -->
-                                <div class="id-gold-divider"></div>
 
                                 <!-- Body Row: Photo / Initial & Student Info -->
                                 <div class="id-card-body-row">
                                     <!-- Photo Box with Gold Border -->
                                     <div class="id-photo-box">
                                         <img id="previewPhoto" src="" alt="Student Photo" style="display: none;">
-                                        <div id="photoInitial" class="id-photo-initial">J</div>
+                                        <div id="photoInitial" class="id-photo-initial">—</div>
                                     </div>
 
                                     <!-- Student Metadata -->
                                     <div class="id-student-info">
-                                        <div id="previewStudentName" class="id-student-fullname">Janrey Baylocon</div>
-                                        <div class="id-student-role">STUDENT</div>
+                                        <div id="previewStudentName" class="id-student-fullname">Select a Student</div>
 
                                         <div class="id-meta-list">
                                             <div class="id-meta-item">
                                                 <span class="id-meta-lbl">LRN:</span>
-                                                <span class="id-meta-val" id="previewLrn">141525872196</span>
+                                                <span class="id-meta-val" id="previewLrn">—</span>
                                             </div>
-                                            <span id="previewStudentLevel" style="display: none;">Grade 10</span>
-                                            <span id="previewIdNumber" style="display: none;">1167c85a-09c5-4a3f-9c07-dd21da0dc16c</span>
+                                            <span id="previewStudentLevel" style="display: none;">Junior High</span>
+                                            <span id="previewIdNumber" style="display: none;"></span>
                                         </div>
                                     </div>
                                 </div>
@@ -316,13 +313,7 @@ export class StudentIdGenerator {
                                             <div class="id-back-school-sub">Langtad, City of Naga, Cebu • School ID: 303035</div>
                                         </div>
                                     </div>
-                                    <div class="id-back-badge-wrap">
-                                        <div class="id-back-dept-tag" id="previewBackDeptTag">JUNIOR HIGH SCHOOL</div>
-                                        <div class="id-back-grade-tag" id="previewBackGradeTag">GRADE 10</div>
-                                    </div>
                                 </div>
-
-                                <div class="id-gold-divider" style="margin: 8px 0 10px 0;"></div>
 
                                 <div class="id-back-body-grid">
                                     <!-- Left Column: Academic & Emergency Info -->
@@ -332,8 +323,8 @@ export class StudentIdGenerator {
                                                 <i class="fas fa-graduation-cap"></i> ACADEMIC CLASSIFICATION
                                             </div>
                                             <div class="id-back-level-row">
-                                                <span class="id-back-level-main" id="previewBackLevelVal">Grade 10</span>
-                                                <span class="id-back-level-pill" id="previewBackDeptPill">Junior High</span>
+                                                <span class="id-back-level-main" id="previewBackLevelVal">Junior High</span>
+                                                <span class="id-back-level-pill" id="previewBackDeptPill">JHS</span>
                                             </div>
                                         </div>
 
@@ -342,17 +333,17 @@ export class StudentIdGenerator {
                                         </div>
                                         <div class="id-back-field">
                                             <span class="id-back-field-lbl">Parent / Guardian:</span>
-                                            <span class="id-back-field-val" id="previewParentName">MARIANNE E. SANTOS</span>
+                                            <span class="id-back-field-val" id="previewParentName">—</span>
                                         </div>
                                         <div class="id-back-field">
                                             <span class="id-back-field-lbl">Emergency Contact:</span>
-                                            <span class="id-back-field-val" id="previewParentPhone">09076726568</span>
+                                            <span class="id-back-field-val" id="previewParentPhone">—</span>
                                         </div>
 
                                         <!-- Student Signature Block -->
                                         <div class="id-back-sig-box">
                                             <div class="id-back-sig-line"></div>
-                                            <div class="id-back-sig-name" id="previewStudentSigName">JANREY BAYLOCON</div>
+                                            <div class="id-back-sig-name" id="previewStudentSigName">—</div>
                                             <div class="id-back-sig-role">STUDENT SIGNATURE</div>
                                         </div>
                                     </div>
@@ -429,21 +420,21 @@ export class StudentIdGenerator {
                     <!-- Student Name -->
                     <div class="id-form-group">
                         <label>Student Full Name</label>
-                        <input type="text" id="inputStudentName" placeholder="e.g. Janrey Baylocon" value="Janrey Baylocon">
+                        <input type="text" id="inputStudentName" placeholder="e.g. Student Full Name" value="">
                     </div>
 
                     <!-- Year Level -->
                     <div class="id-form-group">
-                        <label><i class="fas fa-layer-group" style="color: #162d6b;"></i> Grade / Year Level</label>
+                        <label><i class="fas fa-layer-group" style="color: #162d6b;"></i> Academic Classification / Level</label>
                         <select id="inputLevelCategory">
+                            <option value="Junior High" selected>Junior High (Grades 7–10)</option>
+                            <option value="Senior High">Senior High (Grades 11–12)</option>
                             <option value="Grade 7">Grade 7</option>
                             <option value="Grade 8">Grade 8</option>
                             <option value="Grade 9">Grade 9</option>
-                            <option value="Grade 10" selected>Grade 10</option>
+                            <option value="Grade 10">Grade 10</option>
                             <option value="Grade 11">Grade 11</option>
                             <option value="Grade 12">Grade 12</option>
-                            <option value="Junior High">Junior High</option>
-                            <option value="Senior High">Senior High</option>
                         </select>
                     </div>
 
@@ -451,23 +442,23 @@ export class StudentIdGenerator {
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                         <div class="id-form-group">
                             <label>LRN</label>
-                            <input type="text" id="inputLrn" placeholder="141525872196" value="141525872196">
+                            <input type="text" id="inputLrn" placeholder="e.g. 12-digit LRN" value="">
                         </div>
                         <div class="id-form-group">
                             <label>Student ID</label>
-                            <input type="text" id="inputIdNumber" placeholder="1167c85a-09c5-4a3f-9c07-dd21da0dc16c" value="1167c85a-09c5-4a3f-9c07-dd21da0dc16c">
+                            <input type="text" id="inputIdNumber" placeholder="e.g. Student ID / UUID" value="">
                         </div>
                     </div>
 
                     <!-- Emergency Guardian & Contact -->
                     <div class="id-form-group">
                         <label>Emergency Parent / Guardian</label>
-                        <input type="text" id="inputGuardianName" placeholder="MARIANNE E. SANTOS" value="MARIANNE E. SANTOS">
+                        <input type="text" id="inputGuardianName" placeholder="e.g. Parent / Guardian Name" value="">
                     </div>
 
                     <div class="id-form-group">
                         <label>Emergency Contact Phone</label>
-                        <input type="text" id="inputGuardianPhone" placeholder="09076726568" value="09076726568">
+                        <input type="text" id="inputGuardianPhone" placeholder="e.g. 09XXXXXXXXX" value="">
                     </div>
 
                     <!-- Principal Name -->
@@ -567,22 +558,22 @@ export class StudentIdGenerator {
         });
 
         bindInput('inputIdNumber', (e) => {
-            const val = e.target.value.trim() || '1167c85a-09c5-4a3f-9c07-dd21da0dc16c';
+            const val = e.target.value.trim();
             const idEl = document.getElementById('previewIdNumber');
             if (idEl) idEl.textContent = val;
             this.generateQrCode();
         });
 
         bindInput('inputLrn', (e) => {
-            const val = e.target.value.trim() || '141525872196';
+            const val = e.target.value.trim() || '—';
             const lrnEl = document.getElementById('previewLrn');
             if (lrnEl) lrnEl.textContent = val;
             this.generateQrCode();
         });
 
         const updateEmergencyInfo = () => {
-            const name = document.getElementById('inputGuardianName')?.value.trim().toUpperCase() || 'MARIANNE E. SANTOS';
-            const phone = document.getElementById('inputGuardianPhone')?.value.trim() || '09076726568';
+            const name = document.getElementById('inputGuardianName')?.value.trim().toUpperCase() || '—';
+            const phone = document.getElementById('inputGuardianPhone')?.value.trim() || '—';
             const nameEl = document.getElementById('previewParentName');
             if (nameEl) nameEl.textContent = name;
             const phoneEl = document.getElementById('previewParentPhone');
@@ -684,7 +675,7 @@ export class StudentIdGenerator {
     }
 
     updateStudentNameDisplay(fullName) {
-        const displayName = fullName && fullName.trim() ? fullName.trim() : 'Janrey Baylocon';
+        const displayName = fullName && fullName.trim() ? fullName.trim() : '—';
         const nameEl = document.getElementById('previewStudentName');
         if (nameEl) {
             nameEl.textContent = displayName;
@@ -692,7 +683,7 @@ export class StudentIdGenerator {
 
         const sigName = document.getElementById('previewStudentSigName');
         if (sigName) {
-            sigName.textContent = displayName.toUpperCase();
+            sigName.textContent = displayName !== '—' ? displayName.toUpperCase() : '—';
         }
 
         // If no custom uploaded photo or student photo, update the initial letter in the photo box
@@ -708,7 +699,7 @@ export class StudentIdGenerator {
     }
 
     getGradeDetails(gradeStr, strandStr = '') {
-        const raw = String(gradeStr || 'Grade 10').trim();
+        const raw = String(gradeStr || 'Junior High').trim();
         const numMatch = raw.match(/\d+/);
         const num = numMatch ? parseInt(numMatch[0], 10) : null;
 
@@ -721,7 +712,6 @@ export class StudentIdGenerator {
 
         const dept = isSenior ? 'Senior High School' : 'Junior High School';
         const deptTag = isSenior ? 'SENIOR HIGH SCHOOL' : 'JUNIOR HIGH SCHOOL';
-        const deptPill = isSenior ? 'Senior High' : 'Junior High';
 
         let cleanStrand = String(strandStr || '').trim();
         if (!cleanStrand && this.selectedStudent && this.selectedStudent.strand) {
@@ -731,14 +721,10 @@ export class StudentIdGenerator {
             cleanStrand = '';
         }
 
-        let gradeLabel = num !== null ? `Grade ${num}` : raw;
-        let gradeTag = num !== null ? `GRADE ${num}` : raw.toUpperCase();
-        let levelVal = gradeLabel;
-
-        if (isSenior && cleanStrand) {
-            gradeTag = `${gradeTag} • ${cleanStrand.toUpperCase()}`;
-            levelVal = `${gradeLabel} (${cleanStrand.toUpperCase()})`;
-        }
+        // Student ID cards display "Junior High" or "Senior High" instead of specific grade numbers (e.g. Grade 10)
+        const levelVal = isSenior ? 'Senior High' : 'Junior High';
+        const deptPill = isSenior && cleanStrand ? cleanStrand.toUpperCase() : (isSenior ? 'SHS' : 'JHS');
+        const gradeTag = isSenior && cleanStrand ? cleanStrand.toUpperCase() : 'STUDENT';
 
         return {
             num,
@@ -746,7 +732,7 @@ export class StudentIdGenerator {
             dept,
             deptTag,
             deptPill,
-            gradeLabel,
+            gradeLabel: levelVal,
             gradeTag,
             levelVal,
             strand: cleanStrand
@@ -762,16 +748,6 @@ export class StudentIdGenerator {
             previewLvl.textContent = details.levelVal;
         }
 
-        // Back card header badge
-        const backDeptTag = document.getElementById('previewBackDeptTag');
-        if (backDeptTag) {
-            backDeptTag.textContent = details.deptTag;
-        }
-
-        const backGradeTag = document.getElementById('previewBackGradeTag');
-        if (backGradeTag) {
-            backGradeTag.textContent = details.gradeTag;
-        }
 
         // Back card body level card
         const backLevelVal = document.getElementById('previewBackLevelVal');
@@ -796,11 +772,13 @@ export class StudentIdGenerator {
         const studentSelect = document.getElementById('studentSelect');
         if (studentSelect) studentSelect.value = student.id || '';
 
-        const rawGrade = student.grade_level || 'Grade 10';
-        let gradeVal = 'Grade 10';
+        const rawGrade = student.grade_level || 'Junior High';
+        let gradeVal = 'Junior High';
         const numMatch = String(rawGrade).match(/\d+/);
         if (numMatch) {
-            gradeVal = `Grade ${numMatch[0]}`;
+            gradeVal = parseInt(numMatch[0], 10) >= 11 ? 'Senior High' : 'Junior High';
+        } else if (String(rawGrade).toLowerCase().includes('senior')) {
+            gradeVal = 'Senior High';
         }
 
         const syVal = student.school_year || this.defaultSchoolYear || '2026-2027';
@@ -811,13 +789,13 @@ export class StudentIdGenerator {
             if (el) el.value = val;
         };
 
-        setVal('inputStudentName', student.fullname);
+        setVal('inputStudentName', student.fullname || '');
         setVal('inputLevelCategory', gradeVal);
-        setVal('inputIdNumber', student.id_number || student.id || '1167c85a-09c5-4a3f-9c07-dd21da0dc16c');
-        setVal('inputLrn', student.lrn || '141525872196');
+        setVal('inputIdNumber', student.id_number || student.id || '');
+        setVal('inputLrn', student.lrn || '');
         setVal('inputSchoolYear', syVal);
-        setVal('inputGuardianName', student.parent_name || 'MARIANNE E. SANTOS');
-        setVal('inputGuardianPhone', student.parent_contact || '09076726568');
+        setVal('inputGuardianName', student.parent_name || '');
+        setVal('inputGuardianPhone', student.parent_contact || '');
         setVal('inputPrincipal', student.principal_name || this.defaultPrincipal);
 
         // Update Front Preview Card
@@ -827,10 +805,10 @@ export class StudentIdGenerator {
         this.updateGradeDisplay(gradeVal, student.strand);
 
         const previewId = document.getElementById('previewIdNumber');
-        if (previewId) previewId.textContent = student.id_number || student.id || '1167c85a-09c5-4a3f-9c07-dd21da0dc16c';
+        if (previewId) previewId.textContent = student.id_number || student.id || '';
 
         const previewLrn = document.getElementById('previewLrn');
-        if (previewLrn) previewLrn.textContent = student.lrn || '141525872196';
+        if (previewLrn) previewLrn.textContent = student.lrn || '—';
 
         const previewSy = document.getElementById('previewSchoolYear');
         if (previewSy) previewSy.textContent = syVal;
@@ -872,13 +850,13 @@ export class StudentIdGenerator {
 
         // Update Back Preview Card
         const previewParentName = document.getElementById('previewParentName');
-        if (previewParentName) previewParentName.textContent = student.parent_name || 'MARIANNE E. SANTOS';
+        if (previewParentName) previewParentName.textContent = student.parent_name || '—';
 
         const previewParentPhone = document.getElementById('previewParentPhone');
-        if (previewParentPhone) previewParentPhone.textContent = student.parent_contact || '09076726568';
+        if (previewParentPhone) previewParentPhone.textContent = student.parent_contact || '—';
 
         const previewStudentSig = document.getElementById('previewStudentSigName');
-        if (previewStudentSig) previewStudentSig.textContent = (student.fullname || 'JANREY BAYLOCON').toUpperCase();
+        if (previewStudentSig) previewStudentSig.textContent = student.fullname ? student.fullname.toUpperCase() : '—';
 
         // Generate Scannable QR Code
         this.generateQrCode();
@@ -893,12 +871,12 @@ export class StudentIdGenerator {
 
         qrContainer.innerHTML = '';
 
-        const name = document.getElementById('previewStudentName')?.textContent || 'Janrey Baylocon';
-        const lrn = document.getElementById('previewLrn')?.textContent || '141525872196';
-        const idNo = document.getElementById('previewIdNumber')?.textContent || '1167c85a-09c5-4a3f-9c07-dd21da0dc16c';
-        const level = document.getElementById('previewStudentLevel')?.textContent || 'Grade 10';
-        const contact = document.getElementById('inputGuardianPhone')?.value || '09076726568';
-        const guardian = document.getElementById('inputGuardianName')?.value || 'MARIANNE E. SANTOS';
+        const name = document.getElementById('previewStudentName')?.textContent || '';
+        const lrn = document.getElementById('previewLrn')?.textContent || '';
+        const idNo = document.getElementById('previewIdNumber')?.textContent || '';
+        const level = document.getElementById('previewStudentLevel')?.textContent || 'Junior High';
+        const contact = document.getElementById('inputGuardianPhone')?.value || '';
+        const guardian = document.getElementById('inputGuardianName')?.value || '';
         const mode = document.getElementById('selectQrMode')?.value || 'url';
 
         let qrPayload = '';

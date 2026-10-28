@@ -787,22 +787,23 @@ import { supabase } from '../../supabase/config.js';
                             legend: {
                                 position: 'bottom',
                                 labels: {
-                                    padding: 20,
+                                    padding: 10,
                                     usePointStyle: true,
                                     pointStyle: 'circle',
+                                    boxWidth: 8,
                                     font: {
                                         family: "'Inter', sans-serif",
-                                        size: 12,
+                                        size: 11,
                                         weight: '500'
                                     }
                                 }
                             },
                             tooltip: {
                                 backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                                titleFont: { family: "'Inter', sans-serif", weight: '600' },
-                                bodyFont: { family: "'Inter', sans-serif" },
-                                padding: 10,
-                                cornerRadius: 8
+                                titleFont: { family: "'Inter', sans-serif", weight: '600', size: 11 },
+                                bodyFont: { family: "'Inter', sans-serif", size: 11 },
+                                padding: 8,
+                                cornerRadius: 6
                             }
                         },
                         scales: {
@@ -810,12 +811,12 @@ import { supabase } from '../../supabase/config.js';
                                 beginAtZero: true,
                                 suggestedMax: maxVal + 1,
                                 grid: {
-                                    color: 'rgba(0, 0, 0, 0.05)'
+                                    color: 'rgba(0, 0, 0, 0.04)'
                                 },
                                 ticks: {
                                     stepSize: 1,
                                     precision: 0,
-                                    font: { family: "'Inter', sans-serif" }
+                                    font: { family: "'Inter', sans-serif", size: 10 }
                                 }
                             },
                             x: {
@@ -823,7 +824,7 @@ import { supabase } from '../../supabase/config.js';
                                     display: false
                                 },
                                 ticks: {
-                                    font: { family: "'Inter', sans-serif" }
+                                    font: { family: "'Inter', sans-serif", size: 10 }
                                 }
                             }
                         }
@@ -894,21 +895,27 @@ import { supabase } from '../../supabase/config.js';
                         maintainAspectRatio: false,
                         plugins: {
                             legend: {
-                                position: 'bottom',
+                                position: 'right',
                                 labels: {
-                                    padding: 15,
+                                    boxWidth: 8,
+                                    padding: 8,
                                     usePointStyle: true,
                                     pointStyle: 'circle',
-                                    font: { family: "'Inter', sans-serif", size: 12 }
+                                    font: { family: "'Inter', sans-serif", size: 11, weight: '500' }
                                 }
                             },
                             tooltip: {
                                 backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                                padding: 10,
-                                cornerRadius: 8
+                                titleFont: { family: "'Inter', sans-serif", weight: '600', size: 11 },
+                                bodyFont: { family: "'Inter', sans-serif", size: 11 },
+                                padding: 8,
+                                cornerRadius: 6
                             }
                         },
-                        cutout: '65%'
+                        cutout: '68%',
+                        layout: {
+                            padding: { top: 0, bottom: 0, left: 0, right: 6 }
+                        }
                     }
                 });
             }

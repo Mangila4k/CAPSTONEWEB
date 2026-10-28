@@ -281,17 +281,17 @@
                     const matched = (gen.students && gen.students.find(s => s.id === studentId)) || {
                         id: cached.id,
                         student_id: cached.id,
-                        lrn: cached.lrn || '141525872196',
+                        lrn: cached.lrn || '',
                         id_number: cached.id,
                         first_name: cached.first_name || '',
                         last_name: cached.last_name || '',
                         fullname: fullName,
-                        grade_level: cached.grade_level || 'Grade 10',
-                        level_category: cached.grade_level || 'Grade 10',
+                        grade_level: cached.grade_level || 'Junior High',
+                        level_category: cached.grade_level || 'Junior High',
                         school_year: '2026-2027',
                         photo_url: cached.two_by_two_picture_url || cached.avatar_url || '',
-                        parent_name: cached.parent_name || 'MARIANNE E. SANTOS',
-                        parent_contact: cached.parent_contact || '09076726568',
+                        parent_name: cached.parent_name || '',
+                        parent_contact: cached.parent_contact || '',
                         principal_name: 'Dr. Ryan R. Quiroga',
                         principal_sig: 'Dr. Ryan R. Quiroga',
                         status: 'Active'
@@ -375,8 +375,7 @@
                                     : `<span style="font-size:36px;font-weight:900;color:#f5b72e;">${escapeHtml(initial)}</span>`}
                             </div>
                             <div style="flex:1;min-width:0;">
-                                <div style="font-size:16px;font-weight:900;line-height:1.15;margin-bottom:4px;color:#ffffff;">${escapeHtml(fullName)}</div>
-                                <div style="font-size:9.5px;font-weight:800;letter-spacing:0.12em;color:#f5b72e;text-transform:uppercase;margin-bottom:8px;">STUDENT</div>
+                                <div style="font-size:16px;font-weight:900;line-height:1.15;margin-bottom:6px;color:#ffffff;">${escapeHtml(fullName)}</div>
                                 <div style="display:flex;gap:6px;font-size:11px;line-height:1.4;margin-bottom:2px;color:rgba(255,255,255,0.92);">
                                     <span style="font-weight:800;font-size:9.5px;min-width:44px;letter-spacing:0.06em;color:#f5b72e;text-transform:uppercase;">LRN:</span>
                                     <span style="font-weight:600;">${escapeHtml(lrn)}</span>

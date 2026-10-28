@@ -565,7 +565,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         
         // Dossier Control & Metadata (By Student)
         const refSuffix = student.lrn ? student.lrn.slice(-6) : (student.id || '000000').substring(0, 6).toUpperCase();
-        if (dossierDocRef) dossierDocRef.textContent = `PLSNSH-GCO-SF2026-BYSTUDENT-${refSuffix}`;
+        if (dossierDocRef) dossierDocRef.textContent = `PLSNHS-GCO-SF2026-BYSTUDENT-${refSuffix}`;
         if (dossierReportDate) dossierReportDate.textContent = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
         // 4. Calculate Conduct Standing

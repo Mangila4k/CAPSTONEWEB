@@ -5,272 +5,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Official Student ID Card Generator - Admin | PLSNHS</title>
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Inter:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <!-- CSS Files -->
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/student.css">
     <link rel="stylesheet" href="../css/student_id_card.css">
     <link rel="stylesheet" href="../css/chatbot.css">
     <link rel="stylesheet" href="../css/sidebar.css">
-
-    <style>
-        /* ============================================================
-           QR SAVE TOOLBAR
-           ============================================================ */
-        #qrSaveToolbar {
-            position: fixed; bottom: 24px; right: 24px; z-index: 9998;
-            display: none; flex-direction: column; gap: 10px;
-            background: #ffffff; padding: 14px; border-radius: 14px;
-            box-shadow: 0 10px 40px rgba(15, 23, 42, 0.18);
-            border: 1px solid #e2e8f0; min-width: 280px;
-            animation: slideUp 0.25s ease-out;
-        }
-        #qrSaveToolbar.visible { display: flex; }
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(12px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-        #qrSaveToolbar .qr-toolbar-header {
-            display: flex; align-items: center; gap: 8px;
-            font-size: 13px; font-weight: 800; color: #0f172a;
-            border-bottom: 1px solid #f1f5f9; padding-bottom: 10px;
-        }
-        #qrSaveToolbar .qr-toolbar-header i { color: #1E3A8A; }
-        #qrSaveToolbar .qr-toolbar-student {
-            font-size: 12px; color: #475569; font-weight: 600; margin-bottom: 4px;
-        }
-        #qrSaveToolbar .qr-toolbar-token {
-            font-family: 'Courier New', monospace; font-size: 11px;
-            color: #64748b; background: #f8fafc; padding: 6px 8px;
-            border-radius: 6px; word-break: break-all;
-            border: 1px solid #e2e8f0; margin-bottom: 8px;
-        }
-        #qrSaveToolbar .qr-toolbar-token.saved {
-            background: #f0fdf4; border-color: #86efac; color: #166534;
-        }
-        .qr-save-btn {
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-            background: #1E3A8A; color: #ffffff; border: none; border-radius: 10px;
-            padding: 11px 16px; font-size: 13px; font-weight: 800; cursor: pointer;
-            transition: all 0.15s;
-        }
-        .qr-save-btn:hover { background: #152C6B; transform: translateY(-1px); }
-        .qr-save-btn:active { transform: translateY(0); }
-        .qr-save-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-        .qr-save-btn.saved { background: #16a34a; }
-        .qr-save-btn.saved:hover { background: #15803d; }
-        .qr-toolbar-status {
-            font-size: 11px; color: #64748b; text-align: center; min-height: 14px;
-        }
-        .qr-toolbar-status.success { color: #16a34a; font-weight: 700; }
-        .qr-toolbar-status.error   { color: #dc2626; font-weight: 700; }
-        .qr-toolbar-status.loading { color: #1E3A8A; font-weight: 700; }
-
-        /* ============================================================
-           CREATED IDS
-           ============================================================ */
-        #createdIdsSection {
-            margin-top: 40px; background: #ffffff; border-radius: 16px;
-            border: 1px solid #e2e8f0; box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
-            overflow: hidden;
-        }
-        #createdIdsSection .section-header {
-            display: flex; align-items: center; justify-content: space-between;
-            gap: 12px; padding: 18px 22px; border-bottom: 1px solid #e2e8f0;
-            background: linear-gradient(135deg, #1E3A8A 0%, #152C6B 100%);
-            color: #ffffff;
-        }
-        #createdIdsSection .section-header .title-wrap {
-            display: flex; align-items: center; gap: 10px;
-        }
-        #createdIdsSection .section-header i.fa-id-card {
-            font-size: 20px; color: #F5C518;
-        }
-        #createdIdsSection .section-header h2 {
-            margin: 0; font-size: 16px; font-weight: 800; letter-spacing: 0.02em;
-        }
-        #createdIdsSection .section-header .count-badge {
-            background: rgba(255, 255, 255, 0.18); color: #ffffff;
-            padding: 3px 10px; border-radius: 20px; font-size: 12px;
-            font-weight: 700; margin-left: 6px;
-        }
-        #createdIdsSection .section-actions {
-            display: flex; gap: 8px; align-items: center;
-        }
-        #createdIdsSection .section-search {
-            padding: 8px 12px; border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            background: rgba(255, 255, 255, 0.12); color: #ffffff;
-            font-size: 13px; width: 220px; outline: none;
-        }
-        #createdIdsSection .section-search::placeholder { color: rgba(255, 255, 255, 0.7); }
-        #createdIdsSection .section-search:focus {
-            background: rgba(255, 255, 255, 0.22);
-            border-color: rgba(255, 255, 255, 0.5);
-        }
-        .btn-section {
-            display: inline-flex; align-items: center; gap: 6px;
-            background: rgba(255, 255, 255, 0.12); color: #ffffff;
-            border: 1px solid rgba(255, 255, 255, 0.28); border-radius: 8px;
-            padding: 8px 14px; font-size: 12px; font-weight: 700;
-            cursor: pointer; transition: all 0.15s;
-        }
-        .btn-section:hover { background: rgba(255, 255, 255, 0.24); }
-        .btn-section:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        #createdIdsTableWrap {
-            overflow-x: auto; max-height: 600px; overflow-y: auto;
-        }
-        #createdIdsTable { width: 100%; border-collapse: collapse; font-size: 13px; }
-        #createdIdsTable thead th {
-            position: sticky; top: 0; z-index: 2; background: #f8fafc;
-            color: #475569; font-weight: 800; text-transform: uppercase;
-            font-size: 10.5px; letter-spacing: 0.06em; padding: 12px 14px;
-            text-align: left; border-bottom: 2px solid #e2e8f0; white-space: nowrap;
-        }
-        #createdIdsTable tbody td {
-            padding: 12px 14px; border-bottom: 1px solid #f1f5f9;
-            vertical-align: middle; color: #0f172a;
-        }
-        #createdIdsTable tbody tr:hover { background: #f8fafc; }
-        #createdIdsTable .student-cell { display: flex; align-items: center; gap: 10px; }
-        #createdIdsTable .student-avatar {
-            width: 34px; height: 34px; border-radius: 50%;
-            background: #1E3A8A; color: #F5C518; font-weight: 800; font-size: 13px;
-            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-        }
-        #createdIdsTable .student-name { font-weight: 700; color: #0f172a; }
-        #createdIdsTable .student-meta { font-size: 11px; color: #64748b; }
-        #createdIdsTable .qr-token {
-            font-family: 'Courier New', monospace; font-size: 11px; font-weight: 700;
-            color: #1E3A8A; background: #eff6ff; border: 1px solid #bfdbfe;
-            padding: 4px 8px; border-radius: 6px; display: inline-block;
-            max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-        }
-        #createdIdsTable .cell-actions { display: flex; gap: 6px; }
-        .row-action-btn {
-            display: inline-flex; align-items: center; justify-content: center;
-            width: 32px; height: 32px; border-radius: 8px;
-            border: 1px solid #e2e8f0; background: #ffffff; cursor: pointer;
-            transition: all 0.15s; color: #475569; font-size: 12px;
-        }
-        .row-action-btn:hover { transform: translateY(-1px); }
-        .row-action-btn.view:hover   { background: #eff6ff; border-color: #bfdbfe; color: #1E3A8A; }
-        .row-action-btn.regen:hover  { background: #fffbeb; border-color: #fde68a; color: #b45309; }
-        .row-action-btn.delete:hover { background: #fef2f2; border-color: #fecaca; color: #dc2626; }
-        .row-action-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-
-        .ids-empty-state, .ids-loading-state {
-            padding: 50px 20px; text-align: center; color: #94a3b8;
-        }
-        .ids-empty-state i, .ids-loading-state i {
-            font-size: 40px; margin-bottom: 12px; display: block; color: #cbd5e1;
-        }
-        .ids-empty-state h3 { color: #64748b; font-size: 15px; margin: 0 0 4px; }
-        .ids-empty-state p { font-size: 13px; margin: 0; }
-
-        #idToast {
-            position: fixed; top: 24px; right: 24px; z-index: 10000;
-            padding: 12px 18px; border-radius: 10px; font-size: 13px;
-            font-weight: 700; color: #ffffff; opacity: 0; transform: translateY(-8px);
-            transition: all 0.25s; pointer-events: none; max-width: 340px;
-            box-shadow: 0 10px 40px rgba(15, 23, 42, 0.25);
-        }
-        #idToast.show { opacity: 1; transform: translateY(0); }
-        #idToast.success { background: #16a34a; }
-        #idToast.error   { background: #dc2626; }
-        #idToast.info    { background: #1E3A8A; }
-
-        /* ============================================================
-           ID PREVIEW MODAL
-           ============================================================ */
-        #idPreviewModal {
-            position: fixed; inset: 0; z-index: 10001; display: none;
-            align-items: center; justify-content: center;
-            background: rgba(15, 23, 42, 0.78); backdrop-filter: blur(4px);
-            padding: 20px; overflow-y: auto;
-        }
-        #idPreviewModal.show { display: flex; }
-
-        #idPreviewModal .modal-dialog {
-            background: #ffffff; border-radius: 18px;
-            box-shadow: 0 20px 60px rgba(15, 23, 42, 0.4);
-            max-width: 900px; width: 100%; max-height: 92vh;
-            display: flex; flex-direction: column; overflow: hidden;
-            animation: modalIn 0.25s ease-out;
-        }
-        @keyframes modalIn {
-            from { opacity: 0; transform: scale(0.96) translateY(8px); }
-            to   { opacity: 1; transform: scale(1) translateY(0); }
-        }
-
-        #idPreviewModal .modal-header {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 16px 22px; border-bottom: 1px solid #e2e8f0;
-            background: linear-gradient(135deg, #1E3A8A 0%, #152C6B 100%);
-            color: #ffffff;
-        }
-        #idPreviewModal .modal-header h3 {
-            margin: 0; font-size: 16px; font-weight: 800;
-            display: flex; align-items: center; gap: 8px;
-        }
-        #idPreviewModal .modal-header h3 i { color: #F5C518; }
-        #idPreviewModal .modal-close {
-            background: rgba(255, 255, 255, 0.15); color: #ffffff;
-            border: none; width: 34px; height: 34px; border-radius: 50%;
-            cursor: pointer; font-size: 14px; display: flex;
-            align-items: center; justify-content: center; transition: all 0.15s;
-        }
-        #idPreviewModal .modal-close:hover { background: rgba(255, 255, 255, 0.3); }
-
-        #idPreviewModal .modal-body {
-            padding: 28px; overflow-y: auto; flex: 1;
-            background: #f1f5f9; display: flex; flex-direction: column; align-items: center; gap: 20px;
-        }
-        #idPreviewModal .modal-footer {
-            display: flex; align-items: center; justify-content: flex-end;
-            gap: 10px; padding: 14px 22px; border-top: 1px solid #e2e8f0;
-            background: #ffffff;
-        }
-
-        #idPreviewModal .modal-btn {
-            display: inline-flex; align-items: center; gap: 8px;
-            padding: 10px 18px; border-radius: 10px; font-size: 13px;
-            font-weight: 700; cursor: pointer; border: none; transition: all 0.15s;
-        }
-        #idPreviewModal .modal-btn.primary { background: #1E3A8A; color: #ffffff; }
-        #idPreviewModal .modal-btn.primary:hover { background: #152C6B; }
-        #idPreviewModal .modal-btn.secondary { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
-        #idPreviewModal .modal-btn.secondary:hover { background: #e2e8f0; }
-        #idPreviewModal .modal-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        #idPreviewStage {
-            display: flex; flex-direction: column; align-items: center; gap: 20px; width: 100%;
-        }
-        #idPreviewStage .preview-clone-wrapper { display: inline-block; max-width: 100%; }
-        #idPreviewStage .preview-clone-wrapper * { max-width: 100%; }
-        #idPreviewStage .preview-note {
-            font-size: 12px; color: #64748b; text-align: center;
-            max-width: 520px; line-height: 1.5;
-        }
-        #idPreviewStage .preview-note i { color: #1E3A8A; margin-right: 6px; }
-        #idPreviewStage .preview-loading {
-            padding: 60px 20px; text-align: center; color: #64748b;
-        }
-        #idPreviewStage .preview-loading i {
-            font-size: 32px; color: #1E3A8A; margin-bottom: 12px; display: block;
-        }
-        #idPreviewStage .preview-missing {
-            padding: 40px 20px; text-align: center; color: #dc2626;
-        }
-        #idPreviewStage .preview-missing i {
-            font-size: 36px; margin-bottom: 12px; display: block;
-        }
-    </style>
 </head>
 
 <body>
-    <div class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></div>
+    <!-- Mobile Menu Toggle -->
+    <div class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+    </div>
 
     <div class="app-container">
         <!-- Sidebar -->
@@ -278,7 +31,8 @@
             <div class="sidebar-header">
                 <div class="logo">
                     <div class="logo-icon">
-                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
+                        <img src="../pictures/logo sa skwelahan.jpg" alt="School Logo"
+                            onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231B2A4A%22 /%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2230%22 font-weight=%22bold%22%3EPLS%3C/text%3E%3C/svg%3E'">
                     </div>
                     <div class="logo-text">PLS<span>NHS</span></div>
                 </div>
@@ -305,7 +59,8 @@
                     <div class="nav-section-title">COMMUNICATION & MANAGEMENT</div>
                     <ul class="nav-items">
                         <li><a href="announcements.html"><i class="fas fa-bullhorn"></i> Announcements</a></li>
-                        <li><a href="guidance_violations.html"><i class="fas fa-scale-balanced"></i> Guidance & Violations</a></li>
+                        <li><a href="guidance_violations.html"><i class="fas fa-scale-balanced"></i> Guidance &
+                                Violations</a></li>
                         <li><a href="manage_accounts.html"><i class="fas fa-users-cog"></i> Accounts</a></li>
                         <li><a href="attendance.html"><i class="fas fa-calendar-check"></i> Attendance</a></li>
                         <li><a href="register_face.html"><i class="fas fa-camera"></i> Face Registration</a></li>
@@ -318,10 +73,13 @@
                     <div class="nav-section-title">ACCOUNT</div>
                     <ul class="nav-items">
                         <li><a href="profile.html"><i class="fas fa-user"></i> Profile</a></li>
-                        <li><a href="../auth/logout.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                        <li><a href="../auth/logout.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                        </li>
+
                     </ul>
                 </div>
             </div>
+            <!-- Pinned Sidebar Footer -->
             <div class="sidebar-footer">
                 <div class="admin-profile">
                     <div class="admin-avatar">
@@ -338,10 +96,12 @@
 
         <!-- Main Content -->
         <main class="main-content">
+            <!-- Top Navigation -->
             <header class="top-nav">
                 <div class="page-title">
                     <h1>Official Student ID Card Generator</h1>
-                    <p>Official QR-code enabled student identification card generator for Placido L. Señor National High School</p>
+                    <p>Official QR-code enabled student identification card generator for Placido L. Señor National High
+                        School</p>
                 </div>
             </header>
 
@@ -352,30 +112,615 @@
                         <p style="margin-top: 14px; font-weight: 600;">Loading Student ID Generator...</p>
                     </div>
                 </div>
+
+                <!-- CREATED STUDENT IDS SECTION -->
+                <section id="createdIdsSection" aria-label="Created Student IDs">
+                    <div class="section-header">
+                        <div class="title-wrap">
+                            <i class="fas fa-id-card"></i>
+                            <h2>Created Student IDs</h2>
+                            <span class="count-badge" id="createdIdsCount">0</span>
+                        </div>
+                        <div class="section-actions">
+                            <input type="text" id="createdIdsSearch" class="section-search" placeholder="Search name or LRN..." />
+                            <button type="button" class="btn-section" id="btnRefreshCreatedIds">
+                                <i class="fas fa-rotate"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="createdIdsTableWrap">
+                        <div class="ids-loading-state" id="createdIdsLoading">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p>Loading created IDs…</p>
+                        </div>
+                    </div>
+                </section>
             </div>
         </main>
     </div>
 
-    <!-- External QR & Canvas Libraries -->
+    <!-- ID PREVIEW MODAL -->
+    <div id="idPreviewModal" role="dialog" aria-modal="true" aria-labelledby="idPreviewTitle">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 id="idPreviewTitle">
+                    <i class="fas fa-id-card"></i>
+                    <span>Official Student ID Card Preview</span>
+                </h3>
+                <button type="button" class="modal-close" id="idPreviewClose" aria-label="Close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="idPreviewStage">
+                    <!-- Filled dynamically with a clone or preview of the ID card -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="modal-btn secondary" id="idPreviewCancel">
+                    <i class="fas fa-times"></i> Close
+                </button>
+                <button type="button" class="modal-btn primary" id="idPreviewPrint">
+                    <i class="fas fa-print"></i> Print ID Card
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="idToast"></div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-    <!-- Initialize Generator -->
     <script type="module">
         import { supabase } from '../supabase/config.js';
         import { StudentIdGenerator } from '../js/student_id_generator.js';
 
-        function initApp() {
+        // ============================================================
+        // TOAST NOTIFICATIONS
+        // ============================================================
+        const toastEl = document.getElementById('idToast');
+        let toastTimer = null;
+        function showToast(message, type = 'info', duration = 3000) {
+            if (!toastEl) return;
+            toastEl.textContent = message;
+            toastEl.className = 'show ' + type;
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                toastEl.classList.remove('show');
+            }, duration);
+        }
+
+        // ============================================================
+        // QR HELPERS (PLSNHS-STUDENT|LRN:XXXXXXXXXXXX)
+        // ============================================================
+        function buildQrToken(student) {
+            if (!student) return null;
+            const lrn = String(student.lrn || '').trim();
+            if (lrn) {
+                return `PLSNHS-STUDENT|LRN:${lrn}`;
+            }
+
+            const id = String(student.id || student.student_id || '').trim();
+            if (!id) return null;
+
+            let hash = 0;
+            for (let i = 0; i < id.length; i++) {
+                hash = ((hash << 5) - hash) + id.charCodeAt(i);
+                hash |= 0;
+            }
+            const code = Math.abs(hash).toString(16).toUpperCase().padStart(8, '0').slice(0, 8);
+            return `PLSNHS-STUDENT|LRN:${code}`;
+        }
+
+        async function saveStudentQrCode(student) {
+            if (!student) return null;
+            const studentId = student.id || student.student_id;
+            if (!studentId) return null;
+            const qrToken = student.qr_code || buildQrToken(student);
+            if (!qrToken) return null;
+
             try {
-                window.idGen = createGeneratorWithQrPersistence({
-                    containerId: 'idGeneratorApp',
-                    defaultPrincipal: 'Dr. Ryan R. Quiroga',
-                    defaultSchoolYear: '2024-2025'
-                });
+                const { error: stuErr } = await supabase
+                    .from('students')
+                    .update({ qr_code: qrToken, updated_at: new Date().toISOString() })
+                    .eq('id', studentId);
+                if (stuErr) throw stuErr;
+
+                await supabase.from('attendance').update({ qr_code: qrToken }).eq('student_id', studentId);
+                return qrToken;
             } catch (err) {
-                console.error('Initialization error:', err);
+                console.error('❌ Failed to save QR:', err);
+                return null;
             }
         }
+
+        window.__hes_saveStudentQrCode = saveStudentQrCode;
+        window.__hes_buildQrToken = buildQrToken;
+        window.__hes_showToast = showToast;
+
+
+        // ============================================================
+        // ID PREVIEW MODAL
+        // ============================================================
+        const previewModal = document.getElementById('idPreviewModal');
+        const previewStage = document.getElementById('idPreviewStage');
+        const previewClose = document.getElementById('idPreviewClose');
+        const previewCancel = document.getElementById('idPreviewCancel');
+        const previewPrint = document.getElementById('idPreviewPrint');
+        let currentPreviewStudent = null;
+        let currentPreviewCardEl = null;
+
+        function escapeHtml(s) {
+            return String(s == null ? '' : s)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function getInitial(name) {
+            const n = String(name || '').trim().replace(/^[^a-zA-Z0-9]+/, '');
+            return n ? n.charAt(0).toUpperCase() : 'J';
+        }
+
+        function formatPretty(d) {
+            if (!d) return '—';
+            const date = new Date(d);
+            if (isNaN(date.getTime())) return '—';
+            return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+        }
+
+        async function openIdPreview(studentId) {
+            const cached = createdIdsCache.find(s => s.id === studentId);
+            if (!cached) {
+                showToast('Student not found.', 'error');
+                return;
+            }
+
+            currentPreviewStudent = cached;
+            currentPreviewCardEl = null;
+
+            previewModal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+
+            previewStage.innerHTML = `
+                <div class="preview-loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Preparing preview…</p>
+                </div>
+            `;
+
+            try {
+                const gen = window.idGen;
+                if (gen) {
+                    const fullName = [cached.first_name, cached.last_name].filter(Boolean).join(' ').trim() || 'Student';
+                    const matched = (gen.students && gen.students.find(s => s.id === studentId)) || {
+                        id: cached.id,
+                        student_id: cached.id,
+                        lrn: cached.lrn || '',
+                        id_number: cached.id,
+                        first_name: cached.first_name || '',
+                        last_name: cached.last_name || '',
+                        fullname: fullName,
+                        grade_level: cached.grade_level || 'Junior High',
+                        level_category: cached.grade_level || 'Junior High',
+                        school_year: '2026-2027',
+                        photo_url: cached.two_by_two_picture_url || cached.avatar_url || '',
+                        parent_name: cached.parent_name || '',
+                        parent_contact: cached.parent_contact || '',
+                        principal_name: 'Dr. Ryan R. Quiroga',
+                        principal_sig: 'Dr. Ryan R. Quiroga',
+                        status: 'Active'
+                    };
+                    gen.selectStudent(matched);
+                }
+
+                await new Promise(r => setTimeout(r, 150));
+
+                const showcase = document.getElementById('idShowcaseContainer');
+                if (showcase) {
+                    const clone = showcase.cloneNode(true);
+                    clone.removeAttribute('id');
+                    clone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+
+                    clone.style.margin = '0 auto';
+                    clone.style.background = 'transparent';
+                    clone.style.border = 'none';
+                    clone.style.padding = '10px 0';
+
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'preview-clone-wrapper';
+                    wrapper.appendChild(clone);
+
+                    const note = document.createElement('div');
+                    note.className = 'preview-note';
+                    note.innerHTML = `
+                        <i class="fas fa-info-circle"></i>
+                        Official CR80 Student ID Card (Front & Back). Click <strong>Print ID Card</strong> to print or export.
+                    `;
+
+                    previewStage.innerHTML = '';
+                    previewStage.appendChild(wrapper);
+                    previewStage.appendChild(note);
+                    currentPreviewCardEl = clone;
+                    return;
+                }
+
+                buildFallbackPreview(cached);
+            } catch (err) {
+                console.error('Preview render notice:', err);
+                buildFallbackPreview(cached);
+            }
+        }
+
+        function buildFallbackPreview(student) {
+            const fullName = `${student.first_name || ''} ${student.last_name || ''}`.trim() || 'Student';
+            const initial = getInitial(fullName);
+            const lrn = student.lrn || '—';
+            const grade = student.grade_level || '—';
+            const strand = student.strand || '';
+            const token = student.qr_code || buildQrToken(student) || '';
+            const photoUrl = student.two_by_two_picture_url || student.avatar_url || '';
+
+            previewStage.innerHTML = `
+                <div class="preview-clone-wrapper">
+                    <div style="
+                        width: 500px; max-width: 100%; aspect-ratio: 1.582 / 1;
+                        border-radius: 18px; overflow: hidden; position: relative;
+                        background: #152e69; color: #ffffff;
+                        box-shadow: 0 12px 40px rgba(15,23,42,0.3);
+                        padding: 18px; box-sizing: border-box; display: flex;
+                        flex-direction: column; font-family: 'Inter', sans-serif;
+                    ">
+                        <div style="display:flex;align-items:center;gap:12px;padding-bottom:10px;border-bottom:2px solid rgba(245,183,46,0.6);margin-bottom:12px;">
+                            <div style="width:42px;height:42px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;">
+                                <img src="../pictures/logo sa skwelahan.jpg" alt="logo" style="width:100%;height:100%;object-fit:cover;"
+                                    onerror="this.parentElement.innerHTML='<span style=\\'color:#152e69;font-weight:900;font-size:14px;\\'>PLS</span>';" />
+                            </div>
+                            <div style="flex:1;line-height:1.2;">
+                                <div style="font-size:13px;font-weight:800;">Placido L. Señor National High School</div>
+                                <div style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;color:rgba(255,255,255,0.72);margin-top:2px;">OFFICIAL STUDENT ID</div>
+                                <div style="font-size:9.5px;color:#f5b72e;font-weight:800;letter-spacing:0.05em;margin-top:3px;">S.Y. 2026-2027</div>
+                            </div>
+                        </div>
+
+                        <div style="display:flex;gap:14px;flex:1;">
+                            <div style="width:96px;height:96px;border-radius:10px;background:rgba(255,255,255,0.1);border:2px solid #f5b72e;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;">
+                                ${photoUrl
+                                    ? `<img src="${escapeHtml(photoUrl)}" alt="photo" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none';this.parentElement.innerHTML='<span style=\\'font-size:36px;font-weight:900;color:#f5b72e;\\'>${escapeHtml(initial)}</span>';" />`
+                                    : `<span style="font-size:36px;font-weight:900;color:#f5b72e;">${escapeHtml(initial)}</span>`}
+                            </div>
+                            <div style="flex:1;min-width:0;">
+                                <div style="font-size:16px;font-weight:900;line-height:1.15;margin-bottom:6px;color:#ffffff;">${escapeHtml(fullName)}</div>
+                                <div style="display:flex;gap:6px;font-size:11px;line-height:1.4;margin-bottom:2px;color:rgba(255,255,255,0.92);">
+                                    <span style="font-weight:800;font-size:9.5px;min-width:44px;letter-spacing:0.06em;color:#f5b72e;text-transform:uppercase;">LRN:</span>
+                                    <span style="font-weight:600;">${escapeHtml(lrn)}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.15);">
+                            <div style="flex:1;line-height:1.2;text-align:center;">
+                                <div style="font-size:13px;font-weight:800;color:#ffffff;">Dr. Ryan R. Quiroga</div>
+                                <div style="font-size:8.5px;letter-spacing:0.08em;color:#f5b72e;font-weight:700;text-transform:uppercase;margin-top:2px;">SCHOOL PRINCIPAL</div>
+                            </div>
+                            <div id="previewFallbackQr" style="width:72px;height:72px;border-radius:8px;background:#fff;padding:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            const qrBox = document.getElementById('previewFallbackQr');
+            if (qrBox && token && typeof QRCode !== 'undefined') {
+                new QRCode(qrBox, {
+                    text: token,
+                    width: 64,
+                    height: 64,
+                    colorDark: '#152e69',
+                    colorLight: '#FFFFFF',
+                    correctLevel: QRCode.CorrectLevel.M,
+                });
+            }
+        }
+
+        function closeIdPreview() {
+            previewModal.classList.remove('show');
+            document.body.style.overflow = '';
+            currentPreviewStudent = null;
+            currentPreviewCardEl = null;
+        }
+
+        if (previewClose) previewClose.addEventListener('click', closeIdPreview);
+        if (previewCancel) previewCancel.addEventListener('click', closeIdPreview);
+        if (previewModal) {
+            previewModal.addEventListener('click', (e) => {
+                if (e.target === previewModal) closeIdPreview();
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && previewModal.classList.contains('show')) closeIdPreview();
+            });
+        }
+
+        if (previewPrint) {
+            previewPrint.addEventListener('click', () => {
+                closeIdPreview();
+                window.print();
+            });
+        }
+
+        // ============================================================
+        // CREATED STUDENT IDS LIST & TABLE
+        // ============================================================
+        const createdIdsWrap = document.getElementById('createdIdsTableWrap');
+        const createdIdsCount = document.getElementById('createdIdsCount');
+        const createdIdsSearch = document.getElementById('createdIdsSearch');
+        const btnRefreshCreatedIds = document.getElementById('btnRefreshCreatedIds');
+        let createdIdsCache = [];
+        let createdIdsSearchTerm = '';
+
+        async function loadCreatedIds() {
+            if (!createdIdsWrap) return;
+            createdIdsWrap.innerHTML = `
+                <div class="ids-loading-state">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Loading created IDs…</p>
+                </div>
+            `;
+
+            try {
+                const { data, error } = await supabase
+                    .from('students')
+                    .select('id, first_name, last_name, lrn, grade_level, strand, qr_code, two_by_two_picture_url, avatar_url, created_at, updated_at')
+                    .not('qr_code', 'is', null)
+                    .order('updated_at', { ascending: false });
+
+                if (error) throw error;
+                createdIdsCache = (data || []).filter(s => !!s.qr_code);
+                renderCreatedIds();
+            } catch (err) {
+                console.error('Failed to load created IDs:', err);
+                createdIdsWrap.innerHTML = `
+                    <div class="ids-empty-state">
+                        <i class="fas fa-triangle-exclamation"></i>
+                        <h3>Could not load created IDs</h3>
+                        <p>${escapeHtml(err.message || 'Unknown error')}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function renderCreatedIds() {
+            if (!createdIdsWrap) return;
+            const term = createdIdsSearchTerm.trim().toLowerCase();
+            const filtered = createdIdsCache.filter(s => {
+                if (!term) return true;
+                const name = `${s.first_name || ''} ${s.last_name || ''}`.toLowerCase();
+                const lrn = String(s.lrn || '').toLowerCase();
+                const token = String(s.qr_code || '').toLowerCase();
+                return name.includes(term) || lrn.includes(term) || token.includes(term);
+            });
+
+            if (createdIdsCount) createdIdsCount.textContent = String(filtered.length);
+
+            if (filtered.length === 0) {
+                createdIdsWrap.innerHTML = `
+                    <div class="ids-empty-state">
+                        <i class="fas fa-id-card"></i>
+                        <h3>No IDs ${term ? 'match your search' : 'created yet'}</h3>
+                        <p>${term ? 'Try a different name or LRN.' : 'Generate an ID above and click Save QR to add it here.'}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `
+                <table id="createdIdsTable">
+                    <thead>
+                        <tr>
+                            <th>STUDENT</th>
+                            <th>LRN</th>
+                            <th>GRADE & STRAND</th>
+                            <th>QR CODE</th>
+                            <th>CREATED</th>
+                            <th style="text-align:right;">ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            filtered.forEach(s => {
+                const fullName = `${s.first_name || ''} ${s.last_name || ''}`.trim() || 'Student';
+                const initial = getInitial(fullName);
+                const lrn = s.lrn || '—';
+                const grade = s.grade_level || '—';
+                const strand = s.strand ? ` · ${s.strand}` : '';
+                const token = s.qr_code || '';
+                const createdPretty = formatPretty(s.updated_at || s.created_at);
+
+                // Format token nicely with spaces around | and after LRN:
+                let displayToken = token;
+                if (displayToken.includes('|') && !displayToken.includes(' | ')) {
+                    displayToken = displayToken.replace(/\|/g, ' | ');
+                }
+                displayToken = displayToken.replace(/LRN:([^\s])/g, 'LRN: $1');
+
+                html += `
+                    <tr data-student-id="${escapeHtml(s.id)}">
+                        <td>
+                            <div class="student-cell">
+                                <div class="student-avatar">${escapeHtml(initial)}</div>
+                                <div>
+                                    <div class="student-name">${escapeHtml(fullName)}</div>
+                                    <div class="student-meta">ID: ${escapeHtml(s.id)}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span style="font-size: 13px; font-weight: 600; color: #1e293b;">${escapeHtml(lrn)}</span>
+                        </td>
+                        <td>
+                            <span style="font-weight: 700; color: #0f172a;">${escapeHtml(grade)}</span>${strand ? `<span style="color:#64748b;font-size:12.5px;font-weight:500;">${escapeHtml(strand)}</span>` : ''}
+                        </td>
+                        <td>
+                            <span class="qr-token" title="${escapeHtml(token)}">${escapeHtml(displayToken)}</span>
+                        </td>
+                        <td>
+                            <span style="color:#64748b;font-size:12.5px;">${escapeHtml(createdPretty)}</span>
+                        </td>
+                        <td>
+                            <div class="cell-actions" style="justify-content:flex-end;">
+                                <button type="button" class="row-action-btn view"
+                                    data-action="view" data-id="${escapeHtml(s.id)}"
+                                    title="View Student ID"><i class="fas fa-eye"></i></button>
+                                <button type="button" class="row-action-btn regen"
+                                    data-action="regen" data-id="${escapeHtml(s.id)}"
+                                    title="Regenerate QR"><i class="fas fa-rotate"></i></button>
+                                <button type="button" class="row-action-btn delete"
+                                    data-action="delete" data-id="${escapeHtml(s.id)}"
+                                    title="Delete ID QR"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `</tbody></table>`;
+            createdIdsWrap.innerHTML = html;
+
+            createdIdsWrap.querySelectorAll('.row-action-btn').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    const action = btn.dataset.action;
+                    const id = btn.dataset.id;
+                    if (!id) return;
+                    if (action === 'view') {
+                        await openIdPreview(id);
+                    } else if (action === 'regen') {
+                        await regenerateQr(id);
+                    } else if (action === 'delete') {
+                        await deleteIdRecord(id);
+                    }
+                });
+            });
+        }
+
+        async function regenerateQr(studentId) {
+            const ok = confirm('Regenerate QR code for this student?\n\nThe existing QR token will be replaced with a new one.');
+            if (!ok) return;
+
+            try {
+                const { error: clearErr } = await supabase
+                    .from('students')
+                    .update({ qr_code: null, updated_at: new Date().toISOString() })
+                    .eq('id', studentId);
+                if (clearErr) throw clearErr;
+
+                const { data: row, error: getErr } = await supabase
+                    .from('students')
+                    .select('id, first_name, last_name, lrn')
+                    .eq('id', studentId)
+                    .single();
+                if (getErr) throw getErr;
+
+                const newToken = buildQrToken(row);
+                if (!newToken) throw new Error('Could not build new token');
+
+                const { error: setErr } = await supabase
+                    .from('students')
+                    .update({ qr_code: newToken, updated_at: new Date().toISOString() })
+                    .eq('id', studentId);
+                if (setErr) throw setErr;
+
+                await supabase.from('attendance').update({ qr_code: newToken }).eq('student_id', studentId);
+                showToast('QR regenerated successfully.', 'success');
+                await loadCreatedIds();
+            } catch (err) {
+                console.error('Regenerate failed:', err);
+                showToast('Failed to regenerate QR: ' + (err.message || 'unknown'), 'error');
+            }
+        }
+
+        async function deleteIdRecord(studentId) {
+            const ok = confirm(
+                'Delete the QR code for this student?\n\n' +
+                'This will only clear the QR token (the student record stays). ' +
+                'You can generate a new QR afterwards.'
+            );
+            if (!ok) return;
+
+            try {
+                const { error } = await supabase
+                    .from('students')
+                    .update({ qr_code: null, updated_at: new Date().toISOString() })
+                    .eq('id', studentId);
+                if (error) throw error;
+
+                await supabase.from('attendance').update({ qr_code: null }).eq('student_id', studentId);
+                showToast('QR code cleared. You can regenerate it now.', 'success');
+                await loadCreatedIds();
+            } catch (err) {
+                console.error('Delete failed:', err);
+                showToast('Failed to delete: ' + (err.message || 'unknown'), 'error');
+            }
+        }
+
+        if (createdIdsSearch) {
+            let searchTimer = null;
+            createdIdsSearch.addEventListener('input', (e) => {
+                createdIdsSearchTerm = e.target.value || '';
+                clearTimeout(searchTimer);
+                searchTimer = setTimeout(renderCreatedIds, 180);
+            });
+        }
+
+        if (btnRefreshCreatedIds) {
+            btnRefreshCreatedIds.addEventListener('click', async () => {
+                btnRefreshCreatedIds.disabled = true;
+                btnRefreshCreatedIds.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing';
+                await loadCreatedIds();
+                btnRefreshCreatedIds.disabled = false;
+                btnRefreshCreatedIds.innerHTML = '<i class="fas fa-rotate"></i> Refresh';
+            });
+        }
+
+        function refreshCreatedIds() {
+            loadCreatedIds();
+        }
+        window.__hes_refreshCreatedIds = refreshCreatedIds;
+
+        function initApp() {
+            try {
+                window.idGen = new StudentIdGenerator({
+                    containerId: 'idGeneratorApp',
+                    defaultPrincipal: 'Dr. Ryan R. Quiroga',
+                    defaultSchoolYear: '2026-2027'
+                });
+
+                console.log('✅ StudentIdGenerator initialized with Created IDs list');
+            } catch (err) {
+                console.error('Initialization error:', err);
+                const container = document.getElementById('idGeneratorApp');
+                if (container) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 40px 20px; color: #dc2626;">
+                            <i class="fas fa-triangle-exclamation fa-2x"></i>
+                            <p style="margin-top: 10px; font-weight: 700;">Failed to load ID Generator</p>
+                            <p style="font-size: 13px; color: #64748b;">${err.message || 'Please refresh the page.'}</p>
+                            <button onclick="window.location.reload()" style="margin-top: 12px; padding: 8px 16px; background: #1E3A8A; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                                <i class="fas fa-rotate"></i> Retry
+                            </button>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        // Initial fetch of created IDs table
+        loadCreatedIds();
 
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', initApp);
@@ -383,7 +728,7 @@
             initApp();
         }
     </script>
-
+    <script src="js/admin_avatar_sync.js"></script>
     <script src="../js/chatbot.js"></script>
 </body>
 
